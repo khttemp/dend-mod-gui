@@ -163,7 +163,10 @@ def reloadWidget(*selectId):
     global decryptFile
     decryptFile = decryptFile.reload()
     deleteAllWidget()
-    selectInfo(cb.current(), int(selectId[0]))
+    selId = None
+    if selectId:
+        selId = int(selectId[0])
+    selectInfo(cb.current(), selId)
 
 
 def selectGame():
