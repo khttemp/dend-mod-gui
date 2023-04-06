@@ -1,0 +1,12 @@
+__pycache__
+build
+dist
+*.log
+*.spec
+*.bat
+*.exe
+*.ini
+/*.txt
+/*.bin
+/*.csv
+/*.fvt
