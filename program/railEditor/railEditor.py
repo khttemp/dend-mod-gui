@@ -58,7 +58,7 @@ def openFile(v_railCsvMode, v_ambCsvMode):
     global decryptFile
 
     errorMsg = "予想外のエラーが出ました。\n電車でDのファイルではない、またはファイルが壊れた可能性があります。"
-    file_path = fd.askopenfilename(filetypes=[("TRAIN_DATA", "RAIL*.BIN")])
+    file_path = fd.askopenfilename(filetypes=[("TRAIN_DATA", "*.BIN")])
     if file_path:
         filename = os.path.basename(file_path)
         v_filename.set(filename)

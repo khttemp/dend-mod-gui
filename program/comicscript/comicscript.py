@@ -26,7 +26,7 @@ copyComicData = None
 def openFile():
     global v_fileName
     global decryptFile
-    file_path = fd.askopenfilename(filetypes=[("COMIC_SCRIPT", "COMIC*.BIN")])
+    file_path = fd.askopenfilename(filetypes=[("COMIC_SCRIPT", "*.BIN")])
 
     errorMsg = "予想外のエラーが出ました。\n電車でDのコミックスクリプトではない、またはファイルが壊れた可能性があります。"
     if file_path:

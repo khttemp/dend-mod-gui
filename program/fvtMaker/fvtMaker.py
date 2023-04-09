@@ -31,7 +31,7 @@ def openFile():
         mb.showerror(title="エラー", message="ゲームを選択してください")
         return
 
-    file_path = fd.askopenfilename(filetypes=[("CSVファイル", "*.CSV")])
+    file_path = fd.askopenfilename(filetypes=[("CSVファイル", "*.csv")])
 
     if file_path:
         del fvtConvertFile

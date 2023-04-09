@@ -77,6 +77,7 @@ def add_railCsvOptionMenu():
     global v_railCsvRadio
     global v_ambCsvRadio
     global menubar
+    global maxMenubarLen
 
     if not os.path.exists(config_ini_path):
         writeDefaultConfig()
@@ -84,7 +85,7 @@ def add_railCsvOptionMenu():
     configRead = configparser.ConfigParser()
     configRead.read(config_ini_path, encoding="utf-8")
 
-    if menubar.entryconfig(tkinter.END) == menubar.entryconfig(2):
+    if menubar.entryconfig(tkinter.END) == menubar.entryconfig(maxMenubarLen):
         v_railCsvRadio = tkinter.IntVar()
         v_railCsvRadio.set(int(configRead.get("RAIL_CSV", "mode")))
         v_ambCsvRadio = tkinter.IntVar()
@@ -102,8 +103,10 @@ def add_railCsvOptionMenu():
 
 def delete_railCsvOptionMenu():
     global menubar
+    global maxMenubarLen
 
-    menubar.delete(3)
+    if menubar.index(tkinter.END) > maxMenubarLen:
+        menubar.delete(maxMenubarLen + 1)
 
 
 def writeDefaultConfig():
@@ -144,8 +147,10 @@ v_railCsvRadio = None
 v_ambCsvRadio = None
 selectedProgram = None
 
+maxMenubarLen = None
+
 root = tkinter.Tk()
-root.title("電車でD 改造 統合版 1.0.2")
+root.title("電車でD 改造 統合版 1.0.3")
 root.geometry("1024x768")
 
 menubar = tkinter.Menu(root)
@@ -178,5 +183,7 @@ programFrame.pack(fill=tkinter.BOTH, expand=True)
 
 if not os.path.exists(config_ini_path):
     writeDefaultConfig()
+
+maxMenubarLen = menubar.index(tkinter.END)
 
 root.mainloop()
