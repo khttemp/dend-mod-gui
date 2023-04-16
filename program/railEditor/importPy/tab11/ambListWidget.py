@@ -14,8 +14,6 @@ class AmbListWidget:
         self.varChildList = []
         self.reloadFunc = reloadFunc
 
-        self.smfList.extend(["モデル設定通り", "なし"])
-
         #
         self.ambNoFrame = ttk.Frame(self.frame)
         self.ambNoFrame.pack(anchor=tkinter.NW, padx=30, pady=30)
@@ -554,6 +552,16 @@ class AmbListWidget:
                         ambInfo.append(temp)
                     ambList.append(ambInfo)
                     count += 1
+
+            if childCount != 0 and childCount != childAllCount:
+                msg = "最終行目に子データがありません"
+                mb.showerror(title="エラー", message=msg)
+                return
+
+            if childFlag == True:
+                msg = "最終行目に子データがありません"
+                mb.showerror(title="エラー", message=msg)
+                return
 
             msg = "{0}行のデータを読み込みしました。\n上書きしますか？".format(count)
             result = mb.askokcancel(title="警告", message=msg, icon="warning")

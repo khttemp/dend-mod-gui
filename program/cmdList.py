@@ -585,5 +585,11 @@ cmdList = [
     "DEKI_GN_STOP",
     "STORY_GN",
     "IS_ONE_TRACK_DRIFT",
+    "RESET_BLOCK",
+    "IS_BTLMODE_END_CHK",
+    "SHOW_WIN_TRAIN",
+    "NO_RUN",
+    "COMIC_TO_BTL",
+    "SET_MSGWND_INDEX",
     "SCRIPT_CMD_MAX"
 ]

@@ -14,6 +14,7 @@ import program.lbcrEditor.lbcrEditor as lbcrEditorProgram
 import program.musicEditor.musicEditor as musicEditorProgram
 import program.fvtMaker.fvtMaker as fvtMakerProgram
 import program.railEditor.railEditor as railEditorProgram
+import program.smf.smf as smfProgram
 
 
 def clearProgramFrame():
@@ -41,16 +42,23 @@ def callProgram(programName):
         fvtMakerProgram.call_fvtMaker(root, programFrame)
     elif selectedProgram == "railEditor":
         railEditorProgram.call_railEditor(root, programFrame)
-
+    elif selectedProgram == "smf":
+        smfProgram.call_smf(root, programFrame)
+    
+    delete_OptionMenu()
     if selectedProgram == "railEditor":
         add_railCsvOptionMenu()
-    else:
-        delete_railCsvOptionMenu()
+    elif selectedProgram == "smf":
+        add_smfWriteOptionMenu()
 
 
 def loadFile():
     global v_railCsvRadio
     global v_ambCsvRadio
+    global v_frameCheck
+    global v_meshCheck
+    global v_XYZCheck
+    global v_mtrlCheck
     global selectedProgram
 
     if selectedProgram == "lbcrEditor":
@@ -67,8 +75,22 @@ def loadFile():
         fvtMakerProgram.openFile()
     elif selectedProgram == "railEditor":
         railEditorProgram.openFile(v_railCsvRadio.get(), v_ambCsvRadio.get())
+    elif selectedProgram == "smf":
+        smfProgram.openFile(v_frameCheck.get(), v_meshCheck.get(), v_XYZCheck.get(), v_mtrlCheck.get())
     else:
         mb.showerror(title="エラー", message="プログラムを選択してください")
+
+
+def configCheckOption(section, options):
+    global config_ini_path
+    global configRead
+
+    if not configRead.has_option(section, options):
+        if not configRead.has_section(section):
+            configRead.add_section(section)
+        configRead.set(section, options, "0")
+        return True
+    return False
 
 
 def add_railCsvOptionMenu():
@@ -85,23 +107,82 @@ def add_railCsvOptionMenu():
     configRead = configparser.ConfigParser()
     configRead.read(config_ini_path, encoding="utf-8")
 
+    readErrorFlag = False
+    if configCheckOption("RAIL_CSV", "mode"):
+        readErrorFlag = True
+    if configCheckOption("AMB_CSV", "mode"):
+        readErrorFlag = True
+    
+    if readErrorFlag:
+        f = codecs.open(config_ini_path, "w", "utf-8", "strict")
+        configRead.write(f)
+        f.close()
+
     if menubar.entryconfig(tkinter.END) == menubar.entryconfig(maxMenubarLen):
         v_railCsvRadio = tkinter.IntVar()
         v_railCsvRadio.set(int(configRead.get("RAIL_CSV", "mode")))
         v_ambCsvRadio = tkinter.IntVar()
         v_ambCsvRadio.set(int(configRead.get("AMB_CSV", "mode")))
         railCsvOptionMenu = tkinter.Menu(menubar, tearoff=False)
-        railCsvOptionMenu.add_radiobutton(label="レールCSVを常に確認", variable=v_railCsvRadio, value=0, command=writeConfig)
-        railCsvOptionMenu.add_radiobutton(label="レールCSVを常に上書きする", variable=v_railCsvRadio, value=1, command=writeConfig)
-        railCsvOptionMenu.add_radiobutton(label="レールCSVを上書きしない", variable=v_railCsvRadio, value=2, command=writeConfig)
+        railCsvOptionMenu.add_radiobutton(label="レールCSVを常に確認", variable=v_railCsvRadio, value=0, command=writeRailConfig)
+        railCsvOptionMenu.add_radiobutton(label="レールCSVを常に上書きする", variable=v_railCsvRadio, value=1, command=writeRailConfig)
+        railCsvOptionMenu.add_radiobutton(label="レールCSVを上書きしない", variable=v_railCsvRadio, value=2, command=writeRailConfig)
         railCsvOptionMenu.add_separator()
-        railCsvOptionMenu.add_radiobutton(label="AMBのCSVを常に確認", variable=v_ambCsvRadio, value=0, command=writeConfig)
-        railCsvOptionMenu.add_radiobutton(label="AMBのCSVを常に上書きする", variable=v_ambCsvRadio, value=1, command=writeConfig)
-        railCsvOptionMenu.add_radiobutton(label="AMBのCSVを上書きしない", variable=v_ambCsvRadio, value=2, command=writeConfig)
+        railCsvOptionMenu.add_radiobutton(label="AMBのCSVを常に確認", variable=v_ambCsvRadio, value=0, command=writeRailConfig)
+        railCsvOptionMenu.add_radiobutton(label="AMBのCSVを常に上書きする", variable=v_ambCsvRadio, value=1, command=writeRailConfig)
+        railCsvOptionMenu.add_radiobutton(label="AMBのCSVを上書きしない", variable=v_ambCsvRadio, value=2, command=writeRailConfig)
         menubar.add_cascade(label="CSVオプション", menu=railCsvOptionMenu)
 
 
-def delete_railCsvOptionMenu():
+def add_smfWriteOptionMenu():
+    global config_ini_path
+    global configRead
+    global v_frameCheck
+    global v_meshCheck
+    global v_XYZCheck
+    global v_mtrlCheck
+    global menubar
+    global maxMenubarLen
+
+    if not os.path.exists(config_ini_path):
+        writeDefaultConfig()
+
+    configRead = configparser.ConfigParser()
+    configRead.read(config_ini_path, encoding="utf-8")
+
+    readErrorFlag = False
+    if configCheckOption("SMF_FRAME", "mode"):
+        readErrorFlag = True
+    if configCheckOption("SMF_MESH", "mode"):
+        readErrorFlag = True
+    if configCheckOption("SMF_XYZ", "mode"):
+        readErrorFlag = True
+    if configCheckOption("SMF_MTRL", "mode"):
+        readErrorFlag = True
+    
+    if readErrorFlag:
+        f = codecs.open(config_ini_path, "w", "utf-8", "strict")
+        configRead.write(f)
+        f.close()
+
+    if menubar.entryconfig(tkinter.END) == menubar.entryconfig(maxMenubarLen):
+        v_frameCheck = tkinter.IntVar()
+        v_frameCheck.set(int(configRead.get("SMF_FRAME", "mode")))
+        v_meshCheck = tkinter.IntVar()
+        v_meshCheck.set(int(configRead.get("SMF_MESH", "mode")))
+        v_XYZCheck = tkinter.IntVar()
+        v_XYZCheck.set(int(configRead.get("SMF_XYZ", "mode")))
+        v_mtrlCheck = tkinter.IntVar()
+        v_mtrlCheck.set(int(configRead.get("SMF_MTRL", "mode")))
+        smfWriteOptionMenu = tkinter.Menu(menubar, tearoff=False)
+        smfWriteOptionMenu.add_checkbutton(label="FRMを書込む", variable=v_frameCheck, command=writeSmfConfig)
+        smfWriteOptionMenu.add_checkbutton(label="MESHを書込む", variable=v_meshCheck, command=writeSmfConfig)
+        smfWriteOptionMenu.add_checkbutton(label="MESHの詳しい箇所まで書込む", variable=v_XYZCheck, command=writeSmfConfig)
+        smfWriteOptionMenu.add_checkbutton(label="MTRLを書込む", variable=v_mtrlCheck, command=writeSmfConfig)
+        menubar.add_cascade(label="SMF書込みオプション", menu=smfWriteOptionMenu)
+
+
+def delete_OptionMenu():
     global menubar
     global maxMenubarLen
 
@@ -117,12 +198,21 @@ def writeDefaultConfig():
     config.set("RAIL_CSV", "mode", 0)
     config.add_section("AMB_CSV")
     config.set("AMB_CSV", "mode", 0)
+
+    config.add_section("SMF_FRAME")
+    config.set("SMF_FRAME", "mode", 0)
+    config.add_section("SMF_MESH")
+    config.set("SMF_MESH", "mode", 0)
+    config.add_section("SMF_XYZ")
+    config.set("SMF_XYZ", "mode", 0)
+    config.add_section("SMF_MTRL")
+    config.set("SMF_MTRL", "mode", 0)
     f = codecs.open(config_ini_path, "w", "utf-8", "strict")
     config.write(f)
     f.close()
 
 
-def writeConfig():
+def writeRailConfig():
     global v_railCsvRadio
     global v_ambCsvRadio
     global config_ini_path
@@ -131,13 +221,26 @@ def writeConfig():
     configRead.set("RAIL_CSV", "mode", str(v_railCsvRadio.get()))
     configRead.set("AMB_CSV", "mode", str(v_ambCsvRadio.get()))
 
-    config = configparser.RawConfigParser()
-    config.add_section("RAIL_CSV")
-    config.set("RAIL_CSV", "mode", int(configRead.get("RAIL_CSV", "mode")))
-    config.add_section("AMB_CSV")
-    config.set("AMB_CSV", "mode", int(configRead.get("AMB_CSV", "mode")))
     f = codecs.open(config_ini_path, "w", "utf-8", "strict")
-    config.write(f)
+    configRead.write(f)
+    f.close()
+
+
+def writeSmfConfig():
+    global v_frameCheck
+    global v_meshCheck
+    global v_XYZCheck
+    global v_mtrlCheck
+    global config_ini_path
+    global configRead
+
+    configRead.set("SMF_FRAME", "mode", str(v_frameCheck.get()))
+    configRead.set("SMF_MESH", "mode", str(v_meshCheck.get()))
+    configRead.set("SMF_XYZ", "mode", str(v_XYZCheck.get()))
+    configRead.set("SMF_MTRL", "mode", str(v_mtrlCheck.get()))
+
+    f = codecs.open(config_ini_path, "w", "utf-8", "strict")
+    configRead.write(f)
     f.close()
 
 
@@ -145,12 +248,16 @@ config_ini_path = "config.ini"
 configRead = None
 v_railCsvRadio = None
 v_ambCsvRadio = None
+v_frameCheck = None
+v_meshCheck = None
+v_XYZCheck = None
+v_mtrlCheck = None
 selectedProgram = None
 
 maxMenubarLen = None
 
 root = tkinter.Tk()
-root.title("電車でD 改造 統合版 1.0.3")
+root.title("電車でD 改造 統合版 1.0.4")
 root.geometry("1024x768")
 
 menubar = tkinter.Menu(root)
@@ -168,7 +275,9 @@ progmenu.add_radiobutton(label="FVT作成", value=6, variable=v_prog, command=la
 progmenu.add_separator()
 progmenu.add_radiobutton(label="レールエディター", value=7, variable=v_prog, command=lambda: callProgram("railEditor"))
 progmenu.add_separator()
-progmenu.add_radiobutton(label="終了", value=8, variable=v_prog, command=sys.exit)
+progmenu.add_radiobutton(label="SMF", value=8, variable=v_prog, command=lambda: callProgram("smf"))
+progmenu.add_separator()
+progmenu.add_radiobutton(label="終了", value=-1, variable=v_prog, command=sys.exit)
 
 filemenu = tkinter.Menu(menubar, tearoff=False)
 filemenu.add_command(label="ファイルを開く", command=loadFile)

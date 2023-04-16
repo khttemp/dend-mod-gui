@@ -38,7 +38,7 @@ def openFile():
     global decryptFile
     file_path = fd.askopenfilename(filetypes=[("MODEL_SCRIPT", "*.BIN")])
 
-    errorMsg = "予想外のエラーが出ました。\n電車でDのコミックスクリプトではない、またはファイルが壊れた可能性があります。"
+    errorMsg = "予想外のエラーが出ました。\n電車でDのモデルバイナリではない、またはファイルが壊れた可能性があります。"
     if file_path:
         try:
             filename = os.path.basename(file_path)
