@@ -44,16 +44,16 @@ class TreeViewDialog(sd.Dialog):
 
     def body(self, master):
         self.resizable(False, False)
-        mainFrame = ttk.Frame(master, width=720, height=360)
+        mainFrame = ttk.Frame(master, width=800, height=360)
         mainFrame.pack()
 
         self.v_smfName = tkinter.StringVar()
         self.v_smfName.set(self.smfName)
         fileNameEt = ttk.Entry(mainFrame, textvariable=self.v_smfName, font=("", 14), width=20, state="readonly", justify="center")
-        fileNameEt.place(relx=0.02, rely=0.03)
+        fileNameEt.place(relx=0.04, rely=0.03)
 
         self.mdlInfoLf = tkinter.LabelFrame(mainFrame, text="モデル詳細情報")
-        self.mdlInfoLf.place(relx=0.02, rely=0.14, relwidth=0.96, relheight=0.8)
+        self.mdlInfoLf.place(relx=0.02, rely=0.25, relwidth=0.96, relheight=0.74)
 
         self.frame = ttk.Frame(self.mdlInfoLf)
         self.frame.pack(expand=True, fill=tkinter.BOTH)
@@ -73,7 +73,7 @@ class TreeViewDialog(sd.Dialog):
 
         self.colTuple = [
             "番号", "カラー数",
-            "mdlNo",
+            "mesh",
             "const1",
             "ele1-3",
             "f1-4",
@@ -101,10 +101,16 @@ class TreeViewDialog(sd.Dialog):
         self.viewData(self.detailMdlList)
 
         self.editColorBtn = ttk.Button(mainFrame, text="カラー情報を修正する", width=25, state="disabled", command=self.editColor)
-        self.editColorBtn.place(relx=0.4, rely=0.03)
+        self.editColorBtn.place(relx=0.42, rely=0.03)
 
         self.editElementBtn = ttk.Button(mainFrame, text="詳細要素を修正する", width=25, state="disabled", command=self.editElement)
-        self.editElementBtn.place(relx=0.7, rely=0.03)
+        self.editElementBtn.place(relx=0.1, rely=0.13)
+
+        self.insertElementBtn = ttk.Button(mainFrame, text="詳細要素を挿入する", width=25, state="disabled", command=self.insertElement)
+        self.insertElementBtn.place(relx=0.42, rely=0.13)
+
+        self.deleteElementBtn = ttk.Button(mainFrame, text="詳細要素を削除する", width=25, state="disabled", command=self.deleteElement)
+        self.deleteElementBtn.place(relx=0.74, rely=0.13)
 
     def viewData(self, detailMdlList):
         index = 0
@@ -126,11 +132,13 @@ class TreeViewDialog(sd.Dialog):
         selectId = self.tree.selection()[0]
         selectItem = self.tree.set(selectId)
 
-        if int(selectItem["番号"]) == 1:
+        if selectItem["mesh"] == "0,0":
             self.editColorBtn['state'] = 'disabled'
         else:
             self.editColorBtn['state'] = 'normal'
         self.editElementBtn['state'] = 'normal'
+        self.insertElementBtn['state'] = 'normal'
+        self.deleteElementBtn['state'] = 'normal'
 
     def reload(self):
         self.decryptFile = self.decryptFile.reload()
@@ -153,8 +161,36 @@ class TreeViewDialog(sd.Dialog):
         selectId = int(self.tree.selection()[0])
         selectItem = self.tree.set(selectId)
         detailNum = int(selectItem["番号"]) - 1
-        result = DetailDialog(self.master, "モデル要素改造", self.num, detailNum, self.decryptFile, self.colTuple, self.detailMdlList)
+        result = DetailDialog(self.master, "モデル要素改造", "edit", self.num, detailNum, self.decryptFile, self.colTuple, self.detailMdlList)
         if result.cancelFlag:
+            self.reload()
+            self.tree.selection_set(selectId)
+
+    def insertElement(self):
+        selectId = int(self.tree.selection()[0])
+        selectItem = self.tree.set(selectId)
+        detailNum = int(selectItem["番号"]) - 1
+        result = DetailDialog(self.master, "モデル要素改造", "insert", self.num, detailNum, self.decryptFile, self.colTuple, self.detailMdlList)
+        if result.cancelFlag:
+            self.reload()
+            self.tree.selection_set(selectId)
+
+    def deleteElement(self):
+        selectId = int(self.tree.selection()[0])
+        selectItem = self.tree.set(selectId)
+        detailNum = int(selectItem["番号"]) - 1
+        warnMsg = "{0}番目を削除します。\nそれでもよろしいですか？".format(detailNum + 1)
+        result = mb.askokcancel(title="警告", message=warnMsg, icon="warning", parent=self)
+
+        if result:
+            if not self.decryptFile.updateTex(self.num, detailNum, [], "delete"):
+                self.decryptFile.printError()
+                mb.showerror(title="エラー", message="予想外のエラーが発生しました")
+                return False
+            mb.showinfo(title="成功", message="モデル要素情報を修正しました")
+            selectId -= 1
+            if selectId < 0:
+                selectId = 0
             self.reload()
             self.tree.selection_set(selectId)
 
@@ -249,13 +285,15 @@ class TexImageDialog(sd.Dialog):
 
 
 class DetailDialog(sd.Dialog):
-    def __init__(self, master, title, num, detailNum, decryptFile, colTuple, detailMdlList):
+    def __init__(self, master, title, mode, num, detailNum, decryptFile, colTuple, detailMdlList):
+        self.mode = mode
         self.num = num
         self.detailNum = detailNum
         self.decryptFile = decryptFile
         self.colTuple = colTuple[2:]
         self.textureList = detailMdlList[self.detailNum]["textureList"]
         self.cancelFlag = False
+        self.detailMdlList = detailMdlList
         super(DetailDialog, self).__init__(parent=master, title=title)
 
     def body(self, master):
@@ -264,10 +302,24 @@ class DetailDialog(sd.Dialog):
         self.fontSize = 12
         self.entryWidth = 20
         for colName in self.colTuple:
-            if colName == "mdlNo":
-                self.imageLb = tkinter.Label(master, font=("", 14), text="モデル{0}-{1}の要素".format(self.textureList[0], self.textureList[1]))
-                self.imageLb.grid(row=index, column=0, columnspan=2, sticky=tkinter.W + tkinter.E)
-                index += 2
+            if colName == "mesh":
+                self.eleLb = ttk.Label(master, font=("", self.fontSize), text="Mesh No")
+                self.eleLb.grid(row=index, column=0, sticky=tkinter.W + tkinter.E)
+                self.v_ele = tkinter.IntVar()
+                self.v_ele.set(self.textureList[index])
+                self.eleEt = ttk.Entry(master, font=("", self.fontSize), textvariable=self.v_ele, width=self.entryWidth)
+                self.eleEt.grid(row=index, column=1, sticky=tkinter.W + tkinter.E)
+                self.varList.append(self.v_ele)
+                index += 1
+
+                self.eleLb = ttk.Label(master, font=("", self.fontSize), text="Mtrl No")
+                self.eleLb.grid(row=index, column=0, sticky=tkinter.W + tkinter.E)
+                self.v_ele = tkinter.IntVar()
+                self.v_ele.set(self.textureList[index])
+                self.eleEt = ttk.Entry(master, font=("", self.fontSize), textvariable=self.v_ele, width=self.entryWidth)
+                self.eleEt.grid(row=index, column=1, sticky=tkinter.W + tkinter.E)
+                self.varList.append(self.v_ele)
+                index += 1
             elif colName == "ele1-3":
                 for i in range(3):
                     self.eleLb = ttk.Label(master, font=("", self.fontSize), text="ele{0}".format(i + 1))
@@ -309,7 +361,19 @@ class DetailDialog(sd.Dialog):
                 index += 1
 
     def validate(self):
-        warnMsg = "モデル要素情報を修正しますか？"
+        textureList = [x["textureList"][0:2] for x in self.detailMdlList]
+        newMeshList = [self.varList[0].get(), self.varList[1].get()]
+        oldMeshList = [self.textureList[0], self.textureList[1]]
+        if self.mode == "edit":
+            warnMsg = ""
+            if newMeshList != oldMeshList and newMeshList in textureList:
+                warnMsg = "【注意！】重複する要素({0}-{1})があります\n".format(newMeshList[0], newMeshList[1])
+            warnMsg += "モデル要素情報を修正しますか？"
+        elif self.mode == "insert":
+            warnMsg = ""
+            if newMeshList in textureList:
+                warnMsg = "【注意！】重複する要素({0}-{1})があります\n".format(newMeshList[0], newMeshList[1])
+            warnMsg += "モデル要素情報を挿入しますか？"
         result = mb.askokcancel(message=warnMsg, icon="warning", parent=self)
 
         if result:
@@ -317,7 +381,7 @@ class DetailDialog(sd.Dialog):
             for var in self.varList:
                 varList.append(var.get())
 
-            if not self.decryptFile.updateTex(self.num, self.detailNum, varList):
+            if not self.decryptFile.updateTex(self.num, self.detailNum, varList, self.mode):
                 self.decryptFile.printError()
                 mb.showerror(title="エラー", message="予想外のエラーが発生しました")
                 return False

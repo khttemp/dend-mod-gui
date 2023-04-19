@@ -91,6 +91,8 @@ RSのレール情報の要素についは、[【こちら】](/raildata.md)の�
 
 修正するには、自動で作られたCSVを利用して調整する
 
+RSのAMB情報の要素についは、[【こちら】](/ambdata.md)のリンクを参照
+
 ### CSVオプション
 
 ![csvOption](image/csvOption.png)

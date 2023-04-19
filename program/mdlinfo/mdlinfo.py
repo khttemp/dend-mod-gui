@@ -12,6 +12,8 @@ from program.mdlinfo.importPy.tkinterClass import Scrollbarframe, TreeViewDialog
 root = None
 v_fileName = None
 v_select = None
+v_search = None
+searchEt = None
 mdlInfoLf = None
 getMdlDetailBtn = None
 getMdlImageBtn = None
@@ -70,6 +72,8 @@ def deleteWidget():
 
 def createWidget():
     global v_select
+    global v_search
+    global searchEt
     global mdlInfoLf
     global getMdlDetailBtn
     global getMdlImageBtn
@@ -78,6 +82,9 @@ def createWidget():
     global deleteMdlInfoBtn
     global copyInfoBtn
     global frame
+
+    v_search.set("")
+    searchEt["state"] = "normal"
 
     btnList = [
         getMdlDetailBtn,
@@ -112,6 +119,7 @@ def createWidget():
 
 
 def viewData(allInfoList):
+
     index = 0
     for mdlInfo in allInfoList:
         binName = "-"
@@ -123,6 +131,22 @@ def viewData(allInfoList):
         data += (binName, mdlInfo["binInfo"][1])
         frame.tree.insert(parent='', index='end', iid=index, values=data)
         index += 1
+
+
+def filterModelList(event):
+    global v_search
+    global decryptFile
+    global frame
+
+    for i in range(len(decryptFile.allInfoList)):
+        frame.tree.reattach(i, "", tkinter.END)
+
+    search = v_search.get()
+    for i in frame.tree.get_children():
+        item = frame.tree.item(i)
+        modelName = item["values"][1]
+        if search.upper() not in modelName.upper():
+            frame.tree.detach(i)
 
 
 def getMdlDetail():
@@ -283,6 +307,8 @@ def call_mdlinfo(rootTk, programFrame):
     global root
     global v_fileName
     global v_select
+    global v_search
+    global searchEt
     global mdlInfoLf
     global getMdlDetailBtn
     global getMdlImageBtn
@@ -304,6 +330,14 @@ def call_mdlinfo(rootTk, programFrame):
     v_select = tkinter.StringVar()
     selectEt = ttk.Entry(programFrame, textvariable=v_select, font=("", 14), width=6, state="readonly", justify="center")
     selectEt.place(relx=0.22, rely=0.09)
+
+    searchLb = ttk.Label(programFrame, text="モデル検索：", font=("", 14))
+    searchLb.place(relx=0.05, rely=0.15)
+
+    v_search = tkinter.StringVar()
+    searchEt = ttk.Entry(programFrame, textvariable=v_search, font=("", 14), state="readonly", justify="center")
+    searchEt.place(relx=0.18, rely=0.15, relwidth=0.20)
+    searchEt.bind("<KeyRelease>", filterModelList)
 
     mdlInfoLf = ttk.LabelFrame(programFrame, text="MDLINFO内容")
     mdlInfoLf.place(relx=0.03, rely=0.20, relwidth=0.95, relheight=0.77)

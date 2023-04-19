@@ -44,7 +44,7 @@ def callProgram(programName):
         railEditorProgram.call_railEditor(root, programFrame)
     elif selectedProgram == "smf":
         smfProgram.call_smf(root, programFrame)
-    
+
     delete_OptionMenu()
     if selectedProgram == "railEditor":
         add_railCsvOptionMenu()
@@ -112,7 +112,7 @@ def add_railCsvOptionMenu():
         readErrorFlag = True
     if configCheckOption("AMB_CSV", "mode"):
         readErrorFlag = True
-    
+
     if readErrorFlag:
         f = codecs.open(config_ini_path, "w", "utf-8", "strict")
         configRead.write(f)
@@ -159,7 +159,7 @@ def add_smfWriteOptionMenu():
         readErrorFlag = True
     if configCheckOption("SMF_MTRL", "mode"):
         readErrorFlag = True
-    
+
     if readErrorFlag:
         f = codecs.open(config_ini_path, "w", "utf-8", "strict")
         configRead.write(f)
@@ -257,7 +257,7 @@ selectedProgram = None
 maxMenubarLen = None
 
 root = tkinter.Tk()
-root.title("電車でD 改造 統合版 1.0.4")
+root.title("電車でD 改造 統合版 1.0.5")
 root.geometry("1024x768")
 
 menubar = tkinter.Menu(root)

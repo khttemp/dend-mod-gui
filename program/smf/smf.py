@@ -1,3 +1,4 @@
+import os
 import traceback
 
 import tkinter
@@ -83,6 +84,62 @@ def createWidget():
             frame.tree.move("item{0}".format(idx), "item{0}".format(parentFrameNo), "end")
 
 
+def reloadWidget():
+    global decryptFile
+
+    errorMsg = "予想外のエラーが出ました。\n電車でDのSMFではない、またはファイルが壊れた可能性があります。"
+    if not decryptFile.open():
+        print("error" + decryptFile.error)
+        decryptFile.printError()
+        mb.showerror(title="エラー", message=errorMsg)
+        return
+    deleteWidget()
+    createWidget()
+
+
+def createStandardGaugeButton():
+    global decryptFile
+    global v_process
+    global processBar
+
+    if not decryptFile.detectGauge():
+        if decryptFile.error == "":
+            msg = "下記のモデルのみ出来ます"
+            for model in decryptFile.standardGuageList:
+                msg += "\n" + model
+            mb.showerror(title="エラー", message=msg)
+            return
+    else:
+        modelIndex = decryptFile.standardGuageList.index(decryptFile.filename)
+        modelName = decryptFile.d4NarrowGuageList[modelIndex]
+        msg = modelName + "を読み込んでください"
+        mb.showinfo(title="ファイル", message=msg)
+        file_path = fd.askopenfilename(filetypes=[("SELENE MODEL", "*.SMF")])
+        if file_path:
+            filename = os.path.basename(file_path)
+            if filename.upper() != modelName:
+                msg = "モデルが違います"
+                mb.showerror(title="エラー", message=msg)
+                return
+            d4DecryptFile = SmfDecrypt(file_path, False, False, False, False, v_process, processBar)
+            if not d4DecryptFile.open():
+                d4DecryptFile.printError()
+                mb.showerror(title="エラー", message="読み込みエラーです")
+                return
+
+            if not decryptFile.createStandardGauge(d4DecryptFile):
+                if d4DecryptFile.error != "":
+                    mb.showerror(title="エラー", message=d4DecryptFile.error)
+                    return
+                decryptFile.printError()
+                mb.showerror(title="エラー", message="エラーです")
+                return
+        else:
+            return
+        mb.showinfo(title="成功", message="標準軌を作成しました")
+        reloadWidget()
+
+
 def call_smf(rootTk, programFrame):
     global root
     global v_process
@@ -98,3 +155,6 @@ def call_smf(rootTk, programFrame):
 
     scriptLf = ttk.LabelFrame(programFrame, text="構成")
     scriptLf.place(relx=0.03, rely=0.08, relwidth=0.45, relheight=0.89)
+
+    bButton = ttk.Button(programFrame, text="標準軌を作成する", width=25, command=createStandardGaugeButton)
+    bButton.place(relx=0.5, rely=0.03)

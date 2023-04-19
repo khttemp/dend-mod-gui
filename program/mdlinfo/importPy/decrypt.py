@@ -49,6 +49,7 @@ class MdlDecrypt:
             index += smfLen
             mdlInfo["smfName"] = smfName
 
+            mdlInfo["mdlcntIndex"] = index
             mdlcnt = line[index]
             index += 1
             mdlInfo["detailMdlList"] = []
@@ -174,45 +175,78 @@ class MdlDecrypt:
             self.error = traceback.format_exc()
             return False
 
-    def updateTex(self, smfNum, detailInfoNum, varList):
+    def updateTex(self, smfNum, detailInfoNum, varList, mode):
         try:
-            index = self.allInfoList[smfNum]["detailMdlList"][detailInfoNum]["detailTexIndex"]
-            index += 2
-            newByteArr = self.byteArr[0:index]
+            mdlcntIndex = self.allInfoList[smfNum]["mdlcntIndex"]
+            mdlcnt = self.byteArr[mdlcntIndex]
+            if mode == "insert":
+                mdlcnt += 1
+            elif mode == "delete":
+                mdlcnt -= 1
+            self.byteArr[mdlcntIndex] = mdlcnt
 
-            varIdx = 0
-            for i in range(4):
+            if mode == "edit":
+                index = self.allInfoList[smfNum]["detailMdlList"][detailInfoNum]["detailTexIndex"]
+                newByteArr = self.byteArr[0:index]
+            elif mode == "insert":
+                if detailInfoNum >= len(self.allInfoList[smfNum]["detailMdlList"]) - 1:
+                    index = self.allInfoList[smfNum]["imgIndex"]
+                else:
+                    index = self.allInfoList[smfNum]["detailMdlList"][detailInfoNum + 1]["detailImgIndex"]
+                newByteArr = self.byteArr[0:index]
+                if varList[0] == 0 and varList[1] == 0:
+                    newByteArr.append(0xFF)
+                else:
+                    newByteArr.append(0)
+            elif mode == "delete":
+                index = self.allInfoList[smfNum]["detailMdlList"][detailInfoNum]["detailImgIndex"]
+                newByteArr = self.byteArr[0:index]
+
+            if mode == "edit" or mode == "insert":
+                varIdx = 0
+                for i in range(6):
+                    b = struct.pack("<b", varList[varIdx])
+                    newByteArr.extend(b)
+                    varIdx += 1
+                    if mode == "edit":
+                        index += 1
+
+                for i in range(4):
+                    f = struct.pack("<f", varList[varIdx])
+                    newByteArr.extend(f)
+                    varIdx += 1
+                    if mode == "edit":
+                        index += 4
+
                 b = struct.pack("<b", varList[varIdx])
                 newByteArr.extend(b)
                 varIdx += 1
-                index += 1
+                if mode == "edit":
+                    index += 1
 
-            for i in range(4):
-                f = struct.pack("<f", varList[varIdx])
-                newByteArr.extend(f)
+                for i in range(3):
+                    f = struct.pack("<f", varList[varIdx])
+                    newByteArr.extend(f)
+                    varIdx += 1
+                    if mode == "edit":
+                        index += 4
+
+                b = struct.pack("<b", varList[varIdx])
+                newByteArr.extend(b)
                 varIdx += 1
-                index += 4
+                if mode == "edit":
+                    index += 1
 
-            b = struct.pack("<b", varList[varIdx])
-            newByteArr.extend(b)
-            varIdx += 1
-            index += 1
-
-            for i in range(3):
-                f = struct.pack("<f", varList[varIdx])
-                newByteArr.extend(f)
+                h = struct.pack("<h", varList[varIdx])
+                newByteArr.extend(h)
                 varIdx += 1
-                index += 4
-
-            b = struct.pack("<b", varList[varIdx])
-            newByteArr.extend(b)
-            varIdx += 1
-            index += 1
-
-            h = struct.pack("<h", varList[varIdx])
-            newByteArr.extend(h)
-            varIdx += 1
-            index += 2
+                if mode == "edit":
+                    index += 2
+            elif mode == "delete":
+                if detailInfoNum >= len(self.allInfoList[smfNum]["detailMdlList"]) - 1:
+                    index = self.allInfoList[smfNum]["imgIndex"]
+                else:
+                    index = self.allInfoList[smfNum]["detailMdlList"][detailInfoNum + 1]["detailImgIndex"]
 
             newByteArr.extend(self.byteArr[index:])
             self.save(newByteArr)

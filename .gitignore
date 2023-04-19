@@ -6,6 +6,7 @@ dist
 *.bat
 *.exe
 *.ini
+*.smf
 /*.txt
 /*.bin
 /*.csv

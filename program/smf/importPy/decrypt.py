@@ -1,6 +1,7 @@
 import os
 import struct
 import codecs
+import copy
 import traceback
 
 
@@ -20,6 +21,8 @@ class SmfDecrypt:
         self.frameCount = 0
         self.animationSetCount = 0
         #
+        self.frameStartIdx = 0
+        self.meshStartIdx = 0
         self.frameList = []
         self.meshList = []
         self.frameFormatList = [
@@ -64,6 +67,33 @@ class SmfDecrypt:
         self.printMTRL = mtrlFlag
         self.v_process = v_process
         self.processBar = processBar
+        self.standardGuageList = [
+            "H2000_TRACK.SMF",
+            "K8000_TRACK.SMF",
+            "JR2000_TRACK_LOW2.SMF",
+            "K2100_TRACK.SMF",
+            "UV_TRACK.SMF",
+            "K800_TRACK.SMF",
+            "MUTRACK_LOW.SMF",
+        ]
+        self.d4NarrowGuageList = [
+            "H2000_TRACK_LOWD4.SMF",
+            "K8000_TRACK_LOWD4.SMF",
+            "JR2000_TRACK_LOWD4.SMF",
+            "KQ2100_TRACK_LOWD4.SMF",
+            "UV_TRACK_LOWD4.SMF",
+            "K800_TRACK_LOWD4.SMF",
+            "K8000_TRACK.SMF",
+        ]
+        self.d4StandardGuageList = [
+            "H2000_TRACK_D4.SMF",
+            "K8000_TRACK_D4.SMF",
+            "JR2000_Track_D4.SMF",
+            "KQ2100_TRACK_D4.SMF",
+            "UV_TRACK_D4.SMF",
+            "K800_TRACK_D4.SMF",
+            "Mu_Track_D4.SMF",
+        ]
         self.error = ""
 
     def open(self):
@@ -93,6 +123,7 @@ class SmfDecrypt:
         w.close()
         self.frameList = []
         self.meshList = []
+        self.index = 0
 
         nameAndLength = self.getStructNameAndLength()
         if not self.readSMF(nameAndLength[1]):
@@ -100,6 +131,7 @@ class SmfDecrypt:
         self.v_process.set(25)
         self.processBar.update()
 
+        self.frameStartIdx = self.index
         for frame in range(self.frameCount):
             nameAndLength = self.getStructNameAndLength()
             if self.printFRM:
@@ -112,6 +144,7 @@ class SmfDecrypt:
         self.v_process.set(50)
         self.processBar.update()
 
+        self.meshStartIdx = self.index
         self.writeInfo("="*30)
         for mesh in range(self.meshCount):
             nameAndLength = self.getStructNameAndLength()
@@ -1244,3 +1277,144 @@ class SmfDecrypt:
             return None
         self.index = index
         return mtrlInfo
+
+    def detectGauge(self):
+        if self.filename.upper() not in self.standardGuageList:
+            return False
+        else:
+            return True
+
+    def createStandardGauge(self, d4DecryptFile):
+        newByteArr = bytearray()
+        self.index = self.frameStartIdx
+        newByteArr.extend(self.byteArr[0:self.index])
+
+        deleteMeshCount = 0
+        originMeshIndexList = []
+        for frame in range(self.frameCount):
+            self.frameList = []
+            startIdx = self.index
+            nameAndLength = self.getStructNameAndLength()
+            if not self.readFRM(frame, nameAndLength[1]):
+                return False
+            frameInfo = self.frameList[0]
+            frameName = frameInfo[1]
+            insertByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
+            if frameName in ["Fire0_R_1", "Fire1_R_1", "Fire0_L_1", "Fire1_L_1"]:
+                originMeshIndexList.append(frameInfo[2])
+                deleteMeshCount += 1
+                continue
+            elif frameName in ["Fire0_R_0", "Fire1_R_0", "Fire0_L_0", "Fire1_L_0"]:
+                if frameName == "Fire0_R_0":
+                    startIdx = 8
+                    startIdx += 64
+                    newFrameName = "Mesh3"
+                    for n in newFrameName.encode("shift-jis"):
+                        insertByteArr[startIdx] = n
+                        startIdx += 1
+                    for n in range(64 - len(newFrameName.encode("shift-jis"))):
+                        insertByteArr[startIdx] = 0
+                        startIdx += 1
+                elif frameName == "Fire1_R_0":
+                    startIdx = 8
+                    startIdx += 64
+                    newFrameName = "Mesh4"
+                    for n in newFrameName.encode("shift-jis"):
+                        insertByteArr[startIdx] = n
+                        startIdx += 1
+                    for n in range(64 - len(newFrameName.encode("shift-jis"))):
+                        insertByteArr[startIdx] = 0
+                        startIdx += 1
+                elif frameName == "Fire0_L_0":
+                    startIdx = 8
+                    startIdx += 64
+                    newFrameName = "Mesh1"
+                    for n in newFrameName.encode("shift-jis"):
+                        insertByteArr[startIdx] = n
+                        startIdx += 1
+                    for n in range(64 - len(newFrameName.encode("shift-jis"))):
+                        insertByteArr[startIdx] = 0
+                        startIdx += 1
+                elif frameName == "Fire1_L_0":
+                    startIdx = 8
+                    startIdx += 64
+                    newFrameName = "Mesh2"
+                    for n in newFrameName.encode("shift-jis"):
+                        insertByteArr[startIdx] = n
+                        startIdx += 1
+                    for n in range(64 - len(newFrameName.encode("shift-jis"))):
+                        insertByteArr[startIdx] = 0
+                        startIdx += 1
+
+            if deleteMeshCount > 0:
+                meshNo = frameInfo[2]
+                if meshNo != -1:
+                    meshNo -= deleteMeshCount
+                parentNo = frameInfo[3]
+                if parentNo >= 15:
+                    parentNo -= deleteMeshCount
+                startIdx = 8
+                startIdx += (64 + 64)
+                iMeshNo = struct.pack("<i", meshNo)
+                for iM in iMeshNo:
+                    insertByteArr[startIdx] = iM
+                    startIdx += 1
+                iParentNo = struct.pack("<i", parentNo)
+                for iP in iParentNo:
+                    insertByteArr[startIdx] = iP
+                    startIdx += 1
+            newByteArr.extend(insertByteArr)
+        startIdx = 12
+        newAllMeshCount = self.meshCount - deleteMeshCount
+        iNewAllMeshCount = struct.pack("<i", newAllMeshCount)
+        for iN in iNewAllMeshCount:
+            newByteArr[startIdx] = iN
+            startIdx += 1
+        newAllFrameCount = self.frameCount - deleteMeshCount
+        iNewAllFrameCount = struct.pack("<i", newAllFrameCount)
+        for iN in iNewAllFrameCount:
+            newByteArr[startIdx] = iN
+            startIdx += 1
+
+        if self.filename.upper() == "MUTRACK_LOW.SMF":
+            for mesh in range(self.meshCount - 1):
+                startIdx = self.index
+                nameAndLength = self.getStructNameAndLength()
+                if not self.readMESH(mesh, nameAndLength[1], int(50 / self.meshCount)):
+                    return False
+                insertByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
+                newByteArr.extend(insertByteArr)
+
+            d4DecryptFile.index = d4DecryptFile.meshStartIdx
+            for d4Mesh in range(d4DecryptFile.meshCount):
+                d4StartIdx = d4DecryptFile.index
+                nameAndLength = d4DecryptFile.getStructNameAndLength()
+                if not d4DecryptFile.readMESH(d4Mesh, nameAndLength[1], int(50 / d4DecryptFile.meshCount)):
+                    return False
+                if d4Mesh == d4DecryptFile.meshCount - 1:
+                    insertByteArr = copy.deepcopy(d4DecryptFile.byteArr[d4StartIdx:d4DecryptFile.index])
+                    newByteArr.extend(insertByteArr)
+        else:
+            d4DecryptFile.index = d4DecryptFile.meshStartIdx
+            for d4Mesh in range(d4DecryptFile.meshCount - 1):
+                d4StartIdx = d4DecryptFile.index
+                nameAndLength = d4DecryptFile.getStructNameAndLength()
+                if not d4DecryptFile.readMESH(d4Mesh, nameAndLength[1], int(50 / d4DecryptFile.meshCount)):
+                    return False
+                insertByteArr = copy.deepcopy(d4DecryptFile.byteArr[d4StartIdx:d4DecryptFile.index])
+                newByteArr.extend(insertByteArr)
+
+            for mesh in range(self.meshCount):
+                startIdx = self.index
+                nameAndLength = self.getStructNameAndLength()
+                if not self.readMESH(mesh, nameAndLength[1], int(50 / self.meshCount)):
+                    return False
+                if mesh == self.meshCount - 1:
+                    insertByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
+                    newByteArr.extend(insertByteArr)
+
+        newFilename = self.d4StandardGuageList[self.standardGuageList.index(self.filename)]
+        w = open(newFilename, "wb")
+        w.write(newByteArr)
+        w.close()
+        return True
