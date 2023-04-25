@@ -427,6 +427,65 @@ class MdlDecrypt:
             self.error = traceback.format_exc()
             return False
 
+    def readSMFSave(self, filename, meshInfoList):
+        try:
+            smfByteArr = bytearray()
+            bFilename = filename.encode("shift-jis")
+            smfByteArr.append(len(bFilename))
+            smfByteArr.extend(bFilename)
+            allCount = 0
+            for meshInfo in meshInfoList:
+                allCount += meshInfo[1]
+            smfByteArr.append(allCount)
+
+            for index, meshInfo in enumerate(meshInfoList):
+                mtrlList = meshInfo[11]
+                for midx, mtrl in enumerate(mtrlList):
+                    if index == 0 and midx == 0:
+                        smfByteArr.append(0xFF)
+                    else:
+                        smfByteArr.append(0)
+                    smfByteArr.append(index)
+                    smfByteArr.append(midx)
+                    smfByteArr.append(1)
+                    smfByteArr.append(0)
+                    smfByteArr.append(0)
+                    smfByteArr.append(1)
+
+                    diffList = mtrl[17][0]
+                    for diff in diffList:
+                        fDiff = struct.pack("<f", diff)
+                        smfByteArr.extend(fDiff)
+                    smfByteArr.append(0)
+                    emisList = mtrl[18][0]
+                    for emis in emisList:
+                        fEmis = struct.pack("<f", emis)
+                        smfByteArr.extend(fEmis)
+                    smfByteArr.append(0)
+                    hNum2 = struct.pack("<h", -1)
+                    smfByteArr.extend(hNum2)
+            smfByteArr.append(0)
+            smfByteArr.append(0)
+            smfByteArr.append(0)
+            bFlag = struct.pack("<h", -1)
+            smfByteArr.extend(bFlag)
+
+            index = 16
+            newByteArr = self.byteArr
+            allcnt = struct.unpack("<h", self.byteArr[index:index + 2])[0]
+
+            allcnt += 1
+            hAllcnt = struct.pack("<h", allcnt)
+            for n in hAllcnt:
+                newByteArr[index] = n
+                index += 1
+            newByteArr.extend(smfByteArr)
+            self.save(newByteArr)
+            return True
+        except Exception:
+            self.error = traceback.format_exc()
+            return False
+
     def reload(self):
         self.open()
         return self

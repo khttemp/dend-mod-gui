@@ -6,7 +6,7 @@ import traceback
 
 
 class SmfDecrypt:
-    def __init__(self, filePath, frameFlag, meshFlag, xyzFlag, mtrlFlag, v_process, processBar):
+    def __init__(self, filePath, frameFlag=False, meshFlag=False, xyzFlag=False, mtrlFlag=False, v_process=None, processBar=None, writeFlag=True):
         self.filePath = filePath
         self.directory = os.path.dirname(self.filePath)
         self.filename = os.path.basename(self.filePath)
@@ -24,6 +24,7 @@ class SmfDecrypt:
         self.frameStartIdx = 0
         self.meshStartIdx = 0
         self.frameList = []
+        self.meshInfo = []
         self.meshList = []
         self.frameFormatList = [
             "OBB"
@@ -61,10 +62,12 @@ class SmfDecrypt:
             "SPEC",
             "BUMP"
         ]
+        self.writeFlag = writeFlag
         self.printFRM = frameFlag
         self.printMESH = meshFlag
         self.printXYZ = xyzFlag
         self.printMTRL = mtrlFlag
+        self.processFlag = False
         self.v_process = v_process
         self.processBar = processBar
         self.standardGuageList = [
@@ -94,6 +97,9 @@ class SmfDecrypt:
             "K800_TRACK_D4.SMF",
             "Mu_Track_D4.SMF",
         ]
+        self.lastParentIdx = 0
+        self.popFrameByteArr = bytearray()
+        self.popMeshByteArr = bytearray()
         self.error = ""
 
     def open(self):
@@ -113,14 +119,19 @@ class SmfDecrypt:
         f.close()
 
     def writeInfo(self, text="", end="\n"):
-        f = codecs.open(os.path.join(self.directory, self.originFilename), "a", "utf-8", "strict")
-        f.write("{0}".format(text).encode().decode("utf-8"))
-        f.write(end)
-        f.close()
+        if self.writeFlag:
+            f = codecs.open(os.path.join(self.directory, self.originFilename), "a", "utf-8", "strict")
+            f.write("{0}".format(text).encode().decode("utf-8"))
+            f.write(end)
+            f.close()
 
     def decrypt(self):
-        w = codecs.open(os.path.join(self.directory, self.originFilename), "w", "utf-8", "strict")
-        w.close()
+        self.processFlag = False
+        if self.v_process is not None or self.processBar is not None:
+            self.processFlag = True
+        if self.writeFlag:
+            w = codecs.open(os.path.join(self.directory, self.originFilename), "w", "utf-8", "strict")
+            w.close()
         self.frameList = []
         self.meshList = []
         self.index = 0
@@ -128,8 +139,9 @@ class SmfDecrypt:
         nameAndLength = self.getStructNameAndLength()
         if not self.readSMF(nameAndLength[1]):
             return False
-        self.v_process.set(25)
-        self.processBar.update()
+        if self.processFlag:
+            self.v_process.set(25)
+            self.processBar.update()
 
         self.frameStartIdx = self.index
         for frame in range(self.frameCount):
@@ -139,10 +151,12 @@ class SmfDecrypt:
                 self.writeInfo("{0}, 0x{1:02x}".format(nameAndLength[0], nameAndLength[1]))
             if not self.readFRM(frame, nameAndLength[1]):
                 return False
-            self.v_process.set(25 + 25 * (frame / self.frameCount))
+            if self.processFlag:
+                self.v_process.set(25 + 25 * (frame / self.frameCount))
+                self.processBar.update()
+        if self.processFlag:
+            self.v_process.set(50)
             self.processBar.update()
-        self.v_process.set(50)
-        self.processBar.update()
 
         self.meshStartIdx = self.index
         self.writeInfo("="*30)
@@ -153,9 +167,11 @@ class SmfDecrypt:
                 self.writeInfo("{0}, 0x{1:02x}".format(nameAndLength[0], nameAndLength[1]))
             if not self.readMESH(mesh, nameAndLength[1], int(50 / self.meshCount)):
                 return False
+            if self.processFlag:
+                self.processBar.update()
+        if self.processFlag:
+            self.v_process.set(100)
             self.processBar.update()
-        self.v_process.set(100)
-        self.processBar.update()
         return True
 
     def getStructNameAndLength(self):
@@ -248,7 +264,7 @@ class SmfDecrypt:
         if self.printFRM:
             self.writeInfo(parentFrameNo)
 
-        meshInfo = []
+        obbInfo = []
         self.index = index
         if length > 0x88:
             obbNameAndLength = self.getStructNameAndLength()
@@ -261,7 +277,7 @@ class SmfDecrypt:
                 vec = struct.unpack("<f", self.byteArr[index:index+4])[0]
                 index += 4
                 vCenter.append(vec)
-            meshInfo.append(vCenter)
+            obbInfo.append(vCenter)
             if self.printFRM:
                 self.writeInfo("中心座標 {0}".format(vCenter))
 
@@ -275,7 +291,7 @@ class SmfDecrypt:
                 vAxisList.append(vAxis)
                 if self.printFRM:
                     self.writeInfo("ローカルXYZ軸 {0}".format(vAxis))
-            meshInfo.append(vAxisList)
+            obbInfo.append(vAxisList)
 
             fLength = []
             for i in range(3):
@@ -284,8 +300,8 @@ class SmfDecrypt:
                 fLength.append(fLen)
             if self.printFRM:
                 self.writeInfo("XYZ軸の長さ {0}".format(fLength))
-            meshInfo.append(fLength)
-        frameInfo.append(meshInfo)
+            obbInfo.append(fLength)
+        frameInfo.append(obbInfo)
         self.frameList.append(frameInfo)
 
         if startIndex + length == index:
@@ -298,6 +314,7 @@ class SmfDecrypt:
         index = self.index
         startIndex = self.index
         subName = ""
+        self.meshInfo = []
 
         if self.printMESH:
             self.writeInfo("Mesh No.{0}/{1}".format(mesh, self.meshCount-1))
@@ -306,7 +323,7 @@ class SmfDecrypt:
             self.writeInfo("メッシュの名前", end=", ")
         mName = struct.unpack("<64s", self.byteArr[index:index+self.MAX_NAME_SIZE])[0]
         mName = mName.decode("shift-jis").rstrip("\x00")
-        self.meshList.append(mName)
+        self.meshInfo.append(mName)
         index += self.MAX_NAME_SIZE
         if self.printMESH:
             self.writeInfo(mName)
@@ -314,6 +331,7 @@ class SmfDecrypt:
         if self.printMESH:
             self.writeInfo("所持しているマテリアルの数", end=", ")
         materialCount = struct.unpack("<l", self.byteArr[index:index+4])[0]
+        self.meshInfo.append(materialCount)
         index += 4
         if self.printMESH:
             self.writeInfo(materialCount)
@@ -325,7 +343,8 @@ class SmfDecrypt:
         if nextNameAndLength[0] in self.meshFormatList:
             subName = nextNameAndLength[0]
 
-        v_process = self.v_process.get()
+        if self.processFlag:
+            v_process = self.v_process.get()
         obbInfo = []
         if subName == "OBB":
             index = self.index
@@ -362,10 +381,11 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        self.meshList.append(obbInfo)
-        v_process += (meshCountRatio / len(self.meshFormatList))
-        self.v_process.set(round(v_process))
-        self.processBar.update()
+        self.meshInfo.append(obbInfo)
+        if self.processFlag:
+            v_process += (meshCountRatio / len(self.meshFormatList))
+            self.v_process.set(round(v_process))
+            self.processBar.update()
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -409,10 +429,11 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        self.meshList.append(boneInfo)
-        v_process += (meshCountRatio / len(self.meshFormatList))
-        self.v_process.set(round(v_process))
-        self.processBar.update()
+        self.meshInfo.append(boneInfo)
+        if self.processFlag:
+            v_process += (meshCountRatio / len(self.meshFormatList))
+            self.v_process.set(round(v_process))
+            self.processBar.update()
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -447,10 +468,11 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        self.meshList.append(vPCInfo)
-        v_process += (meshCountRatio / len(self.meshFormatList))
-        self.v_process.set(round(v_process))
-        self.processBar.update()
+        self.meshInfo.append(vPCInfo)
+        if self.processFlag:
+            v_process += (meshCountRatio / len(self.meshFormatList))
+            self.v_process.set(round(v_process))
+            self.processBar.update()
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -478,10 +500,11 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        self.meshList.append(vNInfo)
-        v_process += (meshCountRatio / len(self.meshFormatList))
-        self.v_process.set(round(v_process))
-        self.processBar.update()
+        self.meshInfo.append(vNInfo)
+        if self.processFlag:
+            v_process += (meshCountRatio / len(self.meshFormatList))
+            self.v_process.set(round(v_process))
+            self.processBar.update()
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -509,10 +532,11 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        self.meshList.append(vBInfo)
-        v_process += (meshCountRatio / len(self.meshFormatList))
-        self.v_process.set(round(v_process))
-        self.processBar.update()
+        self.meshInfo.append(vBInfo)
+        if self.processFlag:
+            v_process += (meshCountRatio / len(self.meshFormatList))
+            self.v_process.set(round(v_process))
+            self.processBar.update()
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -544,10 +568,11 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        self.meshList.append(vAInfo)
-        v_process += (meshCountRatio / len(self.meshFormatList))
-        self.v_process.set(round(v_process))
-        self.processBar.update()
+        self.meshInfo.append(vAInfo)
+        if self.processFlag:
+            v_process += (meshCountRatio / len(self.meshFormatList))
+            self.v_process.set(round(v_process))
+            self.processBar.update()
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -588,10 +613,11 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        self.meshList.append(vUVInfo)
-        v_process += (meshCountRatio / len(self.meshFormatList))
-        self.v_process.set(round(v_process))
-        self.processBar.update()
+        self.meshInfo.append(vUVInfo)
+        if self.processFlag:
+            v_process += (meshCountRatio / len(self.meshFormatList))
+            self.v_process.set(round(v_process))
+            self.processBar.update()
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -619,10 +645,11 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        self.meshList.append(idx2Info)
-        v_process += (meshCountRatio / len(self.meshFormatList))
-        self.v_process.set(round(v_process))
-        self.processBar.update()
+        self.meshInfo.append(idx2Info)
+        if self.processFlag:
+            v_process += (meshCountRatio / len(self.meshFormatList))
+            self.v_process.set(round(v_process))
+            self.processBar.update()
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -649,10 +676,11 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        self.meshList.append(idx4Info)
-        v_process += (meshCountRatio / len(self.meshFormatList))
-        self.v_process.set(round(v_process))
-        self.processBar.update()
+        self.meshInfo.append(idx4Info)
+        if self.processFlag:
+            v_process += (meshCountRatio / len(self.meshFormatList))
+            self.v_process.set(round(v_process))
+            self.processBar.update()
 
         mtrlList = []
         for i in range(materialCount):
@@ -674,10 +702,11 @@ class SmfDecrypt:
             if materialCount > 1 and i < materialCount - 1:
                 if self.printMTRL:
                     self.writeInfo()
-        self.meshList.append(mtrlList)
-        v_process += (meshCountRatio / len(self.meshFormatList))
-        self.v_process.set(round(v_process))
-        self.processBar.update()
+        self.meshInfo.append(mtrlList)
+        if self.processFlag:
+            v_process += (meshCountRatio / len(self.meshFormatList))
+            self.v_process.set(round(v_process))
+            self.processBar.update()
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -716,10 +745,11 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        self.meshList.append(cATInfo)
-        v_process += (meshCountRatio / len(self.meshFormatList))
-        self.v_process.set(round(v_process))
-        self.processBar.update()
+        self.meshInfo.append(cATInfo)
+        if self.processFlag:
+            v_process += (meshCountRatio / len(self.meshFormatList))
+            self.v_process.set(round(v_process))
+            self.processBar.update()
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -764,10 +794,11 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        self.meshList.append(cFCInfo)
-        v_process += (meshCountRatio / len(self.meshFormatList))
-        self.v_process.set(round(v_process))
-        self.processBar.update()
+        self.meshInfo.append(cFCInfo)
+        if self.processFlag:
+            v_process += (meshCountRatio / len(self.meshFormatList))
+            self.v_process.set(round(v_process))
+            self.processBar.update()
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -812,11 +843,13 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        self.meshList.append(cVXInfo)
-        v_process += (meshCountRatio / len(self.meshFormatList))
-        self.v_process.set(round(v_process))
-        self.processBar.update()
+        self.meshInfo.append(cVXInfo)
+        if self.processFlag:
+            v_process += (meshCountRatio / len(self.meshFormatList))
+            self.v_process.set(round(v_process))
+            self.processBar.update()
 
+        self.meshList.append(self.meshInfo)
         if startIndex + length == index:
             self.index = index
             return True
@@ -1415,6 +1448,179 @@ class SmfDecrypt:
 
         newFilename = self.d4StandardGuageList[self.standardGuageList.index(self.filename)]
         w = open(newFilename, "wb")
+        w.write(newByteArr)
+        w.close()
+        return True
+
+    def saveSwap(self, frameIdx, parentIdx):
+        if not self.deleteFrame(frameIdx, parentIdx):
+            return False
+        if not self.open():
+            return False
+        if not self.addFrame(self.lastParentIdx, parentIdx):
+            return False
+        return True
+
+    def deleteFrame(self, frameIdx, parentIdx):
+        newByteArr = bytearray()
+        self.lastParentIdx = parentIdx
+        self.index = self.frameStartIdx
+        newByteArr.extend(self.byteArr[0:self.index])
+
+        deleteMeshNo = -1
+        deleteFrameNo = -1
+        deleteMeshCount = 0
+        deleteFrameCount = 0
+        self.popFrameByteArr = bytearray()
+        self.popMeshByteArr = bytearray()
+        for frame in range(self.frameCount):
+            self.frameList = []
+            startIdx = self.index
+            nameAndLength = self.getStructNameAndLength()
+            if not self.readFRM(frame, nameAndLength[1]):
+                return False
+            frameInfo = self.frameList[0]
+            if frame == frameIdx:
+                self.popFrameByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
+                meshNo = frameInfo[2]
+                if meshNo != -1:
+                    deleteMeshCount += 1
+                    deleteMeshNo = meshNo
+                deleteFrameCount += 1
+                deleteFrameNo = frameIdx
+                continue
+            insertByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
+            meshNo = frameInfo[2]
+            if meshNo != -1 and meshNo >= deleteMeshNo:
+                meshNo -= deleteMeshCount
+            parentNo = frameInfo[3]
+            if parentNo == parentIdx:
+                self.lastParentIdx = frame
+            if parentNo >= deleteFrameNo:
+                parentNo -= deleteFrameCount
+            startIdx = 8
+            startIdx += (64 + 64)
+            iMeshNo = struct.pack("<i", meshNo)
+            for iM in iMeshNo:
+                insertByteArr[startIdx] = iM
+                startIdx += 1
+            iParentNo = struct.pack("<i", parentNo)
+            for iP in iParentNo:
+                insertByteArr[startIdx] = iP
+                startIdx += 1
+            newByteArr.extend(insertByteArr)
+
+        startIdx = 12
+        newAllMeshCount = self.meshCount - deleteMeshCount
+        iNewAllMeshCount = struct.pack("<i", newAllMeshCount)
+        for iN in iNewAllMeshCount:
+            newByteArr[startIdx] = iN
+            startIdx += 1
+        newAllFrameCount = self.frameCount - deleteFrameCount
+        iNewAllFrameCount = struct.pack("<i", newAllFrameCount)
+        for iN in iNewAllFrameCount:
+            newByteArr[startIdx] = iN
+            startIdx += 1
+
+        for mesh in range(self.meshCount):
+            startIdx = self.index
+            nameAndLength = self.getStructNameAndLength()
+            if not self.readMESH(mesh, nameAndLength[1], int(50 / self.meshCount)):
+                return False
+            if mesh == deleteMeshNo:
+                self.popMeshByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
+                continue
+            insertByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
+            newByteArr.extend(insertByteArr)
+        w = open(self.filePath, "wb")
+        w.write(newByteArr)
+        w.close()
+        return True
+
+    def addFrame(self, frameIdx, parentIdx):
+        newByteArr = bytearray()
+        self.index = self.frameStartIdx
+        newByteArr.extend(self.byteArr[0:self.index])
+
+        currentMeshNo = -1
+        addMeshNo = self.meshCount + 1
+        addFrameNo = self.frameCount + 1
+        addMeshCount = 0
+        addFrameCount = 0
+        for frame in range(self.frameCount):
+            self.frameList = []
+            startIdx = self.index
+            nameAndLength = self.getStructNameAndLength()
+            if not self.readFRM(frame, nameAndLength[1]):
+                return False
+            insertByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
+            frameInfo = self.frameList[0]
+            meshNo = frameInfo[2]
+            if meshNo != -1 and meshNo >= addMeshNo:
+                meshNo += addMeshCount
+            if meshNo != -1:
+                currentMeshNo = meshNo
+            parentNo = frameInfo[3]
+            if parentNo >= addFrameNo:
+                parentNo += addFrameCount
+            startIdx = 8
+            startIdx += (64 + 64)
+            iMeshNo = struct.pack("<i", meshNo)
+            for iM in iMeshNo:
+                insertByteArr[startIdx] = iM
+                startIdx += 1
+            iParentNo = struct.pack("<i", parentNo)
+            for iP in iParentNo:
+                insertByteArr[startIdx] = iP
+                startIdx += 1
+            newByteArr.extend(insertByteArr)
+            if frame == frameIdx:
+                startIdx = 8
+                startIdx += (64 + 64)
+                meshNo = struct.unpack("<i", self.popFrameByteArr[startIdx:startIdx + 4])[0]
+                parentNo = parentIdx
+                if meshNo != -1:
+                    meshNo = currentMeshNo + 1
+                    addMeshNo = meshNo
+                    addMeshCount += 1
+                addFrameNo = frameIdx + 1
+                addFrameCount += 1
+
+                iMeshNo = struct.pack("<i", meshNo)
+                for iM in iMeshNo:
+                    self.popFrameByteArr[startIdx] = iM
+                    startIdx += 1
+                iParentNo = struct.pack("<i", parentNo)
+                for iP in iParentNo:
+                    self.popFrameByteArr[startIdx] = iP
+                    startIdx += 1
+                newByteArr.extend(self.popFrameByteArr)
+
+        startIdx = 12
+        newAllMeshCount = self.meshCount + addMeshCount
+        iNewAllMeshCount = struct.pack("<i", newAllMeshCount)
+        for iN in iNewAllMeshCount:
+            newByteArr[startIdx] = iN
+            startIdx += 1
+        newAllFrameCount = self.frameCount + addFrameCount
+        iNewAllFrameCount = struct.pack("<i", newAllFrameCount)
+        for iN in iNewAllFrameCount:
+            newByteArr[startIdx] = iN
+            startIdx += 1
+
+        if self.meshCount == 0:
+            newByteArr.extend(self.popMeshByteArr)
+        else:
+            for mesh in range(self.meshCount):
+                startIdx = self.index
+                nameAndLength = self.getStructNameAndLength()
+                if not self.readMESH(mesh, nameAndLength[1], int(50 / self.meshCount)):
+                    return False
+                insertByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
+                newByteArr.extend(insertByteArr)
+                if mesh == currentMeshNo:
+                    newByteArr.extend(self.popMeshByteArr)
+        w = open(self.filePath, "wb")
         w.write(newByteArr)
         w.close()
         return True

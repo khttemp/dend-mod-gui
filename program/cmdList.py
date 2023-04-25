@@ -591,5 +591,6 @@ cmdList = [
     "NO_RUN",
     "COMIC_TO_BTL",
     "SET_MSGWND_INDEX",
+    "SET_AMB_BOX",
     "SCRIPT_CMD_MAX"
 ]

@@ -9,6 +9,8 @@ from tkinter import filedialog as fd
 from program.mdlinfo.importPy.decrypt import MdlDecrypt
 from program.mdlinfo.importPy.tkinterClass import Scrollbarframe, TreeViewDialog, ImageDialog, SmfDetailDialog, BinFileOrFlagEditDialog, CopyMdlDialog, PasteDialog
 
+from program.smf.importPy.decrypt import SmfDecrypt
+
 root = None
 v_fileName = None
 v_select = None
@@ -23,6 +25,7 @@ copyAnotherBtn = None
 deleteMdlInfoBtn = None
 copyInfoBtn = None
 pasteInfoBtn = None
+readSMFBtn = None
 decryptFile = None
 frame = None
 copyInfoByteArr = None
@@ -31,8 +34,9 @@ copyInfoByteArr = None
 def openFile():
     global v_fileName
     global copyAnotherBtn
+    global readSMFBtn
     global decryptFile
-    file_path = fd.askopenfilename(filetypes=[("MDLINFO", "MDLINFO*.BIN")])
+    file_path = fd.askopenfilename(filetypes=[("MDLINFO", "*.BIN")])
 
     errorMsg = "予想外のエラーが出ました。\n電車でDのMDLINFOではない、またはファイルが壊れた可能性があります。"
     if file_path:
@@ -51,7 +55,8 @@ def openFile():
             deleteWidget()
             createWidget()
             viewData(decryptFile.allInfoList)
-            copyAnotherBtn['state'] = 'normal'
+            copyAnotherBtn["state"] = "normal"
+            readSMFBtn["state"] = "normal"
         except Exception:
             w = open("error.log", "a")
             w.write(traceback.format_exc())
@@ -303,6 +308,39 @@ def pasteInfo():
         frame.tree.selection_set(num)
 
 
+def readSMF():
+    global decryptFile
+
+    num = None
+    if len(frame.tree.selection()) > 0:
+        selectId = frame.tree.selection()[0]
+        selectItem = frame.tree.set(selectId)
+        num = int(selectItem["番号"]) - 1
+    file_path = fd.askopenfilename(filetypes=[("SELENE MODEL", "*.SMF")])
+    if file_path:
+        errorMsg = "予想外のエラーが出ました。\n電車でDのSMFではない、またはファイルが壊れた可能性があります。"
+        smfDecryptFile = SmfDecrypt(file_path, writeFlag=False)
+        if not smfDecryptFile.open():
+            smfDecryptFile.printError()
+            mb.showerror(title="エラー", message=errorMsg)
+            return
+
+        meshInfoList = smfDecryptFile.meshList
+        filename = os.path.basename(file_path)
+        if not decryptFile.readSMFSave(filename, meshInfoList):
+            decryptFile.printError()
+            mb.showerror(title="エラー", message=errorMsg)
+            return
+        mb.showinfo(title="成功", message="モデル要素情報を修正しました")
+
+        decryptFile = decryptFile.reload()
+        for i in frame.tree.get_children():
+            frame.tree.delete(i)
+        viewData(decryptFile.allInfoList)
+        if num is not None:
+            frame.tree.selection_set(num)
+
+
 def call_mdlinfo(rootTk, programFrame):
     global root
     global v_fileName
@@ -318,6 +356,7 @@ def call_mdlinfo(rootTk, programFrame):
     global deleteMdlInfoBtn
     global copyInfoBtn
     global pasteInfoBtn
+    global readSMFBtn
 
     root = rootTk
     v_fileName = tkinter.StringVar()
@@ -365,3 +404,6 @@ def call_mdlinfo(rootTk, programFrame):
 
     pasteInfoBtn = ttk.Button(programFrame, text="選択した行に貼り付けする", width=25, state="disabled", command=pasteInfo)
     pasteInfoBtn.place(relx=0.62, rely=0.15)
+
+    readSMFBtn = ttk.Button(programFrame, text="SMF情報でモデル追加", width=25, state="disabled", command=readSMF)
+    readSMFBtn.place(relx=0.81, rely=0.15)

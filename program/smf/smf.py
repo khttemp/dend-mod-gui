@@ -7,6 +7,7 @@ from tkinter import filedialog as fd
 from tkinter import messagebox as mb
 
 from program.smf.importPy.decrypt import SmfDecrypt
+from program.smf.importPy.tkinterEditClass import SwapDialog
 from program.smf.importPy.tkinterScrollbarFrame import ScrollbarFrame
 
 root = None
@@ -14,6 +15,9 @@ frame = None
 v_process = None
 processBar = None
 scriptLf = None
+standardButton = None
+swapFrameButton = None
+deleteFrameButton = None
 decryptFile = None
 
 
@@ -55,6 +59,8 @@ def openFile(frameCheck, meshCheck, xyzCheck, mtrlCheck):
 def deleteWidget():
     global processBar
     global scriptLf
+    global swapFrameButton
+    global deleteFrameButton
 
     children = processBar.winfo_children()
     for child in children:
@@ -64,13 +70,28 @@ def deleteWidget():
     for child in children:
         child.destroy()
 
+    btnList = [
+        swapFrameButton,
+        deleteFrameButton
+    ]
+    for btn in btnList:
+        btn["state"] = "disabled"
+
 
 def createWidget():
     global frame
     global scriptLf
+    global standardButton
+    global swapFrameButton
+    global deleteFrameButton
     global decryptFile
 
-    frame = ScrollbarFrame(scriptLf, None, None)
+    btnList = [
+        swapFrameButton,
+        deleteFrameButton
+    ]
+
+    frame = ScrollbarFrame(scriptLf, btnList)
     frame.tree.heading('#0', text=decryptFile.filename, anchor=tkinter.CENTER)
 
     for idx, frameInfo in enumerate(decryptFile.frameList):
@@ -83,13 +104,14 @@ def createWidget():
         if parentFrameNo != -1:
             frame.tree.move("item{0}".format(idx), "item{0}".format(parentFrameNo), "end")
 
+    standardButton["state"] = "normal"
+
 
 def reloadWidget():
     global decryptFile
 
     errorMsg = "予想外のエラーが出ました。\n電車でDのSMFではない、またはファイルが壊れた可能性があります。"
     if not decryptFile.open():
-        print("error" + decryptFile.error)
         decryptFile.printError()
         mb.showerror(title="エラー", message=errorMsg)
         return
@@ -121,7 +143,7 @@ def createStandardGaugeButton():
                 msg = "モデルが違います"
                 mb.showerror(title="エラー", message=msg)
                 return
-            d4DecryptFile = SmfDecrypt(file_path, False, False, False, False, v_process, processBar)
+            d4DecryptFile = SmfDecrypt(file_path, False, False, False, False, v_process, processBar, False)
             if not d4DecryptFile.open():
                 d4DecryptFile.printError()
                 mb.showerror(title="エラー", message="読み込みエラーです")
@@ -140,11 +162,45 @@ def createStandardGaugeButton():
         reloadWidget()
 
 
+def swapFrame():
+    global root
+    global frame
+    global decryptFile
+
+    selectId = frame.tree.selection()[0]
+    result = SwapDialog(root, "フレーム入れ替え", decryptFile, selectId)
+    if result.reloadFlag:
+        reloadWidget()
+
+
+def deleteFrame():
+    global root
+    global frame
+    global decryptFile
+
+    selectId = frame.tree.selection()[0]
+    frameIdx = int(selectId[4:])
+    selectName = frame.tree.item(selectId)["text"]
+    warnMsg = "{0}を消します。\nこの要素の全ての子要素に影響が及びます。\nこのまま消してもよろしいですか？".format(selectName)
+
+    result = mb.askokcancel(title="確認", message=warnMsg, parent=root)
+    if result:
+        errorMsg = "保存に失敗しました。\nファイルが他のプログラムによって開かれている\nまたは権限問題の可能性があります"
+        if not decryptFile.deleteFrame(frameIdx, -1):
+            decryptFile.printError()
+            mb.showerror(title="保存エラー", message=errorMsg)
+        mb.showinfo(title="成功", message="SMFを修正しました")
+        reloadWidget()
+
+
 def call_smf(rootTk, programFrame):
     global root
     global v_process
     global processBar
     global scriptLf
+    global standardButton
+    global swapFrameButton
+    global deleteFrameButton
 
     root = rootTk
 
@@ -156,5 +212,11 @@ def call_smf(rootTk, programFrame):
     scriptLf = ttk.LabelFrame(programFrame, text="構成")
     scriptLf.place(relx=0.03, rely=0.08, relwidth=0.45, relheight=0.89)
 
-    bButton = ttk.Button(programFrame, text="標準軌を作成する", width=25, command=createStandardGaugeButton)
-    bButton.place(relx=0.5, rely=0.03)
+    standardButton = ttk.Button(programFrame, text="標準軌を作成する", width=25, command=createStandardGaugeButton, state="disabled")
+    standardButton.place(relx=0.55, rely=0.03)
+
+    swapFrameButton = ttk.Button(programFrame, text="フレームの位置を入れ替える", width=25, command=swapFrame, state="disabled")
+    swapFrameButton.place(relx=0.78, rely=0.03)
+
+    deleteFrameButton = ttk.Button(programFrame, text="フレームを消す", width=25, command=deleteFrame, state="disabled")
+    deleteFrameButton.place(relx=0.55, rely=0.07)

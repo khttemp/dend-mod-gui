@@ -3,8 +3,7 @@ from tkinter import ttk
 
 
 class ScrollbarFrame():
-    def __init__(self, parent, v_select, btnList):
-        self.v_select = v_select
+    def __init__(self, parent, btnList):
         self.btnList = btnList
         self.frame = ttk.Frame(parent)
         self.frame.pack(expand=True, fill=tkinter.BOTH)
@@ -24,4 +23,9 @@ class ScrollbarFrame():
 
     def treeSelect(self, event):
         selectId = self.tree.selection()[0]
-        selectItem = self.tree.set(selectId)
+        if selectId == "item0":
+            for btn in self.btnList:
+                btn["state"] = "disabled"
+        else:
+            for btn in self.btnList:
+                btn["state"] = "normal"

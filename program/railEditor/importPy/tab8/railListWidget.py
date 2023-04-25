@@ -1,6 +1,5 @@
 import os
 import copy
-import traceback
 
 import tkinter
 from tkinter import ttk
@@ -870,7 +869,6 @@ class RailListWidget:
                 self.reloadFunc()
 
             except Exception:
-                print(traceback.format_exc())
                 mb.showerror(title="エラー", message=errorMsg)
 
     def csToRs(self):
