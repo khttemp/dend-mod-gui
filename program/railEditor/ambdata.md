@@ -28,7 +28,7 @@ AMBを置く基準レールNoからボーン数分ずらす
 
 | デフォルト | base_pos_x (+10) | base_pos_x (-10) |
 | --- | --- | --- | 
-| ![default](/image/amb_default.png) | ![base_pos_x_10](/image/amb_base_pos_x_10.png) | ![base_pos_x_-10](/image/amb_base_pos_x_-10.png) |
+| ![default](/program/railEditor/image/amb_default.png) | ![base_pos_x_10](/program/railEditor/image/amb_base_pos_x_10.png) | ![base_pos_x_-10](/program/railEditor/image/amb_base_pos_x_-10.png) |
 
 ## 7. base_pos_y
 
@@ -36,7 +36,7 @@ AMBを置く基準レールNoからボーン数分ずらす
 
 | デフォルト | base_pos_y (+10) | base_pos_y (-5) |
 | --- | --- | --- | 
-| ![default](/image/amb_default.png) | ![base_pos_y_10](/image/amb_base_pos_y_10.png) | ![base_pos_y_-5](/image/amb_base_pos_y_-5.png) |
+| ![default](/program/railEditor/image/amb_default.png) | ![base_pos_y_10](/program/railEditor/image/amb_base_pos_y_10.png) | ![base_pos_y_-5](/program/railEditor/image/amb_base_pos_y_-5.png) |
 
 ## 8. base_pos_z
 
@@ -44,7 +44,7 @@ AMBを置く基準レールNoからボーン数分ずらす
 
 | デフォルト | base_pos_z (+10) | base_pos_z (-10) |
 | --- | --- | --- | 
-| ![default](/image/amb_default.png) | ![base_pos_z_10](/image/amb_base_pos_z_10.png) | ![base_pos_z_-10](/image/amb_base_pos_z_-10.png) |
+| ![default](/program/railEditor/image/amb_default.png) | ![base_pos_z_10](/program/railEditor/image/amb_base_pos_z_10.png) | ![base_pos_z_-10](/program/railEditor/image/amb_base_pos_z_-10.png) |
 
 ## 9. base_dir_x
 
@@ -52,7 +52,7 @@ AMBを置く基準レールNoからボーン数分ずらす
 
 | デフォルト | base_dir_x (+10) | base_dir_x (-10) |
 | --- | --- | --- | 
-| ![default](/image/amb_default.png) | ![base_dir_x_10](/image/amb_base_dir_x_10.png) | ![base_dir_x_-10](/image/amb_base_dir_x_-10.png) |
+| ![default](/program/railEditor/image/amb_default.png) | ![base_dir_x_10](/program/railEditor/image/amb_base_dir_x_10.png) | ![base_dir_x_-10](/program/railEditor/image/amb_base_dir_x_-10.png) |
 
 ## 10. base_dir_y
 
@@ -60,7 +60,7 @@ AMBを置く基準レールNoからボーン数分ずらす
 
 | デフォルト | base_dir_y (+10) | base_dir_y (-10) |
 | --- | --- | --- | 
-| ![default](/image/amb_default.png) | ![base_dir_y_10](/image/amb_base_dir_y_10.png) | ![base_dir_y_-10](/image/amb_base_dir_y_-10.png) |
+| ![default](/program/railEditor/image/amb_default.png) | ![base_dir_y_10](/program/railEditor/image/amb_base_dir_y_10.png) | ![base_dir_y_-10](/program/railEditor/image/amb_base_dir_y_-10.png) |
 
 ## 11. base_dir_z
 
@@ -70,7 +70,7 @@ AMBを置く基準レールNoからボーン数分ずらす
 
 | デフォルト | base_dir_z (+10) | base_dir_z (-10) |
 | --- | --- | --- | 
-| ![default](/image/amb_default.png) | ![base_dir_z_10](/image/amb_base_dir_z_10.png) | ![base_dir_z_-10](/image/amb_base_dir_z_-10.png) |
+| ![default](/program/railEditor/image/amb_default.png) | ![base_dir_z_10](/program/railEditor/image/amb_base_dir_z_10.png) | ![base_dir_z_-10](/program/railEditor/image/amb_base_dir_z_-10.png) |
 
 ## 12. priority
 
@@ -100,7 +100,7 @@ x軸に平行移動する。
 
 | base_dir_z(-10) | base_dir_z(-10)<br>pos_x(+10) | base_dir_z (-10)<br>pos_x(-10) |
 | --- | --- | --- | 
-| ![base_dir_z_-10](/image/amb_base_dir_z_-10.png) | ![base_dir_z_-10_pos_x_10](/image/amb_base_dir_z_-10_pos_x_10.png) | ![base_dir_z_-10_pos_x_-10](/image/amb_base_dir_z_-10_pos_x_-10.png) |
+| ![base_dir_z_-10](/program/railEditor/image/amb_base_dir_z_-10.png) | ![base_dir_z_-10_pos_x_10](/program/railEditor/image/amb_base_dir_z_-10_pos_x_10.png) | ![base_dir_z_-10_pos_x_-10](/program/railEditor/image/amb_base_dir_z_-10_pos_x_-10.png) |
 
 ## 16. pos_y
 
@@ -116,7 +116,7 @@ y軸に平行移動する。
 
 | base_dir_z(-10) | base_dir_z(-10)<br>pos_y(+10) | base_dir_z (-10)<br>pos_y(-5) |
 | --- | --- | --- | 
-| ![base_dir_z_-10](/image/amb_base_dir_z_-10.png) | ![base_dir_z_-10_pos_y_10](/image/amb_base_dir_z_-10_pos_y_10.png) | ![base_dir_z_-10_pos_y_-5](/image/amb_base_dir_z_-10_pos_y_-5.png) |
+| ![base_dir_z_-10](/program/railEditor/image/amb_base_dir_z_-10.png) | ![base_dir_z_-10_pos_y_10](/program/railEditor/image/amb_base_dir_z_-10_pos_y_10.png) | ![base_dir_z_-10_pos_y_-5](/program/railEditor/image/amb_base_dir_z_-10_pos_y_-5.png) |
 
 ## 17. pos_z
 
@@ -132,7 +132,7 @@ z軸に平行移動する。
 
 | base_dir_z(-10) | base_dir_z(-10)<br>pos_z(+10) | base_dir_z (-10)<br>pos_z(-10) |
 | --- | --- | --- | 
-| ![base_dir_z_-10](/image/amb_base_dir_z_-10.png) | ![base_dir_z_-10_pos_z_10](/image/amb_base_dir_z_-10_pos_z_10.png) | ![base_dir_z_-10_pos_z_-10](/image/amb_base_dir_z_-10_pos_z_-10.png) |
+| ![base_dir_z_-10](/program/railEditor/image/amb_base_dir_z_-10.png) | ![base_dir_z_-10_pos_z_10](/program/railEditor/image/amb_base_dir_z_-10_pos_z_10.png) | ![base_dir_z_-10_pos_z_-10](/program/railEditor/image/amb_base_dir_z_-10_pos_z_-10.png) |
 
 ## 18. dir_x
 
@@ -148,7 +148,7 @@ z軸に平行移動する。
 
 | デフォルト | dir_x (+5) | dir_x (-5) |
 | --- | --- | --- | 
-| ![default](/image/amb_default.png) | ![dir_x_5](/image/amb_dir_x_5.png) | ![dir_x_-5](/image/amb_dir_x_-5.png) |
+| ![default](/program/railEditor/image/amb_default.png) | ![dir_x_5](/program/railEditor/image/amb_dir_x_5.png) | ![dir_x_-5](/program/railEditor/image/amb_dir_x_-5.png) |
 
 ## 19. dir_y
 
@@ -164,7 +164,7 @@ z軸に平行移動する。
 
 | デフォルト | dir_y (+5) | dir_y (-5) |
 | --- | --- | --- | 
-| ![default](/image/amb_default.png) | ![dir_y_5](/image/amb_dir_y_5.png) | ![dir_y_-5](/image/amb_dir_y_-5.png) |
+| ![default](/program/railEditor/image/amb_default.png) | ![dir_y_5](/program/railEditor/image/amb_dir_y_5.png) | ![dir_y_-5](/program/railEditor/image/amb_dir_y_-5.png) |
 
 ## 20. dir_z
 
@@ -180,7 +180,7 @@ z軸に平行移動する。
 
 | デフォルト | dir_z (+2) | dir_z (-2) |
 | --- | --- | --- | 
-| ![default](/image/amb_default.png) | ![dir_z_2](/image/amb_dir_z_2.png) | ![dir_z_-2](/image/amb_dir_z_-2.png) |
+| ![default](/program/railEditor/image/amb_default.png) | ![dir_z_2](/program/railEditor/image/amb_dir_z_2.png) | ![dir_z_-2](/program/railEditor/image/amb_dir_z_-2.png) |
 
 ## 21. dir_x2
 
@@ -196,7 +196,7 @@ z軸に平行移動する。
 
 | 子モデル<br>デフォルト | 子モデル<br>dir_x2 (+5) | 子モデル<br>dir_x2 (-5) |
 | --- | --- | --- | 
-| ![child_default](/image/amb_child_default.png) | ![dir_x2_5](/image/amb_dir_x2_5.png) | ![dir_x2_-5](/image/amb_dir_x2_-5.png) |
+| ![child_default](/program/railEditor/image/amb_child_default.png) | ![dir_x2_5](/program/railEditor/image/amb_dir_x2_5.png) | ![dir_x2_-5](/program/railEditor/image/amb_dir_x2_-5.png) |
 
 ## 22. dir_y2
 
@@ -212,7 +212,7 @@ z軸に平行移動する。
 
 | 子モデル<br>デフォルト | 子モデル<br>dir_y2 (+5) | 子モデル<br>dir_y2 (-5) |
 | --- | --- | --- | 
-| ![child_default](/image/amb_child_default.png) | ![dir_y2_5](/image/amb_dir_y2_5.png) | ![dir_y2_-5](/image/amb_dir_y2_-5.png) |
+| ![child_default](/program/railEditor/image/amb_child_default.png) | ![dir_y2_5](/program/railEditor/image/amb_dir_y2_5.png) | ![dir_y2_-5](/program/railEditor/image/amb_dir_y2_-5.png) |
 
 ## 22. dir_z2
 
@@ -224,7 +224,7 @@ z軸に平行移動する。
 
 | 子モデル<br>デフォルト | 子モデル<br>dir_z2 (+5) | 子モデル<br>dir_z2 (-5) |
 | --- | --- | --- | 
-| ![child_default](/image/amb_child_default.png) | ![dir_z2_5](/image/amb_dir_z2_5.png) | ![dir_z2_-5](/image/amb_dir_z2_-5.png) |
+| ![child_default](/program/railEditor/image/amb_child_default.png) | ![dir_z2_5](/program/railEditor/image/amb_dir_z2_5.png) | ![dir_z2_-5](/program/railEditor/image/amb_dir_z2_-5.png) |
 
 ## 23. per
 
@@ -234,4 +234,4 @@ z軸に平行移動する。
 
 | デフォルト | per(1.5) | dir_z (0.7) |
 | --- | --- | --- | 
-| ![default](/image/amb_default.png) | ![amb_per_1.5](/image/amb_per_1.5.png) | ![amb_per_0.7](/image/amb_per_0.7.png) |
+| ![default](/program/railEditor/image/amb_default.png) | ![amb_per_1.5](/program/railEditor/image/amb_per_1.5.png) | ![amb_per_0.7](/program/railEditor/image/amb_per_0.7.png) |

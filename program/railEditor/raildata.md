@@ -29,7 +29,7 @@
 
 | デフォルト | dir_x (+3) | dir_x (-3) |
 | --- | --- | --- | 
-| ![default](/image/rail_default.png) | ![dir_x_3](/image/rail_dir_x_3.png) | ![dir_x_-3](/image/rail_dir_x_-3.png) |
+| ![default](/program/railEditor/image/rail_default.png) | ![dir_x_3](/program/railEditor/image/rail_dir_x_3.png) | ![dir_x_-3](/program/railEditor/image/rail_dir_x_-3.png) |
 
 ## 5. dir_y
 
@@ -37,7 +37,7 @@
 
 | デフォルト | dir_y (+3) | dir_y (-3) |
 | --- | --- | --- | 
-| ![default](/image/rail_default.png) | ![dir_y_3](/image/rail_dir_y_3.png) | ![dir_y_-3](/image/rail_dir_y_-3.png) |
+| ![default](/program/railEditor/image/rail_default.png) | ![dir_y_3](/program/railEditor/image/rail_dir_y_3.png) | ![dir_y_-3](/program/railEditor/image/rail_dir_y_-3.png) |
 
 ## 6. dir_z
 
@@ -45,7 +45,7 @@
 
 | デフォルト | dir_z (+3) | dir_z (-3) |
 | --- | --- | --- | 
-| ![default](/image/rail_default.png) | ![dir_z_3](/image/rail_dir_z_3.png) | ![dir_z_-3](/image/rail_dir_z_-3.png) |
+| ![default](/program/railEditor/image/rail_default.png) | ![dir_z_3](/program/railEditor/image/rail_dir_z_3.png) | ![dir_z_-3](/program/railEditor/image/rail_dir_z_-3.png) |
 
 ## 7. mdl_no
 
@@ -95,11 +95,11 @@ prev_noは、以前のレール番号のボーン数。
 
 詳しい繋ぎ方は、下記の図を参照。
 
-![rail_data](/image/rail_data.png)
+![rail_data](/program/railEditor/image/rail_data.png)
 
 # 要素4
 
-![else4_1](/image/else4_1.png)
+![else4_1](/program/railEditor/image/else4_1.png)
 
 2番のprev_railが-1のみ、追加で適用できる要素。
 
@@ -127,4 +127,4 @@ prev_noは、以前のレール番号のボーン数。
 
 （右上のところに浮いているレール）
 
-![else4_2](/image/else4_2.png)
+![else4_2](/program/railEditor/image/else4_2.png)
