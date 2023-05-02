@@ -297,7 +297,7 @@ root.config(menu=menubar)
 programFrame = ttk.Frame(root)
 programFrame.pack(fill=tkinter.BOTH, expand=True)
 
-if not os.path.exists(config_ini_path):
+if not os.path.exists(os.path.join(os.getcwd(), config_ini_path)):
     writeDefaultConfig()
 
 maxMenubarLen = menubar.index(tkinter.END)
