@@ -15,6 +15,7 @@ import program.musicEditor.musicEditor as musicEditorProgram
 import program.fvtMaker.fvtMaker as fvtMakerProgram
 import program.railEditor.railEditor as railEditorProgram
 import program.smf.smf as smfProgram
+import program.ssUnity.ssUnity as ssUnityProgram
 
 
 def clearProgramFrame():
@@ -44,6 +45,8 @@ def callProgram(programName):
         railEditorProgram.call_railEditor(root, programFrame)
     elif selectedProgram == "smf":
         smfProgram.call_smf(root, programFrame)
+    elif selectedProgram == "SSUnity":
+        ssUnityProgram.call_ssUnity(root, programFrame)
 
     delete_OptionMenu()
     if selectedProgram == "railEditor":
@@ -77,6 +80,8 @@ def loadFile():
         railEditorProgram.openFile(v_railCsvRadio.get(), v_ambCsvRadio.get())
     elif selectedProgram == "smf":
         smfProgram.openFile(v_frameCheck.get(), v_meshCheck.get(), v_XYZCheck.get(), v_mtrlCheck.get())
+    elif selectedProgram == "SSUnity":
+        ssUnityProgram.openFile()
     else:
         mb.showerror(title="エラー", message="プログラムを選択してください")
 
@@ -257,7 +262,7 @@ selectedProgram = None
 maxMenubarLen = None
 
 root = tkinter.Tk()
-root.title("電車でD 改造 統合版 1.0.6")
+root.title("電車でD 改造 統合版 1.0.7")
 root.geometry("1024x768")
 
 menubar = tkinter.Menu(root)
@@ -265,6 +270,8 @@ menubar = tkinter.Menu(root)
 v_prog = tkinter.IntVar()
 
 progmenu = tkinter.Menu(menubar, tearoff=False)
+progmenu.add_radiobutton(label="SS改造", value=9, variable=v_prog, command=lambda: callProgram("SSUnity"))
+progmenu.add_separator()
 progmenu.add_radiobutton(label="車両性能", value=1, variable=v_prog, command=lambda: callProgram("lbcrEditor"))
 progmenu.add_radiobutton(label="モデルバイナリ", value=2, variable=v_prog, command=lambda: callProgram("mdlBin"))
 progmenu.add_radiobutton(label="MDLINFO", value=3, variable=v_prog, command=lambda: callProgram("mdlinfo"))
