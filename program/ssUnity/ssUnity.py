@@ -23,7 +23,7 @@ contentsLf = None
 frame = None
 extractBtn = None
 loadAndSaveBtn = None
-editBtn = None
+assetsSaveBtn = None
 decryptFile = None
 
 
@@ -40,9 +40,6 @@ def createWidget():
     global v_btnList
     global contentsLf
     global decryptFile
-    global extractBtn
-    global loadAndSaveBtn
-    global editBtn
     global frame
 
     frame = ScrollbarFrame(contentsLf, v_select, v_btnList)
@@ -80,17 +77,20 @@ def changeButton():
     global v_radio
     global extractBtn
     global loadAndSaveBtn
+    global assetsSaveBtn
 
     if v_radio.get() == 0:
         extractBtn["text"] = "ファイルを取り出す"
         extractBtn["command"] = extract
         loadAndSaveBtn["text"] = "ファイルを上書きする"
         loadAndSaveBtn["command"] = loadAndSave
+        assetsSaveBtn.place_forget()
     elif v_radio.get() == 1:
         extractBtn["text"] = "CSVとして取り出す"
         extractBtn["command"] = csvExtract
         loadAndSaveBtn["text"] = "CSV情報で上書きする"
         loadAndSaveBtn["command"] = csvLoadAndSave
+        assetsSaveBtn.place(relx=0.78, rely=0.09)
 
 
 def extract():
@@ -153,15 +153,21 @@ def loadAndSave():
     result = mb.askquestion(title="確認", message="denファイルを上書きします\nそれでもよろしいでしょうか？\n(権限問題で上書き失敗することもあります)", icon="warning")
     if result == "no":
         return
-
-    if fileType != "AudioClip":
-        with open(file_path, "rb") as f:
-            data.script = f.read()
-        data.save()
-    with open(decryptFile.filePath, "wb") as w:
-        w.write(decryptFile.env.file.save())
-    mb.showinfo(title="成功", message="denファイルを上書きしました")
-    reloadFile()
+    
+    try:
+        if fileType != "AudioClip":
+            with open(file_path, "rb") as f:
+                data.script = f.read()
+            data.save()
+        with open(decryptFile.filePath, "wb") as w:
+            w.write(decryptFile.env.file.save())
+        mb.showinfo(title="成功", message="denファイルを上書きしました")
+        reloadFile()
+    except Exception:
+        w = open("error.log", "a")
+        w.write(traceback.format_exc())
+        w.close()
+        mb.showerror(title="エラー", message="予想外のエラーです")
 
 
 def csvExtract():
@@ -179,7 +185,6 @@ def csvExtract():
         try:
             w = codecs.open(file_path, "w", "utf-8-sig", "strict")
             trainOrgInfo = decryptFile.getTrainOrgInfo(data)
-            print(trainOrgInfo[0])
             w.write("ノッチ数,{0}\n".format(trainOrgInfo[1]))
             w.write("編成数,{0}\n".format(trainOrgInfo[5]))
             w.write("bodyClass\n")
@@ -221,111 +226,39 @@ def csvLoadAndSave():
         csvLines = f.readlines()
         f.close()
 
-        errorFlag = False
-        error = ""
-        newTrainOrgInfo = []
-        bodyClassList = []
-        bodyMdlList = []
-        pantaMdlList = []
-        bodyClassIndexList = []
-        bodyMdlIndexList = []
-        pantaMdlIndexList = []
-        for index, csv in enumerate(csvLines):
-            if index == 0:
-                if "ノッチ数" not in csv:
-                    errorFlag = True
-                    error = "ノッチ数の内容がありません"
-                    break
-                notchCnt = int(csv.split(",")[1])
-                if notchCnt not in [4, 5, 12]:
-                    errorFlag = True
-                    error = "{0}ノッチは非対応です".format(notchCnt)
-                    break
-                newTrainOrgInfo.append(notchCnt)
-            elif index == 1:
-                if "編成数" not in csv:
-                    errorFlag = True
-                    error = "編成数の内容がありません"
-                    break
-                henseiNo = int(csv.split(",")[1])
-                if henseiNo <= 0:
-                    errorFlag = True
-                    error = "編成数は０より大きな数字で入力してください"
-                    break
-                newTrainOrgInfo.append(henseiNo)
-            elif index in [3, 5, 7]:
-                lineList = csv.split(",")
-                for line in lineList:
-                    line = line.strip()
-                    if line == "":
-                        continue
-                    if index == 3:
-                        bodyClassList.append(line)
-                    elif index == 5:
-                        bodyMdlList.append(line)
-                    elif index == 7:
-                        pantaMdlList.append(line)
-            elif index in [9, 11, 13]:
-                lineList = csv.split(",")
-                for line in lineList:
-                    line = line.strip()
-                    if line == "":
-                        continue
-                    idx = int(line)
-                    if index == 9:
-                        if idx < 0 or idx >= len(bodyClassList):
-                            errorFlag = True
-                            error = "bodyClassで存在しないindex値です"
-                            break
-                        bodyClassIndexList.append(idx)
-                    elif index == 11:
-                        if idx < 0 or idx >= len(bodyMdlList):
-                            errorFlag = True
-                            error = "bodyモデルで存在しないindex値です"
-                            break
-                        bodyMdlIndexList.append(idx)
-                    elif index == 13:
-                        if idx < 0 or idx >= len(pantaMdlList):
-                            errorFlag = True
-                            error = "bodyモデルで存在しないindex値です"
-                            break
-                        pantaMdlIndexList.append(idx)
-                if errorFlag:
-                    break
-                if index == 9:
-                    if len(bodyClassIndexList) > 0 and len(bodyClassIndexList) != henseiNo:
-                        errorFlag = True
-                        error = "indexの数が編成数と不一致です"
-                        break
-                elif index == 11:
-                    if len(bodyMdlIndexList) > 0 and len(bodyMdlIndexList) != henseiNo:
-                        errorFlag = True
-                        error = "indexの数が編成数と不一致です"
-                        break
-                elif index == 13:
-                    if len(pantaMdlIndexList) > 0 and len(pantaMdlIndexList) != henseiNo:
-                        errorFlag = True
-                        error = "indexの数が編成数と不一致です"
-                        break
-        if errorFlag:
-            mb.showerror(title="エラー", message=error)
-        newTrainOrgInfo.append(bodyClassList)
-        newTrainOrgInfo.append(bodyMdlList)
-        newTrainOrgInfo.append(pantaMdlList)
-        newTrainOrgInfo.append(bodyClassIndexList)
-        newTrainOrgInfo.append(bodyMdlIndexList)
-        newTrainOrgInfo.append(pantaMdlIndexList)
-        if not decryptFile.saveCsv(num, newTrainOrgInfo):
+        if not decryptFile.checkCsv(csvLines):
+            mb.showerror(title="エラー", message=decryptFile.error)
+        if not decryptFile.saveCsv(num):
             decryptFile.printError()
             mb.showerror(title="エラー", message="予想外のエラーです")
             return
-        mb.showinfo(title="成功", message="CSVで上書きした\n【resources_new.assets】を作成ました")
+        mb.showinfo(title="成功", message="CSVで上書きした\n保存するボタンで【resources_new.assets】を作成します")
+    except Exception:
+        w = open("error.log", "a")
+        w.write(traceback.format_exc())
+        w.close()
+        mb.showerror(title="エラー", message="予想外のエラーです")
+
+
+def assetsSave():
+    global decryptFile
+    global assetsSaveBtn
+
+    assetsSaveBtn["state"] = "disabled"
+    assetsSaveBtn.update()
+    try:
+        if not decryptFile.saveAssets():
+            decryptFile.printError()
+            mb.showerror(title="エラー", message="予想外のエラーです")
+            return
+        mb.showinfo(title="成功", message="resources_new.assetsを作成しました。")
         reloadFile()
     except Exception:
         w = open("error.log", "a")
         w.write(traceback.format_exc())
         w.close()
         mb.showerror(title="エラー", message="予想外のエラーです")
+    assetsSaveBtn["state"] = "normal"
 
 
 def reloadFile():
@@ -419,6 +352,7 @@ def call_ssUnity(rootTk, programFrame):
     global v_btnList
     global extractBtn
     global loadAndSaveBtn
+    global assetsSaveBtn
     global contentsLf
 
     if not unityFlag:
@@ -451,9 +385,14 @@ def call_ssUnity(rootTk, programFrame):
     loadAndSaveBtn = ttk.Button(programFrame, text="ファイルを上書きする", width=25, state="disabled", command=loadAndSave)
     loadAndSaveBtn.place(relx=0.60, rely=0.09)
 
+    assetsSaveBtn = ttk.Button(programFrame, text="resources.assetsを保存する", width=25, state="disabled", command=assetsSave)
+    assetsSaveBtn.place(relx=0.78, rely=0.09)
+    assetsSaveBtn.place_forget()
+
     v_btnList = [
         extractBtn,
-        loadAndSaveBtn
+        loadAndSaveBtn,
+        assetsSaveBtn
     ]
 
     contentsLf = ttk.LabelFrame(programFrame, text="ファイル内容")

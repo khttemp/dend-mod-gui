@@ -12,6 +12,7 @@ class ResourcesDecrypt:
         self.env = None
         self.monoBehaviourList = []
         self.trainOrgInfoList = []
+        self.newTrainOrgInfo = []
 
     def open(self):
         try:
@@ -153,8 +154,106 @@ class ResourcesDecrypt:
         except Exception:
             self.error = traceback.format_exc()
             return None
+    
+    def checkCsv(self, csvLines):
+        self.error = ""
+        errorFlag = False
+        self.newTrainOrgInfo = []
+        bodyClassList = []
+        bodyMdlList = []
+        pantaMdlList = []
+        bodyClassIndexList = []
+        bodyMdlIndexList = []
+        pantaMdlIndexList = []
 
-    def saveCsv(self, num, newTrainOrgInfo):
+        for index, csv in enumerate(csvLines):
+            if index == 0:
+                if "ノッチ数" not in csv:
+                    errorFlag = True
+                    self.error = "ノッチ数の内容がありません"
+                    break
+                notchCnt = int(csv.split(",")[1])
+                if notchCnt not in [4, 5, 12]:
+                    errorFlag = True
+                    self.error = "{0}ノッチは非対応です".format(notchCnt)
+                    break
+                self.newTrainOrgInfo.append(notchCnt)
+            elif index == 1:
+                if "編成数" not in csv:
+                    errorFlag = True
+                    self.error = "編成数の内容がありません"
+                    break
+                henseiNo = int(csv.split(",")[1])
+                if henseiNo <= 0:
+                    errorFlag = True
+                    self.error = "編成数は０より大きな数字で入力してください"
+                    break
+                self.newTrainOrgInfo.append(henseiNo)
+            elif index in [3, 5, 7]:
+                lineList = csv.split(",")
+                for line in lineList:
+                    line = line.strip()
+                    if line == "":
+                        continue
+                    if index == 3:
+                        bodyClassList.append(line)
+                    elif index == 5:
+                        bodyMdlList.append(line)
+                    elif index == 7:
+                        pantaMdlList.append(line)
+            elif index in [9, 11, 13]:
+                lineList = csv.split(",")
+                for line in lineList:
+                    line = line.strip()
+                    if line == "":
+                        continue
+                    idx = int(line)
+                    if index == 9:
+                        if idx < 0 or idx >= len(bodyClassList):
+                            errorFlag = True
+                            self.error = "bodyClassで存在しないindex値です"
+                            break
+                        bodyClassIndexList.append(idx)
+                    elif index == 11:
+                        if idx < 0 or idx >= len(bodyMdlList):
+                            errorFlag = True
+                            self.error = "bodyモデルで存在しないindex値です"
+                            break
+                        bodyMdlIndexList.append(idx)
+                    elif index == 13:
+                        if idx < 0 or idx >= len(pantaMdlList):
+                            errorFlag = True
+                            self.error = "bodyモデルで存在しないindex値です"
+                            break
+                        pantaMdlIndexList.append(idx)
+                if errorFlag:
+                    break
+                if index == 9:
+                    if len(bodyClassIndexList) > 0 and len(bodyClassIndexList) != henseiNo:
+                        errorFlag = True
+                        self.error = "indexの数が編成数と不一致です"
+                        break
+                elif index == 11:
+                    if len(bodyMdlIndexList) > 0 and len(bodyMdlIndexList) != henseiNo:
+                        errorFlag = True
+                        self.error = "indexの数が編成数と不一致です"
+                        break
+                elif index == 13:
+                    if len(pantaMdlIndexList) > 0 and len(pantaMdlIndexList) != henseiNo:
+                        errorFlag = True
+                        self.error = "indexの数が編成数と不一致です"
+                        break
+        if errorFlag:
+            return False
+        self.newTrainOrgInfo.append(bodyClassList)
+        self.newTrainOrgInfo.append(bodyMdlList)
+        self.newTrainOrgInfo.append(pantaMdlList)
+        self.newTrainOrgInfo.append(bodyClassIndexList)
+        self.newTrainOrgInfo.append(bodyMdlIndexList)
+        self.newTrainOrgInfo.append(pantaMdlIndexList)
+        return True
+
+    def saveCsv(self, num):
         try:
             originData = self.trainOrgInfoList[num][-1]
             newByteArr = bytearray()
@@ -163,20 +262,20 @@ class ResourcesDecrypt:
             iTrainNo = struct.pack("<i", trainNo)
             newByteArr.extend(iTrainNo)
 
-            notchCnt = newTrainOrgInfo[0]
+            notchCnt = self.newTrainOrgInfo[0]
             iNotchCnt = struct.pack("<i", notchCnt)
             newByteArr.extend(iNotchCnt)
 
             index = 8
             newByteArr.extend(originData[index:index + 4*3])
 
-            henseiNo = newTrainOrgInfo[1]
+            henseiNo = self.newTrainOrgInfo[1]
             iHenseiNo = struct.pack("<i", henseiNo)
             newByteArr.extend(iHenseiNo)
 
-            bodyClassCnt = len(newTrainOrgInfo[2])
+            bodyClassCnt = len(self.newTrainOrgInfo[2])
             newByteArr.extend(struct.pack("<i", bodyClassCnt))
-            for bodyClass in newTrainOrgInfo[2]:
+            for bodyClass in self.newTrainOrgInfo[2]:
                 bodyClassNameCnt = len(bodyClass.encode("shift-jis"))
                 newByteArr.extend(struct.pack("<i", bodyClassNameCnt))
                 newByteArr.extend(bodyClass.encode("shift-jis"))
@@ -185,9 +284,9 @@ class ResourcesDecrypt:
                     for i in range(4 - bodyClassNameCnt % 4):
                         newByteArr.append(0)
 
-            bodyMdlCnt = len(newTrainOrgInfo[3])
+            bodyMdlCnt = len(self.newTrainOrgInfo[3])
             newByteArr.extend(struct.pack("<i", bodyMdlCnt))
-            for bodyMdl in newTrainOrgInfo[3]:
+            for bodyMdl in self.newTrainOrgInfo[3]:
                 bodyMdlNameCnt = len(bodyMdl.encode("shift-jis"))
                 newByteArr.extend(struct.pack("<i", bodyMdlNameCnt))
                 newByteArr.extend(bodyMdl.encode("shift-jis"))
@@ -196,9 +295,9 @@ class ResourcesDecrypt:
                     for i in range(4 - bodyMdlNameCnt % 4):
                         newByteArr.append(0)
 
-            pantaMdlCnt = len(newTrainOrgInfo[4])
+            pantaMdlCnt = len(self.newTrainOrgInfo[4])
             newByteArr.extend(struct.pack("<i", pantaMdlCnt))
-            for pantaMdl in newTrainOrgInfo[4]:
+            for pantaMdl in self.newTrainOrgInfo[4]:
                 pantaMdlNameCnt = len(pantaMdl.encode("shift-jis"))
                 newByteArr.extend(struct.pack("<i", pantaMdlNameCnt))
                 newByteArr.extend(pantaMdl.encode("shift-jis"))
@@ -207,19 +306,19 @@ class ResourcesDecrypt:
                     for i in range(4 - pantaMdlNameCnt % 4):
                         newByteArr.append(0)
 
-            bodyClassIndexCnt = len(newTrainOrgInfo[5])
+            bodyClassIndexCnt = len(self.newTrainOrgInfo[5])
             newByteArr.extend(struct.pack("<i", bodyClassIndexCnt))
-            for bodyClassIndex in newTrainOrgInfo[5]:
+            for bodyClassIndex in self.newTrainOrgInfo[5]:
                 newByteArr.extend(struct.pack("<i", bodyClassIndex))
 
-            bodyMdlIndexCnt = len(newTrainOrgInfo[6])
+            bodyMdlIndexCnt = len(self.newTrainOrgInfo[6])
             newByteArr.extend(struct.pack("<i", bodyMdlIndexCnt))
-            for bodyMdlIndex in newTrainOrgInfo[6]:
+            for bodyMdlIndex in self.newTrainOrgInfo[6]:
                 newByteArr.extend(struct.pack("<i", bodyMdlIndex))
 
-            pantaMdlIndexCnt = len(newTrainOrgInfo[7])
+            pantaMdlIndexCnt = len(self.newTrainOrgInfo[7])
             newByteArr.extend(struct.pack("<i", pantaMdlIndexCnt))
-            for pantaIndex in newTrainOrgInfo[7]:
+            for pantaIndex in self.newTrainOrgInfo[7]:
                 newByteArr.extend(struct.pack("<i", pantaIndex))
 
             trackNum = 2
@@ -234,13 +333,18 @@ class ResourcesDecrypt:
 
             data = self.trainOrgInfoList[num][-2]
             data.save(raw_data=newByteArr)
-
+            return True
+        except Exception:
+            self.error = traceback.format_exc()
+            return False
+    
+    def saveAssets(self):
+        try:
             newFilename = self.filenameAndExt[0] + "_new" + self.filenameAndExt[1]
             newPath = os.path.join(self.fileDir, newFilename)
             with open(newPath, "wb") as f:
                 f.write(self.env.file.save())
             return True
-
         except Exception:
             self.error = traceback.format_exc()
             return False

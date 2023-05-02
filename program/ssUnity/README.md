@@ -36,7 +36,9 @@ resoureces.assetsにある、車両やパンタのモデル、
 
 TrainOrgInfoをCSVとして取り出したり、上書きする。
 
-上書きすると「resources_new.assets」を新規に作成する。
+「resources.assetsを保存する」ボタンで
+
+今まで上書きして変更した分をまとめて【resources_new.assets】を新規に作成する。
 
 ### FAQ
 

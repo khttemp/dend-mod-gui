@@ -277,7 +277,7 @@ selectedProgram = None
 maxMenubarLen = None
 
 root = tkinter.Tk()
-root.title("電車でD 改造 統合版 1.0.7_a")
+root.title("電車でD 改造 統合版 1.0.8")
 root.geometry("1024x768")
 
 menubar = tkinter.Menu(root)
