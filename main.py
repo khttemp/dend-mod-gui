@@ -119,9 +119,12 @@ def add_railCsvOptionMenu():
         readErrorFlag = True
 
     if readErrorFlag:
-        f = codecs.open(config_ini_path, "w", "utf-8", "strict")
-        configRead.write(f)
-        f.close()
+        try:
+            f = codecs.open(config_ini_path, "w", "utf-8", "strict")
+            configRead.write(f)
+            f.close()
+        except PermissionError:
+            pass
 
     if menubar.entryconfig(tkinter.END) == menubar.entryconfig(maxMenubarLen):
         v_railCsvRadio = tkinter.IntVar()
@@ -166,9 +169,12 @@ def add_smfWriteOptionMenu():
         readErrorFlag = True
 
     if readErrorFlag:
-        f = codecs.open(config_ini_path, "w", "utf-8", "strict")
-        configRead.write(f)
-        f.close()
+        try:
+            f = codecs.open(config_ini_path, "w", "utf-8", "strict")
+            configRead.write(f)
+            f.close()
+        except PermissionError:
+            pass
 
     if menubar.entryconfig(tkinter.END) == menubar.entryconfig(maxMenubarLen):
         v_frameCheck = tkinter.IntVar()
@@ -212,9 +218,12 @@ def writeDefaultConfig():
     config.set("SMF_XYZ", "mode", 0)
     config.add_section("SMF_MTRL")
     config.set("SMF_MTRL", "mode", 0)
-    f = codecs.open(config_ini_path, "w", "utf-8", "strict")
-    config.write(f)
-    f.close()
+    try:
+        f = codecs.open(config_ini_path, "w", "utf-8", "strict")
+        config.write(f)
+        f.close()
+    except PermissionError:
+        pass
 
 
 def writeRailConfig():
@@ -225,10 +234,13 @@ def writeRailConfig():
 
     configRead.set("RAIL_CSV", "mode", str(v_railCsvRadio.get()))
     configRead.set("AMB_CSV", "mode", str(v_ambCsvRadio.get()))
-
-    f = codecs.open(config_ini_path, "w", "utf-8", "strict")
-    configRead.write(f)
-    f.close()
+    
+    try:
+        f = codecs.open(config_ini_path, "w", "utf-8", "strict")
+        configRead.write(f)
+        f.close()
+    except PermissionError:
+        pass
 
 
 def writeSmfConfig():
@@ -244,9 +256,12 @@ def writeSmfConfig():
     configRead.set("SMF_XYZ", "mode", str(v_XYZCheck.get()))
     configRead.set("SMF_MTRL", "mode", str(v_mtrlCheck.get()))
 
-    f = codecs.open(config_ini_path, "w", "utf-8", "strict")
-    configRead.write(f)
-    f.close()
+    try:
+        f = codecs.open(config_ini_path, "w", "utf-8", "strict")
+        configRead.write(f)
+        f.close()
+    except PermissionError:
+        pass
 
 
 config_ini_path = "config.ini"
@@ -262,7 +277,7 @@ selectedProgram = None
 maxMenubarLen = None
 
 root = tkinter.Tk()
-root.title("電車でD 改造 統合版 1.0.7")
+root.title("電車でD 改造 統合版 1.0.7_a")
 root.geometry("1024x768")
 
 menubar = tkinter.Menu(root)
@@ -297,7 +312,7 @@ root.config(menu=menubar)
 programFrame = ttk.Frame(root)
 programFrame.pack(fill=tkinter.BOTH, expand=True)
 
-if not os.path.exists(os.path.join(os.getcwd(), config_ini_path)):
+if not os.path.exists(config_ini_path):
     writeDefaultConfig()
 
 maxMenubarLen = menubar.index(tkinter.END)
