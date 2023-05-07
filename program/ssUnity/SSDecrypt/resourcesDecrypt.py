@@ -154,7 +154,7 @@ class ResourcesDecrypt:
         except Exception:
             self.error = traceback.format_exc()
             return None
-    
+
     def checkCsv(self, csvLines):
         self.error = ""
         errorFlag = False
@@ -209,21 +209,21 @@ class ResourcesDecrypt:
                         continue
                     idx = int(line)
                     if index == 9:
-                        if idx < 0 or idx >= len(bodyClassList):
+                        if idx < -1 or idx >= len(bodyClassList):
                             errorFlag = True
                             self.error = "bodyClassで存在しないindex値です"
                             break
                         bodyClassIndexList.append(idx)
                     elif index == 11:
-                        if idx < 0 or idx >= len(bodyMdlList):
+                        if idx < -1 or idx >= len(bodyMdlList):
                             errorFlag = True
                             self.error = "bodyモデルで存在しないindex値です"
                             break
                         bodyMdlIndexList.append(idx)
                     elif index == 13:
-                        if idx < 0 or idx >= len(pantaMdlList):
+                        if idx < -1 or idx >= len(pantaMdlList):
                             errorFlag = True
-                            self.error = "bodyモデルで存在しないindex値です"
+                            self.error = "pantaモデルで存在しないindex値です"
                             break
                         pantaMdlIndexList.append(idx)
                 if errorFlag:
@@ -231,17 +231,17 @@ class ResourcesDecrypt:
                 if index == 9:
                     if len(bodyClassIndexList) > 0 and len(bodyClassIndexList) != henseiNo:
                         errorFlag = True
-                        self.error = "indexの数が編成数と不一致です"
+                        self.error = "bodyClassのindexの数が編成数と不一致です"
                         break
                 elif index == 11:
                     if len(bodyMdlIndexList) > 0 and len(bodyMdlIndexList) != henseiNo:
                         errorFlag = True
-                        self.error = "indexの数が編成数と不一致です"
+                        self.error = "bodyモデルのindexの数が編成数と不一致です"
                         break
                 elif index == 13:
                     if len(pantaMdlIndexList) > 0 and len(pantaMdlIndexList) != henseiNo:
                         errorFlag = True
-                        self.error = "indexの数が編成数と不一致です"
+                        self.error = "pantaモデルのindexの数が編成数と不一致です"
                         break
         if errorFlag:
             return False
@@ -337,7 +337,7 @@ class ResourcesDecrypt:
         except Exception:
             self.error = traceback.format_exc()
             return False
-    
+
     def saveAssets(self):
         try:
             newFilename = self.filenameAndExt[0] + "_new" + self.filenameAndExt[1]
