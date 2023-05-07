@@ -153,7 +153,7 @@ def loadAndSave():
     result = mb.askquestion(title="確認", message="denファイルを上書きします\nそれでもよろしいでしょうか？\n(権限問題で上書き失敗することもあります)", icon="warning")
     if result == "no":
         return
-    
+
     try:
         if fileType != "AudioClip":
             with open(file_path, "rb") as f:
@@ -222,11 +222,16 @@ def csvLoadAndSave():
         return
     csvLines = None
     try:
-        f = codecs.open(file_path, "r", "utf-8-sig", "strict")
-        csvLines = f.readlines()
-        f.close()
-
+        try:
+            f = codecs.open(file_path, "r", "utf-8-sig", "strict")
+            csvLines = f.readlines()
+            f.close()
+        except UnicodeDecodeError:
+            f = codecs.open(file_path, "r", "shift-jis", "strict")
+            csvLines = f.readlines()
+            f.close()
         if not decryptFile.checkCsv(csvLines):
+            decryptFile.printError()
             mb.showerror(title="エラー", message=decryptFile.error)
         if not decryptFile.saveCsv(num):
             decryptFile.printError()
