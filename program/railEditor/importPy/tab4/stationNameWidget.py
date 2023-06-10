@@ -58,6 +58,9 @@ class StationNameWidget:
 
         self.treeviewFrame = ScrollbarTreeview(self.treeFrame, rowNum, self.v_select, btnList)
 
+        if len(self.stationNameList) == 0:
+            insertLineBtn["state"] = "normal"
+
         if self.decryptFile.game in ["CS", "RS"]:
             col_tuple = ("番号", "駅名", "駅フラグ", "レールNo", "f1", "f2", "f3", "e1", "e2", "e3", "e4")
 
@@ -180,13 +183,24 @@ class StationNameWidget:
             self.reloadFunc(selectId)
 
     def insertLine(self):
-        selectId = self.treeviewFrame.tree.selection()[0]
-        selectItem = self.treeviewFrame.tree.set(selectId)
-        num = int(selectItem["番号"])
+        noStationNameInfoFlag = False
+        if not self.treeviewFrame.tree.selection():
+            noStationNameInfoFlag = True
+            selectId = None
+            num = 0
+            keyList = self.treeviewFrame.tree['columns']
+            selectItem = {}
+            for key in keyList:
+                selectItem[key] = None
+        else:
+            selectId = self.treeviewFrame.tree.selection()[0]
+            selectItem = self.treeviewFrame.tree.set(selectId)
+            num = int(selectItem["番号"])
         result = EditStationNameListWidget(self.frame, "駅名位置挿入", self.decryptFile, "insert", num, selectItem)
         if result.reloadFlag:
-            if result.insert == 0:
-                num += 1
+            if noStationNameInfoFlag:
+                if result.insert == 0:
+                    num += 1
             if not self.decryptFile.saveStationNameInfo(num, "insert", result.resultValueList):
                 self.decryptFile.printError()
                 mb.showerror(title="エラー", message="予想外のエラーが発生しました")
@@ -206,6 +220,8 @@ class StationNameWidget:
                 mb.showerror(title="エラー", message="予想外のエラーが発生しました")
                 return
             mb.showinfo(title="成功", message="駅名位置情報を修正しました")
+            if len(self.stationNameList) == 1:
+                selectId = None
             self.reloadFunc(selectId)
 
     def copyLine(self):

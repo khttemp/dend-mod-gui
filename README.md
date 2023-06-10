@@ -140,7 +140,7 @@ pyinstaller か py2exe ライブラリをインストールする。 pip でも 
 下は、 pyinstaller を使用して、Windows 版実行バイナリ（ .exeファイル ）を作る例である。
 
 ````
-> pyinstaller main.py --onefile --noconsole --add-data "./program/fvtMaker/importPy/resource/*;./" --add-data "./program/lbcrEditor/dendData/*;./" --add-binary "<pythonインストール場所>/Lib/site-packages/UnityPy;./UnityPy"
+> pyinstaller main.py --onefile --noconsole --add-data "./ver.txt;./" --add-data "./program/fvtMaker/importPy/resource/*;./" --add-data "./program/lbcrEditor/dendData/*;./" --add-binary "<pythonインストール場所>/Lib/site-packages/UnityPy;./UnityPy"
 ````
 
 dist フォルダーが作られて、 main.exe が出力される。

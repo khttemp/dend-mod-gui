@@ -9,6 +9,7 @@ dist
 *.ini
 *.smf
 /*.txt
+!ver.txt
 /*.bin
 /*.csv
 /*.fvt

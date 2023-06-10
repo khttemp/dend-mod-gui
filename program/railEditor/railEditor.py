@@ -164,7 +164,7 @@ def reloadWidget(*selectId):
     decryptFile = decryptFile.reload()
     deleteAllWidget()
     selId = None
-    if selectId:
+    if selectId and selectId[0] is not None:
         selId = int(selectId[0])
     selectInfo(cb.current(), selId)
 

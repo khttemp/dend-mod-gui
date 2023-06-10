@@ -68,6 +68,10 @@ class SmfListWidget:
         self.treeFrame.pack(anchor=tkinter.NW, fill=tkinter.X)
 
         self.treeviewFrame = ScrollbarTreeview(self.treeFrame, rowNum, self.v_select, btnList)
+
+        if len(self.smfList) == 0:
+            insertLineBtn["state"] = "normal"
+
         style = ttk.Style()
         style.map('Treeview', foreground=self.fixed_map(style, 'foreground'), background=self.fixed_map(style, 'background'))
 
@@ -333,13 +337,24 @@ class SmfListWidget:
             self.reloadFunc(selectId)
 
     def insertLine(self):
-        selectId = self.treeviewFrame.tree.selection()[0]
-        selectItem = self.treeviewFrame.tree.set(selectId)
-        num = int(selectItem["番号"])
+        noSmfInfoFlag = False
+        if not self.treeviewFrame.tree.selection():
+            noSmfInfoFlag = True
+            selectId = None
+            num = 0
+            keyList = self.treeviewFrame.tree['columns']
+            selectItem = {}
+            for key in keyList:
+                selectItem[key] = None
+        else:
+            selectId = self.treeviewFrame.tree.selection()[0]
+            selectItem = self.treeviewFrame.tree.set(selectId)
+            num = int(selectItem["番号"])
         result = EditSmfListWidget(self.frame, "smf挿入", self.decryptFile, "insert", num, selectItem)
         if result.reloadFlag:
-            if result.insert == 0:
-                num += 1
+            if not noSmfInfoFlag:
+                if result.insert == 0:
+                    num += 1
             if not self.decryptFile.saveSmfInfo(num, "insert", result.resultValueList):
                 self.decryptFile.printError()
                 mb.showerror(title="エラー", message="予想外のエラーが発生しました")
@@ -359,6 +374,8 @@ class SmfListWidget:
                 mb.showerror(title="エラー", message="予想外のエラーが発生しました")
                 return
             mb.showinfo(title="成功", message="smf情報を修正しました")
+            if len(self.smfList) == 1:
+                selectId = None
             self.reloadFunc(selectId)
 
     def copyLine(self):
