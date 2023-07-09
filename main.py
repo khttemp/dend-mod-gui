@@ -20,6 +20,7 @@ import program.fvtMaker.fvtMaker as fvtMakerProgram
 import program.railEditor.railEditor as railEditorProgram
 import program.smf.smf as smfProgram
 import program.ssUnity.ssUnity as ssUnityProgram
+import program.rsRail.rsRail as rsRailProgram
 
 
 def resource_path(relative_path):
@@ -56,6 +57,8 @@ def callProgram(programName):
         smfProgram.call_smf(root, programFrame)
     elif selectedProgram == "SSUnity":
         ssUnityProgram.call_ssUnity(root, programFrame)
+    elif selectedProgram == "rsRail":
+        rsRailProgram.call_rsRail(root, programFrame)
 
     delete_OptionMenu()
     if selectedProgram == "railEditor":
@@ -91,6 +94,8 @@ def loadFile():
         smfProgram.openFile(v_frameCheck.get(), v_meshCheck.get(), v_XYZCheck.get(), v_mtrlCheck.get())
     elif selectedProgram == "SSUnity":
         ssUnityProgram.openFile()
+    elif selectedProgram == "rsRail":
+        rsRailProgram.openFile()
     else:
         mb.showerror(title="エラー", message="プログラムを選択してください")
 
@@ -394,8 +399,9 @@ progmenu.add_radiobutton(label="BGMリスト", value=5, variable=v_prog, command
 progmenu.add_radiobutton(label="FVT作成", value=6, variable=v_prog, command=lambda: callProgram("fvtMaker"))
 progmenu.add_separator()
 progmenu.add_radiobutton(label="レールエディター", value=7, variable=v_prog, command=lambda: callProgram("railEditor"))
+progmenu.add_radiobutton(label="RSのレール・AMB", value=8, variable=v_prog, command=lambda: callProgram("rsRail"))
 progmenu.add_separator()
-progmenu.add_radiobutton(label="SMF", value=8, variable=v_prog, command=lambda: callProgram("smf"))
+progmenu.add_radiobutton(label="SMF", value=9, variable=v_prog, command=lambda: callProgram("smf"))
 progmenu.add_separator()
 progmenu.add_radiobutton(label="終了", value=-1, variable=v_prog, command=sys.exit)
 
