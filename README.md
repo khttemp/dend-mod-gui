@@ -74,7 +74,7 @@ Issue に上げられたバグ情報が必ず修正されるものではない�
 
 実行方法は、[【こちら】](/program/railEditor/README.md)のリンクを参照
 
-## RSのレール・AMB
+### RSのレール・AMB
 
 実行方法は、[【こちら】](/program/rsRail/README.md)のリンクを参照
 
