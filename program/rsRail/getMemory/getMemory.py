@@ -2,6 +2,7 @@ import os
 import codecs
 import copy
 import traceback
+import time
 from pymem import Pymem
 from pymem.process import module_from_name
 
@@ -145,14 +146,16 @@ class GetMemory:
             self.error = traceback.format_exc()
             return False
 
-    def saveAMBMemory(self, ambNo, valList):
+    def saveAMBMemory(self, ambNo, valList, delay=0.3):
         copyMemoryAddr = copy.deepcopy(self.ambMemory)
         copyMemoryAddr[1][-1] += (ambNo * 0x124)
 
         try:
             ambAddr = self.getPtrAddr(self.game_module + copyMemoryAddr[0], copyMemoryAddr[1])
+            lengthAmbAddr = copy.deepcopy(ambAddr)
+            lengthValue = valList[0]
             offIdx = 0
-            self.mem.write_float(ambAddr, valList[offIdx])
+            self.mem.write_float(ambAddr, 0.0)
             ambAddr += 4
             offIdx += 1
 
@@ -184,6 +187,8 @@ class GetMemory:
                     self.mem.write_float(ambAddr, childList[j])
                     ambAddr += 4
                 ambAddr += 200
+            time.sleep(delay)
+            self.mem.write_float(lengthAmbAddr, lengthValue)
             return True
         except Exception:
             self.error = traceback.format_exc()

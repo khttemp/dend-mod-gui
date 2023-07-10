@@ -12,6 +12,7 @@ root = None
 v_railNo = None
 v_ambNo = None
 v_fileName = None
+v_delay = None
 contentsLf = None
 frame = None
 memoryObj = None
@@ -34,6 +35,7 @@ def deleteAllWidget():
 def createWidget():
     global v_railNo
     global v_ambNo
+    global v_delay
     global contentsLf
     global railValList
     global railElementList
@@ -118,6 +120,13 @@ def createWidget():
     ambModifyBtn = ttk.Button(ambNoFrame, text="変更", command=lambda: modifyAMB(), state="disabled")
     ambModifyBtn.grid(row=0, column=3, sticky=tkinter.W + tkinter.E, padx=30)
     ambElementList.append(ambModifyBtn)
+
+    delayLb = ttk.Label(ambNoFrame, text="AMBの再描画時間（秒）", font=("", 14))
+    delayLb.grid(row=0, column=4, sticky=tkinter.W + tkinter.E)
+    v_delay = tkinter.DoubleVar()
+    v_delay.set(0.3)
+    delayEt = ttk.Entry(ambNoFrame, textvariable=v_delay, font=("", 14), width=7, justify="center")
+    delayEt.grid(row=0, column=5, sticky=tkinter.W + tkinter.E, padx=10)
 
     ambContentsFrame = ttk.Frame(contentsLf)
     ambContentsFrame.pack(anchor=tkinter.NW, padx=5, fill=tkinter.BOTH, expand=True)
@@ -369,7 +378,13 @@ def searchRail():
     global v_railNo
     global memoryObj
 
-    valList = memoryObj.getRailMemory(v_railNo.get())
+    try:
+        valList = memoryObj.getRailMemory(v_railNo.get())
+    except Exception:
+        errorMsg = "整数で入力してください"
+        mb.showerror(title="エラー", message=errorMsg)
+        return
+
     if valList is None:
         errorMsg = "レールのメモリーを参照できません。\nステージを選択してから実行してください"
         mb.showerror(title="エラー", message=errorMsg)
@@ -431,8 +446,13 @@ def saveRail(railNo):
 
     if result:
         valList = []
-        for i in range(4):
-            valList.append(railValList[i].get())
+        try:
+            for i in range(4):
+                valList.append(railValList[i].get())
+        except Exception:
+            errorMsg = "読み込めない数字があります"
+            mb.showerror(title="エラー", message=errorMsg)
+            return
 
         if not memoryObj.saveMemory(railNo, valList):
             memoryObj.printError()
@@ -448,7 +468,13 @@ def searchAMB():
     global v_ambNo
     global memoryObj
 
-    valList = memoryObj.getAMBMemory(v_ambNo.get())
+    try:
+        valList = memoryObj.getAMBMemory(v_ambNo.get())
+    except Exception:
+        errorMsg = "整数で入力してください"
+        mb.showerror(title="エラー", message=errorMsg)
+        return
+
     if valList is None:
         errorMsg = "AMBのメモリーを参照できません。\nステージを選択してから実行してください"
         mb.showerror(title="エラー", message=errorMsg)
@@ -511,6 +537,7 @@ def modifyAMB():
 
 
 def saveAMB(ambNo):
+    global v_delay
     global ambValList
     global ambElementList
     global ambChildValList
@@ -539,21 +566,32 @@ def saveAMB(ambNo):
 
     if result:
         valList = []
-        for i in range(len(ambValList)):
-            valList.append(ambValList[i].get())
+        try:
+            for i in range(len(ambValList)):
+                valList.append(ambValList[i].get())
 
-        childCount = len(ambChildValList) // 10
-        childList = []
-        offIdx = 0
-        for i in range(childCount):
-            childInfo = []
-            for j in range(10):
-                childInfo.append(ambChildValList[offIdx + j].get())
-            childList.append(childInfo)
-            offIdx += 10
-        valList.append(childList)
+            childCount = len(ambChildValList) // 10
+            childList = []
+            offIdx = 0
+            for i in range(childCount):
+                childInfo = []
+                for j in range(10):
+                    childInfo.append(ambChildValList[offIdx + j].get())
+                childList.append(childInfo)
+                offIdx += 10
+            valList.append(childList)
+        except Exception:
+            errorMsg = "読み込めない数字があります"
+            mb.showerror(title="エラー", message=errorMsg)
+            return
 
-        if not memoryObj.saveAMBMemory(ambNo, valList):
+        delay = 0.3
+        try:
+            delay = v_delay.get()
+        except Exception:
+            v_delay.set(0.3)
+
+        if not memoryObj.saveAMBMemory(ambNo, valList, delay):
             memoryObj.printError()
             errorMsg = "AMBのメモリーを参照できません。"
             mb.showerror(title="エラー", message=errorMsg)
