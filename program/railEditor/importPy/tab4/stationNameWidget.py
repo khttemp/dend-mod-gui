@@ -3,18 +3,18 @@ from tkinter import ttk
 from tkinter import messagebox as mb
 from tkinter import simpledialog as sd
 
-from program.railEditor.importPy.tkinterScrollbarTreeview import ScrollbarTreeview
+from program.railEditor.importPy.tkinterScrollbarTreeviewRailEditor import ScrollbarTreeviewRailEditor
 
 
 class StationNameWidget:
-    def __init__(self, frame, decryptFile, stationNameList, rowNum, reloadFunc, selectId):
+    def __init__(self, frame, decryptFile, stationNameList, reloadFunc, selectId):
         self.frame = frame
         self.decryptFile = decryptFile
         self.stationNameList = stationNameList
         self.reloadFunc = reloadFunc
         self.copyStationNameInfo = []
         self.stationNameLf = ttk.LabelFrame(self.frame, text="駅名位置情報")
-        self.stationNameLf.pack(anchor=tkinter.NW, padx=10, pady=5, fill=tkinter.X)
+        self.stationNameLf.pack(anchor=tkinter.NW, padx=10, pady=5, fill=tkinter.BOTH, expand=True)
 
         self.headerFrame = ttk.Frame(self.stationNameLf)
         self.headerFrame.pack()
@@ -53,10 +53,8 @@ class StationNameWidget:
             deleteLineBtn,
             copyLineBtn
         ]
-        self.treeFrame = ttk.Frame(self.stationNameLf)
-        self.treeFrame.pack(anchor=tkinter.NW, fill=tkinter.X)
 
-        self.treeviewFrame = ScrollbarTreeview(self.treeFrame, rowNum, self.v_select, btnList)
+        self.treeviewFrame = ScrollbarTreeviewRailEditor(self.stationNameLf, self.v_select, btnList)
 
         if len(self.stationNameList) == 0:
             insertLineBtn["state"] = "normal"

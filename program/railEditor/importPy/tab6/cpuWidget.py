@@ -3,18 +3,18 @@ from tkinter import ttk
 from tkinter import messagebox as mb
 from tkinter import simpledialog as sd
 
-from program.railEditor.importPy.tkinterScrollbarTreeview import ScrollbarTreeview
+from program.railEditor.importPy.tkinterScrollbarTreeviewRailEditor import ScrollbarTreeviewRailEditor
 
 
 class CpuWidget:
-    def __init__(self, frame, decryptFile, cpuList, rowNum, reloadFunc, selectId):
+    def __init__(self, frame, decryptFile, cpuList, reloadFunc, selectId):
         self.frame = frame
         self.decryptFile = decryptFile
         self.cpuList = cpuList
         self.reloadFunc = reloadFunc
         self.copyCpuInfo = []
         self.cpuLf = ttk.LabelFrame(self.frame, text="cpu情報")
-        self.cpuLf.pack(anchor=tkinter.NW, padx=10, pady=5, fill=tkinter.X)
+        self.cpuLf.pack(anchor=tkinter.NW, padx=10, pady=5, fill=tkinter.BOTH, expand=True)
 
         self.headerFrame = ttk.Frame(self.cpuLf)
         self.headerFrame.pack()
@@ -53,10 +53,8 @@ class CpuWidget:
             deleteLineBtn,
             copyLineBtn
         ]
-        self.treeFrame = ttk.Frame(self.cpuLf)
-        self.treeFrame.pack(anchor=tkinter.NW, fill=tkinter.X)
 
-        self.treeviewFrame = ScrollbarTreeview(self.treeFrame, rowNum, self.v_select, btnList)
+        self.treeviewFrame = ScrollbarTreeviewRailEditor(self.cpuLf, self.v_select, btnList)
 
         if len(self.cpuList) == 0:
             insertLineBtn["state"] = "normal"

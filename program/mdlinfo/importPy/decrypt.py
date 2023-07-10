@@ -23,9 +23,9 @@ class MdlDecrypt:
             return False
 
     def printError(self):
-        f = open("error.log", "w")
-        f.write(self.error)
-        f.close()
+        w = open("error.log", "w")
+        w.write(self.error)
+        w.close()
 
     def decrypt(self, line):
         self.allInfoList = []
@@ -412,14 +412,15 @@ class MdlDecrypt:
             h = struct.pack("<h", allcnt)
             newByteArr.extend(h)
 
-            smfIndex = self.allInfoList[num]["smfIndex"]
-            newByteArr.extend(self.byteArr[index:smfIndex])
+            if num >= len(self.allInfoList):
+                newByteArr.extend(self.byteArr[index:])
+                newByteArr.extend(copyByteArr)
+            else:
+                smfIndex = self.allInfoList[num]["smfIndex"]
+                newByteArr.extend(self.byteArr[index:smfIndex])
 
-            newByteArr.extend(copyByteArr)
-
-            if num < len(self.allInfoList):
-                smfNextIndex = self.allInfoList[num]["smfIndex"]
-                newByteArr.extend(self.byteArr[smfNextIndex:])
+                newByteArr.extend(copyByteArr)
+                newByteArr.extend(self.byteArr[smfIndex:])
 
             self.save(newByteArr)
             return True

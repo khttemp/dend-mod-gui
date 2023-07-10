@@ -1,12 +1,11 @@
 import os
 import tkinter
-import traceback
 from tkinter import ttk
 from tkinter import filedialog as fd
 from tkinter import messagebox as mb
 
 from program.rsRail.getMemory.getMemory import GetMemory
-from program.rsRail.tkinterScrollbarFrameClass import ScrollbarFrame
+from program.tkinterScrollbarFrameClass import ScrollbarFrame
 
 
 root = None
@@ -436,6 +435,7 @@ def saveRail(railNo):
             valList.append(railValList[i].get())
 
         if not memoryObj.saveMemory(railNo, valList):
+            memoryObj.printError()
             errorMsg = "レールのメモリーを参照できません。"
             mb.showerror(title="エラー", message=errorMsg)
             return
@@ -554,6 +554,7 @@ def saveAMB(ambNo):
         valList.append(childList)
 
         if not memoryObj.saveAMBMemory(ambNo, valList):
+            memoryObj.printError()
             errorMsg = "AMBのメモリーを参照できません。"
             mb.showerror(title="エラー", message=errorMsg)
             return

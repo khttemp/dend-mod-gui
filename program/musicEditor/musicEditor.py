@@ -7,7 +7,7 @@ from program.musicEditor.dendMusicDecrypt import BSMusicDecrypt as dendBs
 from program.musicEditor.dendMusicDecrypt import CSMusicDecrypt as dendCs
 from program.musicEditor.dendMusicDecrypt import RSMusicDecrypt as dendRs
 
-from program.musicEditor.importPy.tkinterScrollbarFrameClass import ScrollbarFrame
+from program.musicEditor.importPy.tkinterScrollbarTreeviewMusicEditor import ScrollbarTreeviewMusicEditor
 from program.musicEditor.importPy.tkinterEditClass import InputDialog
 
 v_edit = None
@@ -71,7 +71,7 @@ def createWidget():
         edit_button,
         swap_button
     ]
-    frame = ScrollbarFrame(bgmLf, content, btnList)
+    frame = ScrollbarTreeviewMusicEditor(bgmLf, content, btnList)
 
     treeHeaderList = []
 

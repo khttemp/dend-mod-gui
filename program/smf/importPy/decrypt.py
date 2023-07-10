@@ -114,9 +114,9 @@ class SmfDecrypt:
             return False
 
     def printError(self):
-        f = open("error.log", "w")
-        f.write(self.error)
-        f.close()
+        w = open("error.log", "w")
+        w.write(self.error)
+        w.close()
 
     def writeInfo(self, text="", end="\n"):
         if self.writeFlag:

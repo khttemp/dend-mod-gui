@@ -388,7 +388,7 @@ menubar = tkinter.Menu(root)
 v_prog = tkinter.IntVar()
 
 progmenu = tkinter.Menu(menubar, tearoff=False)
-progmenu.add_radiobutton(label="SS改造", value=9, variable=v_prog, command=lambda: callProgram("SSUnity"))
+progmenu.add_radiobutton(label="SS改造", value=-1, variable=v_prog, command=lambda: callProgram("SSUnity"))
 progmenu.add_separator()
 progmenu.add_radiobutton(label="車両性能", value=1, variable=v_prog, command=lambda: callProgram("lbcrEditor"))
 progmenu.add_radiobutton(label="モデルバイナリ", value=2, variable=v_prog, command=lambda: callProgram("mdlBin"))
@@ -403,7 +403,7 @@ progmenu.add_radiobutton(label="RSのレール・AMB", value=8, variable=v_prog,
 progmenu.add_separator()
 progmenu.add_radiobutton(label="SMF", value=9, variable=v_prog, command=lambda: callProgram("smf"))
 progmenu.add_separator()
-progmenu.add_radiobutton(label="終了", value=-1, variable=v_prog, command=sys.exit)
+progmenu.add_radiobutton(label="終了", value=-2, variable=v_prog, command=sys.exit)
 
 filemenu = tkinter.Menu(menubar, tearoff=False)
 filemenu.add_command(label="ファイルを開く", command=loadFile)

@@ -9,7 +9,7 @@ from tkinter import messagebox as mb
 
 from program.cmdList import cmdList
 
-from program.comicscript.importPy.tkinterScrollbarFrameClass import ScrollbarFrame
+from program.comicscript.importPy.tkinterScrollbarTreeviewComicscript import ScrollbarTreeviewComicscript
 from program.comicscript.importPy.tkinterEditClass import InputDialog, PasteDialog, HeaderFileInfo
 from program.comicscript.importPy.decrypt import ComicDecrypt
 
@@ -64,7 +64,7 @@ def createWidget():
         v_btnList[6],
         v_btnList[7]
     ]
-    frame = ScrollbarFrame(scriptLf, v_select, btnList)
+    frame = ScrollbarTreeviewComicscript(scriptLf, v_select, btnList)
 
     col_tuple = ('番号', 'コマンド名')
     paramList = []

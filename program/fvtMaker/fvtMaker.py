@@ -5,7 +5,7 @@ from tkinter import ttk
 from tkinter import filedialog as fd
 from tkinter import messagebox as mb
 
-from program.fvtMaker.importPy.tkinterScrollbarFrameClass import ScrollbarFrame
+from program.tkinterScrollbarFrameClass import ScrollbarFrame
 from program.fvtMaker.importPy.tkinterWidgetClass import CsvWidget, DescWidget
 from program.fvtMaker.importPy.fvtConvert import FvtConvert
 
@@ -47,9 +47,9 @@ def openFile():
                 fvtConvertFile.write()
                 mb.showinfo(title="成功", message="全てのリストを書込みしました")
             except Exception:
-                f = open("error.log", "w")
-                f.write(traceback.format_exc())
-                f.close()
+                w = open("error.log", "w")
+                w.write(traceback.format_exc())
+                w.close()
                 mb.showerror(title="保存エラー", message="予想外のエラーです。変換失敗しました")
 
 
@@ -61,9 +61,9 @@ def selectGame():
     deleteWidget()
 
     content = v_radio.get()
-    frame = ScrollbarFrame(csvLf)
+    frame = ScrollbarFrame(csvLf, True, False)
     CsvWidget(frame.frame, content)
-    frame2 = ScrollbarFrame(descLf)
+    frame2 = ScrollbarFrame(descLf, True, False)
     DescWidget(frame2.frame, content)
 
 

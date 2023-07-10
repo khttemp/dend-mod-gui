@@ -4,11 +4,11 @@ from tkinter import ttk
 from tkinter import messagebox as mb
 from tkinter import simpledialog as sd
 
-from program.railEditor.importPy.tkinterScrollbarTreeview import ScrollbarTreeview
+from program.railEditor.importPy.tkinterScrollbarTreeviewRailEditor import ScrollbarTreeviewRailEditor
 
 
 class SmfListWidget:
-    def __init__(self, frame, decryptFile, smfList, rowNum, reloadFunc, selectId):
+    def __init__(self, frame, decryptFile, smfList, reloadFunc, selectId):
         self.frame = frame
         self.decryptFile = decryptFile
         self.smfList = smfList
@@ -16,7 +16,7 @@ class SmfListWidget:
         self.copySmfInfo = []
 
         self.swfListLf = ttk.LabelFrame(self.frame, text="smf情報")
-        self.swfListLf.pack(anchor=tkinter.NW, padx=10, pady=5, fill=tkinter.X)
+        self.swfListLf.pack(anchor=tkinter.NW, padx=10, pady=5, fill=tkinter.BOTH, expand=True)
 
         self.headerFrame = ttk.Frame(self.swfListLf)
         self.headerFrame.pack()
@@ -64,10 +64,7 @@ class SmfListWidget:
 
         useModelListObj = self.getUseModelList()
 
-        self.treeFrame = ttk.Frame(self.swfListLf)
-        self.treeFrame.pack(anchor=tkinter.NW, fill=tkinter.X)
-
-        self.treeviewFrame = ScrollbarTreeview(self.treeFrame, rowNum, self.v_select, btnList)
+        self.treeviewFrame = ScrollbarTreeviewRailEditor(self.swfListLf, self.v_select, btnList)
 
         if len(self.smfList) == 0:
             insertLineBtn["state"] = "normal"

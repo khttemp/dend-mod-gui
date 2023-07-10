@@ -1,6 +1,7 @@
 import os
 import codecs
 import copy
+import traceback
 from pymem import Pymem
 from pymem.process import module_from_name
 
@@ -52,7 +53,8 @@ class GetMemory:
             elif "Could not open process" in str(e):
                 self.error = "ゲームのメモリーを参照できません\n管理者権限で実行してください"
             else:
-                self.error = "予想外のエラーです"
+                self.error = "予想外のエラーです\n"
+                self.error += traceback.format_exc()
             return False
         return True
 
@@ -74,6 +76,7 @@ class GetMemory:
 
             return valList
         except Exception:
+            self.error = traceback.format_exc()
             return None
 
     def getAMBMemory(self, ambNo):
@@ -121,6 +124,7 @@ class GetMemory:
             valList.append(childValList)
             return valList
         except Exception:
+            self.error = traceback.format_exc()
             return None
 
     def saveMemory(self, railNo, valList):
@@ -138,6 +142,7 @@ class GetMemory:
 
             return True
         except Exception:
+            self.error = traceback.format_exc()
             return False
 
     def saveAMBMemory(self, ambNo, valList):
@@ -181,6 +186,7 @@ class GetMemory:
                 ambAddr += 200
             return True
         except Exception:
+            self.error = traceback.format_exc()
             return False
 
     def getPtrAddr(self, address, offsets):
@@ -192,6 +198,6 @@ class GetMemory:
         return addr
 
     def printError(self):
-        f = codecs.open("error.log", "w", "utf-8", "strict")
-        f.write(self.error)
-        f.close()
+        w = codecs.open("error.log", "w", "utf-8", "strict")
+        w.write(self.error)
+        w.close()

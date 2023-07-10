@@ -8,7 +8,7 @@ from tkinter import messagebox as mb
 
 from program.smf.importPy.decrypt import SmfDecrypt
 from program.smf.importPy.tkinterEditClass import SwapDialog
-from program.smf.importPy.tkinterScrollbarFrame import ScrollbarFrame
+from program.smf.importPy.tkinterScrollbarTreeviewSmf import ScrollbarTreeviewSmf
 
 root = None
 frame = None
@@ -91,7 +91,7 @@ def createWidget():
         deleteFrameButton
     ]
 
-    frame = ScrollbarFrame(scriptLf, btnList)
+    frame = ScrollbarTreeviewSmf(scriptLf, btnList)
     frame.tree.heading('#0', text=decryptFile.filename, anchor=tkinter.CENTER)
 
     for idx, frameInfo in enumerate(decryptFile.frameList):

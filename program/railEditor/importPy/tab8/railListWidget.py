@@ -518,7 +518,6 @@ class RailListWidget:
             csvLines = f.readlines()
             f.close()
         except Exception:
-            errorMsg = "読み込み失敗しました。"
             mb.showerror(title="読み込みエラー", message=errorMsg)
             return
 

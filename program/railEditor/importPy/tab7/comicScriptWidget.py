@@ -15,7 +15,7 @@ class ComicScriptWidget:
         self.selectIndexNum = -1
 
         self.comicScriptLf = ttk.LabelFrame(self.frame, text="Comic Script")
-        self.comicScriptLf.pack(anchor=tkinter.NW, padx=10, side=tkinter.LEFT)
+        self.comicScriptLf.pack(anchor=tkinter.NW, padx=10, side=tkinter.LEFT, fill=tkinter.Y)
 
         self.btnFrame = ttk.Frame(self.comicScriptLf)
         self.btnFrame.pack()

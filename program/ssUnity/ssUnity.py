@@ -6,7 +6,7 @@ from tkinter import ttk
 from tkinter import filedialog as fd
 from tkinter import messagebox as mb
 
-from program.ssUnity.importPy.tkinterScrollbarFrameClass import ScrollbarFrame
+from program.ssUnity.importPy.tkinterScrollbarTreeviewSSUnity import ScrollbarTreeviewSSUnity
 
 unityFlag = True
 try:
@@ -42,7 +42,7 @@ def createWidget():
     global decryptFile
     global frame
 
-    frame = ScrollbarFrame(contentsLf, v_select, v_btnList)
+    frame = ScrollbarTreeviewSSUnity(contentsLf, v_select, v_btnList)
     col_tuple = ("番号", "名前", "種類", "サイズ")
     frame.tree['columns'] = col_tuple
     frame.tree.column('#0', width=0, stretch=False)
@@ -75,22 +75,31 @@ def selectGame():
 
 def changeButton():
     global v_radio
+    global v_fileName
+    global v_select
     global extractBtn
     global loadAndSaveBtn
     global assetsSaveBtn
 
+    v_select.set("")
+    v_fileName.set("")
     if v_radio.get() == 0:
         extractBtn["text"] = "ファイルを取り出す"
         extractBtn["command"] = extract
+        extractBtn["state"] = "disabled"
         loadAndSaveBtn["text"] = "ファイルを上書きする"
         loadAndSaveBtn["command"] = loadAndSave
+        loadAndSaveBtn["state"] = "disabled"
         assetsSaveBtn.place_forget()
     elif v_radio.get() == 1:
         extractBtn["text"] = "CSVとして取り出す"
         extractBtn["command"] = csvExtract
+        extractBtn["state"] = "disabled"
         loadAndSaveBtn["text"] = "CSV情報で上書きする"
         loadAndSaveBtn["command"] = csvLoadAndSave
+        loadAndSaveBtn["state"] = "disabled"
         assetsSaveBtn.place(relx=0.78, rely=0.09)
+        assetsSaveBtn["state"] = "disabled"
 
 
 def extract():

@@ -402,6 +402,8 @@ class HeaderFileInfo(sd.Dialog):
                     mb.showerror(title="保存エラー", message=errorMsg)
                     return
                 return True
+        else:
+            return True
 
     def apply(self):
         if self.dirtyFlag:

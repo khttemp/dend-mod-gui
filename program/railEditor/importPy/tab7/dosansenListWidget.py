@@ -5,7 +5,7 @@ from tkinter import ttk
 from tkinter import messagebox as mb
 from tkinter import simpledialog as sd
 
-from program.railEditor.importPy.tkinterScrollbarFrameClass import ScrollbarFrame
+from program.tkinterScrollbarFrameClass import ScrollbarFrame
 
 
 class DosansenListWidget:

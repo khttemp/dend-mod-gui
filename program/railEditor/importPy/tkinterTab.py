@@ -1,7 +1,7 @@
 import tkinter
 from tkinter import ttk
 
-from program.railEditor.importPy.tkinterScrollbarFrameClass import ScrollbarFrame
+from program.tkinterScrollbarFrameClass import ScrollbarFrame
 
 from program.railEditor.importPy.tab1.musicWidget import MusicWidget
 from program.railEditor.importPy.tab1.trainCountWidget import TrainCountWidget
@@ -82,11 +82,11 @@ def tab2AllWidget(tabFrame, decryptFile, reloadFunc):
 
 
 def tab3AllWidget(tabFrame, decryptFile, reloadFunc, selectId):
-    SmfListWidget(tabFrame, decryptFile, decryptFile.smfList, 20, reloadFunc, selectId)
+    SmfListWidget(tabFrame, decryptFile, decryptFile.smfList, reloadFunc, selectId)
 
 
 def tab4AllWidget(tabFrame, decryptFile, reloadFunc, selectId):
-    StationNameWidget(tabFrame, decryptFile, decryptFile.stationNameList, 20, reloadFunc, selectId)
+    StationNameWidget(tabFrame, decryptFile, decryptFile.stationNameList, reloadFunc, selectId)
 
 
 def tab5AllWidget(tabFrame, decryptFile, reloadFunc):
@@ -94,7 +94,7 @@ def tab5AllWidget(tabFrame, decryptFile, reloadFunc):
 
 
 def tab6AllWidget(tabFrame, decryptFile, reloadFunc, selectId):
-    CpuWidget(tabFrame, decryptFile, decryptFile.cpuList, 20, reloadFunc, selectId)
+    CpuWidget(tabFrame, decryptFile, decryptFile.cpuList, reloadFunc, selectId)
 
 
 def tab7AllWidget(tabFrame, decryptFile, reloadFunc):

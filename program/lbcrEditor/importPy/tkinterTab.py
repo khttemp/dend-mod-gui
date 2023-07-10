@@ -1,7 +1,7 @@
 import tkinter
 from tkinter import ttk
 
-from program.lbcrEditor.importPy.tkinterScrollbarFrameClass import ScrollbarFrame
+from program.tkinterScrollbarFrameClass import ScrollbarFrame
 
 from program.lbcrEditor.importPy.tab1.notchWidget import NotchWidget
 from program.lbcrEditor.importPy.tab1.perfWidget import PerfWidget
@@ -113,8 +113,17 @@ def tab2AllWidget(tabFrame, decryptFile, trainIdx, game, widgetList, reloadFunc)
 
     TrainModelWidget(tabFrame, trainIdx, game, countModelScrollFrame.frame, widgetList, innerButtonList, decryptFile, reloadFunc)
 
-    elseFrame = ttk.Frame(tabFrame)
-    elseFrame.pack(anchor=tkinter.NW, fill=tkinter.X)
+    if game == 0:
+        elseScrollFrame = ScrollbarFrame(tabFrame)
+        elseFrame = elseScrollFrame.frame
+
+        elseFrame2 = elseFrame
+    else:
+        elseFrame = ttk.Frame(tabFrame)
+        elseFrame.pack(anchor=tkinter.NW, fill=tkinter.X)
+
+        elseFrame2 = ttk.Frame(tabFrame)
+        elseFrame2.pack(anchor=tkinter.NW, fill=tkinter.X)
 
     elseModel = decryptFile.trainModelList[trainIdx]["elseModel"]
     else2Model = decryptFile.trainModelList[trainIdx]["else2Model"]
@@ -122,9 +131,6 @@ def tab2AllWidget(tabFrame, decryptFile, trainIdx, game, widgetList, reloadFunc)
     if len(elseModel) > 0:
         FixedListWidget(elseFrame, game, trainIdx, decryptFile, "else1", elseModel, 1, reloadFunc)
     FixedListWidget(elseFrame, game, trainIdx, decryptFile, "else2", else2Model, 2, reloadFunc)
-
-    elseFrame2 = ttk.Frame(tabFrame)
-    elseFrame2.pack(anchor=tkinter.NW, fill=tkinter.X)
 
     elseList2 = decryptFile.trainModelList[trainIdx]["elseList2"]
     FixedList2Widget(elseFrame2, trainIdx, decryptFile, "else3", elseList2, reloadFunc)

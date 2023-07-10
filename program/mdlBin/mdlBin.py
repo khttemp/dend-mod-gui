@@ -9,7 +9,7 @@ from tkinter import messagebox as mb
 
 from program.cmdList import cmdList
 
-from program.mdlBin.importPy.tkinterScrollbarFrameClass import ScrollbarFrame
+from program.mdlBin.importPy.tkinterScrollbarTreeviewMdlBin import ScrollbarTreeviewMdlBin
 from program.mdlBin.importPy.tkinterEditClass import InputDialog, PasteDialog, HeaderDialog, ListNumModifyDialog, ListHeaderModifyDialog, NumModifyDialog
 from program.mdlBin.importPy.decrypt import MdlBinDecrypt
 
@@ -108,7 +108,7 @@ def createWidget():
     headerFileEditBtn['state'] = 'normal'
     csvExtractBtn['state'] = 'normal'
     csvLoadAndSaveBtn['state'] = 'normal'
-    frame = ScrollbarFrame(scriptLf, v_select, btnList)
+    frame = ScrollbarTreeviewMdlBin(scriptLf, v_select, btnList)
 
     col_tuple = ('番号', 'delay', 'コマンド名', 'ファイルフラグ', 'セクション')
     paramList = []

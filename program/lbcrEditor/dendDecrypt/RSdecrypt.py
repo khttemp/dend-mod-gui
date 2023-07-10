@@ -111,9 +111,9 @@ class RSdecrypt():
             return False
 
     def printError(self):
-        f = open("error.log", "w")
-        f.write(self.error)
-        f.close()
+        w = open("error.log", "w")
+        w.write(self.error)
+        w.close()
 
     def decrypt(self, line):
         self.trainInfoList = []

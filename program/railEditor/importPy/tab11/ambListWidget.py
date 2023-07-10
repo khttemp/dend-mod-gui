@@ -372,6 +372,8 @@ class AmbListWidget:
             self.ambChildFrame = ttk.Frame(self.ambChildModelLf)
             self.ambChildFrame.pack(anchor=tkinter.NW)
             self.setAmbInfo(self.ambChildFrame, False)
+            separate = ttk.Separator(self.ambChildModelLf, orient="horizontal")
+            separate.pack(fill=tkinter.X)
 
     def searchAmb(self, ambNo):
         if ambNo < 0 or ambNo >= len(self.ambList):
@@ -558,7 +560,7 @@ class AmbListWidget:
                 mb.showerror(title="エラー", message=msg)
                 return
 
-            if childFlag == True:
+            if childFlag:
                 msg = "最終行目に子データがありません"
                 mb.showerror(title="エラー", message=msg)
                 return

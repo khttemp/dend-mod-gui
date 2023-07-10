@@ -1,8 +1,6 @@
 import struct
 import traceback
 
-from tkinter import messagebox as mb
-
 
 class ComicDecrypt:
     def __init__(self, filePath, cmdList):
@@ -34,9 +32,9 @@ class ComicDecrypt:
             return False
 
     def printError(self):
-        f = open("error.log", "w")
-        f.write(self.error)
-        f.close()
+        w = open("error.log", "w")
+        w.write(self.error)
+        w.close()
 
     def decrypt(self):
         index = 16
@@ -114,7 +112,7 @@ class ComicDecrypt:
             index += 2
             if num2 < 0 or num2 >= len(self.cmdList)-1:
                 errorMsg = "定義されてないコマンド番号です({0})。読込を終了します。".format(num2)
-                mb.showerror(title="エラー", message=errorMsg)
+                self.error = errorMsg
                 return False
             comicData.append(self.cmdList[num2])
             b = self.byteArr[index]

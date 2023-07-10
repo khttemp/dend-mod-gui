@@ -7,7 +7,8 @@ from tkinter import messagebox as mb
 from tkinter import filedialog as fd
 
 from program.mdlinfo.importPy.decrypt import MdlDecrypt
-from program.mdlinfo.importPy.tkinterClass import Scrollbarframe, TreeViewDialog, ImageDialog, SmfDetailDialog, BinFileOrFlagEditDialog, CopyMdlDialog, PasteDialog
+from program.mdlinfo.importPy.tkinterScrollbarTreeviewMdlinfo import ScrollbarTreeviewMdlinfo
+from program.mdlinfo.importPy.tkinterClass import TreeViewDialog, ImageDialog, SmfDetailDialog, BinFileOrFlagEditDialog, CopyMdlDialog, PasteDialog
 
 from program.smf.importPy.decrypt import SmfDecrypt
 
@@ -100,7 +101,7 @@ def createWidget():
         copyInfoBtn
     ]
 
-    frame = Scrollbarframe(mdlInfoLf, v_select, btnList)
+    frame = ScrollbarTreeviewMdlinfo(mdlInfoLf, v_select, btnList)
 
     col_tuple = ("番号", "smf", "イメージ数", "smf要素数", "binファイル", "フラグ")
     frame.tree['columns'] = col_tuple
@@ -124,7 +125,6 @@ def createWidget():
 
 
 def viewData(allInfoList):
-
     index = 0
     for mdlInfo in allInfoList:
         binName = "-"
@@ -136,9 +136,20 @@ def viewData(allInfoList):
         data += (binName, mdlInfo["binInfo"][1])
         frame.tree.insert(parent='', index='end', iid=index, values=data)
         index += 1
+    filterData()
 
 
 def filterModelList(event):
+    global v_select
+    global frame
+
+    v_select.set("")
+    if len(frame.tree.selection()) > 0:
+        frame.tree.selection_remove(frame.tree.selection())
+    filterData()
+
+
+def filterData():
     global v_search
     global decryptFile
     global frame
@@ -152,6 +163,15 @@ def filterModelList(event):
         modelName = item["values"][1]
         if search.upper() not in modelName.upper():
             frame.tree.detach(i)
+
+
+def allDeleteTreeview():
+    global decryptFile
+    global frame
+
+    for i in range(len(decryptFile.allInfoList)):
+        if frame.tree.exists(i):
+            frame.tree.delete(i)
 
 
 def getMdlDetail():
@@ -171,9 +191,8 @@ def getMdlImage():
     num = int(selectItem["番号"]) - 1
     ImageDialog(root, "モデルのイメージ情報", num, decryptFile)
 
+    allDeleteTreeview()
     decryptFile = decryptFile.reload()
-    for i in frame.tree.get_children():
-        frame.tree.delete(i)
     viewData(decryptFile.allInfoList)
     frame.tree.selection_set(num)
 
@@ -186,9 +205,8 @@ def getSmfDetail():
     num = int(selectItem["番号"]) - 1
     SmfDetailDialog(root, "smf要素情報", num, decryptFile)
 
+    allDeleteTreeview()
     decryptFile = decryptFile.reload()
-    for i in frame.tree.get_children():
-        frame.tree.delete(i)
     viewData(decryptFile.allInfoList)
     frame.tree.selection_set(num)
 
@@ -201,9 +219,8 @@ def getBinOrFlag():
     num = int(selectItem["番号"]) - 1
     BinFileOrFlagEditDialog(root, "バイナリファイルとフラグ情報", num, decryptFile)
 
+    allDeleteTreeview()
     decryptFile = decryptFile.reload()
-    for i in frame.tree.get_children():
-        frame.tree.delete(i)
     viewData(decryptFile.allInfoList)
     frame.tree.selection_set(num)
 
@@ -233,10 +250,10 @@ def copyAnother():
                     return
                 mb.showinfo(title="成功", message="コピーしました")
 
+                allDeleteTreeview()
                 decryptFile = decryptFile.reload()
-                for i in frame.tree.get_children():
-                    frame.tree.delete(i)
                 viewData(decryptFile.allInfoList)
+                frame.tree.selection_set(len(decryptFile.allInfoList) - 1)
 
         except Exception:
             w = open("error.log", "a")
@@ -260,9 +277,8 @@ def deleteMdlInfo():
             mb.showerror(title="エラー", message="予想外のエラーが発生しました")
         mb.showinfo(title="成功", message="モデル要素情報を修正しました")
 
+        allDeleteTreeview()
         decryptFile = decryptFile.reload()
-        for i in frame.tree.get_children():
-            frame.tree.delete(i)
         viewData(decryptFile.allInfoList)
 
         num -= 1
@@ -301,9 +317,8 @@ def pasteInfo():
     num = int(selectItem["番号"])
     result = PasteDialog(root, "MDLINFO情報コピー", decryptFile, num, copyInfoByteArr)
     if result.reloadFlag:
+        allDeleteTreeview()
         decryptFile = decryptFile.reload()
-        for i in frame.tree.get_children():
-            frame.tree.delete(i)
         viewData(decryptFile.allInfoList)
         frame.tree.selection_set(num)
 
@@ -333,12 +348,10 @@ def readSMF():
             return
         mb.showinfo(title="成功", message="モデル要素情報を修正しました")
 
+        allDeleteTreeview()
         decryptFile = decryptFile.reload()
-        for i in frame.tree.get_children():
-            frame.tree.delete(i)
         viewData(decryptFile.allInfoList)
-        if num is not None:
-            frame.tree.selection_set(num)
+        frame.tree.selection_set(len(decryptFile.allInfoList) - 1)
 
 
 def call_mdlinfo(rootTk, programFrame):
