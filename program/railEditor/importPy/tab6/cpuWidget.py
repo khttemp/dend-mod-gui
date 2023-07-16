@@ -339,6 +339,7 @@ class EditCpuListWidget(sd.Dialog):
                         except Exception:
                             errorMsg = "整数で入力してください。"
                             mb.showerror(title="数字エラー", message=errorMsg)
+                            return False
                 else:
                     tempList = []
                     tempList2 = []
@@ -357,6 +358,7 @@ class EditCpuListWidget(sd.Dialog):
                         except Exception:
                             errorMsg = "整数で入力してください。"
                             mb.showerror(title="数字エラー", message=errorMsg)
+                            return False
                     self.resultValueList.insert(1, tempList)
                     self.resultValueList.append(tempList2)
                 if self.mode == "insert":
@@ -365,6 +367,7 @@ class EditCpuListWidget(sd.Dialog):
             except Exception:
                 errorMsg = "予想外のエラーです"
                 mb.showerror(title="エラー", message=errorMsg)
+                return False
 
     def apply(self):
         self.reloadFlag = True

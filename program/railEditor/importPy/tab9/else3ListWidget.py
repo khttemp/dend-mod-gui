@@ -61,7 +61,7 @@ class Else3ListWidget:
 
                 for j in range(len(else3Info[1])):
                     tempList = else3Info[1][j]
-                    for k in range(8):
+                    for k in range(len(tempList)):
                         self.varTemp = tkinter.IntVar()
                         self.varTemp.set(int(tempList[k]))
                         self.tempfTextLb = tkinter.Label(self.txtFrame2, textvariable=self.varTemp, font=("", 20), width=7, borderwidth=1, relief="solid")
@@ -198,9 +198,11 @@ class EditElse3CntWidget(sd.Dialog):
                 except Exception:
                     errorMsg = "整数で入力してください。"
                     mb.showerror(title="数字エラー", message=errorMsg)
+                    return False
             except Exception:
                 errorMsg = "予想外のエラーです"
                 mb.showerror(title="エラー", message=errorMsg)
+                return False
 
             if self.resultValue < self.val:
                 msg = "設定した値は現在より少なく設定してます\nこの数で修正しますか？"
@@ -263,14 +265,21 @@ class EditElse3ListCntWidget(sd.Dialog):
                     for i in range(len(self.varList)):
                         try:
                             res = int(self.varList[i].get())
-                            if res <= 0:
-                                errorMsg = "1以上の数字で入力してください。"
-                                mb.showerror(title="数字エラー", message=errorMsg)
-                                return False
+                            if i == 0:
+                                if res < 0:
+                                    errorMsg = "0以上の数字で入力してください。"
+                                    mb.showerror(title="数字エラー", message=errorMsg)
+                                    return False
+                            else:
+                                if res <= 0:
+                                    errorMsg = "1以上の数字で入力してください。"
+                                    mb.showerror(title="数字エラー", message=errorMsg)
+                                    return False
                             self.resultValueList.append(res)
                         except Exception:
                             errorMsg = "数字で入力してください。"
                             mb.showerror(title="数字エラー", message=errorMsg)
+                            return False
 
                     if self.resultValueList[1] < len(self.else3Info[1]):
                         msg = "設定した値は現在より少なく設定してます\nこの数で修正しますか？"
@@ -295,6 +304,7 @@ class EditElse3ListCntWidget(sd.Dialog):
                         except Exception:
                             errorMsg = "数字で入力してください。"
                             mb.showerror(title="数字エラー", message=errorMsg)
+                            return False
 
                     if self.resultValueList[3] < len(self.else3Info[3]):
                         msg = "設定した値は現在より少なく設定してます\nこの数で修正しますか？"
@@ -306,6 +316,7 @@ class EditElse3ListCntWidget(sd.Dialog):
             except Exception:
                 errorMsg = "予想外のエラーです"
                 mb.showerror(title="エラー", message=errorMsg)
+                return False
 
     def apply(self):
         self.reloadFlag = True
@@ -324,7 +335,7 @@ class EditElse3ListWidget(sd.Dialog):
         self.resizable(False, False)
 
         if self.decryptFile.game in ["BS", "CS", "RS"]:
-            else3InfoLbList = ["b1", "b2", "b3", "b4", "b5", "b6", "b7", "b8"]
+            else3InfoLbList = ["タイプ1", "タイプ2", "bin index", "anime1", "anime2"]
             for i in range(len(self.else3Info)):
                 self.else3Lb = ttk.Label(master, text=else3InfoLbList[i], font=("", 14))
                 self.else3Lb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
@@ -359,6 +370,7 @@ class EditElse3ListWidget(sd.Dialog):
                         except Exception:
                             errorMsg = "数字で入力してください。"
                             mb.showerror(title="数字エラー", message=errorMsg)
+                            return False
                         self.resultValueList.append(res)
                     return True
                 elif self.decryptFile.game == "LS":
@@ -371,11 +383,13 @@ class EditElse3ListWidget(sd.Dialog):
                         except Exception:
                             errorMsg = "数字で入力してください。"
                             mb.showerror(title="数字エラー", message=errorMsg)
+                            return False
                         self.resultValueList.append(res)
                     return True
             except Exception:
                 errorMsg = "予想外のエラーです"
                 mb.showerror(title="エラー", message=errorMsg)
+                return False
 
     def apply(self):
         self.reloadFlag = True

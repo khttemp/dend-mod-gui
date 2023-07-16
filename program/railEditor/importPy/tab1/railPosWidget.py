@@ -105,9 +105,11 @@ class EditRailPosWidget(sd.Dialog):
                 except Exception:
                     errorMsg = "数字で入力してください。"
                     mb.showerror(title="数字エラー", message=errorMsg)
+                    return False
             except Exception:
                 errorMsg = "予想外のエラーです"
                 mb.showerror(title="エラー", message=errorMsg)
+                return False
 
     def apply(self):
         self.reloadFlag = True

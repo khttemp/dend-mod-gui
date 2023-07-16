@@ -73,27 +73,27 @@ class SmfListWidget:
         style.map('Treeview', foreground=self.fixed_map(style, 'foreground'), background=self.fixed_map(style, 'background'))
 
         if self.decryptFile.game in ["CS", "RS"]:
-            col_tuple = ("番号", "smf名", "e1", "e2", "長さ", "e3", "e4", "架線柱No", "架線No")
+            col_tuple = ("番号", "smf名", "フラグ1", "フラグ2", "長さ", "Mesh表示1", "Mesh表示2", "架線柱No", "架線No")
 
             self.treeviewFrame.tree['columns'] = col_tuple
             self.treeviewFrame.tree.column("#0", width=0, stretch=False)
             self.treeviewFrame.tree.column("番号", anchor=tkinter.CENTER, width=50, stretch=False)
             self.treeviewFrame.tree.column("smf名", anchor=tkinter.CENTER, width=130)
-            self.treeviewFrame.tree.column("e1", anchor=tkinter.CENTER, width=50)
-            self.treeviewFrame.tree.column("e2", anchor=tkinter.CENTER, width=50)
+            self.treeviewFrame.tree.column("フラグ1", anchor=tkinter.CENTER, width=50)
+            self.treeviewFrame.tree.column("フラグ2", anchor=tkinter.CENTER, width=50)
             self.treeviewFrame.tree.column("長さ", anchor=tkinter.CENTER, width=50)
-            self.treeviewFrame.tree.column("e3", anchor=tkinter.CENTER, width=50)
-            self.treeviewFrame.tree.column("e4", anchor=tkinter.CENTER, width=50)
+            self.treeviewFrame.tree.column("Mesh表示1", anchor=tkinter.CENTER, width=50)
+            self.treeviewFrame.tree.column("Mesh表示2", anchor=tkinter.CENTER, width=50)
             self.treeviewFrame.tree.column("架線柱No", anchor=tkinter.CENTER, width=50)
             self.treeviewFrame.tree.column("架線No", anchor=tkinter.CENTER, width=50)
 
             self.treeviewFrame.tree.heading("番号", text="番号", anchor=tkinter.CENTER)
             self.treeviewFrame.tree.heading("smf名", text="smf名", anchor=tkinter.CENTER)
-            self.treeviewFrame.tree.heading("e1", text="e1", anchor=tkinter.CENTER)
-            self.treeviewFrame.tree.heading("e2", text="e2", anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("フラグ1", text="フラグ1", anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("フラグ2", text="フラグ2", anchor=tkinter.CENTER)
             self.treeviewFrame.tree.heading("長さ", text="長さ", anchor=tkinter.CENTER)
-            self.treeviewFrame.tree.heading("e3", text="e3", anchor=tkinter.CENTER)
-            self.treeviewFrame.tree.heading("e4", text="e4", anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("Mesh表示1", text="Mesh表示1", anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("Mesh表示2", text="Mesh表示2", anchor=tkinter.CENTER)
             self.treeviewFrame.tree.heading("架線柱No", text="架線柱No", anchor=tkinter.CENTER)
             self.treeviewFrame.tree.heading("架線No", text="架線No", anchor=tkinter.CENTER)
 
@@ -111,27 +111,27 @@ class SmfListWidget:
                     tags = "rail"
                 else:
                     tags = "amb"
-                data += (smfInfo[0], smfInfo[1], smfInfo[2], smfInfo[3], smfInfo[4], smfInfo[5])
+                data += (smfInfo[0], self.toHex(smfInfo[1]), self.toHex(smfInfo[2]), smfInfo[3], smfInfo[4], smfInfo[5])
                 data += (smfInfo[6], smfInfo[7])
                 self.treeviewFrame.tree.insert(parent='', index='end', iid=index, values=data, tags=tags)
                 index += 1
         elif self.decryptFile.game == "BS":
-            col_tuple = ("番号", "smf名", "長さ", "e1", "e2", "リスト数")
+            col_tuple = ("番号", "smf名", "長さ", "Mesh表示1", "Mesh表示2", "リスト数")
 
             self.treeviewFrame.tree['columns'] = col_tuple
             self.treeviewFrame.tree.column("#0", width=0, stretch=False)
             self.treeviewFrame.tree.column("番号", anchor=tkinter.CENTER, width=50, stretch=False)
             self.treeviewFrame.tree.column("smf名", anchor=tkinter.CENTER, width=130)
             self.treeviewFrame.tree.column("長さ", anchor=tkinter.CENTER, width=50)
-            self.treeviewFrame.tree.column("e1", anchor=tkinter.CENTER, width=50)
-            self.treeviewFrame.tree.column("e2", anchor=tkinter.CENTER, width=50)
+            self.treeviewFrame.tree.column("Mesh表示1", anchor=tkinter.CENTER, width=50)
+            self.treeviewFrame.tree.column("Mesh表示2", anchor=tkinter.CENTER, width=50)
             self.treeviewFrame.tree.column("リスト数", anchor=tkinter.CENTER, width=50)
 
             self.treeviewFrame.tree.heading("番号", text="番号", anchor=tkinter.CENTER)
             self.treeviewFrame.tree.heading("smf名", text="smf名", anchor=tkinter.CENTER)
             self.treeviewFrame.tree.heading("長さ", text="長さ", anchor=tkinter.CENTER)
-            self.treeviewFrame.tree.heading("e1", text="e1", anchor=tkinter.CENTER)
-            self.treeviewFrame.tree.heading("e2", text="e2", anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("Mesh表示1", text="Mesh表示1", anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("Mesh表示2", text="Mesh表示2", anchor=tkinter.CENTER)
             self.treeviewFrame.tree.heading("リスト数", text="リスト数", anchor=tkinter.CENTER)
 
             self.treeviewFrame.tree["displaycolumns"] = col_tuple
@@ -202,6 +202,9 @@ class SmfListWidget:
             else:
                 self.treeviewFrame.tree.see(selectId - 3)
             self.treeviewFrame.tree.selection_set(selectId)
+
+    def toHex(self, num):
+        return "0x{0:02x}".format(num)
 
     def fixed_map(self, style, option):
         return [elm for elm in style.map('Treeview', query_opt=option) if elm[:2] != ('!disabled', '!selected')]
@@ -388,7 +391,7 @@ class SmfListWidget:
                 key = smfInfoKeyList[i]
                 if i == 0:
                     copyList.append(selectItem[key])
-                elif i in [1, 2, 4, 5]:
+                elif i in [1, 2]:
                     copyList.append(int(selectItem[key], 16))
                 else:
                     copyList.append(int(selectItem[key]))
@@ -397,10 +400,8 @@ class SmfListWidget:
                 key = smfInfoKeyList[i]
                 if i == 0:
                     copyList.append(selectItem[key])
-                elif i == 1:
+                elif i in [1, 2, 3]:
                     copyList.append(int(selectItem[key]))
-                elif i in [2, 3]:
-                    copyList.append(int(selectItem[key], 16))
                 else:
                     tempInfo = self.smfList[int(selectId)][4]
                     copyList.append(tempInfo)
@@ -409,10 +410,8 @@ class SmfListWidget:
                 key = smfInfoKeyList[i]
                 if i == 0:
                     copyList.append(selectItem[key])
-                elif i == 1:
+                elif i in [1, 2]:
                     copyList.append(int(selectItem[key]))
-                elif i == 2:
-                    copyList.append(int(selectItem[key], 16))
                 else:
                     tempInfo = self.smfList[int(selectId)][3]
                     copyList.append(tempInfo)
@@ -458,6 +457,10 @@ class EditSmfListWidget(sd.Dialog):
         smfInfoKeyList = list(self.smfInfo.keys())
         smfInfoKeyList.pop(0)
         if self.decryptFile.game in ["CS", "RS"]:
+            modelFlagList = [
+                ["レール", "架線柱", "架線", "ボーン背景オブジェクト", "踏切音", "橋通過音", "スラブ軌道音", "雪が積もる"],
+                ["ドリフト検索除外", "フラグ2", "フラグ3", "フラグ4", "片輪ドリフト時飛ぶ", "左側線路片輪ドリフト時飛ぶ", "右側線路片輪ドリフト時飛ぶ", "ドリフト時吹っ飛ぶ"],
+            ]
             for i in range(len(smfInfoKeyList)):
                 self.smfInfoLb = ttk.Label(master, text=smfInfoKeyList[i], font=("", 14))
                 self.smfInfoLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
@@ -469,9 +472,9 @@ class EditSmfListWidget(sd.Dialog):
 
                     if self.mode == "modify":
                         self.varSmfInfo.set(self.smfInfo[smfInfoKeyList[i]])
-                elif i in [1, 2, 4, 5]:
+                elif i in [1, 2]:
                     mb = ttk.Menubutton(master, text="switch設定")
-                    menu = tkinter.Menu(mb)
+                    menu = tkinter.Menu(mb, tearoff=0)
                     mb["menu"] = menu
 
                     Flg0 = tkinter.BooleanVar()
@@ -484,14 +487,14 @@ class EditSmfListWidget(sd.Dialog):
                     Flg7 = tkinter.BooleanVar()
                     flagList = [Flg0, Flg1, Flg2, Flg3, Flg4, Flg5, Flg6, Flg7]
                     self.varList.append(flagList)
-                    menu.add_checkbutton(label="フラグ0", variable=Flg7)
-                    menu.add_checkbutton(label="フラグ1", variable=Flg6)
-                    menu.add_checkbutton(label="フラグ2", variable=Flg5)
-                    menu.add_checkbutton(label="フラグ3", variable=Flg4)
-                    menu.add_checkbutton(label="フラグ4", variable=Flg3)
-                    menu.add_checkbutton(label="フラグ5", variable=Flg2)
-                    menu.add_checkbutton(label="フラグ6", variable=Flg1)
-                    menu.add_checkbutton(label="フラグ7", variable=Flg0)
+                    menu.add_checkbutton(label=modelFlagList[i - 1][7], variable=Flg7)
+                    menu.add_checkbutton(label=modelFlagList[i - 1][6], variable=Flg6)
+                    menu.add_checkbutton(label=modelFlagList[i - 1][5], variable=Flg5)
+                    menu.add_checkbutton(label=modelFlagList[i - 1][4], variable=Flg4)
+                    menu.add_checkbutton(label=modelFlagList[i - 1][3], variable=Flg3)
+                    menu.add_checkbutton(label=modelFlagList[i - 1][2], variable=Flg2)
+                    menu.add_checkbutton(label=modelFlagList[i - 1][1], variable=Flg1)
+                    menu.add_checkbutton(label=modelFlagList[i - 1][0], variable=Flg0)
                     if self.mode == "modify":
                         val = int(self.smfInfo[smfInfoKeyList[i]], 16)
                         for j in range(8):
@@ -527,7 +530,7 @@ class EditSmfListWidget(sd.Dialog):
 
                     if self.mode == "modify":
                         self.varSmfInfo.set(self.smfInfo[smfInfoKeyList[i]])
-                elif i == 1:
+                else:
                     self.varSmfInfo = tkinter.IntVar()
                     self.varList.append(self.varSmfInfo)
                     self.smfInfoEt = ttk.Entry(master, textvariable=self.varSmfInfo, font=("", 14))
@@ -535,40 +538,11 @@ class EditSmfListWidget(sd.Dialog):
                     if self.mode == "modify":
                         self.varSmfInfo.set(self.smfInfo[smfInfoKeyList[i]])
                     elif self.mode == "insert":
-                        default = 8
+                        if i == 1:
+                            default = 8
+                        else:
+                            default = 255
                         self.varSmfInfo.set(default)
-                elif i in [2, 3]:
-                    mb = ttk.Menubutton(master, text="switch設定")
-                    menu = tkinter.Menu(mb)
-                    mb["menu"] = menu
-
-                    Flg0 = tkinter.BooleanVar()
-                    Flg1 = tkinter.BooleanVar()
-                    Flg2 = tkinter.BooleanVar()
-                    Flg3 = tkinter.BooleanVar()
-                    Flg4 = tkinter.BooleanVar()
-                    Flg5 = tkinter.BooleanVar()
-                    Flg6 = tkinter.BooleanVar()
-                    Flg7 = tkinter.BooleanVar()
-                    flagList = [Flg0, Flg1, Flg2, Flg3, Flg4, Flg5, Flg6, Flg7]
-                    self.varList.append(flagList)
-                    menu.add_checkbutton(label="フラグ0", variable=Flg7)
-                    menu.add_checkbutton(label="フラグ1", variable=Flg6)
-                    menu.add_checkbutton(label="フラグ2", variable=Flg5)
-                    menu.add_checkbutton(label="フラグ3", variable=Flg4)
-                    menu.add_checkbutton(label="フラグ4", variable=Flg3)
-                    menu.add_checkbutton(label="フラグ5", variable=Flg2)
-                    menu.add_checkbutton(label="フラグ6", variable=Flg1)
-                    menu.add_checkbutton(label="フラグ7", variable=Flg0)
-                    if self.mode == "modify":
-                        val = int(self.smfInfo[smfInfoKeyList[i]], 16)
-                        for j in range(8):
-                            if val & (2**j) == 0:
-                                flagList[j].set(False)
-                            else:
-                                flagList[j].set(True)
-
-                    mb.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
         else:
             smfInfoKeyList.pop()
             for i in range(len(smfInfoKeyList)):
@@ -582,7 +556,7 @@ class EditSmfListWidget(sd.Dialog):
 
                     if self.mode == "modify":
                         self.varSmfInfo.set(self.smfInfo[smfInfoKeyList[i]])
-                elif i == 1:
+                else:
                     self.varSmfInfo = tkinter.IntVar()
                     self.varList.append(self.varSmfInfo)
                     self.smfInfoEt = ttk.Entry(master, textvariable=self.varSmfInfo, font=("", 14))
@@ -590,40 +564,11 @@ class EditSmfListWidget(sd.Dialog):
                     if self.mode == "modify":
                         self.varSmfInfo.set(self.smfInfo[smfInfoKeyList[i]])
                     elif self.mode == "insert":
-                        default = 8
+                        if i == 1:
+                            default = 8
+                        else:
+                            default = 255
                         self.varSmfInfo.set(default)
-                elif i == 2:
-                    mb = ttk.Menubutton(master, text="switch設定")
-                    menu = tkinter.Menu(mb)
-                    mb["menu"] = menu
-
-                    Flg0 = tkinter.BooleanVar()
-                    Flg1 = tkinter.BooleanVar()
-                    Flg2 = tkinter.BooleanVar()
-                    Flg3 = tkinter.BooleanVar()
-                    Flg4 = tkinter.BooleanVar()
-                    Flg5 = tkinter.BooleanVar()
-                    Flg6 = tkinter.BooleanVar()
-                    Flg7 = tkinter.BooleanVar()
-                    flagList = [Flg0, Flg1, Flg2, Flg3, Flg4, Flg5, Flg6, Flg7]
-                    self.varList.append(flagList)
-                    menu.add_checkbutton(label="フラグ0", variable=Flg7)
-                    menu.add_checkbutton(label="フラグ1", variable=Flg6)
-                    menu.add_checkbutton(label="フラグ2", variable=Flg5)
-                    menu.add_checkbutton(label="フラグ3", variable=Flg4)
-                    menu.add_checkbutton(label="フラグ4", variable=Flg3)
-                    menu.add_checkbutton(label="フラグ5", variable=Flg2)
-                    menu.add_checkbutton(label="フラグ6", variable=Flg1)
-                    menu.add_checkbutton(label="フラグ7", variable=Flg0)
-                    if self.mode == "modify":
-                        val = int(self.smfInfo[smfInfoKeyList[i]], 16)
-                        for j in range(8):
-                            if val & (2**j) == 0:
-                                flagList[j].set(False)
-                            else:
-                                flagList[j].set(True)
-
-                    mb.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
 
         if self.mode == "insert":
             self.setInsertWidget(master, len(smfInfoKeyList))
@@ -649,7 +594,7 @@ class EditSmfListWidget(sd.Dialog):
                         for i in range(len(self.varList)):
                             if i == 0:
                                 res = self.varList[i].get()
-                            elif i in [1, 2, 4, 5]:
+                            elif i in [1, 2]:
                                 bitList = self.varList[i]
                                 res = 0
                                 for j in range(len(bitList)):
@@ -664,17 +609,12 @@ class EditSmfListWidget(sd.Dialog):
                     except Exception:
                         errorMsg = "整数で入力してください。"
                         mb.showerror(title="数字エラー", message=errorMsg)
+                        return False
                 elif self.decryptFile.game == "BS":
                     try:
                         for i in range(len(self.varList)):
                             if i == 0:
                                 res = self.varList[i].get()
-                            elif i in [2, 3]:
-                                bitList = self.varList[i]
-                                res = 0
-                                for j in range(len(bitList)):
-                                    if bitList[j].get():
-                                        res |= (2**j)
                             else:
                                 res = int(self.varList[i].get())
                             self.resultValueList.append(res)
@@ -691,17 +631,12 @@ class EditSmfListWidget(sd.Dialog):
                     except Exception:
                         errorMsg = "整数で入力してください。"
                         mb.showerror(title="数字エラー", message=errorMsg)
+                        return False
                 else:
                     try:
                         for i in range(len(self.varList)):
                             if i == 0:
                                 res = self.varList[i].get()
-                            elif i == 2:
-                                bitList = self.varList[i]
-                                res = 0
-                                for j in range(len(bitList)):
-                                    if bitList[j].get():
-                                        res |= (2**j)
                             else:
                                 res = int(self.varList[i].get())
                             self.resultValueList.append(res)
@@ -718,9 +653,11 @@ class EditSmfListWidget(sd.Dialog):
                     except Exception:
                         errorMsg = "整数で入力してください。"
                         mb.showerror(title="数字エラー", message=errorMsg)
+                        return False
             except Exception:
                 errorMsg = "予想外のエラーです"
                 mb.showerror(title="エラー", message=errorMsg)
+                return False
 
     def apply(self):
         self.reloadFlag = True
@@ -932,6 +869,7 @@ class EditListElementWidget(sd.Dialog):
             except Exception:
                 errorMsg = "予想外のエラーです"
                 mb.showerror(title="エラー", message=errorMsg)
+                return False
 
     def apply(self):
         self.dirtyFlag = True

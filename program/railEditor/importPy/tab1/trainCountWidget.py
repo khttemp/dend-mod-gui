@@ -70,9 +70,11 @@ class EditTrainCountWidget(sd.Dialog):
                 except Exception:
                     errorMsg = "整数で入力してください。"
                     mb.showerror(title="数字エラー", message=errorMsg)
+                    return False
             except Exception:
                 errorMsg = "予想外のエラーです"
                 mb.showerror(title="エラー", message=errorMsg)
+                return False
 
             if self.resultValue < self.val:
                 msg = "設定した値は現在より少なく設定してます\nこの数で修正しますか？"

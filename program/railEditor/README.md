@@ -75,13 +75,15 @@ RSのレール情報の要素についは、[【こちら】](/program/railEdito
 
 ![else3](image/else3.png)
 
-未詳
+指定のレール、または架線柱に
+
+モデルを置き、ANIME効果を適用する。
 
 ### 要素４
 
 ![else4](image/else4.png)
 
-未詳
+[【こちら】](/program/railEditor/raildata.md)のリンクを参照
 
 ### AMB情報
 

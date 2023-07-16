@@ -104,8 +104,6 @@ class RailDecrypt:
             index += b
             for j in range(2):
                 res = self.byteArr[index]
-                if j != 0:
-                    res = hex(res)
                 smfInfo.append(res)
                 index += 1
 

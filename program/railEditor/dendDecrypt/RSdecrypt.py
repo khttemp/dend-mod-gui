@@ -269,8 +269,6 @@ class RailDecrypt:
             index += b
             for j in range(5):
                 res = self.byteArr[index]
-                if j != 2:
-                    res = hex(res)
                 smfInfo.append(res)
                 index += 1
             kasenchu = self.byteArr[index]
@@ -562,10 +560,19 @@ class RailDecrypt:
             tempList = []
             for j in range(endcnt):
                 tempInfo = []
-                for k in range(8):
-                    temp = self.byteArr[index]
-                    tempInfo.append(temp)
-                    index += 1
+                type1 = self.byteArr[index]
+                tempInfo.append(type1)
+                index += 1
+                type2 = struct.unpack("<h", self.byteArr[index:index + 2])[0]
+                tempInfo.append(type2)
+                index += 2
+                binType = self.byteArr[index]
+                tempInfo.append(binType)
+                index += 1
+                for k in range(2):
+                    animeNum = struct.unpack("<h", self.byteArr[index:index + 2])[0]
+                    tempInfo.append(animeNum)
+                    index += 2
                 tempList.append(tempInfo)
             else3Info.append(tempList)
             self.else3List.append(else3Info)
@@ -1433,9 +1440,13 @@ class RailDecrypt:
                 newByteArr.extend(railNoH)
                 newByteArr.append(len(valInfo[1]))
                 for j in range(len(valInfo[1])):
-                    tempList = valInfo[1][j]
-                    for k in range(8):
-                        newByteArr.append(tempList[k])
+                    tempInfo = valInfo[1][j]
+                    for k in range(len(tempInfo)):
+                        if k in [0, 2]:
+                            newByteArr.append(tempInfo[k])
+                        else:
+                            tempH = struct.pack("<h", tempInfo[k])
+                            newByteArr.extend(tempH)
 
             index = self.else4Idx
             newByteArr.extend(self.byteArr[index:])
