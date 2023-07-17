@@ -44,6 +44,32 @@ class GetMemory:
             ]
         ]
 
+        self.rail1pMemory = [
+            0x000CA558,
+            [
+                0x30,
+                0x38,
+                0x20,
+                0x100,
+                0x14,
+                0xFC,
+                0x10
+            ]
+        ]
+
+        self.rail2pMemory = [
+            0x000CA558,
+            [
+                0xBC,
+                0x4,
+                0x30,
+                0x154,
+                0x14,
+                0xFC,
+                0x10
+            ]
+        ]
+
     def open(self):
         try:
             self.mem = Pymem(self.fileName)
@@ -193,6 +219,28 @@ class GetMemory:
         except Exception:
             self.error = traceback.format_exc()
             return False
+
+    def getRailPos(self, playerNum):
+        if playerNum == 0:
+            copyMemoryAddr = copy.deepcopy(self.rail1pMemory)
+        elif playerNum == 1:
+            copyMemoryAddr = copy.deepcopy(self.rail2pMemory)
+
+        try:
+            railAddr = self.getPtrAddr(self.game_module + copyMemoryAddr[0], copyMemoryAddr[1])
+            valList = []
+
+            railNum = self.mem.read_short(railAddr)
+            valList.append(railNum)
+            railAddr += 2
+
+            railPos = self.mem.read_short(railAddr)
+            valList.append(railPos)
+
+            return valList
+        except Exception:
+            self.error = traceback.format_exc()
+            return None
 
     def getPtrAddr(self, address, offsets):
         addr = self.mem.read_int(address)

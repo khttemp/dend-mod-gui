@@ -9,6 +9,12 @@ from program.tkinterScrollbarFrameClass import ScrollbarFrame
 
 
 root = None
+v_rail1PRail = None
+v_rail1PPos = None
+v_rail2PRail = None
+v_rail2PPos = None
+railPosSearchBtn = None
+searchRailFuncId = None
 v_railNo = None
 v_ambNo = None
 v_fileName = None
@@ -33,6 +39,11 @@ def deleteAllWidget():
 
 
 def createWidget():
+    global v_rail1PRail
+    global v_rail1PPos
+    global v_rail2PRail
+    global v_rail2PPos
+    global railPosSearchBtn
     global v_railNo
     global v_ambNo
     global v_delay
@@ -45,6 +56,38 @@ def createWidget():
 
     railValList = []
     railElementList = []
+
+    railPosFrame = ttk.Frame(contentsLf)
+    railPosFrame.pack(anchor=tkinter.NW, padx=30, pady=10, fill=tkinter.X)
+
+    rail1PLf = ttk.LabelFrame(railPosFrame, text="1Pの先頭車の台車位置")
+    rail1PLf.pack(anchor=tkinter.NW, side=tkinter.LEFT)
+
+    v_rail1PRail = tkinter.IntVar()
+    v_rail1PRail.set(-1)
+    rail1PRailLb = ttk.Label(rail1PLf, textvariable=v_rail1PRail, font=("", 14), width=7, justify="center", anchor="center")
+    rail1PRailLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+
+    v_rail1PPos = tkinter.IntVar()
+    v_rail1PPos.set(-1)
+    rail1PPosLb = ttk.Label(rail1PLf, textvariable=v_rail1PPos, font=("", 14), width=7, justify="center", anchor="center")
+    rail1PPosLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+
+    rail2PLf = ttk.LabelFrame(railPosFrame, text="相手の先頭車の台車位置")
+    rail2PLf.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=10)
+
+    v_rail2PRail = tkinter.IntVar()
+    v_rail2PRail.set(-1)
+    rail2PRailLb = ttk.Label(rail2PLf, textvariable=v_rail2PRail, font=("", 14), width=7, justify="center", anchor="center")
+    rail2PRailLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+
+    v_rail2PPos = tkinter.IntVar()
+    v_rail2PPos.set(-1)
+    rail2PPosLb = ttk.Label(rail2PLf, textvariable=v_rail2PPos, font=("", 14), width=7, justify="center", anchor="center")
+    rail2PPosLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+
+    railPosSearchBtn = ttk.Button(railPosFrame, text="追跡開始", command=lambda: searchRailPos())
+    railPosSearchBtn.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=10, pady=20)
 
     railNoFrame = ttk.Frame(contentsLf)
     railNoFrame.pack(anchor=tkinter.NW, padx=30, pady=10, fill=tkinter.X)
@@ -372,6 +415,59 @@ def setAmbModel(ambModelLf, flag):
         ambElementList.append(perEt)
     else:
         ambChildElementList.append(perEt)
+
+
+def searchRailPos():
+    global railPosSearchBtn
+
+    railPosSearchBtn["text"] = "追跡終了"
+    railPosSearchBtn["command"] = lambda: searchRailPosExit()
+    railPosUpdate()
+
+
+def railPosUpdate():
+    global v_rail1PRail
+    global v_rail1PPos
+    global v_rail2PRail
+    global v_rail2PPos
+    global railPosSearchBtn
+    global searchRailFuncId
+    global memoryObj
+
+    try:
+        val1PList = memoryObj.getRailPos(0)
+        if val1PList is not None:
+            v_rail1PRail.set(val1PList[0])
+            v_rail1PPos.set(val1PList[1])
+        else:
+            v_rail1PRail.set(-1)
+            v_rail1PPos.set(-1)
+    except Exception:
+        v_rail1PRail.set(-1)
+        v_rail1PPos.set(-1)
+
+    try:
+        val2PList = memoryObj.getRailPos(1)
+        if val2PList is not None:
+            v_rail2PRail.set(val2PList[0])
+            v_rail2PPos.set(val2PList[1])
+        else:
+            v_rail2PRail.set(-1)
+            v_rail2PPos.set(-1)
+    except Exception:
+        v_rail2PRail.set(-1)
+        v_rail2PPos.set(-1)
+
+    searchRailFuncId = railPosSearchBtn.after(1, railPosUpdate)
+
+
+def searchRailPosExit():
+    global searchRailFuncId
+    global railPosSearchBtn
+
+    railPosSearchBtn.after_cancel(searchRailFuncId)
+    railPosSearchBtn["text"] = "追跡開始"
+    railPosSearchBtn["command"] = lambda: searchRailPos()
 
 
 def searchRail():
