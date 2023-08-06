@@ -48,7 +48,7 @@ Issue に上げられたバグ情報が必ず修正されるものではない�
 
 ### 車両改造
 
-実行方法は、[【こちら】](/program/lbcrEditor/README.md)のリンクを参照
+実行方法は、[【こちら】](/program/orgInfoEditor/README.md)のリンクを参照
 
 ### モデルバイナリ
 
