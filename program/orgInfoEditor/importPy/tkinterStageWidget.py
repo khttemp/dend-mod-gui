@@ -5,10 +5,8 @@ from tkinter import ttk
 from tkinter import simpledialog as sd
 from tkinter import messagebox as mb
 
-LS = 0
-BS = 1
-CS = 2
-RS = 3
+import program.orgInfoEditor.importPy.gameDefine as gameDefine
+gameDefine.load()
 
 
 class EditStageInfo(sd.Dialog):
@@ -29,7 +27,7 @@ class EditStageInfo(sd.Dialog):
 
         trackComboList = ["標準軌", "狭軌"]
 
-        if self.game > BS:
+        if self.game in [gameDefine.CS, gameDefine.RS]:
             self.trackLb = tkinter.Label(master, text="台車", font=("", 14))
             self.trackLb.grid(row=0, column=4, sticky=tkinter.W + tkinter.E)
 
@@ -57,7 +55,7 @@ class EditStageInfo(sd.Dialog):
                 self.train_3pCb.current(info[3])
             self.trainList.append(self.train_3pCb)
 
-            if self.game > BS:
+            if self.game in [gameDefine.CS, gameDefine.RS]:
                 self.trackCb = ttk.Combobox(master, font=("", 14), width=8, value=trackComboList)
                 self.trackCb.grid(row=i + 1, column=4, sticky=tkinter.W + tkinter.E)
                 self.trackCb.current(info[4])
@@ -74,7 +72,7 @@ class EditStageInfo(sd.Dialog):
             stageList = self.decryptFile.stageList
 
             infoCnt = 4
-            if self.game == BS:
+            if self.game == gameDefine.BS:
                 infoCnt = 3
 
             for i in range(self.decryptFile.stageCnt):
@@ -93,7 +91,7 @@ class EditStageInfo(sd.Dialog):
                     train_3pCb = -1
                 stageList[self.decryptFile.stageEditIdx + i][3] = train_3pCb
 
-                if self.game > BS:
+                if self.game in [gameDefine.CS, gameDefine.RS]:
                     trackCb = self.trainList[infoCnt * i + 3].current()
                     stageList[self.decryptFile.stageEditIdx + i][4] = trackCb
 

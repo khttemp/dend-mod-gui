@@ -5,10 +5,8 @@ from tkinter import ttk
 from tkinter import simpledialog as sd
 from tkinter import messagebox as mb
 
-LS = 0
-BS = 1
-CS = 2
-RS = 3
+import program.orgInfoEditor.importPy.gameDefine as gameDefine
+gameDefine.load()
 
 
 class TrainModelWidget():
@@ -24,7 +22,7 @@ class TrainModelWidget():
         edit_hensei_button = innerButtonList[3]
         edit_hensei_button["command"] = lambda: self.editHenseiTrain(widgetList, innerButtonList, reloadFunc)
 
-        if self.game not in [LS, BS]:
+        if self.game not in [gameDefine.LS, gameDefine.BS]:
             edit_model_button = innerButtonList[4]
             edit_model_button["command"] = lambda: self.editModel()
         else:
@@ -105,14 +103,14 @@ class TrainModelWidget():
         colorBtn["state"] = "disabled"
         edit_hensei_button["command"] = lambda: self.saveHenseiTrain(widgetList, reloadFunc)
 
-        if self.game not in [LS, BS]:
+        if self.game not in [gameDefine.LS, gameDefine.BS]:
             edit_model_button = innerButtonList[4]
             edit_model_button["state"] = "disabled"
 
         for combo in self.comboList:
             combo["state"] = "readonly"
 
-        if self.game == LS:
+        if self.game == gameDefine.LS:
             modelInfo = self.decryptFile.trainModelList[self.trainIdx]
             for i in range(len(self.comboList)):
                 if len(modelInfo["pantaNames"]) == 0:
@@ -283,11 +281,11 @@ class EditModelInfo(sd.Dialog):
 
         if self.selectListNum == 0:
             selectName = "台車モデル"
-            if self.game <= BS:
+            if self.game in [gameDefine.LS, gameDefine.BS]:
                 if self.trackModelList.size() <= 1:
                     mb.showerror(title="エラー", message="台車モデルは1個以上である必要あります")
                     return
-            else:
+            elif self.game in [gameDefine.CS, gameDefine.RS]:
                 if self.trackModelList.size() <= 2:
                     mb.showerror(title="エラー", message="台車モデルは2個以上である必要あります")
                     return

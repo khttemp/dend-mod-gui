@@ -3,11 +3,6 @@ from tkinter import ttk
 from tkinter import simpledialog as sd
 from tkinter import messagebox as mb
 
-LS = 0
-BS = 1
-CS = 2
-RS = 3
-
 
 class HurikoWidget():
     def __init__(self, root, cbIdx, i, perfCnt, frame, huriko, decryptFile, varList, btnList, defaultData):

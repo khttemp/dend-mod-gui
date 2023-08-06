@@ -14,7 +14,7 @@ from tkinter import messagebox as mb
 import program.comicscript.comicscript as comicscriptProgram
 import program.mdlBin.mdlBin as mdlBinProgram
 import program.mdlinfo.mdlinfo as mdlinfoProgram
-import program.lbcrEditor.lbcrEditor as lbcrEditorProgram
+import program.orgInfoEditor.orgInfoEditor as orgInfoEditorProgram
 import program.musicEditor.musicEditor as musicEditorProgram
 import program.fvtMaker.fvtMaker as fvtMakerProgram
 import program.railEditor.railEditor as railEditorProgram
@@ -39,8 +39,8 @@ def callProgram(programName):
 
     clearProgramFrame()
     selectedProgram = programName
-    if selectedProgram == "lbcrEditor":
-        lbcrEditorProgram.call_lbcrEditor(root, programFrame)
+    if selectedProgram == "orgInfoEditor":
+        orgInfoEditorProgram.call_orgInfoEditor(root, programFrame)
     elif selectedProgram == "mdlBin":
         mdlBinProgram.call_mdlBin(root, programFrame)
     elif selectedProgram == "mdlinfo":
@@ -76,8 +76,8 @@ def loadFile():
     global v_mtrlCheck
     global selectedProgram
 
-    if selectedProgram == "lbcrEditor":
-        lbcrEditorProgram.openFile()
+    if selectedProgram == "orgInfoEditor":
+        orgInfoEditorProgram.openFile()
     elif selectedProgram == "mdlBin":
         mdlBinProgram.openFile()
     elif selectedProgram == "mdlinfo":
@@ -390,7 +390,7 @@ v_prog = tkinter.IntVar()
 progmenu = tkinter.Menu(menubar, tearoff=False)
 progmenu.add_radiobutton(label="SS改造", value=-1, variable=v_prog, command=lambda: callProgram("SSUnity"))
 progmenu.add_separator()
-progmenu.add_radiobutton(label="車両性能", value=1, variable=v_prog, command=lambda: callProgram("lbcrEditor"))
+progmenu.add_radiobutton(label="車両性能", value=1, variable=v_prog, command=lambda: callProgram("orgInfoEditor"))
 progmenu.add_radiobutton(label="モデルバイナリ", value=2, variable=v_prog, command=lambda: callProgram("mdlBin"))
 progmenu.add_radiobutton(label="MDLINFO", value=3, variable=v_prog, command=lambda: callProgram("mdlinfo"))
 progmenu.add_separator()

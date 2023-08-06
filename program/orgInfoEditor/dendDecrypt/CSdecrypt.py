@@ -130,38 +130,40 @@ class CSdecrypt():
         index += 1
 
         for i in range(trainCnt):
+            trainOrgInfo = []
             self.indexList.append(index)
-            train_speed = []
+            trainSpeedInfo = []
             notchCnt = line[index]
             index += 1
             for j in range(4):
                 if j == 2:
                     for k in range(notchCnt):
                         signedB = struct.unpack("<b", line[index].to_bytes(1, 'big'))[0]
-                        train_speed.append(signedB)
+                        trainSpeedInfo.append(signedB)
                         index += 1
                 else:
                     for k in range(notchCnt):
                         speed = struct.unpack("<f", line[index:index + 4])[0]
                         speed = round(speed, 4)
-                        train_speed.append(speed)
+                        trainSpeedInfo.append(speed)
                         index += 4
-            self.trainInfoList.append(train_speed)
+            trainOrgInfo.append(trainSpeedInfo)
 
-            train_perf = []
+            trainPerfInfo = []
             for j in range(len(perfName)):
                 perf = struct.unpack("<f", line[index:index + 4])[0]
                 perf = round(perf, 5)
-                train_perf.append(perf)
+                trainPerfInfo.append(perf)
                 index += 4
-            self.trainInfoList.append(train_perf)
+            trainOrgInfo.append(trainPerfInfo)
 
-            train_huriko = []
+            trainHurikoInfo = []
             for j in range(2):
                 signedB = struct.unpack("<b", line[index].to_bytes(1, 'big'))[0]
-                train_huriko.append(signedB)
+                trainHurikoInfo.append(signedB)
                 index += 1
-            self.trainInfoList.append(train_huriko)
+            trainOrgInfo.append(trainHurikoInfo)
+            self.trainInfoList.append(trainOrgInfo)
 
             self.mdlIndexList.append(index)
 
@@ -406,7 +408,8 @@ class CSdecrypt():
         try:
             newByteArr = bytearray()
             index = self.indexList[trainIdx]
-            speed = self.trainInfoList[3 * trainIdx]
+            trainOrgInfo = self.trainInfoList[trainIdx]
+            speed = trainOrgInfo[0]
             notchContentCnt = 4
             oldNotchNum = len(speed) // notchContentCnt
 
@@ -1141,7 +1144,8 @@ class CSdecrypt():
     def extractCsvTrainInfo(self, trainIdx, filePath):
         try:
             w = codecs.open(filePath, "w", "utf-8-sig", "ignore")
-            speedList = self.trainInfoList[3 * trainIdx]
+            trainOrgInfo = self.trainInfoList[trainIdx]
+            speedList = trainOrgInfo[0]
             index = self.indexList[trainIdx]
             notchCnt = self.byteArr[index]
 
@@ -1157,12 +1161,12 @@ class CSdecrypt():
                         w.write(",")
             w.write("性能\n")
 
-            perfList = self.trainInfoList[3 * trainIdx + 1]
+            perfList = trainOrgInfo[1]
             perfNameList = self.trainPerfNameList
             for i in range(len(perfList)):
                 w.write("{0},{1}\n".format(perfNameList[i], perfList[i]))
 
-            hurikoList = self.trainInfoList[3 * trainIdx + 2]
+            hurikoList = trainOrgInfo[2]
             hurikoNameList = self.trainHurikoNameList
 
             for i in range(len(hurikoList)):

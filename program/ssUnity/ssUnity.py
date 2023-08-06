@@ -118,7 +118,7 @@ def extract():
     elif fileType == "AudioClip":
         ext = ".wav"
     filename = selectItem["名前"] + ext
-    file_path = fd.asksaveasfilename(initialfile=filename, defaultextension='txt', filetypes=[('ファイル', '*' + ext)])
+    file_path = fd.asksaveasfilename(initialfile=filename, filetypes=[('ファイル', '*' + ext)])
     errorMsg = "バイナリで取り出す機能が失敗しました。\n権限問題の可能性があります。"
     if file_path:
         try:
@@ -156,7 +156,7 @@ def loadAndSave():
         errorMsg = "AudioClipはサポートしていません"
         mb.showerror(title="エラー", message=errorMsg)
         return
-    file_path = fd.askopenfilename(defaultextension='csv', filetypes=[("ファイル", "*" + ext)])
+    file_path = fd.askopenfilename(filetypes=[("ファイル", "*" + ext)])
     if not file_path:
         return
     result = mb.askquestion(title="確認", message="denファイルを上書きします\nそれでもよろしいでしょうか？\n(権限問題で上書き失敗することもあります)", icon="warning")

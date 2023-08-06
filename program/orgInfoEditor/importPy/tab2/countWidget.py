@@ -3,10 +3,8 @@ from tkinter import ttk
 from tkinter import simpledialog as sd
 from tkinter import messagebox as mb
 
-LS = 0
-BS = 1
-CS = 2
-RS = 3
+import program.orgInfoEditor.importPy.gameDefine as gameDefine
+gameDefine.load()
 
 
 class CountWidget():
@@ -19,40 +17,54 @@ class CountWidget():
         self.notchContentCnt = decryptFile.notchContentCnt
         self.reloadFunc = reloadFunc
 
-        index = self.decryptFile.indexList[self.trainIdx]
-        notchNum = self.decryptFile.byteArr[index]
+        if self.game in [gameDefine.LS, gameDefine.BS, gameDefine.CS, gameDefine.RS]:
+            index = self.decryptFile.indexList[self.trainIdx]
+            notchNum = self.decryptFile.byteArr[index]
 
-        modelInfo = self.decryptFile.trainModelList[self.trainIdx]
+            modelInfo = self.decryptFile.trainModelList[self.trainIdx]
 
-        self.countFrame = ttk.Frame(self.frame)
-        self.countFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=15, pady=5)
+            self.countFrame = ttk.Frame(self.frame)
+            self.countFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=15, pady=5)
 
-        self.notchLb = tkinter.Label(self.countFrame, text="ノッチ", font=("", 20), width=7, borderwidth=1, relief="solid")
-        self.notchLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
-        self.varNotch = tkinter.IntVar()
-        self.varNotch.set(notchNum)
-        self.notchTextLb = tkinter.Label(self.countFrame, textvariable=self.varNotch, font=("", 20), width=7, borderwidth=1, relief="solid")
-        self.notchTextLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
-        self.notchBtn = tkinter.Button(self.countFrame, text="修正", font=("", 14), command=lambda: self.editNotchVar(self.varNotch, self.varNotch.get()))
-        self.notchBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
+            self.notchLb = tkinter.Label(self.countFrame, text="ノッチ", font=("", 20), width=7, borderwidth=1, relief="solid")
+            self.notchLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
+            self.varNotch = tkinter.IntVar()
+            self.varNotch.set(notchNum)
+            self.notchTextLb = tkinter.Label(self.countFrame, textvariable=self.varNotch, font=("", 20), width=7, borderwidth=1, relief="solid")
+            self.notchTextLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
+            self.notchBtn = tkinter.Button(self.countFrame, text="修正", font=("", 14), command=lambda: self.editNotchVar(self.varNotch, self.varNotch.get()))
+            self.notchBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
 
-        self.henseiLb = tkinter.Label(self.countFrame, text="編成数", font=("", 20), width=7, borderwidth=1, relief="solid")
-        self.henseiLb.grid(row=1, column=0, sticky=tkinter.W + tkinter.E)
-        self.varHensei = tkinter.IntVar()
-        self.varHensei.set(modelInfo["mdlCnt"])
-        self.henseiTextLb = tkinter.Label(self.countFrame, textvariable=self.varHensei, font=("", 20), width=7, borderwidth=1, relief="solid")
-        self.henseiTextLb.grid(row=1, column=1, sticky=tkinter.W + tkinter.E)
-        self.henseiBtn = tkinter.Button(self.countFrame, text="修正", font=("", 14), command=lambda: self.editHenseiVar(self.varHensei, self.varHensei.get()))
-        self.henseiBtn.grid(row=1, column=2, sticky=tkinter.W + tkinter.E)
+            self.henseiLb = tkinter.Label(self.countFrame, text="編成数", font=("", 20), width=7, borderwidth=1, relief="solid")
+            self.henseiLb.grid(row=1, column=0, sticky=tkinter.W + tkinter.E)
+            self.varHensei = tkinter.IntVar()
+            self.varHensei.set(modelInfo["mdlCnt"])
+            self.henseiTextLb = tkinter.Label(self.countFrame, textvariable=self.varHensei, font=("", 20), width=7, borderwidth=1, relief="solid")
+            self.henseiTextLb.grid(row=1, column=1, sticky=tkinter.W + tkinter.E)
+            self.henseiBtn = tkinter.Button(self.countFrame, text="修正", font=("", 14), command=lambda: self.editHenseiVar(self.varHensei, self.varHensei.get()))
+            self.henseiBtn.grid(row=1, column=2, sticky=tkinter.W + tkinter.E)
 
-        self.colorLb = tkinter.Label(self.countFrame, text="カラー数", font=("", 20), width=7, borderwidth=1, relief="solid")
-        self.colorLb.grid(row=2, column=0, sticky=tkinter.W + tkinter.E)
-        self.varColor = tkinter.IntVar()
-        self.varColor.set(modelInfo["colorCnt"])
-        self.colorTextLb = tkinter.Label(self.countFrame, textvariable=self.varColor, font=("", 20), width=7, borderwidth=1, relief="solid")
-        self.colorTextLb.grid(row=2, column=1, sticky=tkinter.W + tkinter.E)
-        self.colorBtn = tkinter.Button(self.countFrame, text="修正", font=("", 14), command=lambda: self.editVar(self.varColor, self.varColor.get()))
-        self.colorBtn.grid(row=2, column=2, sticky=tkinter.W + tkinter.E)
+            self.colorLb = tkinter.Label(self.countFrame, text="カラー数", font=("", 20), width=7, borderwidth=1, relief="solid")
+            self.colorLb.grid(row=2, column=0, sticky=tkinter.W + tkinter.E)
+            self.varColor = tkinter.IntVar()
+            self.varColor.set(modelInfo["colorCnt"])
+            self.colorTextLb = tkinter.Label(self.countFrame, textvariable=self.varColor, font=("", 20), width=7, borderwidth=1, relief="solid")
+            self.colorTextLb.grid(row=2, column=1, sticky=tkinter.W + tkinter.E)
+            self.colorBtn = tkinter.Button(self.countFrame, text="修正", font=("", 14), command=lambda: self.editVar(self.varColor, self.varColor.get()))
+            self.colorBtn.grid(row=2, column=2, sticky=tkinter.W + tkinter.E)
+        else:
+            trainOrgInfo = self.decryptFile.trainInfoList[self.trainIdx]
+            speedList = trainOrgInfo[0]
+            notchNum = len(speedList) // self.notchContentCnt
+
+            self.notchLb = tkinter.Label(self.frame, text="ノッチ", font=("", 20), width=7, borderwidth=1, relief="solid")
+            self.notchLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
+            self.varNotch = tkinter.IntVar()
+            self.varNotch.set(notchNum)
+            self.notchTextLb = tkinter.Label(self.frame, textvariable=self.varNotch, font=("", 20), width=7, borderwidth=1, relief="solid")
+            self.notchTextLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
+            self.notchBtn = tkinter.Button(self.frame, text="修正", font=("", 14), command=lambda: self.editNotchVar(self.varNotch, self.varNotch.get()))
+            self.notchBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
 
     def editNotchVar(self, var, value):
         result = EditNotchInfo(self.root, "ノッチ情報修正", self.trainIdx, self.game, self.decryptFile, self.notchContentCnt)
@@ -95,8 +107,8 @@ class CountWidget():
                 mb.showerror(title="エラー", message=errorMsg)
 
     def editVar(self, var, value):
-        if self.game in [LS, BS]:
-            if self.game == LS:
+        if self.game in [gameDefine.LS, gameDefine.BS]:
+            if self.game == gameDefine.LS:
                 errorMsg = "LSはカラー数修正をサポートしません"
             else:
                 errorMsg = "BSカラー修正はCSVで行ってください"
@@ -142,8 +154,13 @@ class EditNotchInfo(sd.Dialog):
         super(EditNotchInfo, self).__init__(parent=master, title=title)
 
     def body(self, frame):
-        index = self.decryptFile.indexList[self.trainIdx]
-        notchNum = self.decryptFile.byteArr[index]
+        if self.game in [gameDefine.LS, gameDefine.BS, gameDefine.CS, gameDefine.RS]:
+            index = self.decryptFile.indexList[self.trainIdx]
+            notchNum = self.decryptFile.byteArr[index]
+        else:
+            trainOrgInfo = self.decryptFile.trainInfoList[self.trainIdx]
+            speedList = trainOrgInfo[0]
+            notchNum = len(speedList) // self.notchContentCnt
 
         if notchNum == 4:
             notchIdx = 0
@@ -160,7 +177,7 @@ class EditNotchInfo(sd.Dialog):
         self.notchCb.grid(row=1, column=0)
 
     def validate(self):
-        if self.game <= BS:
+        if self.game in [gameDefine.LS, gameDefine.BS]:
             if self.notchCb.current() == 2:
                 mb.showerror(title="エラー", message="12ノッチを対応できません")
                 return False

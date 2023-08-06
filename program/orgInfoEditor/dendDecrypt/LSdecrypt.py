@@ -2,36 +2,45 @@ import struct
 import traceback
 import codecs
 
-BSTrainName = [
+LSTrainName = [
     "H2000",
-    "K8000",
     "H8200",
-    "UV21000",
-    "H8008",
-    "K2199",
-    "K21XX",
-    "H7001",
-    "K800",
+    "H2300",
     "JR223",
+    "21000R",
+    "K800",
+    "H7000",
+    "DEKI",
+    "TAKUMI",
+    "K80",
+    "S300"
 ]
 
 perfName = [
     "None_Tlk",
-    "add",
+    "add1",
+    "add2",
+    "add3",
     "UpHill",
     "DownHill",
     "Weight",
-    "First_break",
-    "Second_Breake(未使用)",
-    "SpBreake",
     "CompPower",
+    "First_break",
+    "未詳(未使用)",
+    "Second_Breake",
+    "未詳(未使用)",
+    "未詳(未使用)",
+    "未詳(未使用)",
+    "SpBreake",
+    "未詳(未使用)",
+    "未詳(未使用)",
     "D_Speed(未使用)",
     "One_Speed",
     "OutParam",
     "D_Add",
-    "D_Add2",
-    "D_AddFrame(未使用)",
-    "Carbe(未使用)",
+    "未詳(未使用)",
+    "未詳(未使用)",
+    "Carbe",
     "Jump",
     "ChangeFrame",
     "OutRun_Top",
@@ -45,33 +54,28 @@ perfName = [
 hurikoName = ""
 
 
-class BSdecrypt():
+class LSdecrypt():
     def __init__(self, filePath):
         self.filePath = filePath
-        self.trainNameList = BSTrainName
+        self.trainNameList = LSTrainName
         self.trainPerfNameList = perfName
         self.trainHurikoNameList = hurikoName
         self.trainInfoList = []
         self.indexList = []
         self.mdlIndexList = []
         self.henseiIndexList = []
-        self.henseiModelEndIndexList = []
         self.henseiStartIndexList = []
         self.henseiEndIndexList = []
         self.else2IndexList = []
+        self.elseList2IndexList = []
         self.lensIndexList = []
         self.tailIndexList = []
         self.tailEndIndexList = []
-        self.colorMapEndIndexList = []
-        self.csvReadInfo = {}
         self.byteArr = []
         self.error = ""
         self.trainModelList = []
         self.colorIdx = -1
         self.stageIdx = -1
-        self.stageList = []
-        self.stageEditIdx = 0
-        self.stageCnt = 6
         self.notchContentCnt = 2
 
     def open(self):
@@ -96,18 +100,15 @@ class BSdecrypt():
         self.indexList = []
         self.mdlIndexList = []
         self.henseiIndexList = []
-        self.henseiModelEndIndexList = []
         self.henseiStartIndexList = []
         self.henseiEndIndexList = []
         self.else2IndexList = []
+        self.elseList2IndexList = []
         self.lensIndexList = []
         self.tailIndexList = []
         self.tailEndIndexList = []
-        self.colorMapEndIndexList = []
-        self.csvReadInfo = {}
         self.error = ""
         self.trainModelList = []
-        self.stageList = []
 
         index = 0
         trainCnt = line[index]
@@ -120,25 +121,27 @@ class BSdecrypt():
             line[index:index + trainNameCnt].decode("shift-jis")
             index += trainNameCnt
 
+            trainOrgInfo = []
             self.indexList.append(index)
-            train_speed = []
+            trainSpeedInfo = []
             notchCnt = int(line[index])
             index += 1
             for j in range(2):
                 for k in range(notchCnt):
                     speed = struct.unpack("<f", line[index:index + 4])[0]
                     speed = round(speed, 4)
-                    train_speed.append(speed)
+                    trainSpeedInfo.append(speed)
                     index += 4
-            self.trainInfoList.append(train_speed)
+            trainOrgInfo.append(trainSpeedInfo)
 
-            train_perf = []
+            trainPerfInfo = []
             for j in range(len(perfName)):
                 perf = struct.unpack("<f", line[index:index + 4])[0]
                 perf = round(perf, 5)
-                train_perf.append(perf)
+                trainPerfInfo.append(perf)
                 index += 4
-            self.trainInfoList.append(train_perf)
+            trainOrgInfo.append(trainPerfInfo)
+            self.trainInfoList.append(trainOrgInfo)
 
             self.mdlIndexList.append(index)
 
@@ -158,7 +161,6 @@ class BSdecrypt():
                 "elseList2": [],
                 "lensList": [],
                 "tailList": [],
-                "colorMapList": []
             }
 
             daishaCnt = line[index]
@@ -177,29 +179,34 @@ class BSdecrypt():
             train["mdlCnt"] = henseiCnt
             index += 1
 
-            modelCnt = line[index]
-            index += 1
-            for j in range(modelCnt):
+            # LSはモデル3つ固定
+            for j in range(3):
                 modelNameCnt = line[index]
                 index += 1
                 modelName = line[index:index + modelNameCnt].decode("shift-jis")
                 train["mdlNames"].append(modelName)
                 index += modelNameCnt
 
-            train["mdlNames"].append("なし")
-
-            for j in range(modelCnt):
+            # LSはCOLも3つ固定
+            for j in range(3):
                 colNameCnt = line[index]
                 index += 1
                 colName = line[index:index + colNameCnt].decode("shift-jis")
                 train["colNames"].append(colName)
                 index += colNameCnt
 
-            train["colNames"].append("なし")
+            # LSは固定で自動編成
+            for i in range(henseiCnt):
+                train["mdlList"].append(1)
+            train["mdlList"][0] = 0
+            train["mdlList"][-1] = len(train["mdlNames"]) - 1
+
+            self.henseiStartIndexList.append(index)
 
             pantaModelCnt = line[index]
             index += 1
 
+            # 86、新幹線はパンタなし
             if pantaModelCnt > 0:
                 for j in range(pantaModelCnt):
                     pantaModelNameCnt = line[index]
@@ -210,19 +217,6 @@ class BSdecrypt():
 
                 train["pantaNames"].append("なし")
 
-            self.henseiModelEndIndexList.append(index)
-
-            self.henseiStartIndexList.append(index)
-            # mdlList
-            for j in range(henseiCnt):
-                idx = line[index]
-                if idx == 0xFF:
-                    train["mdlList"].append(-1)
-                else:
-                    train["mdlList"].append(idx)
-                index += 1
-
-            if pantaModelCnt > 0:
                 for j in range(henseiCnt):
                     idx = line[index]
                     if idx == 0xFF:
@@ -233,14 +227,46 @@ class BSdecrypt():
 
             self.henseiEndIndexList.append(index)
 
-            for j in range(5):
-                b = line[index]
+            for j in range(9):
+                idx = line[index]
+                if idx == 0xFF:
+                    idx = -1
+                train["elseModel"].append(idx)
                 index += 1
-                train["else2Model"].append(line[index:index + b].decode("shift-jis"))
-                index += b
 
             self.else2IndexList.append(index)
-            elseList2 = []
+
+            for j in range(4):
+                seLen = line[index]
+                index += 1
+                seFileName = line[index:index + seLen].decode("shift-jis")
+                train["else2Model"].append(seFileName)
+                index += seLen
+
+            seLen = line[index]
+            index += 1
+            seFileName = line[index:index + seLen].decode("shift-jis")
+            train["else2Model"].append(seFileName)
+            index += seLen
+            tempF = struct.unpack("<f", line[index:index + 4])[0]
+            tempF = "{0}".format(round(tempF, 4))
+            train["else2Model"].append(tempF)
+            index += 4
+
+            sstLen = line[index]
+            index += 1
+            sstFileName = line[index:index + sstLen].decode("shift-jis")
+            train["else2Model"].append(sstFileName)
+            index += sstLen
+
+            seLen = line[index]
+            index += 1
+            seFileName = line[index:index + seLen].decode("shift-jis")
+            train["else2Model"].append(seFileName)
+            index += seLen
+
+            self.elseList2IndexList.append(index)
+
             for j in range(2):
                 seFileCnt = line[index]
                 index += 1
@@ -248,9 +274,7 @@ class BSdecrypt():
                 index += 1
                 seFileName = line[index:index + seLen].decode("shift-jis")
                 index += seLen
-                elseList2.append([seFileCnt, seFileName])
-
-            train["elseList2"] = elseList2
+                train["elseList2"].append([seFileCnt, seFileName])
 
             self.lensIndexList.append(index)
 
@@ -337,62 +361,14 @@ class BSdecrypt():
             self.tailEndIndexList.append(index)
             train["tailList"] = [tailSmfList, tailElseList, tailLensList]
 
-            for j in range(modelCnt):
-                index += 1
-
-            # カラー設定は設定しているモデルに依存
-            colorCnt = line[index]
-            train["colorCnt"] = colorCnt
-            index += 1
-            for color in range(colorCnt):
-                modelList = []
-                for model in range(modelCnt):
-                    colorList = []
-                    cnt = line[index]
-                    index += 1
-                    for j in range(cnt):
-                        mapList = []
-                        mapList.append(line[index])
-                        index += 1
-                        mapList.append(line[index])
-                        index += 1
-                        txtLen = line[index]
-                        index += 1
-                        txt = line[index:index + txtLen].decode("shift-jis")
-                        mapList.append(txt)
-                        index += txtLen
-                        colorList.append(mapList)
-                    modelList.append(colorList)
-                train["colorMapList"].append(modelList)
-
             self.trainModelList.append(train)
-            self.colorMapEndIndexList.append(index)
-        self.stageIdx = index
-
-        stageCnt = line[index]
-        index += 1
-        for i in range(stageCnt):
-            stageNum = line[index]
-            index += 1
-            train_1pIdx = line[index]
-            if train_1pIdx == 0xFF:
-                train_1pIdx = -1
-            index += 1
-            train_2pIdx = line[index]
-            if train_2pIdx == 0xFF:
-                train_2pIdx = -1
-            index += 1
-            train_3pIdx = line[index]
-            if train_3pIdx == 0xFF:
-                train_3pIdx = -1
-            index += 1
-            self.stageList.append([stageNum, train_1pIdx, train_2pIdx, train_3pIdx])
 
     def saveNotchInfo(self, trainIdx, newNotchNum):
         try:
             newByteArr = bytearray()
             index = self.indexList[trainIdx]
-            speed = self.trainInfoList[2 * trainIdx]
+            trainOrgInfo = self.trainInfoList[trainIdx]
+            speed = trainOrgInfo[0]
             notchContentCnt = 2
             oldNotchNum = len(speed) // notchContentCnt
 
@@ -434,6 +410,7 @@ class BSdecrypt():
             index = self.indexList[trainIdx]
             notchCnt = self.byteArr[index]
             index += 1
+
             newByteArr = self.byteArr[0:index]
 
             for i in range(notchCnt):
@@ -471,37 +448,34 @@ class BSdecrypt():
             newByteArr[henseiIndex] = num
             oldCnt = self.byteArr[henseiIndex]
 
-            # mdlList
-            if num < oldCnt:
-                for j in range(num):
-                    newByteArr.append(self.byteArr[index])
-                    index += 1
-
-                for j in range(oldCnt - num):
-                    index += 1
-            else:
-                for j in range(oldCnt):
-                    newByteArr.append(self.byteArr[index])
-                    index += 1
-
-                for j in range(num - oldCnt):
-                    newByteArr.append(0)
+            pantaModelCnt = self.byteArr[index]
+            newByteArr.append(pantaModelCnt)
+            index += 1
 
             # pantaList
-            if num < oldCnt:
-                for j in range(num):
-                    newByteArr.append(self.byteArr[index])
+            if pantaModelCnt > 0:
+                startIdx = index
+                for j in range(pantaModelCnt):
+                    b = self.byteArr[index]
                     index += 1
+                    index += b
 
-                for j in range(oldCnt - num):
-                    index += 1
-            else:
-                for j in range(oldCnt):
-                    newByteArr.append(self.byteArr[index])
-                    index += 1
+                newByteArr.extend(self.byteArr[startIdx:index])
 
-                for j in range(num - oldCnt):
-                    newByteArr.append(0)
+                if num < oldCnt:
+                    for j in range(num):
+                        newByteArr.append(self.byteArr[index])
+                        index += 1
+
+                    for j in range(oldCnt - num):
+                        index += 1
+                else:
+                    for j in range(oldCnt):
+                        newByteArr.append(self.byteArr[index])
+                        index += 1
+
+                    for j in range(num - oldCnt):
+                        newByteArr.append(0)
 
             newByteArr.extend(self.byteArr[index:])
             self.byteArr = newByteArr
@@ -520,66 +494,25 @@ class BSdecrypt():
             henseiIndex = self.henseiIndexList[trainIdx]
             cnt = self.byteArr[henseiIndex]
 
-            for i in range(cnt):
-                idx = trainWidget.comboList[2 * i].current()
-                if idx == len(trainWidget.comboList[2 * i]["values"]) - 1:
-                    idx = 255
-                newByteArr.append(idx)
-                index += 1
+            pantaModelCnt = self.byteArr[index]
+            newByteArr.append(pantaModelCnt)
+            index += 1
 
-            for i in range(cnt):
-                idx = trainWidget.comboList[2 * i + 1].current()
-                if idx == len(trainWidget.comboList[2 * i + 1]["values"]) - 1:
-                    idx = 255
-                newByteArr.append(idx)
-                index += 1
+            if pantaModelCnt > 0:
+                startIdx = index
+                for j in range(pantaModelCnt):
+                    b = self.byteArr[index]
+                    index += 1
+                    index += b
+                newByteArr.extend(self.byteArr[startIdx:index])
 
-            newByteArr.extend(self.byteArr[index:])
-            self.byteArr = newByteArr
+                for i in range(cnt):
+                    idx = trainWidget.comboList[2 * i + 1].current()
+                    if idx == len(trainWidget.comboList[2 * i + 1]["values"]) - 1:
+                        idx = 255
+                    newByteArr.append(idx)
+                    index += 1
 
-            self.saveTrain()
-            return True
-        except Exception:
-            self.error = traceback.format_exc()
-            return False
-
-    def saveModelInfo(self, trainIdx, modelInfo):
-        try:
-            index = self.mdlIndexList[trainIdx]
-            newByteArr = self.byteArr[0:index]
-
-            newTrackList = modelInfo["trackNames"]
-
-            newByteArr.append(len(newTrackList))
-            for newTrack in newTrackList:
-                newByteArr.append(len(newTrack))
-                newByteArr.extend(newTrack.encode("shift-jis"))
-
-            newCnt = modelInfo["mdlCnt"]
-            newByteArr.append(newCnt)
-
-            newMdlList = modelInfo["mdlNames"]
-            newByteArr.append(len(newMdlList) - 1)
-            for newMdl in newMdlList:
-                if newMdl == "なし":
-                    continue
-                newByteArr.append(len(newMdl))
-                newByteArr.extend(newMdl.encode("shift-jis"))
-
-            for i in range(len(newMdlList) - 1):
-                strHex = "H2000_COL_0.smf"
-                newByteArr.append(len(strHex))
-                newByteArr.extend(strHex.encode("shift-jis"))
-
-            newPantaList = modelInfo["pantaNames"]
-            newByteArr.append(len(newPantaList) - 1)
-            for newPanta in newPantaList:
-                if newPanta == "なし":
-                    continue
-                newByteArr.append(len(newPanta))
-                newByteArr.extend(newPanta.encode("shift-jis"))
-
-            index = self.henseiModelEndIndexList[trainIdx]
             newByteArr.extend(self.byteArr[index:])
             self.byteArr = newByteArr
 
@@ -591,15 +524,32 @@ class BSdecrypt():
 
     def saveElseList(self, trainIdx, ver, elseList):
         try:
-            if ver == 2:
+            if ver == 1:
                 index = self.henseiEndIndexList[trainIdx]
                 newByteArr = self.byteArr[0:index]
 
-                for i in range(5):
-                    strHex = elseList[i].encode("shift-jis")
-                    newByteArr.append(len(strHex))
-                    newByteArr.extend(strHex)
+                for i in range(len(elseList)):
+                    idx = int(elseList[i])
+                    if idx == -1:
+                        idx = 0xFF
+                    newByteArr.append(idx)
+                    index += 1
+                newByteArr.extend(self.byteArr[index:])
+                self.byteArr = newByteArr
+
+            elif ver == 2:
                 index = self.else2IndexList[trainIdx]
+                newByteArr = self.byteArr[0:index]
+
+                for i in range(len(elseList)):
+                    if i == 5:
+                        f = struct.pack("<f", float(elseList[i]))
+                        newByteArr.extend(f)
+                    else:
+                        strHex = elseList[i].encode("shift-jis")
+                        newByteArr.append(len(strHex))
+                        newByteArr.extend(strHex)
+                index = self.elseList2IndexList[trainIdx]
 
                 newByteArr.extend(self.byteArr[index:])
                 self.byteArr = newByteArr
@@ -612,7 +562,7 @@ class BSdecrypt():
 
     def saveElse2List(self, trainIdx, elseList):
         try:
-            index = self.else2IndexList[trainIdx]
+            index = self.elseList2IndexList[trainIdx]
 
             newByteArr = self.byteArr[0:index]
 
@@ -857,6 +807,7 @@ class BSdecrypt():
             for i in range(cnt):
                 valInfo = valList[cnt + i]
                 newByteArr.append(valInfo)
+
                 index += 1
 
             newByteArr.extend(self.byteArr[index:])
@@ -902,39 +853,6 @@ class BSdecrypt():
             index = self.tailEndIndexList[trainIdx]
             newByteArr.extend(self.byteArr[index:])
             self.byteArr = newByteArr
-
-            self.saveTrain()
-            return True
-        except Exception:
-            self.error = traceback.format_exc()
-            return False
-
-    def saveStageInfo(self, stageList):
-        try:
-            index = self.stageIdx
-            stageAllCnt = self.byteArr[index]
-            index += 1
-
-            for i in range(stageAllCnt):
-                index += 1
-
-                if stageList[i][1] == -1:
-                    self.byteArr[index] = 0xFF
-                else:
-                    self.byteArr[index] = stageList[i][1]
-                index += 1
-
-                if stageList[i][2] == -1:
-                    self.byteArr[index] = 0xFF
-                else:
-                    self.byteArr[index] = stageList[i][2]
-                index += 1
-
-                if stageList[i][3] == -1:
-                    self.byteArr[index] = 0xFF
-                else:
-                    self.byteArr[index] = stageList[i][3]
-                index += 1
 
             self.saveTrain()
             return True
@@ -1039,7 +957,8 @@ class BSdecrypt():
     def extractCsvTrainInfo(self, trainIdx, filePath):
         try:
             w = codecs.open(filePath, "w", "utf-8-sig", "ignore")
-            speedList = self.trainInfoList[2 * trainIdx]
+            trainOrgInfo = self.trainInfoList[trainIdx]
+            speedList = trainOrgInfo[0]
             index = self.indexList[trainIdx]
             notchCnt = self.byteArr[index]
 
@@ -1055,33 +974,41 @@ class BSdecrypt():
                         w.write(",")
             w.write("性能\n")
 
-            perfList = self.trainInfoList[2 * trainIdx + 1]
+            perfList = trainOrgInfo[1]
             perfNameList = self.trainPerfNameList
             for i in range(len(perfList)):
                 w.write("{0},{1}\n".format(perfNameList[i], perfList[i]))
 
             train = self.trainModelList[trainIdx]
-            w.write("台車モデル\n")
+            w.write("台車モデル:{0}\n".format(train["daishaCnt"]))
             w.write(",".join(train["trackNames"]))
             w.write("\n")
 
             w.write("編成数:{0}\n".format(train["mdlCnt"]))
 
-            mdlCnt = len(train["mdlNames"][:-1])
-            w.write("車両モデル:{0}\n".format(mdlCnt))
-            w.write(",".join(train["mdlNames"][:-1]))
+            # mdlCnt = len(train["mdlNames"])
+            w.write("車両モデル\n")
+            w.write(",".join(train["mdlNames"]))
             w.write("\n")
 
-            w.write("車両index,")
-            w.write(",".join([str(x) for x in train["mdlList"]]))
+            # colCnt = len(train["colNames"])
+            w.write("COLモデル\n")
+            w.write(",".join(train["colNames"]))
             w.write("\n")
 
-            w.write("パンタモデル:{0}\n".format(len(train["pantaNames"][:-1])))
-            w.write(",".join(train["pantaNames"][:-1]))
-            w.write("\n")
+            if len(train["pantaNames"]) > 0:
+                w.write("パンタモデル:{0}\n".format(len(train["pantaNames"][:-1])))
+                w.write(",".join(train["pantaNames"][:-1]))
+                w.write("\n")
 
-            w.write("パンタindex,")
-            w.write(",".join([str(x) for x in train["pantaList"]]))
+                w.write("パンタindex,")
+                w.write(",".join([str(x) for x in train["pantaList"]]))
+                w.write("\n")
+            else:
+                w.write("パンタモデル:0\n")
+
+            w.write("属性index,")
+            w.write(",".join([str(x) for x in train["elseModel"]]))
             w.write("\n")
 
             w.write("レンズフレア:{0}\n".format(len(train["lensList"])))
@@ -1105,28 +1032,6 @@ class BSdecrypt():
                 w.write(",".join([str(x) for x in lensInfo[4]]))
                 w.write("\n")
 
-            index = self.tailEndIndexList[trainIdx]
-            w.write("モデルindex2,")
-            for i in range(mdlCnt):
-                w.write("{0},".format(self.byteArr[index]))
-                index += 1
-            w.write("\n")
-
-            w.write("カラー数,{0}\n".format(train["colorCnt"]))
-
-            colorMapList = train["colorMapList"]
-            cIdx = 1
-            for colorMap in colorMapList:
-
-                mIdx = 1
-                for modelList in colorMap:
-                    w.write("カラー{0},".format(cIdx))
-                    w.write("モデル{0},{1}\n".format(mIdx, len(modelList)))
-                    for model in modelList:
-                        w.write(",".join([str(x) for x in model]))
-                        w.write("\n")
-                    mIdx += 1
-                cIdx += 1
             w.close()
             return True
         except Exception:
@@ -1142,8 +1047,9 @@ class BSdecrypt():
                 return False
 
             arr = csvLines[cnt].strip().split(":")[1]
+
             notchCnt = int(arr.split(",")[0])
-            if notchCnt not in [4, 5]:
+            if notchCnt not in [3, 4, 5]:
                 self.error = "{0}ノッチは非対応です".format(notchCnt)
                 return False
             self.csvReadInfo["notchCnt"] = notchCnt
@@ -1182,9 +1088,12 @@ class BSdecrypt():
                 cnt += 1
             self.csvReadInfo["perf"] = perf
 
-            if csvLines[cnt].strip().split(",")[0] != "台車モデル":
+            if csvLines[cnt].strip().split(":")[0] != "台車モデル":
                 self.error = "台車モデル情報を探せません"
                 return False
+            arr = csvLines[cnt].strip().split(":")[1]
+            daishaCnt = int(arr.split(",")[0])
+            self.csvReadInfo["daishaCnt"] = daishaCnt
             cnt += 1
 
             trackInfo = []
@@ -1199,18 +1108,17 @@ class BSdecrypt():
 
             arr = csvLines[cnt].strip().split(":")[1]
             orgCnt = int(arr.split(",")[0])
-            if orgCnt < 2:
-                self.error = "編成数が2個より少ないです"
+            if orgCnt < 1:
+                self.error = "編成数が1個より少ないです"
                 return False
             cnt += 1
             self.csvReadInfo["orgCnt"] = orgCnt
 
-            if csvLines[cnt].strip().split(":")[0] != "車両モデル":
+            if csvLines[cnt].strip().split(",")[0] != "車両モデル":
                 self.error = "車両モデル情報を探せません"
                 return False
 
-            arr = csvLines[cnt].strip().split(":")[1]
-            mdlCnt = int(arr.split(",")[0])
+            mdlCnt = 3
             cnt += 1
 
             mdlNameList = []
@@ -1220,24 +1128,19 @@ class BSdecrypt():
             cnt += 1
             self.csvReadInfo["mdlNameList"] = mdlNameList
 
-            if csvLines[cnt].strip().split(",")[0] != "車両index":
-                self.error = "車両index情報を探せません"
+            if csvLines[cnt].strip().split(",")[0] != "COLモデル":
+                self.error = "COLモデル情報を探せません"
                 return False
 
-            mdlList = []
-            arr = csvLines[cnt].strip().split(",")[1:]
-            for i in range(orgCnt):
-                try:
-                    idx = int(arr[i])
-                    if idx < -1 or idx >= mdlCnt:
-                        self.error = "車両index情報が不正です"
-                        return False
-                except Exception:
-                    self.error = "車両index情報 読み込み失敗"
-                    return False
-                mdlList.append(idx)
+            colCnt = 3
             cnt += 1
-            self.csvReadInfo["mdlList"] = mdlList
+
+            colNameList = []
+            arr = csvLines[cnt].strip().split(",")
+            for i in range(colCnt):
+                colNameList.append(arr[i])
+            cnt += 1
+            self.csvReadInfo["colNameList"] = colNameList
 
             if csvLines[cnt].strip().split(":")[0] != "パンタモデル":
                 self.error = "パンタモデル情報を探せません"
@@ -1246,32 +1149,45 @@ class BSdecrypt():
             arr = csvLines[cnt].strip().split(":")[1]
             pantaCnt = int(arr.split(",")[0])
             cnt += 1
+            self.csvReadInfo["pantaCnt"] = pantaCnt
 
-            pantaNameList = []
-            arr = csvLines[cnt].strip().split(",")
-            for i in range(pantaCnt):
-                pantaNameList.append(arr[i])
-            cnt += 1
-            self.csvReadInfo["pantaNameList"] = pantaNameList
+            if pantaCnt > 0:
+                pantaNameList = []
+                arr = csvLines[cnt].strip().split(",")
+                for i in range(pantaCnt):
+                    pantaNameList.append(arr[i])
+                cnt += 1
+                self.csvReadInfo["pantaNameList"] = pantaNameList
 
-            if csvLines[cnt].strip().split(",")[0] != "パンタindex":
-                self.error = "パンタindex情報を探せません"
+                if csvLines[cnt].strip().split(",")[0] != "パンタindex":
+                    self.error = "パンタindex情報を探せません"
+                    return False
+
+                pantaList = []
+                arr = csvLines[cnt].strip().split(",")[1:]
+                for i in range(orgCnt):
+                    try:
+                        idx = int(arr[i])
+                        if idx < -1 or idx >= pantaCnt:
+                            self.error = "パンタindex情報が不正です"
+                            return False
+                    except Exception:
+                        self.error = "パンタindex情報 読み込み失敗"
+                        return False
+                    pantaList.append(idx)
+                cnt += 1
+                self.csvReadInfo["pantaList"] = pantaList
+
+            if csvLines[cnt].strip().split(",")[0] != "属性index":
+                self.error = "属性index情報を探せません"
                 return False
 
-            pantaList = []
             arr = csvLines[cnt].strip().split(",")[1:]
-            for i in range(orgCnt):
-                try:
-                    idx = int(arr[i])
-                    if idx < -1 or idx >= pantaCnt:
-                        self.error = "パンタindex情報が不正です"
-                        return False
-                except Exception:
-                    self.error = "パンタindex情報 読み込み失敗"
-                    return False
-                pantaList.append(idx)
+            elseModel = []
+            for i in range(9):
+                elseModel.append(int(arr[i]))
+            self.csvReadInfo["elseModel"] = elseModel
             cnt += 1
-            self.csvReadInfo["pantaList"] = pantaList
 
             if csvLines[cnt].strip().split(":")[0] != "レンズフレア":
                 self.error = "レンズフレア情報を探せません"
@@ -1357,52 +1273,6 @@ class BSdecrypt():
             tailList.append(tailLensList)
             self.csvReadInfo["tailList"] = tailList
 
-            if csvLines[cnt].strip().split(",")[0] != "モデルindex2":
-                self.error = "モデルindex2情報を探せません"
-                return False
-
-            mdlIdxList2 = []
-            arr = csvLines[cnt].strip().split(",")[1:]
-            for i in range(mdlCnt):
-                mdlIdxList2.append(int(arr[i]))
-
-            self.csvReadInfo["mdlIdxList2"] = mdlIdxList2
-            cnt += 1
-
-            if csvLines[cnt].strip().split(",")[0] != "カラー数":
-                self.error = "カラー数情報を探せません"
-                return False
-
-            arr = csvLines[cnt].strip().split(",")[1:]
-            colorCnt = int(arr[0])
-            self.csvReadInfo["colorCnt"] = colorCnt
-            cnt += 1
-
-            self.csvReadInfo["colorMapList"] = []
-            for color in range(colorCnt):
-                modelMap = []
-                for model in range(mdlCnt):
-                    arr = csvLines[cnt].strip().split(",")
-                    strArr = ",".join(arr[0:2])
-                    if strArr != "カラー{0},モデル{1}".format(color + 1, model + 1):
-                        self.error = "カラー、モデル数情報を探せません"
-                        return False
-
-                    readCnt = int(arr[2])
-                    cnt += 1
-
-                    modelList = []
-                    for i in range(readCnt):
-                        modelInfo = []
-                        arr = csvLines[cnt].strip().split(",")
-                        modelInfo.append(int(arr[0]))
-                        modelInfo.append(int(arr[1]))
-                        modelInfo.append(arr[2])
-                        modelList.append(modelInfo)
-                        cnt += 1
-                    modelMap.append(modelList)
-                self.csvReadInfo["colorMapList"].append(modelMap)
-
             return True
         except Exception:
             self.error = "{0}行目の読み込み失敗".format(cnt + 1)
@@ -1412,7 +1282,6 @@ class BSdecrypt():
         try:
             index = self.indexList[trainIdx]
             newByteArr = self.byteArr[0:index]
-            train = self.trainModelList[trainIdx]
 
             notchCnt = self.csvReadInfo["notchCnt"]
             newByteArr.append(notchCnt)
@@ -1428,7 +1297,7 @@ class BSdecrypt():
                 f = struct.pack("<f", perf[i])
                 newByteArr.extend(f)
 
-            daishaCnt = train["daishaCnt"]
+            daishaCnt = self.csvReadInfo["daishaCnt"]
             newByteArr.append(daishaCnt)
 
             trackInfo = self.csvReadInfo["trackInfo"]
@@ -1441,39 +1310,42 @@ class BSdecrypt():
             newByteArr.append(orgCnt)
 
             mdlNameList = self.csvReadInfo["mdlNameList"]
-            newByteArr.append(len(mdlNameList))
             for i in range(len(mdlNameList)):
                 strHex = mdlNameList[i].encode("shift-jis")
                 newByteArr.append(len(strHex))
                 newByteArr.extend(strHex)
 
-            for i in range(len(mdlNameList)):
-                strHex = "H2000_COL_0.smf".encode("shift-jis")
+            colNameList = self.csvReadInfo["colNameList"]
+            for i in range(len(colNameList)):
+                strHex = colNameList[i].encode("shift-jis")
                 newByteArr.append(len(strHex))
                 newByteArr.extend(strHex)
 
-            pantaNameList = self.csvReadInfo["pantaNameList"]
-            newByteArr.append(len(pantaNameList))
-            for i in range(len(pantaNameList)):
-                strHex = pantaNameList[i].encode("shift-jis")
-                newByteArr.append(len(strHex))
-                newByteArr.extend(strHex)
+            pantaCnt = self.csvReadInfo["pantaCnt"]
+            newByteArr.append(pantaCnt)
 
-            mdlList = self.csvReadInfo["mdlList"]
-            for i in range(len(mdlList)):
-                if mdlList[i] == -1:
-                    newByteArr.append(0xFF)
-                else:
-                    newByteArr.append(mdlList[i])
+            if pantaCnt > 0:
+                pantaNameList = self.csvReadInfo["pantaNameList"]
+                for i in range(len(pantaNameList)):
+                    strHex = pantaNameList[i].encode("shift-jis")
+                    newByteArr.append(len(strHex))
+                    newByteArr.extend(strHex)
 
-            pantaList = self.csvReadInfo["pantaList"]
-            for i in range(len(mdlList)):
-                if pantaList[i] == -1:
-                    newByteArr.append(0xFF)
-                else:
-                    newByteArr.append(pantaList[i])
+                pantaList = self.csvReadInfo["pantaList"]
+                for i in range(orgCnt):
+                    if pantaList[i] == -1:
+                        newByteArr.append(0xFF)
+                    else:
+                        newByteArr.append(pantaList[i])
 
-            startIdx = self.henseiEndIndexList[trainIdx]
+            elseModel = self.csvReadInfo["elseModel"]
+            for i in range(len(elseModel)):
+                idx = elseModel[i]
+                if idx == -1:
+                    idx = 0xFF
+                newByteArr.append(idx)
+
+            startIdx = self.else2IndexList[trainIdx]
             index = self.lensIndexList[trainIdx]
             newByteArr.extend(self.byteArr[startIdx:index])
 
@@ -1521,25 +1393,7 @@ class BSdecrypt():
                         for k in range(len(bList)):
                             newByteArr.append(bList[k])
 
-            mdlIdxList2 = self.csvReadInfo["mdlIdxList2"]
-            for i in range(len(mdlIdxList2)):
-                newByteArr.append(mdlIdxList2[i])
-
-            colorCnt = self.csvReadInfo["colorCnt"]
-            newByteArr.append(colorCnt)
-
-            colorMapList = self.csvReadInfo["colorMapList"]
-            for colorList in colorMapList:
-                for modelList in colorList:
-                    newByteArr.append(len(modelList))
-                    for modelInfo in modelList:
-                        newByteArr.append(modelInfo[0])
-                        newByteArr.append(modelInfo[1])
-                        strHex = modelInfo[2].encode("shift-jis")
-                        newByteArr.append(len(strHex))
-                        newByteArr.extend(strHex)
-
-            index = self.colorMapEndIndexList[trainIdx]
+            index = self.tailEndIndexList[trainIdx]
             newByteArr.extend(self.byteArr[index:])
 
             self.byteArr = newByteArr
