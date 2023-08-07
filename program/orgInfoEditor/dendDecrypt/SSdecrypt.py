@@ -426,7 +426,7 @@ class SSdecrypt:
                 if hurikoCheckStatus:
                     if distData["huriko"] is not None:
                         index += 1
-                        newHurikoLine = "".join([str(x) for x in distData["huriko"]])
+                        newHurikoLine = "\t".join([str(x) for x in distData["huriko"]])
                         newHurikoLine += "\r"
                         newLines[index] = newHurikoLine
                     else:
@@ -437,7 +437,7 @@ class SSdecrypt:
                 if oneWheelCheckStatus:
                     if distData["oneWheel"] is not None:
                         index += 1
-                        newOneWheelLine = "".join([str(x) for x in distData["oneWheel"]])
+                        newOneWheelLine = "\t".join([str(x) for x in distData["oneWheel"]])
                         newOneWheelLine += "\r"
                         newLines[index] = newOneWheelLine
                     else:
