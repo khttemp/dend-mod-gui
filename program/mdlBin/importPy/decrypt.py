@@ -94,6 +94,8 @@ class MdlBinDecrypt:
 
         wavCnt = self.byteArr[self.index]
         self.index += 1
+
+        self.wavList = []
         for i in range(wavCnt):
             wavInfo = []
             wavLen = self.byteArr[self.index]
@@ -108,6 +110,8 @@ class MdlBinDecrypt:
         if self.ver != 1:
             lightTgaCnt = self.byteArr[self.index]
             self.index += 1
+
+            self.tgaList = []
             for i in range(lightTgaCnt):
                 tgaInfo = {}
                 tgaInfo["tgaInfo"] = []
