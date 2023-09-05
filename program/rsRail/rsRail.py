@@ -102,7 +102,7 @@ def createWidget():
     searchBtn = ttk.Button(railNoFrame, text=textSetting.textList["rsRail"]["railSearchBtnLabel"], command=lambda: searchRail())
     searchBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E, padx=30)
     railElementList.append(searchBtn)
-    modifyBtn = ttk.Button(railNoFrame, text=textSetting.textList["rsRail"]["railSearchBtnLabel"], command=lambda: modifyRail(), state="disabled")
+    modifyBtn = ttk.Button(railNoFrame, text=textSetting.textList["rsRail"]["railChangeBtnLabel"], command=lambda: modifyRail(), state="disabled")
     modifyBtn.grid(row=0, column=3, sticky=tkinter.W + tkinter.E, padx=30)
     railElementList.append(modifyBtn)
 
@@ -725,7 +725,7 @@ def call_rsRail(rootTk, programFrame):
     root = rootTk
 
     v_fileName = tkinter.StringVar()
-    fileNameEt = ttk.Entry(programFrame, textvariable=v_fileName, font=textSetting.textList["font2"], width=23, state="readonly", justify="center")
+    fileNameEt = ttk.Entry(programFrame, textvariable=v_fileName, font=textSetting.textList["font2"], width=32, state="readonly", justify="center")
     fileNameEt.place(relx=0.053, rely=0.03)
 
     contentsLf = ttk.LabelFrame(programFrame, text=textSetting.textList["rsRail"]["contents"])
