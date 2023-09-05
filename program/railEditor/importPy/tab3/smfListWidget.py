@@ -343,6 +343,14 @@ class SmfListWidget:
                         if len(self.decryptFile.smfList) > ambMdlNo:
                             ambMdlName = self.decryptFile.smfList[ambMdlNo][0]
                             ambMdlSet.add(ambMdlName)
+
+        if self.decryptFile.game in ["BS", "CS", "RS"]:
+            for else3Info in self.decryptFile.else3List:
+                for j in range(len(else3Info[1])):
+                    tempList = else3Info[1][j]
+                    if tempList[3] == -1:
+                        ambMdlName = self.decryptFile.smfList[tempList[4]][0]
+                        ambMdlSet.add(ambMdlName)
         mdlInfoObj["amb"] = ambMdlSet
 
         return mdlInfoObj

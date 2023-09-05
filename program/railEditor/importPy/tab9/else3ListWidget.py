@@ -2,6 +2,7 @@ from functools import partial
 
 import tkinter
 from tkinter import ttk
+from tkinter import filedialog as fd
 from tkinter import messagebox as mb
 from tkinter import simpledialog as sd
 import program.textSetting as textSetting
@@ -36,6 +37,12 @@ class Else3ListWidget:
         if self.decryptFile.game in ["LS", "RS"]:
             self.else3CntBtn = tkinter.Button(self.txtFrame, text=textSetting.textList["railEditor"]["modifyBtnLabel"], font=textSetting.textList["font7"], command=lambda: self.editElse3Cnt(self.varElse3Cnt.get()))
             self.else3CntBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
+
+        if self.decryptFile.game in ["BS", "CS", "RS"]:
+            self.else3ExtractCsvBtn = ttk.Button(self.txtFrame, text=textSetting.textList["railEditor"]["else3ExtractCsvLabel"], width=20, command=lambda: self.else3ExtractCsv())
+            self.else3ExtractCsvBtn.grid(row=0, column=3, padx=15)
+            self.else3LoadAndSaveCsvBtn = ttk.Button(self.txtFrame, text=textSetting.textList["railEditor"]["else3LoadAndSaveCsvLabel"], width=20, command=lambda: self.else3LoadAndSaveCsv())
+            self.else3LoadAndSaveCsvBtn.grid(row=0, column=4, padx=15)
 
         self.txtFrame2 = ttk.Frame(scrollbarFrame.frame)
         self.txtFrame2.pack(anchor=tkinter.NW, pady=5)
@@ -163,6 +170,94 @@ class Else3ListWidget:
                 return
             mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I92"].format(self.text))
             self.reloadFunc()
+
+    def else3ExtractCsv(self):
+        filename = self.decryptFile.filename + "_else3.csv"
+        file_path = fd.asksaveasfilename(initialfile=filename, defaultextension="csv", filetypes=[("else3_csv", "*.csv")])
+        errorMsg = textSetting.textList["errorList"]["E7"]
+        if file_path:
+            try:
+                w = open(file_path, "w")
+                w.write("railNo,num,type,railPos,binIndex,anime1,anime2\n")
+                for else3Info in self.decryptFile.else3List:
+                    w.write("{0},{1},".format(else3Info[0], len(else3Info[1])))
+                    for j in range(len(else3Info[1])):
+                        if j != 0:
+                            w.write(",,")
+                        w.write(",".join([str(x) for x in else3Info[1][j]]))
+                        w.write("\n")
+                w.close()
+                mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I10"])
+            except PermissionError:
+                mb.showerror(title=textSetting.textList["error"], message=errorMsg)
+
+    def else3LoadAndSaveCsv(self):
+        file_path = fd.askopenfilename(defaultextension="csv", filetypes=[("else3_csv", "*.csv")])
+        if not file_path:
+            return
+        f = open(file_path)
+        csvLines = f.readlines()
+        f.close()
+
+        else3List = []
+        else3Info = []
+        tempList = []
+        csvLines.pop(0)
+        firstReadFlag = True
+        num = 1
+        readNum = 0
+        try:
+            for i in range(len(csvLines)):
+                csvLine = csvLines[i].strip()
+                arr = csvLine.split(",")
+                if len(arr) < 7:
+                    errorMsg = textSetting.textList["errorList"]["E15"].format(i + 2)
+                    mb.showerror(title=textSetting.textList["readError"], message=errorMsg)
+                    return
+
+                if firstReadFlag:
+                    else3Info = []
+                    if arr[0] == "" or arr[1] == "":
+                        errorMsg = textSetting.textList["errorList"]["E15"].format(i + 2)
+                        mb.showerror(title=textSetting.textList["readError"], message=errorMsg)
+                        return
+                    num = int(arr[1])
+                    else3Info.append(int(arr[0]))
+                    tempList = []
+                    firstReadFlag = False
+                else:
+                    if arr[0] != "" or arr[1] != "":
+                        errorMsg = textSetting.textList["errorList"]["E15"].format(i + 2)
+                        mb.showerror(title=textSetting.textList["readError"], message=errorMsg)
+                        return
+                tempList.append([int(x) for x in arr[2:]])
+                readNum += 1
+                if readNum == num:
+                    readNum = 0
+                    num = 0
+                    firstReadFlag = True
+                    else3Info.append(tempList)
+                    else3List.append(else3Info)
+
+            if readNum != num:
+                errorMsg = textSetting.textList["errorList"]["E92"].format(i + 2)
+                mb.showerror(title=textSetting.textList["readError"], message=errorMsg)
+                return
+
+            msg = textSetting.textList["infoList"]["I15"].format(len(csvLines) + 1)
+            result = mb.askokcancel(title=textSetting.textList["warning"], message=msg, icon="warning")
+
+            if result:
+                if not self.decryptFile.saveElse3List(else3List):
+                    self.decryptFile.printError()
+                    mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
+                    return
+                mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I92"].format("else3"))
+                self.reloadFunc()
+        except Exception:
+            errorMsg = textSetting.textList["errorList"]["E14"]
+            mb.showerror(title=textSetting.textList["error"], message=errorMsg)
+            return
 
 
 class EditElse3CntWidget(sd.Dialog):

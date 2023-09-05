@@ -606,6 +606,8 @@ textList = {
         "editElse3LsLabelList": ["f1", "f2", "f3", "数"],
         "editElse3ElementLabelList": ["タイプ", "railPos", "bin index", "anime1", "anime2"],
         "editElse3LsElementLabelList": ["f1", "f2", "f3", "f4", "b1"],
+        "else3ExtractCsvLabel": "CSVで取り出す",
+        "else3LoadAndSaveCsvLabel": "CSVで上書きする",
         "else4Label": "else4",
         "else4CntLabel": "else4数",
         "editElse4CntLabel": "else4数の変更",
@@ -1031,6 +1033,7 @@ textList = {
         "E89": "バイナリで取り出す機能が失敗しました。\n権限問題の可能性があります。",
         "E90": "AudioClipはサポートしていません",
         "E91": "UnityPyがインストールされていません。\nsetup.batでインストールしてください",
+        "E92": "{0}行目読み込みエラー！\nElse3の子データが、数と一致しません",
     },
     "menu": {
         "program": {
