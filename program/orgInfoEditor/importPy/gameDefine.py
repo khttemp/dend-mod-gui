@@ -5,7 +5,7 @@ def load():
     global CS
     global RS
     global SS
-    
+
     gameList = [
         "Shining Stage",
         "Rising Stage",

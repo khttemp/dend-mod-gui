@@ -4,6 +4,7 @@ import tkinter
 from tkinter import ttk
 from tkinter import messagebox as mb
 from tkinter import simpledialog as sd
+import program.textSetting as textSetting
 
 
 class SimpleListWidget:
@@ -23,11 +24,11 @@ class SimpleListWidget:
         self.btnFrame = ttk.Frame(self.simpleListLf)
         self.btnFrame.pack()
 
-        self.modifyBtn = tkinter.Button(self.btnFrame, font=("", 14), text="修正", state="disabled", command=self.modify)
+        self.modifyBtn = tkinter.Button(self.btnFrame, font=textSetting.textList["font2"], text=textSetting.textList["modify"], state="disabled", command=self.modify)
         self.modifyBtn.grid(padx=10, row=0, column=0, sticky=tkinter.W + tkinter.E)
-        self.insertBtn = tkinter.Button(self.btnFrame, font=("", 14), text="挿入", state="disabled", command=self.insert)
+        self.insertBtn = tkinter.Button(self.btnFrame, font=textSetting.textList["font2"], text=textSetting.textList["insert"], state="disabled", command=self.insert)
         self.insertBtn.grid(padx=10, row=0, column=1, sticky=tkinter.W + tkinter.E)
-        self.deleteBtn = tkinter.Button(self.btnFrame, font=("", 14), text="削除", state="disabled", command=self.delete)
+        self.deleteBtn = tkinter.Button(self.btnFrame, font=textSetting.textList["font2"], text=textSetting.textList["delete"], state="disabled", command=self.delete)
         self.deleteBtn.grid(padx=10, row=0, column=2, sticky=tkinter.W + tkinter.E)
 
         self.listFrame = ttk.Frame(self.simpleListLf)
@@ -35,7 +36,7 @@ class SimpleListWidget:
 
         copySimpleList = self.setListboxInfo(self.simpleList)
         self.v_simpleList = tkinter.StringVar(value=copySimpleList)
-        self.simpleListListbox = tkinter.Listbox(self.listFrame, selectmode="single", font=("", 14), width=25, listvariable=self.v_simpleList)
+        self.simpleListListbox = tkinter.Listbox(self.listFrame, selectmode="single", font=textSetting.textList["font2"], width=25, listvariable=self.v_simpleList)
         self.simpleListListbox.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
         self.simpleListListbox.bind("<<ListboxSelect>>", lambda e: self.buttonActive(self.simpleListListbox, self.simpleListListbox.curselection()))
 
@@ -47,7 +48,7 @@ class SimpleListWidget:
             return
         self.selectIndexNum = value[0]
 
-        if listbox.get(value[0]) == "(なし)":
+        if listbox.get(value[0]) == textSetting.textList["railEditor"]["noList"]:
             self.modifyBtn["state"] = "disabled"
             self.deleteBtn["state"] = "disabled"
         else:
@@ -63,40 +64,40 @@ class SimpleListWidget:
                 simpleName = copySimpleList[i]
                 copySimpleList[i] = "{0:02d}→{1}".format(i, simpleName)
         else:
-            copySimpleList = ["(なし)"]
+            copySimpleList = [textSetting.textList["railEditor"]["noList"]]
 
         return copySimpleList
 
     def modify(self):
-        result = EditSimpleListWidget(self.frame, self.text + "の変更", self.decryptFile, "modify", self.selectIndexNum, self.simpleList)
+        result = EditSimpleListWidget(self.frame, self.text + textSetting.textList["railEditor"]["commonModifyLabel"], self.decryptFile, "modify", self.selectIndexNum, self.simpleList)
         if result.reloadFlag:
             if not self.decryptFile.saveSimpleList(self.index, self.listCntVer, result.simpleList):
                 self.decryptFile.printError()
-                mb.showerror(title="エラー", message="予想外のエラーが発生しました")
+                mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
                 return False
-            mb.showinfo(title="成功", message=self.text + "を修正しました")
+            mb.showinfo(title=textSetting.textList["success"], message=self.text + textSetting.textList["infoList"]["I76"])
             self.reloadFunc()
 
     def insert(self):
-        result = EditSimpleListWidget(self.frame, self.text + "の挿入", self.decryptFile, "insert", self.selectIndexNum, self.simpleList)
+        result = EditSimpleListWidget(self.frame, self.text + textSetting.textList["railEditor"]["commonInsertLabel"], self.decryptFile, "insert", self.selectIndexNum, self.simpleList)
         if result.reloadFlag:
             if not self.decryptFile.saveSimpleList(self.index, self.listCntVer, result.simpleList):
                 self.decryptFile.printError()
-                mb.showerror(title="エラー", message="予想外のエラーが発生しました")
+                mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
                 return False
-            mb.showinfo(title="成功", message=self.text + "を修正しました")
+            mb.showinfo(title=textSetting.textList["success"], message=self.text + textSetting.textList["infoList"]["I76"])
             self.reloadFunc()
 
     def delete(self):
-        msg = "{0}番目を削除します。\nそれでもよろしいですか？".format(self.selectIndexNum + 1)
-        result = mb.askokcancel(title="警告", message=msg, icon="warning")
+        msg = textSetting.textList["infoList"]["I25"].format(self.selectIndexNum + 1)
+        result = mb.askokcancel(title=textSetting.textList["warning"], message=msg, icon="warning")
         if result:
             self.simpleList.pop(self.selectIndexNum)
             if not self.decryptFile.saveSimpleList(self.index, self.listCntVer, self.simpleList):
                 self.decryptFile.printError()
-                mb.showerror(title="エラー", message="予想外のエラーが発生しました")
+                mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
                 return False
-            mb.showinfo(title="成功", message=self.text + "を修正しました")
+            mb.showinfo(title=textSetting.textList["success"], message=self.text + textSetting.textList["infoList"]["I76"])
             self.reloadFunc()
 
 
@@ -112,15 +113,15 @@ class EditSimpleListWidget(sd.Dialog):
     def body(self, master):
         self.resizable(False, False)
 
-        self.valLb = ttk.Label(master, text="値を入力してください", font=("", 14))
+        self.valLb = ttk.Label(master, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
         self.valLb.grid(columnspan=2, row=0, column=0, sticky=tkinter.W + tkinter.E)
 
-        self.tempNameLb = ttk.Label(master, text="値", font=("", 12), width=12)
+        self.tempNameLb = ttk.Label(master, text=textSetting.textList["railEditor"]["editValueLabel"], font=textSetting.textList["font2"], width=12)
         self.tempNameLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
         self.varTemp = tkinter.StringVar()
         if self.mode == "modify":
             self.varTemp.set(self.simpleList[self.index])
-        self.txtEt = ttk.Entry(master, textvariable=self.varTemp, font=("", 14))
+        self.txtEt = ttk.Entry(master, textvariable=self.varTemp, font=textSetting.textList["font2"])
         self.txtEt.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
 
         if self.mode == "insert":
@@ -130,22 +131,22 @@ class EditSimpleListWidget(sd.Dialog):
         self.xLine = ttk.Separator(master, orient=tkinter.HORIZONTAL)
         self.xLine.grid(row=index, column=0, columnspan=2, sticky=tkinter.W + tkinter.E, pady=10)
 
-        self.insertLb = ttk.Label(master, text="挿入する位置", font=("", 12))
+        self.insertLb = ttk.Label(master, text=textSetting.textList["railEditor"]["posLabel"], font=textSetting.textList["font2"])
         self.insertLb.grid(row=index + 1, column=0, sticky=tkinter.W + tkinter.E)
         self.v_insert = tkinter.StringVar()
-        self.insertCb = ttk.Combobox(master, state="readonly", font=("", 12), textvariable=self.v_insert, values=["後", "前"])
+        self.insertCb = ttk.Combobox(master, state="readonly", font=textSetting.textList["font2"], textvariable=self.v_insert, values=textSetting.textList["railEditor"]["posValue"])
         self.insertCb.grid(row=index + 1, column=1, sticky=tkinter.W + tkinter.E)
         self.insertCb.current(0)
 
     def validate(self):
-        result = mb.askokcancel(title="確認", message="この値で修正しますか？", parent=self)
+        result = mb.askokcancel(title=textSetting.textList["confirm"], message=textSetting.textList["infoList"]["I21"], parent=self)
 
         if result:
             try:
                 res = self.varTemp.get()
                 if not res:
-                    errorMsg = "値を入力してください。"
-                    mb.showerror(title="値エラー", message=errorMsg)
+                    errorMsg = textSetting.textList["infoList"]["I44"]
+                    mb.showerror(title=textSetting.textList["valueError"], message=errorMsg)
                     return False
                 if self.mode == "modify":
                     self.simpleList[self.index] = res
@@ -157,8 +158,8 @@ class EditSimpleListWidget(sd.Dialog):
                         self.simpleList.insert(self.index, res)
                 return True
             except Exception:
-                errorMsg = "予想外のエラーです"
-                mb.showerror(title="エラー", message=errorMsg)
+                errorMsg = textSetting.textList["errorList"]["E14"]
+                mb.showerror(title=textSetting.textList["error"], message=errorMsg)
                 return False
 
     def apply(self):

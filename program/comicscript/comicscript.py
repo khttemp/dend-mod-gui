@@ -1,11 +1,13 @@
 import os
 import copy
+import codecs
 import traceback
 
 import tkinter
 from tkinter import ttk
 from tkinter import filedialog as fd
 from tkinter import messagebox as mb
+import program.textSetting as textSetting
 
 from program.cmdList import cmdList
 
@@ -26,9 +28,9 @@ copyComicData = None
 def openFile():
     global v_fileName
     global decryptFile
-    file_path = fd.askopenfilename(filetypes=[("COMIC_SCRIPT", "*.BIN")])
+    file_path = fd.askopenfilename(filetypes=[(textSetting.textList["comicscript"]["fileType"], "*.BIN")])
 
-    errorMsg = "予想外のエラーが出ました。\n電車でDのコミックスクリプトではない、またはファイルが壊れた可能性があります。"
+    errorMsg = textSetting.textList["errorList"]["E6"]
     if file_path:
         try:
             filename = os.path.basename(file_path)
@@ -37,15 +39,15 @@ def openFile():
             decryptFile = ComicDecrypt(file_path, cmdList)
             if not decryptFile.open():
                 decryptFile.printError()
-                mb.showerror(title="エラー", message=errorMsg)
+                mb.showerror(title=textSetting.textList["error"], message=errorMsg)
                 return
             deleteWidget()
             createWidget()
         except Exception:
-            w = open("error.log", "a")
+            w = codecs.open("error.log", "a", "utf-8", "strict")
             w.write(traceback.format_exc())
             w.close()
-            mb.showerror(title="エラー", message=errorMsg)
+            mb.showerror(title=textSetting.textList["error"], message=errorMsg)
 
 
 def createWidget():
@@ -66,22 +68,25 @@ def createWidget():
     ]
     frame = ScrollbarTreeviewComicscript(scriptLf, v_select, btnList)
 
-    col_tuple = ('番号', 'コマンド名')
+    col_tuple = (
+        "treeNum",
+        "comicScriptName"
+    )
     paramList = []
     for i in range(decryptFile.max_param):
-        paramList.append("param{0}".format(i+1))
+        paramList.append(textSetting.textList["comicscript"]["paramNumLabel"].format(i+1))
     col_tuple = col_tuple + tuple(paramList)
 
-    frame.tree['columns'] = col_tuple
-    frame.tree.column('#0', width=0, stretch=False)
+    frame.tree["columns"] = col_tuple
+    frame.tree.column("#0", width=0, stretch=False)
 
-    frame.tree.column('番号', anchor=tkinter.CENTER, width=50, minwidth=50)
-    frame.tree.column('コマンド名', anchor=tkinter.CENTER, width=150, minwidth=150)
-    frame.tree.heading('番号', text='番号', anchor=tkinter.CENTER)
-    frame.tree.heading('コマンド名', text='コマンド名', anchor=tkinter.CENTER)
+    frame.tree.column("treeNum", anchor=tkinter.CENTER, width=50, minwidth=50)
+    frame.tree.column("comicScriptName", anchor=tkinter.CENTER, width=150, minwidth=150)
+    frame.tree.heading("treeNum", text=textSetting.textList["comicscript"]["treeNum"], anchor=tkinter.CENTER)
+    frame.tree.heading("comicScriptName", text=textSetting.textList["comicscript"]["treeName"], anchor=tkinter.CENTER)
 
     for i in range(decryptFile.max_param):
-        col_name = "param{0}".format(i+1)
+        col_name = textSetting.textList["comicscript"]["paramNumLabel"].format(i+1)
         frame.tree.column(col_name, anchor=tkinter.CENTER, width=100, minwidth=100)
         frame.tree.heading(col_name, text=col_name, anchor=tkinter.CENTER)
 
@@ -93,7 +98,7 @@ def createWidget():
         for i in range(paramCnt):
             paramList.append(comicData[2+i])
         data = data + tuple(paramList)
-        frame.tree.insert(parent='', index='end', iid=num, values=data)
+        frame.tree.insert(parent="", index="end", iid=num, values=data)
         num += 1
     return num
 
@@ -119,7 +124,7 @@ def editLine():
     global frame
     selectId = frame.tree.selection()[0]
     selectItem = frame.tree.set(selectId)
-    result = InputDialog(root, "コマンド修正", decryptFile, int(selectItem["番号"]), selectItem)
+    result = InputDialog(root, textSetting.textList["comicscript"]["cmdModify"], decryptFile, int(selectItem["treeNum"]), selectItem)
     if result.reloadFlag:
         reloadFile()
 
@@ -129,7 +134,7 @@ def insertLine():
     global frame
     selectId = frame.tree.selection()[0]
     selectItem = frame.tree.set(selectId)
-    result = InputDialog(root, "コマンド挿入", decryptFile, int(selectItem["番号"]))
+    result = InputDialog(root, textSetting.textList["comicscript"]["cmdInsert"], decryptFile, int(selectItem["treeNum"]))
     if result.reloadFlag:
         reloadFile()
 
@@ -137,15 +142,15 @@ def insertLine():
 def deleteLine():
     global frame
     selectId = int(frame.tree.selection()[0])
-    warnMsg = "選択した行を削除します。\nそれでもよろしいですか？"
-    result = mb.askokcancel(title="警告", message=warnMsg, icon="warning")
+    warnMsg = textSetting.textList["infoList"]["I9"]
+    result = mb.askokcancel(title=textSetting.textList["warning"], message=warnMsg, icon="warning")
     if result:
         if not decryptFile.saveFile("delete", selectId, None):
             decryptFile.printError()
-            errorMsg = "保存に失敗しました。\nファイルが他のプログラムによって開かれている\nまたは権限問題の可能性があります"
-            mb.showerror(title="保存エラー", message=errorMsg)
+            errorMsg = textSetting.textList["errorList"]["E4"]
+            mb.showerror(title=textSetting.textList["saveError"], message=errorMsg)
             return
-        mb.showinfo(title="成功", message="スクリプトを改造しました")
+        mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I3"])
         reloadFile()
 
 
@@ -156,15 +161,15 @@ def copyLine():
     comicData = []
     selectId = frame.tree.selection()[0]
     selectItem = frame.tree.set(selectId)
-    comicData.append(selectItem["コマンド名"])
+    comicData.append(selectItem["comicScriptName"])
     paramCnt = len(selectItem)-2
     comicData.append(paramCnt)
     for i in range(paramCnt):
-        f = float(selectItem["param{0}".format(i+1)])
+        f = float(selectItem[textSetting.textList["comicscript"]["paramNumLabel"].format(i+1)])
         comicData.append(f)
     copyComicData = copy.deepcopy(comicData)
 
-    mb.showinfo(title="成功", message="コピーしました")
+    mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I12"])
     v_btnList[4]["state"] = "normal"
 
 
@@ -175,8 +180,8 @@ def pasteLine():
     global copyComicData
     selectId = frame.tree.selection()[0]
     selectItem = frame.tree.set(selectId)
-    num = int(selectItem["番号"])
-    result = PasteDialog(root, "コマンドコピー", decryptFile, num, copyComicData)
+    num = int(selectItem["treeNum"])
+    result = PasteDialog(root, textSetting.textList["comicscript"]["cmdPaste"], decryptFile, num, copyComicData)
     if result.reloadFlag:
         reloadFile()
 
@@ -186,12 +191,12 @@ def reloadFile():
     global decryptFile
     global frame
 
-    errorMsg = "予想外のエラーが出ました。\n電車でDのコミックスクリプトではない、またはファイルが壊れた可能性があります。"
+    errorMsg = textSetting.textList["errorList"]["E6"]
     if decryptFile.filePath:
         try:
             if not decryptFile.open():
                 decryptFile.printError()
-                mb.showerror(title="エラー", message=errorMsg)
+                mb.showerror(title=textSetting.textList["error"], message=errorMsg)
                 return
 
             selectId = None
@@ -209,10 +214,10 @@ def reloadFile():
                     frame.tree.see(selectId - 3)
                 frame.tree.selection_set(selectId)
         except Exception:
-            w = open("error.log", "a")
+            w = codecs.open("error.log", "a", "utf-8", "strict")
             w.write(traceback.format_exc())
             w.close()
-            mb.showerror(title="エラー", message=errorMsg)
+            mb.showerror(title=textSetting.textList["error"], message=errorMsg)
 
 
 def csvExtract():
@@ -220,8 +225,8 @@ def csvExtract():
     global decryptFile
     file = v_fileName.get()
     filename = os.path.splitext(os.path.basename(file))[0]
-    file_path = fd.asksaveasfilename(initialfile=filename, defaultextension='csv', filetypes=[('comicscript_csv', '*.csv')])
-    errorMsg = "CSVで取り出す機能が失敗しました。\n権限問題の可能性があります。"
+    file_path = fd.asksaveasfilename(initialfile=filename, defaultextension="csv", filetypes=[("comicscript_csv", "*.csv")])
+    errorMsg = textSetting.textList["errorList"]["E7"]
     if file_path:
         try:
             w = open(file_path, "w")
@@ -234,17 +239,17 @@ def csvExtract():
                         w.write(",")
                 w.write("\n")
             w.close()
-            mb.showinfo(title="成功", message="CSVで取り出しました")
+            mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I10"])
         except Exception:
-            w = open("error.log", "a")
+            w = codecs.open("error.log", "a", "utf-8", "strict")
             w.write(traceback.format_exc())
             w.close()
-            mb.showerror(title="エラー", message=errorMsg)
+            mb.showerror(title=textSetting.textList["error"], message=errorMsg)
 
 
 def csvLoadAndSave():
     global decryptFile
-    file_path = fd.askopenfilename(defaultextension='csv', filetypes=[("comicscript_csv", "*.csv")])
+    file_path = fd.askopenfilename(defaultextension="csv", filetypes=[("comicscript_csv", "*.csv")])
     if not file_path:
         return
     f = open(file_path)
@@ -258,8 +263,8 @@ def csvLoadAndSave():
         arr = csvLine.split(",")
         cmdName = arr[0]
         if cmdName not in cmdList:
-            errorMsg = "{0}行目のコマンド[{1}]は\n存在しないコマンドです".format(i+1, cmdName)
-            mb.showerror(title="エラー", message=errorMsg)
+            errorMsg = textSetting.textList["errorList"]["E8"].format(i+1, cmdName)
+            mb.showerror(title=textSetting.textList["error"], message=errorMsg)
             return
 
         comicDataParaList = []
@@ -269,11 +274,11 @@ def csvLoadAndSave():
             try:
                 comicDataParaList.append(float(arr[j]))
             except Exception:
-                w = open("error.log", "a")
+                w = codecs.open("error.log", "a", "utf-8", "strict")
                 w.write(traceback.format_exc())
                 w.close()
-                errorMsg = "{0}行目のコマンドに\n数字に変換できない要素[{1}]が入ってます".format(i+1, arr[j])
-                mb.showerror(title="エラー", message=errorMsg)
+                errorMsg = textSetting.textList["errorList"]["E9"].format(i+1, arr[j])
+                mb.showerror(title=textSetting.textList["error"], message=errorMsg)
                 return
 
         csvComicData.append(cmdName)
@@ -283,23 +288,23 @@ def csvLoadAndSave():
             csvComicData.append(comicDataParaList[j])
 
         csvComicDataList.append(csvComicData)
-    warnMsg = "選択したCSVで上書きします。\nそれでもよろしいですか？"
-    result = mb.askokcancel(title="警告", message=warnMsg, icon="warning")
+    warnMsg = textSetting.textList["infoList"]["I11"]
+    result = mb.askokcancel(title=textSetting.textList["warning"], message=warnMsg, icon="warning")
 
     if result:
         if not decryptFile.saveComicList(csvComicDataList):
             decryptFile.printError()
-            errorMsg = "保存に失敗しました。\nファイルが他のプログラムによって開かれている\nまたは権限問題の可能性があります"
-            mb.showerror(title="保存エラー", message=errorMsg)
+            errorMsg = textSetting.textList["errorList"]["E4"]
+            mb.showerror(title=textSetting.textList["saveError"], message=errorMsg)
             return
-        mb.showinfo(title="成功", message="スクリプトを改造しました")
+        mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I3"])
         reloadFile()
 
 
 def headerFileEdit():
     global root
     global decryptFile
-    result = HeaderFileInfo(root, "ヘッダー情報", decryptFile)
+    result = HeaderFileInfo(root, textSetting.textList["comicscript"]["headerInfo"], decryptFile)
     if result.reloadFlag:
         reloadFile()
 
@@ -313,51 +318,51 @@ def call_comicscript(rootTk, programFrame):
     root = rootTk
 
     v_fileName = tkinter.StringVar()
-    fileNameEt = ttk.Entry(programFrame, textvariable=v_fileName, font=("", 14), width=23, state="readonly", justify="center")
+    fileNameEt = ttk.Entry(programFrame, textvariable=v_fileName, font=textSetting.textList["font2"], width=23, state="readonly", justify="center")
     fileNameEt.place(relx=0.053, rely=0.03)
 
-    selectLb = ttk.Label(programFrame, text="選択した行番号：", font=("", 14))
+    selectLb = ttk.Label(programFrame, text=textSetting.textList["comicscript"]["selectNum"], font=textSetting.textList["font2"])
     selectLb.place(relx=0.05, rely=0.09)
 
     v_select = tkinter.StringVar()
-    selectEt = ttk.Entry(programFrame, textvariable=v_select, font=("", 14), width=6, state="readonly", justify="center")
+    selectEt = ttk.Entry(programFrame, textvariable=v_select, font=textSetting.textList["font2"], width=6, state="readonly", justify="center")
     selectEt.place(relx=0.22, rely=0.09)
 
     buttonWidth = 25
 
     v_btnList = []
 
-    editLineBtn = ttk.Button(programFrame, text="選択した行を修正する", width=buttonWidth, state="disabled", command=editLine)
+    editLineBtn = ttk.Button(programFrame, text=textSetting.textList["comicscript"]["editLineLabel"], width=buttonWidth, state="disabled", command=editLine)
     editLineBtn.place(relx=0.43, rely=0.03)
     v_btnList.append(editLineBtn)
 
-    insertLineBtn = ttk.Button(programFrame, text="選択した行に挿入する", width=buttonWidth, state="disabled", command=insertLine)
+    insertLineBtn = ttk.Button(programFrame, text=textSetting.textList["comicscript"]["insertLineLabel"], width=buttonWidth, state="disabled", command=insertLine)
     insertLineBtn.place(relx=0.62, rely=0.03)
     v_btnList.append(insertLineBtn)
 
-    deleteLineBtn = ttk.Button(programFrame, text="選択した行を削除する", width=buttonWidth, state="disabled", command=deleteLine)
+    deleteLineBtn = ttk.Button(programFrame, text=textSetting.textList["comicscript"]["deleteLineLabel"], width=buttonWidth, state="disabled", command=deleteLine)
     deleteLineBtn.place(relx=0.81, rely=0.03)
     v_btnList.append(deleteLineBtn)
 
-    copyLineBtn = ttk.Button(programFrame, text="選択した行をコピーする", width=buttonWidth, state="disabled", command=copyLine)
+    copyLineBtn = ttk.Button(programFrame, text=textSetting.textList["comicscript"]["copyLineLabel"], width=buttonWidth, state="disabled", command=copyLine)
     copyLineBtn.place(relx=0.43, rely=0.09)
     v_btnList.append(copyLineBtn)
 
-    pasteLineBtn = ttk.Button(programFrame, text="選択した行に貼り付けする", width=buttonWidth, state="disabled", command=pasteLine)
+    pasteLineBtn = ttk.Button(programFrame, text=textSetting.textList["comicscript"]["pasteLineLabel"], width=buttonWidth, state="disabled", command=pasteLine)
     pasteLineBtn.place(relx=0.62, rely=0.09)
     v_btnList.append(pasteLineBtn)
 
-    csvExtractBtn = ttk.Button(programFrame, text="CSVで取り出す", width=buttonWidth, state="disabled", command=csvExtract)
+    csvExtractBtn = ttk.Button(programFrame, text=textSetting.textList["comicscript"]["csvExtractLabel"], width=buttonWidth, state="disabled", command=csvExtract)
     csvExtractBtn.place(relx=0.43, rely=0.15)
     v_btnList.append(csvExtractBtn)
 
-    csvLoadAndSaveBtn = ttk.Button(programFrame, text="CSVで上書きする", width=buttonWidth, state="disabled", command=csvLoadAndSave)
+    csvLoadAndSaveBtn = ttk.Button(programFrame, text=textSetting.textList["comicscript"]["csvSaveLabel"], width=buttonWidth, state="disabled", command=csvLoadAndSave)
     csvLoadAndSaveBtn.place(relx=0.62, rely=0.15)
     v_btnList.append(csvLoadAndSaveBtn)
 
-    headerFileEditBtn = ttk.Button(programFrame, text="ヘッダー情報を修正する", width=buttonWidth, state="disabled", command=headerFileEdit)
+    headerFileEditBtn = ttk.Button(programFrame, text=textSetting.textList["comicscript"]["headerEditLabel"], width=buttonWidth, state="disabled", command=headerFileEdit)
     headerFileEditBtn.place(relx=0.81, rely=0.15)
     v_btnList.append(headerFileEditBtn)
 
-    scriptLf = ttk.LabelFrame(programFrame, text="スクリプト内容")
+    scriptLf = ttk.LabelFrame(programFrame, text=textSetting.textList["comicscript"]["scriptLabel"])
     scriptLf.place(relx=0.03, rely=0.20, relwidth=0.95, relheight=0.77)

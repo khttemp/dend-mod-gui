@@ -1,5 +1,6 @@
 import os
 import struct
+import codecs
 import traceback
 
 
@@ -47,7 +48,7 @@ class RailDecrypt:
             return False
 
     def printError(self):
-        w = open("error.log", "w")
+        w = codecs.open("error.log", "w", "utf-8", "strict")
         w.write(self.error)
         w.close()
 

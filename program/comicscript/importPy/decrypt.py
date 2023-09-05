@@ -1,5 +1,7 @@
 import struct
 import traceback
+import codecs
+import program.textSetting as textSetting
 
 
 class ComicDecrypt:
@@ -32,14 +34,14 @@ class ComicDecrypt:
             return False
 
     def printError(self):
-        w = open("error.log", "w")
+        w = codecs.open("error.log", "w", "utf-8", "strict")
         w.write(self.error)
         w.close()
 
     def decrypt(self):
         index = 16
-        header = self.byteArr[0:index]
-        if header != b'DEND_COMICSCRIPT':
+        header = self.byteArr[0:index].decode("shift-jis")
+        if header != "DEND_COMICSCRIPT":
             return False
         index += 1
 
@@ -111,7 +113,7 @@ class ComicDecrypt:
             num2 = struct.unpack("<h", self.byteArr[index:index+2])[0]
             index += 2
             if num2 < 0 or num2 >= len(self.cmdList)-1:
-                errorMsg = "定義されてないコマンド番号です({0})。読込を終了します。".format(num2)
+                errorMsg = textSetting.textList["errorList"]["E2"].format(num2)
                 self.error = errorMsg
                 return False
             comicData.append(self.cmdList[num2])

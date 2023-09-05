@@ -4,6 +4,7 @@ import tkinter
 from tkinter import ttk
 from tkinter import simpledialog as sd
 from tkinter import messagebox as mb
+import program.textSetting as textSetting
 
 import program.orgInfoEditor.importPy.gameDefine as gameDefine
 gameDefine.load()
@@ -16,38 +17,38 @@ class EditStageInfo(sd.Dialog):
         super(EditStageInfo, self).__init__(parent=master, title=title)
 
     def body(self, master):
-        self.train_1pLb = tkinter.Label(master, text="1P", font=("", 14))
+        self.train_1pLb = tkinter.Label(master, text=textSetting.textList["orgInfoEditor"]["stage1PLabel"], font=textSetting.textList["font2"])
         self.train_1pLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
-        self.train_2pLb = tkinter.Label(master, text="2P", font=("", 14))
+        self.train_2pLb = tkinter.Label(master, text=textSetting.textList["orgInfoEditor"]["stage2PLabel"], font=textSetting.textList["font2"])
         self.train_2pLb.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
-        self.train_3pLb = tkinter.Label(master, text="3P", font=("", 14))
+        self.train_3pLb = tkinter.Label(master, text=textSetting.textList["orgInfoEditor"]["stage3PLabel"], font=textSetting.textList["font2"])
         self.train_3pLb.grid(row=0, column=3, sticky=tkinter.W + tkinter.E)
 
         self.trainList = []
 
-        trackComboList = ["標準軌", "狭軌"]
+        trackComboList = textSetting.textList["orgInfoEditor"]["trackComboList"]
 
         if self.game in [gameDefine.CS, gameDefine.RS]:
-            self.trackLb = tkinter.Label(master, text="台車", font=("", 14))
+            self.trackLb = tkinter.Label(master, text=textSetting.textList["orgInfoEditor"]["stageTrackName"], font=textSetting.textList["font2"])
             self.trackLb.grid(row=0, column=4, sticky=tkinter.W + tkinter.E)
 
         stageStartIdx = self.decryptFile.stageEditIdx
         self.trainComboList = copy.deepcopy(self.decryptFile.trainNameList)
-        self.trainComboList.append("なし")
+        self.trainComboList.append(textSetting.textList["orgInfoEditor"]["noList"])
         for i in range(self.decryptFile.stageCnt):
             info = self.decryptFile.stageList[stageStartIdx + i]
-            self.stageLb = tkinter.Label(master, text="{0}ステージ".format(i + 1), font=("", 14))
+            self.stageLb = tkinter.Label(master, text=textSetting.textList["orgInfoEditor"]["stageNumLabel"].format(i + 1), font=textSetting.textList["font2"])
             self.stageLb.grid(row=i + 1, column=0, sticky=tkinter.W + tkinter.E)
 
-            self.train_1pCb = ttk.Combobox(master, font=("", 14), width=8, value=self.trainComboList)
+            self.train_1pCb = ttk.Combobox(master, font=textSetting.textList["font2"], width=8, value=self.trainComboList)
             self.train_1pCb.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
             self.train_1pCb.current(info[1])
             self.trainList.append(self.train_1pCb)
-            self.train_2pCb = ttk.Combobox(master, font=("", 14), width=8, value=self.trainComboList)
+            self.train_2pCb = ttk.Combobox(master, font=textSetting.textList["font2"], width=8, value=self.trainComboList)
             self.train_2pCb.grid(row=i + 1, column=2, sticky=tkinter.W + tkinter.E)
             self.train_2pCb.current(info[2])
             self.trainList.append(self.train_2pCb)
-            self.train_3pCb = ttk.Combobox(master, font=("", 14), width=8, value=self.trainComboList)
+            self.train_3pCb = ttk.Combobox(master, font=textSetting.textList["font2"], width=8, value=self.trainComboList)
             self.train_3pCb.grid(row=i + 1, column=3, sticky=tkinter.W + tkinter.E)
             if info[3] == -1:
                 self.train_3pCb.current(len(self.trainComboList) - 1)
@@ -56,14 +57,14 @@ class EditStageInfo(sd.Dialog):
             self.trainList.append(self.train_3pCb)
 
             if self.game in [gameDefine.CS, gameDefine.RS]:
-                self.trackCb = ttk.Combobox(master, font=("", 14), width=8, value=trackComboList)
+                self.trackCb = ttk.Combobox(master, font=textSetting.textList["font2"], width=8, value=trackComboList)
                 self.trackCb.grid(row=i + 1, column=4, sticky=tkinter.W + tkinter.E)
                 self.trackCb.current(info[4])
                 self.trainList.append(self.trackCb)
 
     def validate(self):
-        warnMsg = "ステージ情報を修正しますか？"
-        result = mb.askokcancel(message=warnMsg, icon="warning", parent=self)
+        warnMsg = textSetting.textList["infoList"]["I42"]
+        result = mb.askokcancel(title=textSetting.textList["confirm"], message=warnMsg, icon="warning", parent=self)
         if result:
             index = self.decryptFile.stageIdx
             # stageAllCnt
@@ -95,12 +96,12 @@ class EditStageInfo(sd.Dialog):
                     trackCb = self.trainList[infoCnt * i + 3].current()
                     stageList[self.decryptFile.stageEditIdx + i][4] = trackCb
 
-            errorMsg = "保存に失敗しました。\nファイルが他のプログラムによって開かれている\nまたは権限問題の可能性があります"
+            errorMsg = textSetting.textList["errorList"]["E4"]
             if not self.decryptFile.saveStageInfo(stageList):
                 self.decryptFile.printError()
-                mb.showerror(title="保存エラー", message=errorMsg)
+                mb.showerror(title=textSetting.textList["saveError"], message=errorMsg)
                 return False
             return True
 
     def apply(self):
-        mb.showinfo(title="成功", message="ステージ設定を修正しました")
+        mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I43"])

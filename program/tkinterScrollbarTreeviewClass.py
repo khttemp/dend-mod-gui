@@ -27,4 +27,4 @@ class ScrollbarTreeview():
             selectId = self.tree.selection()[0]
             selectItem = self.tree.set(selectId)
             if self.v_select is not None:
-                self.v_select.set(selectItem["番号"])
+                self.v_select.set(selectItem["treeNum"])

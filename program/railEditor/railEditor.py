@@ -3,6 +3,7 @@ import tkinter
 from tkinter import ttk
 from tkinter import filedialog as fd
 from tkinter import messagebox as mb
+import program.textSetting as textSetting
 
 from program.railEditor.importPy.tkinterTab import tab1AllWidget, tab2AllWidget, tab3AllWidget, tab4AllWidget, tab5AllWidget, tab6AllWidget, tab7AllWidget, tab8AllWidget, tab9AllWidget, tab10AllWidget, tab11AllWidget
 import program.railEditor.dendDecrypt.RSdecrypt as dendRs
@@ -20,33 +21,8 @@ v_filename = None
 cb = None
 tabFrame = None
 decryptFile = None
-info = [
-    "BGM、配置情報",
-    "要素1",
-    "smf情報",
-    "駅名位置情報",
-    "要素2",
-    "CPU情報",
-    "Comic Script、土讃線",
-    "レール情報",
-    "要素3",
-    "要素4",
-    "AMB情報"
-]
-
-lsInfo = [
-    "BGM、配置情報",
-    "要素1",
-    "smf情報",
-    "駅名位置情報",
-    "要素2",
-    "CPU情報",
-    "Comic Script、土讃線",
-    "レール情報",
-    "Cam",
-    "要素4",
-    "AMB情報"
-]
+info = textSetting.textList["railEditor"]["railComboValue"]
+lsInfo = textSetting.textList["railEditor"]["railLsComboValue"]
 
 
 def openFile(v_railCsvMode, v_ambCsvMode):
@@ -57,8 +33,8 @@ def openFile(v_railCsvMode, v_ambCsvMode):
     global info
     global decryptFile
 
-    errorMsg = "予想外のエラーが出ました。\n電車でDのファイルではない、またはファイルが壊れた可能性があります。"
-    file_path = fd.askopenfilename(filetypes=[("TRAIN_DATA", "*.BIN")])
+    errorMsg = textSetting.textList["errorList"]["E21"]
+    file_path = fd.askopenfilename(filetypes=[(textSetting.textList["railEditor"]["fileType"], "*.BIN")])
     if file_path:
         filename = os.path.basename(file_path)
         v_filename.set(filename)
@@ -72,7 +48,7 @@ def openFile(v_railCsvMode, v_ambCsvMode):
             file = os.path.splitext(os.path.basename(file_path))[0]
             directory = os.path.dirname(file_path)
             if os.path.exists(os.path.join(directory, file + ".csv")):
-                result = mb.askquestion(title="確認", message="レールCSVがあります。\n上書きしますか？\n(権限問題で上書き失敗することもあります)", icon="warning")
+                result = mb.askquestion(title=textSetting.textList["confirm"], message=textSetting.textList["infoList"]["I96"], icon="warning")
                 if result == "no":
                     writeFlag = False
         elif v_railCsvMode == 2:
@@ -85,7 +61,7 @@ def openFile(v_railCsvMode, v_ambCsvMode):
             file = os.path.splitext(os.path.basename(file_path))[0]
             directory = os.path.dirname(file_path)
             if os.path.exists(os.path.join(directory, file + "_amb.csv")):
-                result = mb.askquestion(title="確認", message="AMBのCSVがあります。\n上書きしますか？\n(権限問題で上書き失敗することもあります)", icon="warning")
+                result = mb.askquestion(title=textSetting.textList["confirm"], message=textSetting.textList["infoList"]["I97"], icon="warning")
                 if result == "no":
                     ambWriteFlag = False
         elif v_ambCsvMode == 2:
@@ -105,11 +81,11 @@ def openFile(v_railCsvMode, v_ambCsvMode):
 
         if not decryptFile.open():
             if decryptFile.error == "":
-                errorMsg = decryptFile.game + "のレールデータではありません"
-                mb.showerror(title="エラー", message=errorMsg)
+                errorMsg = textSetting.textList["errorList"]["E76"].format(decryptFile.game)
+                mb.showerror(title=textSetting.textList["error"], message=errorMsg)
             else:
                 decryptFile.printError()
-                mb.showerror(title="エラー", message=errorMsg)
+                mb.showerror(title=textSetting.textList["error"], message=errorMsg)
             return
 
         deleteAllWidget()
@@ -201,10 +177,10 @@ def call_railEditor(rootTk, programFrame):
     rsRb.select()
 
     v_filename = tkinter.StringVar()
-    filenameEt = ttk.Entry(programFrame, textvariable=v_filename, font=("", 14), width=20, state="readonly", justify="center")
+    filenameEt = ttk.Entry(programFrame, textvariable=v_filename, font=textSetting.textList["font2"], width=20, state="readonly", justify="center")
     filenameEt.place(relx=0.05, rely=0.02)
 
-    cb = ttk.Combobox(programFrame, width=31, values=info, state="disabled")
+    cb = ttk.Combobox(programFrame, width=20, font=textSetting.textList["font2"], values=info, state="disabled")
     cb.bind("<<ComboboxSelected>>", lambda e: selectInfo(cb.current()))
     cb.place(relx=0.05, rely=0.08)
 

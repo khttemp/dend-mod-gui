@@ -1,6 +1,8 @@
 import copy
+import codecs
 import UnityPy
 import traceback
+import program.textSetting as textSetting
 
 SSTrainName = [
     "H2000",
@@ -58,12 +60,12 @@ perfName = [
     "First_break",
     "Second_Breake",
     "SpBreake",
-    "D_Speed(未使用)",
-    "One_Speed(未使用)",
+    "D_Speed" + textSetting.textList["orgInfoEditor"]["noUsed"],
+    "One_Speed" + textSetting.textList["orgInfoEditor"]["noUsed"],
     "OutParam",
     "D_Add",
     "D_Add2",
-    "D_AddFrame(未使用)",
+    "D_AddFrame" + textSetting.textList["orgInfoEditor"]["noUsed"],
     "Carbe",
     "Jump",
     "ChangeFrame",
@@ -82,38 +84,39 @@ perfName = [
 ]
 
 rainName = [
-    "雨の加速度",
-    "雨のブレーキ力",
-    "雨の登り坂",
-    "雨の下り坂",
+    textSetting.textList["orgInfoEditor"]["rainAdd"],
+    textSetting.textList["orgInfoEditor"]["rainBreake"],
+    textSetting.textList["orgInfoEditor"]["rainHill"],
+    textSetting.textList["orgInfoEditor"]["rainDown"],
 ]
 
 carbName = [
-    "脱線設定の係数",
-    "カントの係数",
-    "ブレーキ時、脱線値上昇を軽減",
-    "１フレームの最大脱線値",
+    textSetting.textList["orgInfoEditor"]["trackOutPer"],
+    textSetting.textList["orgInfoEditor"]["trackKntPer"],
+    textSetting.textList["orgInfoEditor"]["breakeOutPow"],
+    textSetting.textList["orgInfoEditor"]["maxOutParam"],
 ]
 
 otherName = [
-    "振り子数",
-    "振り子角度",
-    "1両につく台車の数",
-    "読み込む台車の数(未使用)",
-    "TrackName",
-    "標準軌モデル",
-    "狭軌モデル"
+    textSetting.textList["orgInfoEditor"]["hurikoCntSS"],
+    textSetting.textList["orgInfoEditor"]["hurikoAngleSS"],
+    textSetting.textList["orgInfoEditor"]["trackCnt"],
+    textSetting.textList["orgInfoEditor"]["readTrackNum"] + textSetting.textList["orgInfoEditor"]["noUsed"],
+    textSetting.textList["orgInfoEditor"]["trackName"],
+    textSetting.textList["orgInfoEditor"]["trackMdlName"],
+    textSetting.textList["orgInfoEditor"]["lowTrackMdlName"],
 ]
 
 hurikoName = [
-    "振り子の減算値"
+    textSetting.textList["orgInfoEditor"]["hurikoPow"],
 ]
 
 oneWheelName = [
-    "片輪走行の上昇率",
-    "片輪走行の継続時間",
-    "片輪走行の継続時間後、落ちるまで時間"
+    textSetting.textList["orgInfoEditor"]["oneWheelPow"],
+    textSetting.textList["orgInfoEditor"]["oneWheelTime"],
+    textSetting.textList["orgInfoEditor"]["oneWheelAfterTime"],
 ]
+
 
 class SSdecrypt:
     def __init__(self, filePath):
@@ -131,7 +134,7 @@ class SSdecrypt:
         self.allList = {}
         self.dataList = {}
         self.error = ""
-    
+
     def open(self):
         try:
             self.env = UnityPy.load(self.filePath)
@@ -139,12 +142,12 @@ class SSdecrypt:
         except Exception:
             self.error = traceback.format_exc()
             return False
-    
+
     def printError(self):
-        w = open("error.log", "w")
+        w = codecs.open("error.log", "w", "utf-8", "strict")
         w.write(self.error)
         w.close()
-    
+
     def decrypt(self):
         try:
             self.trainInfoList = []
@@ -155,7 +158,7 @@ class SSdecrypt:
                     data = env.read()
                     name = data.name
                     if name not in SSTrainName:
-                        self.error = name + "の車両は存在しません"
+                        self.error = textSetting.textList["errorList"]["E51"].format(name)
                         return False
                     self.dataList[name] = data
                     self.allList[name] = data.script.tobytes().decode("utf-8").split("\n")
@@ -174,19 +177,19 @@ class SSdecrypt:
         trainOrgInfo = []
         index = self.findLines(lines, notchCntLineName)
         if index == -1:
-            self.error = "{0}を探せません".format(notchCntLineName)
+            self.error = textSetting.textList["errorList"]["E52"].format(notchCntLineName)
             return None
         try:
             trainSpeedInfo = []
-            notchInfoList = [x.strip() for x in lines[index].strip().split("\t") if not x.strip() == '']
+            notchInfoList = [x.strip() for x in lines[index].strip().split("\t") if not x.strip() == ""]
             notchCnt = int(notchInfoList[1])
             index += 1
             for i in range(4):
                 speedText = lines[index].strip()
                 if speedText == "" or speedText.find("//") == 0:
-                    self.error = "ノッチの行を読み込めません({0}行目)".format(index + 1)
+                    self.error = textSetting.textList["errorList"]["E53"].format(index + 1)
                     return None
-                speedList = [x.strip() for x in speedText.split("\t") if not x.strip() == '']
+                speedList = [x.strip() for x in speedText.split("\t") if not x.strip() == ""]
                 for j in range(notchCnt):
                     if i == 2:
                         trainSpeedInfo.append(int(speedList[j]))
@@ -200,16 +203,16 @@ class SSdecrypt:
 
         index = self.findLines(lines, perfLineName)
         if index == -1:
-            self.error = "{0}を探せません".format(perfLineName)
+            self.error = textSetting.textList["errorList"]["E52"].format(perfLineName)
             return None
         index += 1
         try:
             trainPerfInfo = []
             perfText = lines[index].strip()
             if speedText == "" or speedText.find("//") == 0:
-                self.error = "性能の行を読み込めません({0}行目)".format(index + 1)
+                self.error = textSetting.textList["errorList"]["E54"].format(index + 1)
                 return None
-            perfList = [x.strip() for x in perfText.split("\t") if not x.strip() == '']
+            perfList = [x.strip() for x in perfText.split("\t") if not x.strip() == ""]
             for i in range(len(self.trainPerfNameList)):
                 trainPerfInfo.append(float(perfList[i]))
             trainOrgInfo.append(trainPerfInfo)
@@ -219,16 +222,16 @@ class SSdecrypt:
 
         index = self.findLines(lines, rainLineName)
         if index == -1:
-            self.error = "{0}を探せません".format(rainLineName)
+            self.error = textSetting.textList["errorList"]["E52"].format(rainLineName)
             return None
         index += 1
         try:
             trainRainInfo = []
             rainText = lines[index].strip()
             if rainText == "" or rainText.find("//") == 0:
-                self.error = "雨の性能の行を読み込めません({0}行目)".format(index + 1)
+                self.error = textSetting.textList["errorList"]["E55"].format(index + 1)
                 return None
-            rainList = [x.strip() for x in rainText.split("\t") if not x.strip() == '']
+            rainList = [x.strip() for x in rainText.split("\t") if not x.strip() == ""]
             for i in range(len(self.trainRainNameList)):
                 trainRainInfo.append(float(rainList[i]))
             trainOrgInfo.append(trainRainInfo)
@@ -238,16 +241,16 @@ class SSdecrypt:
 
         index = self.findLines(lines, carbLineName)
         if index == -1:
-            self.error = "{0}を探せません".format(carbLineName)
+            self.error = textSetting.textList["errorList"]["E52"].format(carbLineName)
             return None
         index += 1
         try:
             trainCarbInfo = []
             carbText = lines[index].strip()
             if carbText == "" or carbText.find("//") == 0:
-                self.error = "カーブの性能の行を読み込めません({0}行目)".format(index + 1)
+                self.error = textSetting.textList["errorList"]["E56"].format(index + 1)
                 return None
-            carbList = [x.strip() for x in carbText.split("\t") if not x.strip() == '']
+            carbList = [x.strip() for x in carbText.split("\t") if not x.strip() == ""]
             for i in range(len(self.trainCarbNameList)):
                 trainCarbInfo.append(float(carbList[i]))
             trainOrgInfo.append(trainCarbInfo)
@@ -257,16 +260,16 @@ class SSdecrypt:
 
         index = self.findLines(lines, otherLineName)
         if index == -1:
-            self.error = "{0}を探せません".format(otherLineName)
+            self.error = textSetting.textList["errorList"]["E52"].format(otherLineName)
             return None
         index += 1
         try:
             trainOtherInfo = []
             otherText = lines[index].strip()
             if otherText == "" or otherText.find("//") == 0:
-                self.error = "その他の行を読み込めません({0}行目)".format(index + 1)
+                self.error = textSetting.textList["errorList"]["E57"].format(index + 1)
                 return None
-            otherList = [x.strip() for x in otherText.split("\t") if not x.strip() == '']
+            otherList = [x.strip() for x in otherText.split("\t") if not x.strip() == ""]
             for i in range(len(self.trainOtherNameList)):
                 if i in [0, 2, 3]:
                     trainOtherInfo.append(int(otherList[i]))
@@ -285,24 +288,24 @@ class SSdecrypt:
             trainHurikoInfo = []
             hurikoText = lines[index].strip()
             if hurikoText == "" or hurikoText.find("//") == 0:
-                self.error = "振り子性能の行を読み込めません({0}行目)".format(index + 1)
+                self.error = textSetting.textList["errorList"]["E58"].format(index + 1)
                 return None
-            hurikoList = [x.strip() for x in hurikoText.split("\t") if not x.strip() == '']
+            hurikoList = [x.strip() for x in hurikoText.split("\t") if not x.strip() == ""]
             for i in range(len(self.trainHurikoNameList)):
                 trainHurikoInfo.append(float(hurikoList[i]))
             trainOrgInfo.append(trainHurikoInfo)
         else:
             trainOrgInfo.append(None)
-        
+
         index = self.findLines(lines, oneWheelLineName)
         if index != -1:
             index += 1
             trainOneWheelInfo = []
             oneWheelText = lines[index].strip()
             if oneWheelText == "" or oneWheelText.find("//") == 0:
-                self.error = "片輪走行の行を読み込めません({0}行目)".format(index + 1)
+                self.error = textSetting.textList["errorList"]["E59"].format(index + 1)
                 return None
-            oneWheelList = [x.strip() for x in oneWheelText.split("\t") if not x.strip() == '']
+            oneWheelList = [x.strip() for x in oneWheelText.split("\t") if not x.strip() == ""]
             for i in range(len(self.trainOneWheelNameList)):
                 trainOneWheelInfo.append(float(oneWheelList[i]))
             trainOrgInfo.append(trainOneWheelInfo)
@@ -317,7 +320,7 @@ class SSdecrypt:
             if line.find(str) == 0:
                 return index
         return -1
-    
+
     def saveNotchInfo(self, trainIdx, newNotchNum):
         trainOrgInfo = self.trainInfoList[trainIdx]
         speedList = trainOrgInfo[0]
@@ -343,19 +346,19 @@ class SSdecrypt:
                 newSpeedLine = "\t".join([str(x) for x in newSpeed])
                 newSpeedLine += "\r"
                 newLines.append(newSpeedLine)
-        
+
         originLines = self.allList[SSTrainName[trainIdx]]
         originIndex = self.findLines(originLines, notchCntLineName)
         originIndex += 5
         newLines.extend(originLines[originIndex:])
 
         return self.saveTrain(trainIdx, newLines)
-    
+
     def setDefaultTrainInfo(self, srcList, distData, checkStatusList):
         try:
             srcIdx = srcList[0]
             srcNotchNum = srcList[1]
-            
+
             distNotchNum = len(distData["notch"])
             notchCheckStatus = checkStatusList[0]
             perfCheckStatus = checkStatusList[1]
@@ -399,21 +402,21 @@ class SSdecrypt:
                 newPerfLine = "\t".join([str(x) for x in distData["att"]])
                 newPerfLine += "\r"
                 newLines[index] = newPerfLine
-            
+
             index = self.findLines(originLines, rainLineName)
             index += 1
             if rainCheckStatus:
                 newRainLine = "\t".join([str(x) for x in distData["rain"]])
                 newRainLine += "\r"
                 newLines[index] = newRainLine
-            
+
             index = self.findLines(originLines, carbLineName)
             index += 1
             if carbCheckStatus:
                 newCarbLine = "\t".join([str(x) for x in distData["carb"]])
                 newCarbLine += "\r"
                 newLines[index] = newCarbLine
-            
+
             index = self.findLines(originLines, otherLineName)
             index += 1
             if otherCheckStatus:
@@ -431,7 +434,7 @@ class SSdecrypt:
                         newLines[index] = newHurikoLine
                     else:
                         newLines[index:index+3] = []
-            
+
             index = self.findLines(originLines, oneWheelLineName)
             if index != -1:
                 if oneWheelCheckStatus:
@@ -446,7 +449,7 @@ class SSdecrypt:
         except Exception:
             self.error = traceback.format_exc()
             return False
-    
+
     def saveTrainInfo(self, trainIdx, varList):
         try:
             originLines = self.allList[SSTrainName[trainIdx]]
@@ -454,7 +457,7 @@ class SSdecrypt:
 
             index = self.findLines(originLines, notchCntLineName)
             index += 1
-            
+
             trainOrgInfo = self.trainInfoList[trainIdx]
             speedList = trainOrgInfo[0]
             notchCnt = len(speedList) // self.notchContentCnt
@@ -474,7 +477,7 @@ class SSdecrypt:
                 newSpeedLine += "\r"
                 newLines[index] = newSpeedLine
                 index += 1
-            
+
             index = self.findLines(originLines, perfLineName)
             index += 1
             newPerf = []
@@ -488,31 +491,31 @@ class SSdecrypt:
         except Exception:
             self.error = traceback.format_exc()
             return False
-    
+
     def saveElsePerfList(self, trainIdx, title, resultValueList):
         try:
             originLines = self.allList[SSTrainName[trainIdx]]
             newLines = copy.deepcopy(originLines)
 
-            if title == "雨":
+            if title == "rain":
                 index = self.findLines(originLines, rainLineName)
                 index += 1
                 newRainLine = "\t".join([str(x) for x in resultValueList])
                 newRainLine += "\r"
                 newLines[index] = newRainLine
-            elif title == "カーブ":
+            elif title == "carb":
                 index = self.findLines(originLines, carbLineName)
                 index += 1
                 newCarbLine = "\t".join([str(x) for x in resultValueList])
                 newCarbLine += "\r"
                 newLines[index] = newCarbLine
-            elif title == "Other":
+            elif title == "other":
                 index = self.findLines(originLines, otherLineName)
                 index += 1
                 newOtherLine = "\t".join([str(x) for x in resultValueList])
                 newOtherLine += "\r"
                 newLines[index] = newOtherLine
-            elif title == "振り子":
+            elif title == "huriko":
                 index = self.findLines(originLines, hurikoLineName)
                 if index != -1:
                     if resultValueList is not None:
@@ -535,7 +538,7 @@ class SSdecrypt:
                         newHurikoLines.append("\r")
 
                         newLines[index:index+1] = newHurikoLines
-            elif title == "片輪走行":
+            elif title == "oneWheel":
                 index = self.findLines(originLines, oneWheelLineName)
                 if index != -1:
                     if resultValueList is not None:
@@ -567,13 +570,13 @@ class SSdecrypt:
         except Exception:
             self.error = traceback.format_exc()
             return False
-    
+
     def saveAllEdit(self, perfIndex, num, calcIndex):
         try:
             for trainIdx in range(len(self.trainNameList)):
                 originLines = self.allList[SSTrainName[trainIdx]]
                 newLines = copy.deepcopy(originLines)
-                
+
                 index = self.findLines(originLines, perfLineName)
                 index += 1
 

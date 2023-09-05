@@ -5,13 +5,14 @@ from tkinter import ttk
 from tkinter import simpledialog as sd
 from tkinter import messagebox as mb
 from tkinter import filedialog as fd
+import program.textSetting as textSetting
 
 import program.orgInfoEditor.importPy.gameDefine as gameDefine
 gameDefine.load()
 
 
 def setDefault(tabFrame, decryptFile, game, trainIdx, defaultData, reloadFunc):
-    result = SetDefaultEdit(tabFrame, "車両の性能をデフォルトに戻す", decryptFile, game, trainIdx, defaultData)
+    result = SetDefaultEdit(tabFrame, textSetting.textList["orgInfoEditor"]["setDefaultBtnLabel"], decryptFile, game, trainIdx, defaultData)
     if result.reloadFlag:
         reloadFunc()
 
@@ -26,55 +27,55 @@ class SetDefaultEdit(sd.Dialog):
         super(SetDefaultEdit, self).__init__(parent=master, title=title)
 
     def body(self, master):
-        self.copySrcCb = ttk.Combobox(master, width=12, font=("", 14), value=self.decryptFile.trainNameList, state="readonly")
+        self.copySrcCb = ttk.Combobox(master, width=12, font=textSetting.textList["font2"], value=self.decryptFile.trainNameList, state="readonly")
         self.copySrcCb.bind("<<ComboboxSelected>>", lambda e: self.selectTrain())
         self.copySrcCb.grid(row=0, column=0, sticky=tkinter.N + tkinter.S, padx=3)
         self.copySrcCb.current(self.trainIdx)
 
         self.v_infoNotch = tkinter.IntVar()
         self.v_infoNotch.set(0)
-        self.infoNotchCb = tkinter.Checkbutton(master, text="ノッチ", font=("", 14), variable=self.v_infoNotch)
+        self.infoNotchCb = tkinter.Checkbutton(master, text=textSetting.textList["orgInfoEditor"]["notchLabel"], font=textSetting.textList["font2"], variable=self.v_infoNotch)
         self.infoNotchCb.grid(row=0, column=1, sticky=tkinter.W, padx=3)
 
         self.v_infoPerf = tkinter.IntVar()
         self.v_infoPerf.set(0)
-        self.infoPerfCb = tkinter.Checkbutton(master, text="性能", font=("", 14), variable=self.v_infoPerf)
+        self.infoPerfCb = tkinter.Checkbutton(master, text=textSetting.textList["orgInfoEditor"]["perfLabel"], font=textSetting.textList["font2"], variable=self.v_infoPerf)
         self.infoPerfCb.grid(row=1, column=1, sticky=tkinter.W, padx=3)
 
         if self.game in [gameDefine.LS, gameDefine.BS, gameDefine.CS, gameDefine.RS]:
-            self.infoDefLb = tkinter.Label(master, text="をデフォルトに戻す", font=("", 14))
+            self.infoDefLb = tkinter.Label(master, text=textSetting.textList["orgInfoEditor"]["setDefaultLabel"], font=textSetting.textList["font2"])
             self.infoDefLb.grid(row=1, column=2, sticky=tkinter.N + tkinter.S, padx=3)
         else:
             self.v_infoRain = tkinter.IntVar()
             self.v_infoRain.set(0)
-            self.infoRainCb = tkinter.Checkbutton(master, text="雨", font=("", 14), variable=self.v_infoRain)
+            self.infoRainCb = tkinter.Checkbutton(master, text=textSetting.textList["orgInfoEditor"]["SSRainLfLabel"], font=textSetting.textList["font2"], variable=self.v_infoRain)
             self.infoRainCb.grid(row=2, column=1, sticky=tkinter.W, padx=3)
 
             self.v_infoCarb = tkinter.IntVar()
             self.v_infoCarb.set(0)
-            self.infoCarbCb = tkinter.Checkbutton(master, text="カーブ", font=("", 14), variable=self.v_infoCarb)
+            self.infoCarbCb = tkinter.Checkbutton(master, text=textSetting.textList["orgInfoEditor"]["SSCarbLfLabel"], font=textSetting.textList["font2"], variable=self.v_infoCarb)
             self.infoCarbCb.grid(row=3, column=1, sticky=tkinter.W, padx=3)
 
             self.v_infoOther = tkinter.IntVar()
             self.v_infoOther.set(0)
-            self.infoOtherCb = tkinter.Checkbutton(master, text="Other", font=("", 14), variable=self.v_infoOther)
+            self.infoOtherCb = tkinter.Checkbutton(master, text=textSetting.textList["orgInfoEditor"]["SSOtherLfLabel"], font=textSetting.textList["font2"], variable=self.v_infoOther)
             self.infoOtherCb.grid(row=4, column=1, sticky=tkinter.W, padx=3)
 
             self.v_infoHuriko = tkinter.IntVar()
             self.v_infoHuriko.set(0)
             self.v_hurikoText = tkinter.StringVar()
-            self.v_hurikoText.set("振り子")
-            self.infoHurikoCb = tkinter.Checkbutton(master, textvariable=self.v_hurikoText, font=("", 14), variable=self.v_infoHuriko)
+            self.v_hurikoText.set(textSetting.textList["orgInfoEditor"]["SSHurikoLfLabel"])
+            self.infoHurikoCb = tkinter.Checkbutton(master, textvariable=self.v_hurikoText, font=textSetting.textList["font2"], variable=self.v_infoHuriko)
             self.infoHurikoCb.grid(row=5, column=1, sticky=tkinter.W, padx=3)
 
             self.v_infoOneWheel = tkinter.IntVar()
             self.v_infoOneWheel.set(0)
             self.v_oneWheelText = tkinter.StringVar()
-            self.v_oneWheelText.set("片輪走行")
-            self.infoOneWheelCb = tkinter.Checkbutton(master, textvariable=self.v_oneWheelText, font=("", 14), variable=self.v_infoOneWheel)
+            self.v_oneWheelText.set(textSetting.textList["orgInfoEditor"]["SSOneWheelLfLabel"])
+            self.infoOneWheelCb = tkinter.Checkbutton(master, textvariable=self.v_oneWheelText, font=textSetting.textList["font2"], variable=self.v_infoOneWheel)
             self.infoOneWheelCb.grid(row=6, column=1, sticky=tkinter.W, padx=3)
 
-            self.infoDefLb = tkinter.Label(master, text="をデフォルトに戻す", font=("", 14))
+            self.infoDefLb = tkinter.Label(master, text=textSetting.textList["orgInfoEditor"]["setDefaultLabel"], font=textSetting.textList["font2"])
             self.infoDefLb.grid(row=0, column=2, sticky=tkinter.N + tkinter.S, padx=3)
 
             self.selectTrain()
@@ -82,19 +83,19 @@ class SetDefaultEdit(sd.Dialog):
     def selectTrain(self):
         if self.game == gameDefine.SS:
             if self.copySrcCb.current() in [12, 19, 25]:
-                self.v_hurikoText.set("振り子")
+                self.v_hurikoText.set(textSetting.textList["orgInfoEditor"]["SSHurikoLfLabel"])
             else:
-                self.v_hurikoText.set("振り子(削除)")
+                self.v_hurikoText.set(textSetting.textList["orgInfoEditor"]["SSOneWheelLfLabel"] + textSetting.textList["orgInfoEditor"]["setDeleteLabel"])
 
             if self.copySrcCb.current() in [27, 29]:
-                self.v_oneWheelText.set("片輪走行")
+                self.v_oneWheelText.set(textSetting.textList["orgInfoEditor"]["SSOneWheelLfLabel"])
             else:
-                self.v_oneWheelText.set("片輪走行(削除)")
+                self.v_oneWheelText.set(textSetting.textList["orgInfoEditor"]["SSOneWheelLfLabel"] + textSetting.textList["orgInfoEditor"]["setDeleteLabel"])
 
     def validate(self):
         if self.game in [gameDefine.LS, gameDefine.BS, gameDefine.CS, gameDefine.RS]:
             if self.v_infoNotch.get() == 0 and self.v_infoPerf.get() == 0:
-                mb.showerror(title="エラー", message="コピー項目を選択してください")
+                mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E62"])
                 return False
 
             srcIdx = self.copySrcCb.current()
@@ -116,13 +117,13 @@ class SetDefaultEdit(sd.Dialog):
             checkStatusList = [self.v_infoNotch.get(), self.v_infoPerf.get()]
         else:
             if self.v_infoNotch.get() == 0 and \
-                self.v_infoPerf.get() == 0 and \
-                self.v_infoRain.get() == 0 and \
-                self.v_infoCarb.get() == 0 and \
-                self.v_infoOther.get() == 0 and \
-                self.v_infoHuriko.get() == 0 and \
-                self.v_infoOneWheel.get() == 0:
-                mb.showerror(title="エラー", message="コピー項目を選択してください")
+                    self.v_infoPerf.get() == 0 and \
+                    self.v_infoRain.get() == 0 and \
+                    self.v_infoCarb.get() == 0 and \
+                    self.v_infoOther.get() == 0 and \
+                    self.v_infoHuriko.get() == 0 and \
+                    self.v_infoOneWheel.get() == 0:
+                mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E62"])
                 return False
 
             srcIdx = self.copySrcCb.current()
@@ -150,73 +151,73 @@ class SetDefaultEdit(sd.Dialog):
 
         if self.v_infoNotch.get() == 1:
             if srcNotchNum > distNotchNum:
-                warnMsg += "※{0}のノッチ情報を{1}ノッチまで戻します。\n".format(self.decryptFile.trainNameList[srcIdx], distNotchNum)
+                warnMsg += textSetting.textList["infoList"]["I45"].format(self.decryptFile.trainNameList[srcIdx], distNotchNum)
             elif srcNotchNum < distNotchNum:
-                warnMsg += "※{0}のノッチ情報を{1}ノッチまで戻します。\n".format(self.decryptFile.trainNameList[srcIdx], srcNotchNum)
+                warnMsg += textSetting.textList["infoList"]["I45"].format(self.decryptFile.trainNameList[srcIdx], srcNotchNum)
 
         if self.v_infoNotch.get() == 1:
-            warnMsg += "「ノッチ」"
+            warnMsg += "「{0}」".format(textSetting.textList["orgInfoEditor"]["notchLabel"])
         if self.v_infoPerf.get() == 1:
-            warnMsg += "「性能」"
+            warnMsg += "「{0}」".format(textSetting.textList["orgInfoEditor"]["perfLabel"])
 
         if self.game == gameDefine.SS:
             if self.v_infoRain.get() == 1:
-                warnMsg += "「雨」"
+                warnMsg += "「{0}」".format(textSetting.textList["orgInfoEditor"]["SSRainLfLabel"])
             if self.v_infoCarb.get() == 1:
-                warnMsg += "「カーブ」"
+                warnMsg += "「{0}」".format(textSetting.textList["orgInfoEditor"]["SSCarbLfLabel"])
             if self.v_infoOther.get() == 1:
-                warnMsg += "「Other」"
+                warnMsg += "「{0}」".format(textSetting.textList["orgInfoEditor"]["SSOtherLfLabel"])
             if self.v_infoHuriko.get() == 1:
-                warnMsg += "「振り子」"
+                warnMsg += "「{0}」".format(textSetting.textList["orgInfoEditor"]["SSHurikoLfLabel"])
             if self.v_infoOneWheel.get() == 1:
-                warnMsg += "「片輪走行」"
-        warnMsg += "を\n全部元に戻しますか？"
-        result = mb.askokcancel(title="警告", message=warnMsg, icon="warning", parent=self)
+                warnMsg += "「{0}」".format(textSetting.textList["orgInfoEditor"]["SSOneWheelLfLabel"])
+        warnMsg += textSetting.textList["infoList"]["I46"]
+        result = mb.askokcancel(title=textSetting.textList["warning"], message=warnMsg, icon="warning", parent=self)
 
         if result:
-            errorMsg = "保存に失敗しました。\nファイルが他のプログラムによって開かれている\nまたは権限問題の可能性があります"
+            errorMsg = textSetting.textList["errorList"]["E4"]
             if not self.decryptFile.setDefaultTrainInfo(srcList, distData, checkStatusList):
                 self.decryptFile.printError()
-                mb.showerror(title="保存エラー", message=errorMsg)
+                mb.showerror(title=textSetting.textList["saveError"], message=errorMsg)
                 return False
             return True
 
     def apply(self):
-        mb.showinfo(title="成功", message="データを元に戻しました")
+        mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I47"])
         self.reloadFlag = True
 
 
 def extractCsvTrainInfo(game, trainIdx, decryptFile):
     filename = decryptFile.trainNameList[trainIdx]
     if game in [gameDefine.LS, gameDefine.BS, gameDefine.CS, gameDefine.RS]:
-        file_path = fd.asksaveasfilename(initialfile=filename, defaultextension='csv', filetypes=[('traininfo_csv', '*.csv')])
-        errorMsg = "CSVで取り出す機能が失敗しました。\n権限問題の可能性があります。"
+        file_path = fd.asksaveasfilename(initialfile=filename, defaultextension="csv", filetypes=[("traininfo_csv", "*.csv")])
+        errorMsg = textSetting.textList["errorList"]["E63"]
         if file_path:
             if not decryptFile.extractCsvTrainInfo(trainIdx, file_path):
                 decryptFile.printError()
-                mb.showerror(title="エラー", message=errorMsg)
+                mb.showerror(title=textSetting.textList["error"], message=errorMsg)
                 return False
-            mb.showinfo(title="成功", message="CSVで取り出しました")
+            mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I10"])
     else:
-        file_path = fd.asksaveasfilename(initialfile=filename, defaultextension='txt', filetypes=[('ファイル', '*.txt')])
-        errorMsg = "テキストで取り出す機能が失敗しました。\n権限問題の可能性があります。"
+        file_path = fd.asksaveasfilename(initialfile=filename, defaultextension="txt", filetypes=[("traininfo_text", "*.txt")])
+        errorMsg = textSetting.textList["errorList"]["E64"]
         if file_path:
             try:
                 data = decryptFile.dataList[decryptFile.trainNameList[trainIdx]]
                 w = open(file_path, "wb")
                 w.write(data.script)
                 w.close()
-                mb.showinfo(title="成功", message="テキストで取り出しました")
+                mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I48"])
             except Exception:
-                w = open("error.log", "a")
+                w = codecs.open("error.log", "a", "utf-8", "strict")
                 w.write(traceback.format_exc())
                 w.close()
-                mb.showerror(title="エラー", message=errorMsg)
+                mb.showerror(title=textSetting.textList["error"], message=errorMsg)
 
 
 def saveCsvTrainInfo(game, trainIdx, decryptFile, reloadFunc):
     if game in [gameDefine.LS, gameDefine.BS, gameDefine.CS, gameDefine.RS]:
-        file_path = fd.askopenfilename(defaultextension='csv', filetypes=[("traindata_csv", "*.csv")])
+        file_path = fd.askopenfilename(defaultextension="csv", filetypes=[("traindata_csv", "*.csv")])
         if not file_path:
             return
         csvLines = None
@@ -230,24 +231,24 @@ def saveCsvTrainInfo(game, trainIdx, decryptFile, reloadFunc):
             f.close()
 
         if not decryptFile.checkCsvResult(csvLines):
-            mb.showerror(title="エラー", message=decryptFile.error)
+            mb.showerror(title=textSetting.textList["error"], message=decryptFile.error)
             return
-        warnMsg = "選択したCSVで上書きします。\nそれでもよろしいですか？"
-        result = mb.askokcancel(title="警告", message=warnMsg, icon="warning")
+        warnMsg = textSetting.textList["infoList"]["I11"]
+        result = mb.askokcancel(title=textSetting.textList["warning"], message=warnMsg, icon="warning")
 
         if result:
-            errorMsg = "予想外のエラーです"
+            errorMsg = textSetting.textList["errorList"]["E14"]
             if not decryptFile.saveCsvTrainInfo(trainIdx):
                 decryptFile.printError()
-                mb.showerror(title="エラー", message=errorMsg)
+                mb.showerror(title=textSetting.textList["error"], message=errorMsg)
                 return False
-            mb.showinfo(title="成功", message="車両情報を改造しました")
+            mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I49"])
             reloadFunc()
     else:
-        file_path = fd.askopenfilename(filetypes=[("ファイル", "*.txt")])
+        file_path = fd.askopenfilename(filetypes=[("traininfo_text", "*.txt")])
         if not file_path:
             return
-        result = mb.askquestion(title="確認", message="denファイルを上書きします\nそれでもよろしいでしょうか？\n(権限問題で上書き失敗することもあります)", icon="warning")
+        result = mb.askquestion(title=textSetting.textList["confirm"], message=textSetting.textList["infoList"]["I50"], icon="warning")
         if result == "no":
             return
 
@@ -258,13 +259,13 @@ def saveCsvTrainInfo(game, trainIdx, decryptFile, reloadFunc):
             data.save()
             with open(decryptFile.filePath, "wb") as w:
                 w.write(decryptFile.env.file.save())
-            mb.showinfo(title="成功", message="denファイルを上書きしました")
+            mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I51"])
             reloadFunc()
         except Exception:
-            w = open("error.log", "a")
+            w = codecs.open("error.log", "a", "utf-8", "strict")
             w.write(traceback.format_exc())
             w.close()
-            mb.showerror(title="エラー", message="予想外のエラーです")
+            mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
 
 
 def editTrain(decryptFile, varList, btnList, widgetList, innerButtonList, reloadFunc):
@@ -279,7 +280,7 @@ def editTrain(decryptFile, varList, btnList, widgetList, innerButtonList, reload
     edit_button = innerButtonList[3]
     edit_all_button = innerButtonList[4]
 
-    v_edit.set("保存する")
+    v_edit.set(textSetting.textList["orgInfoEditor"]["trainSave"])
     for btn in btnList:
         btn["state"] = "normal"
 
@@ -305,7 +306,7 @@ def saveTrain(decryptFile, varList, btnList, widgetList, innerButtonList, reload
     save_csv_train_info_button = innerButtonList[2]
     edit_button = innerButtonList[3]
 
-    v_edit.set("この車両を修正する")
+    v_edit.set(textSetting.textList["orgInfoEditor"]["trainModify"])
     for btn in btnList:
         btn["state"] = "disabled"
 
@@ -320,18 +321,18 @@ def saveTrain(decryptFile, varList, btnList, widgetList, innerButtonList, reload
 
     trainIdx = cb.current()
 
-    errorMsg = "保存に失敗しました。\nファイルが他のプログラムによって開かれている\nまたは権限問題の可能性があります"
+    errorMsg = textSetting.textList["errorList"]["E4"]
     if not decryptFile.saveTrainInfo(trainIdx, varList):
         decryptFile.printError()
-        mb.showerror(title="保存エラー", message=errorMsg)
+        mb.showerror(title=textSetting.textList["saveError"], message=errorMsg)
         return
 
-    mb.showinfo(title="成功", message="車両を改造しました")
+    mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I49"])
     reloadFunc()
 
 
 def editAllTrain(tabFrame, decryptFile, reloadFunc):
-    result = AllEdit(tabFrame, "全車両の性能を一括修正", decryptFile)
+    result = AllEdit(tabFrame, textSetting.textList["orgInfoEditor"]["allSaveLabel"], decryptFile)
     if result.reloadFlag:
         reloadFunc()
 
@@ -344,24 +345,24 @@ class AllEdit(sd.Dialog):
         super(AllEdit, self).__init__(parent=master, title=title)
 
     def body(self, master):
-        self.eleLb = tkinter.Label(master, text="要素", width=5, font=("", 14))
+        self.eleLb = tkinter.Label(master, text=textSetting.textList["orgInfoEditor"]["perfElement"], width=5, font=textSetting.textList["font2"])
         self.eleLb.grid(row=0, column=0, sticky=tkinter.N + tkinter.S, padx=3)
         self.v_ele = tkinter.StringVar()
         self.eleCb = ttk.Combobox(master, textvariable=self.v_ele, width=24, value=self.decryptFile.trainPerfNameList, state="readonly")
         self.eleCb.grid(row=0, column=1, sticky=tkinter.N + tkinter.S, padx=3)
         self.v_ele.set(self.decryptFile.trainPerfNameList[0])
 
-        self.allLb = tkinter.Label(master, text="を全部", width=5, font=("", 14))
+        self.allLb = tkinter.Label(master, text=textSetting.textList["orgInfoEditor"]["perfAllTrainLabel"], width=5, font=textSetting.textList["font2"])
         self.allLb.grid(row=0, column=2, sticky=tkinter.N + tkinter.S, padx=3)
 
         self.v_num = tkinter.DoubleVar()
         self.v_num.set(1.0)
-        self.numEt = tkinter.Entry(master, textvariable=self.v_num, width=6, font=("", 14), justify="right")
+        self.numEt = tkinter.Entry(master, textvariable=self.v_num, width=6, font=textSetting.textList["font2"], justify="right")
         self.numEt.grid(row=0, column=3, sticky=tkinter.N + tkinter.S, padx=3)
 
-        calcList = ["倍にする", "にする"]
+        calcList = textSetting.textList["orgInfoEditor"]["perfCalcList"]
         self.v_ele2 = tkinter.StringVar()
-        self.eleCb2 = ttk.Combobox(master, textvariable=self.v_ele2, font=("", 14), width=8, value=calcList, state="readonly")
+        self.eleCb2 = ttk.Combobox(master, textvariable=self.v_ele2, font=textSetting.textList["font2"], width=8, value=calcList, state="readonly")
         self.v_ele2.set(calcList[0])
 
         self.eleCb2.grid(row=0, column=4, sticky=tkinter.N + tkinter.S, padx=3)
@@ -370,25 +371,25 @@ class AllEdit(sd.Dialog):
         try:
             result = float(self.v_num.get())
             if self.eleCb2.current() == 0:
-                warnMsg = "全車両同じ倍率で変更され、すぐ保存されます。\nそれでもよろしいですか？"
+                warnMsg = textSetting.textList["infoList"]["I52"]
             else:
-                warnMsg = "全車両同じ数値で変更され、すぐ保存されます。\nそれでもよろしいですか？"
-            result = mb.askokcancel(title="警告", message=warnMsg, icon="warning", parent=self)
+                warnMsg = textSetting.textList["infoList"]["I53"]
+            result = mb.askokcancel(title=textSetting.textList["warning"], message=warnMsg, icon="warning", parent=self)
 
             if result:
                 perfIndex = self.eleCb.current()
                 num = self.v_num.get()
 
-                errorMsg = "保存に失敗しました。\nファイルが他のプログラムによって開かれている\nまたは権限問題の可能性があります"
+                errorMsg = textSetting.textList["errorList"]["E4"]
                 if not self.decryptFile.saveAllEdit(perfIndex, num, self.eleCb2.current()):
                     self.decryptFile.printError()
-                    mb.showerror(title="保存エラー", message=errorMsg)
+                    mb.showerror(title=textSetting.textList["saveError"], message=errorMsg)
                     return False
                 return True
         except Exception:
-            errorMsg = "数字で入力してください。"
-            mb.showerror(title="数字エラー", message=errorMsg, parent=self)
+            errorMsg = textSetting.textList["errorList"]["E3"]
+            mb.showerror(title=textSetting.textList["numberError"], message=errorMsg, parent=self)
 
     def apply(self):
-        mb.showinfo(title="成功", message="全車両を改造しました")
+        mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I54"])
         self.reloadFlag = True

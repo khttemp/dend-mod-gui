@@ -6,6 +6,7 @@ import copy
 from tkinter import ttk
 from tkinter import filedialog as fd
 from tkinter import messagebox as mb
+import program.textSetting as textSetting
 
 import program.orgInfoEditor.importPy.gameDefine as gameDefine
 from program.orgInfoEditor.importPy.tkinterTab import tab1AllWidget, tab2AllWidget, tab3AllWidget
@@ -30,8 +31,9 @@ btnList = []
 defaultData = []
 gameDefine.load()
 
+
 def resource_path(relative_path):
-    bundle_dir = getattr(sys, '_MEIPASS', os.path.join(os.path.abspath(os.path.dirname(__file__)), "dendData"))
+    bundle_dir = getattr(sys, "_MEIPASS", os.path.join(os.path.abspath(os.path.dirname(__file__)), "dendData"))
     return os.path.join(bundle_dir, relative_path)
 
 
@@ -43,10 +45,10 @@ def defaultDataRead(game):
     if game == gameDefine.SS:
         path = resource_path("train_org_data.den")
         defaultDecryptFile = dendSs.SSdecrypt(path)
-        errorMsg = "予想外のエラーが出ました。\n電車でDのファイルではない、またはファイルが壊れた可能性があります。"
+        errorMsg = textSetting.textList["errorList"]["E4"]
         if not defaultDecryptFile.open():
             defaultDecryptFile.printError()
-            mb.showerror(title="エラー", message=errorMsg)
+            mb.showerror(title=textSetting.textList["error"], message=errorMsg)
             return
         trainOrgInfoList = defaultDecryptFile.trainInfoList
         for trainOrgInfo in trainOrgInfoList:
@@ -80,7 +82,7 @@ def defaultDataRead(game):
             path = resource_path("CSdata.txt")
         elif game == gameDefine.RS:
             path = resource_path("RSdata.txt")
-        
+
         f = codecs.open(path, "r", "utf-8", "ignore")
         lines = f.readlines()
         f.close()
@@ -137,41 +139,41 @@ def openFile():
     global decryptFile
 
     if gameCb.current() == gameDefine.LS:
-        file_path = fd.askopenfilename(filetypes=[("TRAIN_DATA", "TRAIN_DATA.BIN")])
+        file_path = fd.askopenfilename(filetypes=[(textSetting.textList["orgInfoEditor"]["fileType"], "TRAIN_DATA.BIN")])
         if file_path:
             del decryptFile
             decryptFile = dendLs.LSdecrypt(file_path)
             defaultDataRead(gameDefine.LS)
     elif gameCb.current() == gameDefine.BS:
-        file_path = fd.askopenfilename(filetypes=[("TRAIN_DATA", "TRAIN_DATA2ND.BIN")])
+        file_path = fd.askopenfilename(filetypes=[(textSetting.textList["orgInfoEditor"]["fileType"], "TRAIN_DATA2ND.BIN")])
         if file_path:
             del decryptFile
             decryptFile = dendBs.BSdecrypt(file_path)
             defaultDataRead(gameDefine.BS)
     elif gameCb.current() == gameDefine.CS:
-        file_path = fd.askopenfilename(filetypes=[("TRAIN_DATA", "TRAIN_DATA3RD.BIN")])
+        file_path = fd.askopenfilename(filetypes=[(textSetting.textList["orgInfoEditor"]["fileType"], "TRAIN_DATA3RD.BIN")])
         if file_path:
             del decryptFile
             decryptFile = dendCs.CSdecrypt(file_path)
             defaultDataRead(gameDefine.CS)
     elif gameCb.current() == gameDefine.RS:
-        file_path = fd.askopenfilename(filetypes=[("TRAIN_DATA", "TRAIN_DATA4TH.BIN")])
+        file_path = fd.askopenfilename(filetypes=[(textSetting.textList["orgInfoEditor"]["fileType"], "TRAIN_DATA4TH.BIN")])
         if file_path:
             del decryptFile
             decryptFile = dendRs.RSdecrypt(file_path)
             defaultDataRead(gameDefine.RS)
     elif gameCb.current() == gameDefine.SS:
-        file_path = fd.askopenfilename(filetypes=[("TRAIN_DATA", "train_org_data.den")])
+        file_path = fd.askopenfilename(filetypes=[(textSetting.textList["orgInfoEditor"]["fileType"], "train_org_data.den")])
         if file_path:
             del decryptFile
             decryptFile = dendSs.SSdecrypt(file_path)
             defaultDataRead(gameDefine.SS)
 
-    errorMsg = "予想外のエラーが出ました。\n電車でDのファイルではない、またはファイルが壊れた可能性があります。"
+    errorMsg = textSetting.textList["errorList"]["E4"]
     if file_path:
         if not decryptFile.open():
             decryptFile.printError()
-            mb.showerror(title="エラー", message=errorMsg)
+            mb.showerror(title=textSetting.textList["error"], message=errorMsg)
             return
 
         deleteWidget()
@@ -190,9 +192,9 @@ def initSelect():
     trainCb["state"] = "readonly"
 
     if gameCb.current() > gameDefine.SS:
-        menuCb["values"] = ["速度・性能情報", "数・モデル情報", "レンズフレア情報"]
+        menuCb["values"] = textSetting.textList["orgInfoEditor"]["menuComboValues"]
     else:
-        menuCb["values"] = ["速度・性能情報", "数・その他情報"]
+        menuCb["values"] = textSetting.textList["orgInfoEditor"]["menuComboSSValues"]
     menuCb.current(0)
     menuCb["state"] = "readonly"
     selectInfo(trainCb.current(), menuCb.current())
@@ -207,8 +209,8 @@ def selectTrain(idx):
     try:
         selectInfo(idx, menuCb.current())
     except Exception:
-        errorMsg = "選択エラー！データが最新のものではない可能性があります。"
-        mb.showerror(title="選択エラー", message=errorMsg)
+        errorMsg = textSetting.textList["errorList"]["E14"]
+        mb.showerror(title=textSetting.textList["error"], message=errorMsg)
 
 
 def selectInfo(trainIdx, index):
@@ -254,10 +256,10 @@ def reloadFile():
     global trainCb
     global decryptFile
 
-    errorMsg = "予想外のエラーが出ました。\n電車でDのファイルではない、またはファイルが壊れた可能性があります。"
+    errorMsg = textSetting.textList["errorList"]["E4"]
     if not decryptFile.open():
         decryptFile.printError()
-        mb.showerror(title="エラー", message=errorMsg)
+        mb.showerror(title=textSetting.textList["error"], message=errorMsg)
         return
 
     deleteWidget()
@@ -284,7 +286,7 @@ def selectGame():
 
     if gameCb.current() in [gameDefine.BS, gameDefine.CS, gameDefine.RS]:
         edit_stage_train_button.place(relx=0.76, rely=0.02, relwidth=0.2, height=25)
-        edit_stage_train_button["state"] = "disabled"  
+        edit_stage_train_button["state"] = "disabled"
     else:
         edit_stage_train_button.place_forget()
 
@@ -296,12 +298,12 @@ def editStageTrain():
 
     index = decryptFile.stageIdx
     if index == -1:
-        errorMsg = "指定車両を変更する機能はありません"
-        mb.showerror(title="エラー", message=errorMsg)
+        errorMsg = textSetting.textList["errorList"]["E69"]
+        mb.showerror(title=textSetting.textList["error"], message=errorMsg)
         return
 
     game = gameCb.current()
-    EditStageInfo(root, "ステージ情報修正", game, decryptFile)
+    EditStageInfo(root, textSetting.textList["orgInfoEditor"]["editStageLabel"], game, decryptFile)
 
 
 def modifiedTrainNameList():
@@ -333,7 +335,7 @@ def modifiedTrainNameList():
                 if speed != defSpeed:
                     editFlag = True
                     break
-        
+
         perfList = trainOrgInfo[1]
         for i in range(len(perfList)):
             perf = perfList[i]
@@ -341,7 +343,7 @@ def modifiedTrainNameList():
             if perf != defPerf:
                 editFlag = True
                 break
-        
+
         if gameCb.current() in [gameDefine.CS, gameDefine.RS]:
             hurikoList = trainOrgInfo[2]
             for i in range(len(hurikoList)):
@@ -350,7 +352,7 @@ def modifiedTrainNameList():
                 if huriko != defHuriko:
                     editFlag = True
                     break
-        
+
         if gameCb.current() == gameDefine.SS:
             rainList = trainOrgInfo[2]
             for i in range(len(rainList)):
@@ -405,7 +407,7 @@ def modifiedTrainNameList():
                     editFlag = True
 
         if editFlag:
-            copyTrainNameList[index] = trainName + "(改)"
+            copyTrainNameList[index] = trainName + textSetting.textList["orgInfoEditor"]["modified"]
 
     return copyTrainNameList
 
@@ -436,7 +438,7 @@ def call_orgInfoEditor(rootTk, programFrame):
 
     v_edit = tkinter.StringVar()
 
-    edit_stage_train_button = ttk.Button(programFrame, text="ステージのデフォルト車両変更", command=editStageTrain, state="disabled")
+    edit_stage_train_button = ttk.Button(programFrame, text=textSetting.textList["orgInfoEditor"]["editStageDefaultTrain"], command=editStageTrain, state="disabled")
     edit_stage_train_button.place(relx=0.76, rely=0.02, relwidth=0.2, height=25)
 
     tabFrame = ttk.Frame(programFrame, borderwidth=1, relief="solid")

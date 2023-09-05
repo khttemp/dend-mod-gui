@@ -1,7 +1,9 @@
 import os
+import codecs
 import UnityPy
 import struct
 import traceback
+import program.textSetting as textSetting
 
 
 class ResourcesDecrypt:
@@ -23,7 +25,7 @@ class ResourcesDecrypt:
             return False
 
     def printError(self):
-        w = open("error.log", "w")
+        w = codecs.open("error.log", "w", "utf-8", "strict")
         w.write(self.error)
         w.close()
 
@@ -168,25 +170,25 @@ class ResourcesDecrypt:
 
         for index, csv in enumerate(csvLines):
             if index == 0:
-                if "ノッチ数" not in csv:
+                if textSetting.textList["ssUnity"]["csvNotchNum"] not in csv:
                     errorFlag = True
-                    self.error = "ノッチ数の内容がありません"
+                    self.error = textSetting.textList["errorList"]["E22"]
                     break
                 notchCnt = int(csv.split(",")[1])
                 if notchCnt not in [4, 5, 12]:
                     errorFlag = True
-                    self.error = "{0}ノッチは非対応です".format(notchCnt)
+                    self.error = textSetting.textList["errorList"]["E23"].format(notchCnt)
                     break
                 self.newTrainOrgInfo.append(notchCnt)
             elif index == 1:
-                if "編成数" not in csv:
+                if textSetting.textList["ssUnity"]["csvOrgNum"] not in csv:
                     errorFlag = True
-                    self.error = "編成数の内容がありません"
+                    self.error = textSetting.textList["errorList"]["E28"]
                     break
                 henseiNo = int(csv.split(",")[1])
                 if henseiNo <= 0:
                     errorFlag = True
-                    self.error = "編成数は０より大きな数字で入力してください"
+                    self.error = textSetting.textList["errorList"]["E29"]
                     break
                 self.newTrainOrgInfo.append(henseiNo)
             elif index in [3, 5, 7]:
@@ -211,19 +213,19 @@ class ResourcesDecrypt:
                     if index == 9:
                         if idx < -1 or idx >= len(bodyClassList):
                             errorFlag = True
-                            self.error = "bodyClassで存在しないindex値です"
+                            self.error = textSetting.textList["errorList"]["E83"]
                             break
                         bodyClassIndexList.append(idx)
                     elif index == 11:
                         if idx < -1 or idx >= len(bodyMdlList):
                             errorFlag = True
-                            self.error = "bodyモデルで存在しないindex値です"
+                            self.error = textSetting.textList["errorList"]["E84"]
                             break
                         bodyMdlIndexList.append(idx)
                     elif index == 13:
                         if idx < -1 or idx >= len(pantaMdlList):
                             errorFlag = True
-                            self.error = "pantaモデルで存在しないindex値です"
+                            self.error = textSetting.textList["errorList"]["E85"]
                             break
                         pantaMdlIndexList.append(idx)
                 if errorFlag:
@@ -231,17 +233,17 @@ class ResourcesDecrypt:
                 if index == 9:
                     if len(bodyClassIndexList) > 0 and len(bodyClassIndexList) != henseiNo:
                         errorFlag = True
-                        self.error = "bodyClassのindexの数が編成数と不一致です"
+                        self.error = textSetting.textList["errorList"]["E86"]
                         break
                 elif index == 11:
                     if len(bodyMdlIndexList) > 0 and len(bodyMdlIndexList) != henseiNo:
                         errorFlag = True
-                        self.error = "bodyモデルのindexの数が編成数と不一致です"
+                        self.error = textSetting.textList["errorList"]["E87"]
                         break
                 elif index == 13:
                     if len(pantaMdlIndexList) > 0 and len(pantaMdlIndexList) != henseiNo:
                         errorFlag = True
-                        self.error = "pantaモデルのindexの数が編成数と不一致です"
+                        self.error = textSetting.textList["errorList"]["E88"]
                         break
         if errorFlag:
             return False

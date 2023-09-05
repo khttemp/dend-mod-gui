@@ -1,6 +1,7 @@
 import struct
 import traceback
 import codecs
+import program.textSetting as textSetting
 
 BSTrainName = [
     "H2000",
@@ -22,16 +23,16 @@ perfName = [
     "DownHill",
     "Weight",
     "First_break",
-    "Second_Breake(未使用)",
+    "Second_Breake" + textSetting.textList["orgInfoEditor"]["noUsed"],
     "SpBreake",
     "CompPower",
-    "D_Speed(未使用)",
+    "D_Speed" + textSetting.textList["orgInfoEditor"]["noUsed"],
     "One_Speed",
     "OutParam",
     "D_Add",
     "D_Add2",
-    "D_AddFrame(未使用)",
-    "Carbe(未使用)",
+    "D_AddFrame" + textSetting.textList["orgInfoEditor"]["noUsed"],
+    "Carbe" + textSetting.textList["orgInfoEditor"]["noUsed"],
     "Jump",
     "ChangeFrame",
     "OutRun_Top",
@@ -87,7 +88,7 @@ class BSdecrypt():
             return False
 
     def printError(self):
-        w = open("error.log", "w")
+        w = codecs.open("error.log", "w", "utf-8", "strict")
         w.write(self.error)
         w.close()
 
@@ -188,7 +189,7 @@ class BSdecrypt():
                 train["mdlNames"].append(modelName)
                 index += modelNameCnt
 
-            train["mdlNames"].append("なし")
+            train["mdlNames"].append(textSetting.textList["orgInfoEditor"]["noList"])
 
             for j in range(modelCnt):
                 colNameCnt = line[index]
@@ -197,7 +198,7 @@ class BSdecrypt():
                 train["colNames"].append(colName)
                 index += colNameCnt
 
-            train["colNames"].append("なし")
+            train["colNames"].append(textSetting.textList["orgInfoEditor"]["noList"])
 
             pantaModelCnt = line[index]
             index += 1
@@ -210,7 +211,7 @@ class BSdecrypt():
                     train["pantaNames"].append(pantaModelName)
                     index += pantaModelNameCnt
 
-                train["pantaNames"].append("なし")
+                train["pantaNames"].append(textSetting.textList["orgInfoEditor"]["noList"])
 
             self.henseiModelEndIndexList.append(index)
 
@@ -564,7 +565,7 @@ class BSdecrypt():
             newMdlList = modelInfo["mdlNames"]
             newByteArr.append(len(newMdlList) - 1)
             for newMdl in newMdlList:
-                if newMdl == "なし":
+                if newMdl == textSetting.textList["orgInfoEditor"]["noList"]:
                     continue
                 newByteArr.append(len(newMdl))
                 newByteArr.extend(newMdl.encode("shift-jis"))
@@ -577,7 +578,7 @@ class BSdecrypt():
             newPantaList = modelInfo["pantaNames"]
             newByteArr.append(len(newPantaList) - 1)
             for newPanta in newPantaList:
-                if newPanta == "なし":
+                if newPanta == textSetting.textList["orgInfoEditor"]["noList"]:
                     continue
                 newByteArr.append(len(newPanta))
                 newByteArr.extend(newPanta.encode("shift-jis"))
@@ -1047,8 +1048,11 @@ class BSdecrypt():
             index = self.indexList[trainIdx]
             notchCnt = self.byteArr[index]
 
-            w.write("ノッチ:{0}\n".format(notchCnt))
-            w.write("speed,tlk\n")
+            w.write("{0}:{1}\n".format(textSetting.textList["orgInfoEditor"]["notchLabel"], notchCnt))
+            w.write("{0},{1}\n".format(
+                textSetting.textList["orgInfoEditor"]["csvNotchSpeed"],
+                textSetting.textList["orgInfoEditor"]["csvNotchTlk"])
+            )
 
             for i in range(notchCnt):
                 for j in range(self.notchContentCnt):
@@ -1057,7 +1061,7 @@ class BSdecrypt():
                         w.write("\n")
                     else:
                         w.write(",")
-            w.write("性能\n")
+            w.write("{0}\n".format(textSetting.textList["orgInfoEditor"]["perfLabel"]))
 
             perfList = trainOrgInfo[1]
             perfNameList = self.trainPerfNameList
@@ -1065,30 +1069,30 @@ class BSdecrypt():
                 w.write("{0},{1}\n".format(perfNameList[i], perfList[i]))
 
             train = self.trainModelList[trainIdx]
-            w.write("台車モデル\n")
+            w.write("{0}\n".format(textSetting.textList["orgInfoEditor"]["csvDaishaTitle"]))
             w.write(",".join(train["trackNames"]))
             w.write("\n")
 
-            w.write("編成数:{0}\n".format(train["mdlCnt"]))
+            w.write("{0}:{1}\n".format(textSetting.textList["orgInfoEditor"]["csvOrgNumTitle"], train["mdlCnt"]))
 
             mdlCnt = len(train["mdlNames"][:-1])
-            w.write("車両モデル:{0}\n".format(mdlCnt))
+            w.write("{0}:{1}\n".format(textSetting.textList["orgInfoEditor"]["csvMdlTitle"], mdlCnt))
             w.write(",".join(train["mdlNames"][:-1]))
             w.write("\n")
 
-            w.write("車両index,")
+            w.write("{0},".format(textSetting.textList["orgInfoEditor"]["csvMdlIdxTitle"]))
             w.write(",".join([str(x) for x in train["mdlList"]]))
             w.write("\n")
 
-            w.write("パンタモデル:{0}\n".format(len(train["pantaNames"][:-1])))
+            w.write("{0}:{1}\n".format(textSetting.textList["orgInfoEditor"]["csvPantaTitle"], len(train["pantaNames"][:-1])))
             w.write(",".join(train["pantaNames"][:-1]))
             w.write("\n")
 
-            w.write("パンタindex,")
+            w.write("{0},".format(textSetting.textList["orgInfoEditor"]["csvPantaIdxTitle"]))
             w.write(",".join([str(x) for x in train["pantaList"]]))
             w.write("\n")
 
-            w.write("レンズフレア:{0}\n".format(len(train["lensList"])))
+            w.write("{0}:{1}\n".format(textSetting.textList["orgInfoEditor"]["csvLensTitle"], len(train["lensList"])))
             for i in range(len(train["lensList"])):
                 lensInfo = train["lensList"][i]
                 w.write("{0},{1}\n".format(lensInfo[0], lensInfo[1]))
@@ -1097,7 +1101,7 @@ class BSdecrypt():
                 w.write("\n")
 
             tailCnt = len(train["tailList"][0])
-            w.write("テールランプ:{0}\n".format(tailCnt))
+            w.write("{0}:{1}\n".format(textSetting.textList["orgInfoEditor"]["csvTailTitle"], tailCnt))
             w.write(",".join(train["tailList"][0]))
             w.write("\n")
             w.write(",".join([str(x) for x in train["tailList"][1]]))
@@ -1110,13 +1114,13 @@ class BSdecrypt():
                 w.write("\n")
 
             index = self.tailEndIndexList[trainIdx]
-            w.write("モデルindex2,")
+            w.write("{0},".format(textSetting.textList["orgInfoEditor"]["csvModelIdx2Title"]))
             for i in range(mdlCnt):
                 w.write("{0},".format(self.byteArr[index]))
                 index += 1
             w.write("\n")
 
-            w.write("カラー数,{0}\n".format(train["colorCnt"]))
+            w.write("{0},{1}\n".format(textSetting.textList["orgInfoEditor"]["colorCnt"], train["colorCnt"]))
 
             colorMapList = train["colorMapList"]
             cIdx = 1
@@ -1124,8 +1128,8 @@ class BSdecrypt():
 
                 mIdx = 1
                 for modelList in colorMap:
-                    w.write("カラー{0},".format(cIdx))
-                    w.write("モデル{0},{1}\n".format(mIdx, len(modelList)))
+                    w.write(textSetting.textList["orgInfoEditor"]["csvColorIdx"].format(cIdx))
+                    w.write(textSetting.textList["orgInfoEditor"]["csvModelIdx"].format(mIdx, len(modelList)))
                     for model in modelList:
                         w.write(",".join([str(x) for x in model]))
                         w.write("\n")
@@ -1141,22 +1145,26 @@ class BSdecrypt():
         cnt = 0
         self.csvReadInfo = {}
         try:
-            if csvLines[cnt].strip().split(":")[0] != "ノッチ":
-                self.error = "ノッチ情報を探せません"
+            if csvLines[cnt].strip().split(":")[0] != textSetting.textList["orgInfoEditor"]["notchLabel"]:
+                self.error = textSetting.textList["errorList"]["E22"]
                 return False
 
             arr = csvLines[cnt].strip().split(":")[1]
             notchCnt = int(arr.split(",")[0])
             if notchCnt not in [4, 5]:
-                self.error = "{0}ノッチは非対応です".format(notchCnt)
+                self.error = textSetting.textList["errorList"]["E23"].format(notchCnt)
                 return False
             self.csvReadInfo["notchCnt"] = notchCnt
             cnt += 1
 
             arr = csvLines[cnt].strip().split(",")[0:2]
             header = ",".join(arr)
-            if header != "speed,tlk":
-                self.error = "ノッチのヘッダーがありません"
+            inspHeader = "{0},{1}".format(
+                textSetting.textList["orgInfoEditor"]["csvNotchSpeed"],
+                textSetting.textList["orgInfoEditor"]["csvNotchTlk"]
+            )
+            if header != inspHeader:
+                self.error = textSetting.textList["errorList"]["E24"]
                 return False
             cnt += 1
 
@@ -1169,13 +1177,13 @@ class BSdecrypt():
                     tlk.append(float(arr[1]))
                     cnt += 1
             except Exception:
-                self.error = "{0}ノッチ読み込み中\n{1}ノッチ情報読み込み失敗".format(notchCnt, i + 1)
+                self.error = textSetting.textList["errorList"]["E25"].format(notchCnt, i + 1)
                 return False
             speed.extend(tlk)
             self.csvReadInfo["speed"] = speed
 
-            if csvLines[cnt].strip().split(",")[0] != "性能":
-                self.error = "性能情報を探せません"
+            if csvLines[cnt].strip().split(",")[0] != textSetting.textList["orgInfoEditor"]["perfLabel"]:
+                self.error = textSetting.textList["errorList"]["E26"]
                 return False
             cnt += 1
 
@@ -1186,8 +1194,8 @@ class BSdecrypt():
                 cnt += 1
             self.csvReadInfo["perf"] = perf
 
-            if csvLines[cnt].strip().split(",")[0] != "台車モデル":
-                self.error = "台車モデル情報を探せません"
+            if csvLines[cnt].strip().split(",")[0] != textSetting.textList["orgInfoEditor"]["csvDaishaTitle"]:
+                self.error = textSetting.textList["errorList"]["E27"]
                 return False
             cnt += 1
 
@@ -1197,20 +1205,20 @@ class BSdecrypt():
             cnt += 1
             self.csvReadInfo["trackInfo"] = trackInfo
 
-            if csvLines[cnt].strip().split(":")[0] != "編成数":
-                self.error = "編成数情報を探せません"
+            if csvLines[cnt].strip().split(":")[0] != textSetting.textList["orgInfoEditor"]["csvOrgNumTitle"]:
+                self.error = textSetting.textList["errorList"]["E28"]
                 return False
 
             arr = csvLines[cnt].strip().split(":")[1]
             orgCnt = int(arr.split(",")[0])
             if orgCnt < 2:
-                self.error = "編成数が2個より少ないです"
+                self.error = textSetting.textList["errorList"]["E40"]
                 return False
             cnt += 1
             self.csvReadInfo["orgCnt"] = orgCnt
 
-            if csvLines[cnt].strip().split(":")[0] != "車両モデル":
-                self.error = "車両モデル情報を探せません"
+            if csvLines[cnt].strip().split(":")[0] != textSetting.textList["orgInfoEditor"]["csvMdlTitle"]:
+                self.error = textSetting.textList["errorList"]["E30"]
                 return False
 
             arr = csvLines[cnt].strip().split(":")[1]
@@ -1224,8 +1232,8 @@ class BSdecrypt():
             cnt += 1
             self.csvReadInfo["mdlNameList"] = mdlNameList
 
-            if csvLines[cnt].strip().split(",")[0] != "車両index":
-                self.error = "車両index情報を探せません"
+            if csvLines[cnt].strip().split(",")[0] != textSetting.textList["orgInfoEditor"]["csvMdlIdxTitle"]:
+                self.error = textSetting.textList["errorList"]["E41"]
                 return False
 
             mdlList = []
@@ -1234,17 +1242,17 @@ class BSdecrypt():
                 try:
                     idx = int(arr[i])
                     if idx < -1 or idx >= mdlCnt:
-                        self.error = "車両index情報が不正です"
+                        self.error = textSetting.textList["errorList"]["E42"]
                         return False
                 except Exception:
-                    self.error = "車両index情報 読み込み失敗"
+                    self.error = textSetting.textList["errorList"]["E43"]
                     return False
                 mdlList.append(idx)
             cnt += 1
             self.csvReadInfo["mdlList"] = mdlList
 
-            if csvLines[cnt].strip().split(":")[0] != "パンタモデル":
-                self.error = "パンタモデル情報を探せません"
+            if csvLines[cnt].strip().split(":")[0] != textSetting.textList["orgInfoEditor"]["csvPantaTitle"]:
+                self.error = textSetting.textList["errorList"]["E32"]
                 return False
 
             arr = csvLines[cnt].strip().split(":")[1]
@@ -1258,8 +1266,8 @@ class BSdecrypt():
             cnt += 1
             self.csvReadInfo["pantaNameList"] = pantaNameList
 
-            if csvLines[cnt].strip().split(",")[0] != "パンタindex":
-                self.error = "パンタindex情報を探せません"
+            if csvLines[cnt].strip().split(",")[0] != textSetting.textList["orgInfoEditor"]["csvPantaIdxTitle"]:
+                self.error = textSetting.textList["errorList"]["E33"]
                 return False
 
             pantaList = []
@@ -1268,17 +1276,17 @@ class BSdecrypt():
                 try:
                     idx = int(arr[i])
                     if idx < -1 or idx >= pantaCnt:
-                        self.error = "パンタindex情報が不正です"
+                        self.error = textSetting.textList["errorList"]["E34"]
                         return False
                 except Exception:
-                    self.error = "パンタindex情報 読み込み失敗"
+                    self.error = textSetting.textList["errorList"]["E35"]
                     return False
                 pantaList.append(idx)
             cnt += 1
             self.csvReadInfo["pantaList"] = pantaList
 
-            if csvLines[cnt].strip().split(":")[0] != "レンズフレア":
-                self.error = "レンズフレア情報を探せません"
+            if csvLines[cnt].strip().split(":")[0] != textSetting.textList["orgInfoEditor"]["csvLensTitle"]:
+                self.error = textSetting.textList["errorList"]["E37"]
                 return False
 
             arr = csvLines[cnt].strip().split(":")[1]
@@ -1311,8 +1319,8 @@ class BSdecrypt():
                 lensList.append(lensInfo)
             self.csvReadInfo["lensList"] = lensList
 
-            if csvLines[cnt].strip().split(":")[0] != "テールランプ":
-                self.error = "テールランプ情報を探せません"
+            if csvLines[cnt].strip().split(":")[0] != textSetting.textList["orgInfoEditor"]["csvTailTitle"]:
+                self.error = textSetting.textList["errorList"]["E38"]
                 return False
 
             arr = csvLines[cnt].strip().split(":")[1]
@@ -1361,8 +1369,8 @@ class BSdecrypt():
             tailList.append(tailLensList)
             self.csvReadInfo["tailList"] = tailList
 
-            if csvLines[cnt].strip().split(",")[0] != "モデルindex2":
-                self.error = "モデルindex2情報を探せません"
+            if csvLines[cnt].strip().split(",")[0] != textSetting.textList["orgInfoEditor"]["csvModelIdx2Title"]:
+                self.error = textSetting.textList["errorList"]["E44"]
                 return False
 
             mdlIdxList2 = []
@@ -1373,8 +1381,8 @@ class BSdecrypt():
             self.csvReadInfo["mdlIdxList2"] = mdlIdxList2
             cnt += 1
 
-            if csvLines[cnt].strip().split(",")[0] != "カラー数":
-                self.error = "カラー数情報を探せません"
+            if csvLines[cnt].strip().split(",")[0] != textSetting.textList["orgInfoEditor"]["colorCnt"]:
+                self.error = textSetting.textList["errorList"]["E45"]
                 return False
 
             arr = csvLines[cnt].strip().split(",")[1:]
@@ -1388,8 +1396,8 @@ class BSdecrypt():
                 for model in range(mdlCnt):
                     arr = csvLines[cnt].strip().split(",")
                     strArr = ",".join(arr[0:2])
-                    if strArr != "カラー{0},モデル{1}".format(color + 1, model + 1):
-                        self.error = "カラー、モデル数情報を探せません"
+                    if strArr != textSetting.textList["orgInfoEditor"]["csvColorModelIdx"].format(color + 1, model + 1):
+                        self.error = textSetting.textList["errorList"]["E46"]
                         return False
 
                     readCnt = int(arr[2])
@@ -1409,7 +1417,7 @@ class BSdecrypt():
 
             return True
         except Exception:
-            self.error = "{0}行目の読み込み失敗".format(cnt + 1)
+            self.error = textSetting.textList["errorList"]["E39"].format(cnt + 1)
             return False
 
     def saveCsvTrainInfo(self, trainIdx):

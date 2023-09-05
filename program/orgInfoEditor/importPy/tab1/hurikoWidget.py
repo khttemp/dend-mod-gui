@@ -2,6 +2,7 @@ import tkinter
 from tkinter import ttk
 from tkinter import simpledialog as sd
 from tkinter import messagebox as mb
+import program.textSetting as textSetting
 
 
 class HurikoWidget():
@@ -13,15 +14,15 @@ class HurikoWidget():
         self.btnList = btnList
         self.defaultData = defaultData
 
-        self.hurikoNameLb = tkinter.Label(frame, text=self.decryptFile.trainHurikoNameList[i], font=("", 20), width=24, borderwidth=1, relief="solid")
-        self.hurikoNameLb.grid(row=perfCnt + i, column=0, sticky=tkinter.W + tkinter.E)
+        self.hurikoNameLb = tkinter.Label(frame, text=self.decryptFile.trainHurikoNameList[i], font=textSetting.textList["font6"], width=27, borderwidth=1, relief="solid")
+        self.hurikoNameLb.grid(row=perfCnt + i, column=0, sticky=tkinter.N + tkinter.W + tkinter.S + tkinter.E)
         self.varHuriko = tkinter.IntVar()
         self.varHuriko.set(str(huriko[i]))
         self.varList.append(self.varHuriko)
-        self.hurikoLb = tkinter.Label(frame, textvariable=self.varHuriko, font=("", 20), width=7, borderwidth=1, relief="solid")
-        self.hurikoLb.grid(row=perfCnt + i, column=1, sticky=tkinter.W + tkinter.E)
-        self.hurikoBtn = tkinter.Button(frame, text="修正", font=("", 14), command=lambda: self.editVar([self.hurikoNameLb, self.hurikoLb], self.varHuriko, self.varHuriko.get(), self.defaultData[self.cbIdx]["huriko"][i]), state="disabled")
-        self.hurikoBtn.grid(row=perfCnt + i, column=2, sticky=tkinter.W + tkinter.E)
+        self.hurikoLb = tkinter.Label(frame, textvariable=self.varHuriko, font=textSetting.textList["font6"], width=10, borderwidth=1, relief="solid")
+        self.hurikoLb.grid(row=perfCnt + i, column=1, sticky=tkinter.N + tkinter.W + tkinter.S + tkinter.E)
+        self.hurikoBtn = tkinter.Button(frame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], font=textSetting.textList["font7"], command=lambda: self.editVar([self.hurikoNameLb, self.hurikoLb], self.varHuriko, self.varHuriko.get(), self.defaultData[self.cbIdx]["huriko"][i]), state="disabled")
+        self.hurikoBtn.grid(row=perfCnt + i, column=2, sticky=tkinter.N + tkinter.W + tkinter.S + tkinter.E)
         self.btnList.append(self.hurikoBtn)
 
         color = ""
@@ -35,7 +36,7 @@ class HurikoWidget():
         self.hurikoLb["fg"] = color
 
     def editVar(self, labelList, var, value, defaultValue, flag=True):
-        EditHurikoVarInfo(self.root, "値変更", labelList, var, value, defaultValue)
+        EditHurikoVarInfo(self.root, textSetting.textList["orgInfoEditor"]["valueModify"], labelList, var, value, defaultValue)
 
 
 class EditHurikoVarInfo(sd.Dialog):
@@ -47,18 +48,18 @@ class EditHurikoVarInfo(sd.Dialog):
         super(EditHurikoVarInfo, self).__init__(parent=master, title=title)
 
     def body(self, frame):
-        self.defaultLb = tkinter.Label(frame, text="デフォルトの値＝" + str(self.defaultValue), font=("", 14))
+        self.defaultLb = tkinter.Label(frame, text=textSetting.textList["orgInfoEditor"]["defaultValueLabel"] + str(self.defaultValue), font=textSetting.textList["font2"])
         self.defaultLb.pack()
 
-        sep = ttk.Separator(frame, orient='horizontal')
+        sep = ttk.Separator(frame, orient="horizontal")
         sep.pack(fill=tkinter.X, ipady=5)
 
-        self.inputLb = tkinter.Label(frame, text="値を入力してください", font=("", 14))
+        self.inputLb = tkinter.Label(frame, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
         self.inputLb.pack()
 
         v_val = tkinter.StringVar()
         v_val.set(self.value)
-        self.inputEt = tkinter.Entry(frame, textvariable=v_val, font=("", 14))
+        self.inputEt = tkinter.Entry(frame, textvariable=v_val, font=textSetting.textList["font2"])
         self.inputEt.pack()
 
     def validate(self):
@@ -69,12 +70,12 @@ class EditHurikoVarInfo(sd.Dialog):
                     result = int(result)
                     self.var.set(result)
                 except Exception:
-                    errorMsg = "整数で入力してください。"
-                    mb.showerror(title="整数エラー", message=errorMsg)
+                    errorMsg = textSetting.textList["errorList"]["E60"]
+                    mb.showerror(title=textSetting.textList["intError"], message=errorMsg)
                     return False
             except Exception:
-                errorMsg = "予想外のエラーです"
-                mb.showerror(title="エラー", message=errorMsg)
+                errorMsg = textSetting.textList["errorList"]["E14"]
+                mb.showerror(title=textSetting.textList["error"], message=errorMsg)
                 return False
 
             if self.defaultValue is not None:

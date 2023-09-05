@@ -3,6 +3,7 @@ import tkinter
 from tkinter import ttk
 from tkinter import messagebox as mb
 from tkinter import simpledialog as sd
+import program.textSetting as textSetting
 
 from program.railEditor.importPy.tkinterScrollbarTreeviewRailEditor import ScrollbarTreeviewRailEditor
 
@@ -15,7 +16,7 @@ class SmfListWidget:
         self.reloadFunc = reloadFunc
         self.copySmfInfo = []
 
-        self.swfListLf = ttk.LabelFrame(self.frame, text="smf情報")
+        self.swfListLf = ttk.LabelFrame(self.frame, text=textSetting.textList["railEditor"]["smfInfoLabel"])
         self.swfListLf.pack(anchor=tkinter.NW, padx=10, pady=5, fill=tkinter.BOTH, expand=True)
 
         self.headerFrame = ttk.Frame(self.swfListLf)
@@ -24,33 +25,33 @@ class SmfListWidget:
         self.selectLbFrame = ttk.Frame(self.headerFrame)
         self.selectLbFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT)
 
-        selectLb = ttk.Label(self.selectLbFrame, text="選択した行番号：", font=("", 14))
+        selectLb = ttk.Label(self.selectLbFrame, text=textSetting.textList["railEditor"]["selectNum"], font=textSetting.textList["font2"])
         selectLb.pack(side=tkinter.LEFT, padx=15, pady=15)
 
         self.v_select = tkinter.StringVar()
-        selectEt = ttk.Entry(self.selectLbFrame, textvariable=self.v_select, font=("", 14), width=5, state="readonly", justify="center")
+        selectEt = ttk.Entry(self.selectLbFrame, textvariable=self.v_select, font=textSetting.textList["font2"], width=5, state="readonly", justify="center")
         selectEt.pack(side=tkinter.LEFT, padx=5, pady=15)
 
         self.btnFrame = ttk.Frame(self.headerFrame)
         self.btnFrame.pack(anchor=tkinter.NE, padx=15)
 
-        editLineBtn = ttk.Button(self.btnFrame, text="選択した行を修正する", width=25, state="disabled", command=self.editLine)
+        editLineBtn = ttk.Button(self.btnFrame, text=textSetting.textList["railEditor"]["commonEditLineLabel"], width=25, state="disabled", command=self.editLine)
         editLineBtn.grid(row=0, column=0, padx=10, pady=15)
 
-        insertLineBtn = ttk.Button(self.btnFrame, text="選択した行に挿入する", width=25, state="disabled", command=self.insertLine)
+        insertLineBtn = ttk.Button(self.btnFrame, text=textSetting.textList["railEditor"]["commonInsertLineLabel"], width=25, state="disabled", command=self.insertLine)
         insertLineBtn.grid(row=0, column=1, padx=10, pady=15)
 
-        deleteLineBtn = ttk.Button(self.btnFrame, text="選択した行を削除する", width=25, state="disabled", command=self.deleteLine)
+        deleteLineBtn = ttk.Button(self.btnFrame, text=textSetting.textList["railEditor"]["commonDeleteLineLabel"], width=25, state="disabled", command=self.deleteLine)
         deleteLineBtn.grid(row=0, column=2, padx=10, pady=15)
 
-        copyLineBtn = ttk.Button(self.btnFrame, text="選択した行をコピーする", width=25, state="disabled", command=self.copyLine)
+        copyLineBtn = ttk.Button(self.btnFrame, text=textSetting.textList["railEditor"]["commonCopyLineLabel"], width=25, state="disabled", command=self.copyLine)
         copyLineBtn.grid(row=1, column=0, padx=10, pady=15)
 
-        self.pasteLineBtn = ttk.Button(self.btnFrame, text="選択した行に貼り付けする", width=25, state="disabled", command=self.pasteLine)
+        self.pasteLineBtn = ttk.Button(self.btnFrame, text=textSetting.textList["railEditor"]["commonPasteLineLabel"], width=25, state="disabled", command=self.pasteLine)
         self.pasteLineBtn.grid(row=1, column=1, padx=10, pady=15)
 
         if self.decryptFile.game in ["LS", "BS"]:
-            self.listModifyBtn = ttk.Button(self.btnFrame, text="選択した行のリストを修正する", width=25, state="disabled", command=self.listModify)
+            self.listModifyBtn = ttk.Button(self.btnFrame, text=textSetting.textList["railEditor"]["editSmfElementListLabel"], width=25, state="disabled", command=self.listModify)
             self.listModifyBtn.grid(row=1, column=2, padx=10, pady=15)
 
         btnList = [
@@ -70,32 +71,42 @@ class SmfListWidget:
             insertLineBtn["state"] = "normal"
 
         style = ttk.Style()
-        style.map('Treeview', foreground=self.fixed_map(style, 'foreground'), background=self.fixed_map(style, 'background'))
+        style.map("Treeview", foreground=self.fixed_map(style, "foreground"), background=self.fixed_map(style, "background"))
 
         if self.decryptFile.game in ["CS", "RS"]:
-            col_tuple = ("番号", "smf名", "フラグ1", "フラグ2", "長さ", "Mesh表示1", "Mesh表示2", "架線柱No", "架線No")
+            col_tuple = (
+                "treeNum",
+                "smfInfoName",
+                "smfInfoFlag1",
+                "smfInfoFlag2",
+                "smfInfoLength",
+                "smfInfoMesh1",
+                "smfInfoMesh2",
+                "smfInfoKasenchuNo",
+                "smfInfoKasenNo"
+            )
 
-            self.treeviewFrame.tree['columns'] = col_tuple
+            self.treeviewFrame.tree["columns"] = col_tuple
             self.treeviewFrame.tree.column("#0", width=0, stretch=False)
-            self.treeviewFrame.tree.column("番号", anchor=tkinter.CENTER, width=50, stretch=False)
-            self.treeviewFrame.tree.column("smf名", anchor=tkinter.CENTER, width=130)
-            self.treeviewFrame.tree.column("フラグ1", anchor=tkinter.CENTER, width=50)
-            self.treeviewFrame.tree.column("フラグ2", anchor=tkinter.CENTER, width=50)
-            self.treeviewFrame.tree.column("長さ", anchor=tkinter.CENTER, width=50)
-            self.treeviewFrame.tree.column("Mesh表示1", anchor=tkinter.CENTER, width=50)
-            self.treeviewFrame.tree.column("Mesh表示2", anchor=tkinter.CENTER, width=50)
-            self.treeviewFrame.tree.column("架線柱No", anchor=tkinter.CENTER, width=50)
-            self.treeviewFrame.tree.column("架線No", anchor=tkinter.CENTER, width=50)
+            self.treeviewFrame.tree.column("treeNum", anchor=tkinter.CENTER, width=50, stretch=False)
+            self.treeviewFrame.tree.column("smfInfoName", anchor=tkinter.CENTER, width=130)
+            self.treeviewFrame.tree.column("smfInfoFlag1", anchor=tkinter.CENTER, width=50)
+            self.treeviewFrame.tree.column("smfInfoFlag2", anchor=tkinter.CENTER, width=50)
+            self.treeviewFrame.tree.column("smfInfoLength", anchor=tkinter.CENTER, width=50)
+            self.treeviewFrame.tree.column("smfInfoMesh1", anchor=tkinter.CENTER, width=50)
+            self.treeviewFrame.tree.column("smfInfoMesh2", anchor=tkinter.CENTER, width=50)
+            self.treeviewFrame.tree.column("smfInfoKasenchuNo", anchor=tkinter.CENTER, width=50)
+            self.treeviewFrame.tree.column("smfInfoKasenNo", anchor=tkinter.CENTER, width=50)
 
-            self.treeviewFrame.tree.heading("番号", text="番号", anchor=tkinter.CENTER)
-            self.treeviewFrame.tree.heading("smf名", text="smf名", anchor=tkinter.CENTER)
-            self.treeviewFrame.tree.heading("フラグ1", text="フラグ1", anchor=tkinter.CENTER)
-            self.treeviewFrame.tree.heading("フラグ2", text="フラグ2", anchor=tkinter.CENTER)
-            self.treeviewFrame.tree.heading("長さ", text="長さ", anchor=tkinter.CENTER)
-            self.treeviewFrame.tree.heading("Mesh表示1", text="Mesh表示1", anchor=tkinter.CENTER)
-            self.treeviewFrame.tree.heading("Mesh表示2", text="Mesh表示2", anchor=tkinter.CENTER)
-            self.treeviewFrame.tree.heading("架線柱No", text="架線柱No", anchor=tkinter.CENTER)
-            self.treeviewFrame.tree.heading("架線No", text="架線No", anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("treeNum", text=textSetting.textList["railEditor"]["smfInfoNum"], anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("smfInfoName", text=textSetting.textList["railEditor"]["smfInfoName"], anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("smfInfoFlag1", text=textSetting.textList["railEditor"]["smfInfoFlag1"], anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("smfInfoFlag2", text=textSetting.textList["railEditor"]["smfInfoFlag2"], anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("smfInfoLength", text=textSetting.textList["railEditor"]["smfInfoLength"], anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("smfInfoMesh1", text=textSetting.textList["railEditor"]["smfInfoMesh1"], anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("smfInfoMesh2", text=textSetting.textList["railEditor"]["smfInfoMesh2"], anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("smfInfoKasenchuNo", text=textSetting.textList["railEditor"]["smfInfoKasenchuNo"], anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("smfInfoKasenNo", text=textSetting.textList["railEditor"]["smfInfoKasenNo"], anchor=tkinter.CENTER)
 
             self.treeviewFrame.tree["displaycolumns"] = col_tuple
 
@@ -113,26 +124,33 @@ class SmfListWidget:
                     tags = "amb"
                 data += (smfInfo[0], self.toHex(smfInfo[1]), self.toHex(smfInfo[2]), smfInfo[3], smfInfo[4], smfInfo[5])
                 data += (smfInfo[6], smfInfo[7])
-                self.treeviewFrame.tree.insert(parent='', index='end', iid=index, values=data, tags=tags)
+                self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data, tags=tags)
                 index += 1
         elif self.decryptFile.game == "BS":
-            col_tuple = ("番号", "smf名", "長さ", "Mesh表示1", "Mesh表示2", "リスト数")
+            col_tuple = (
+                "treeNum",
+                "smfInfoName",
+                "smfInfoLength",
+                "smfInfoMesh1",
+                "smfInfoMesh2",
+                "smfInfoElementList"
+            )
 
-            self.treeviewFrame.tree['columns'] = col_tuple
+            self.treeviewFrame.tree["columns"] = col_tuple
             self.treeviewFrame.tree.column("#0", width=0, stretch=False)
-            self.treeviewFrame.tree.column("番号", anchor=tkinter.CENTER, width=50, stretch=False)
-            self.treeviewFrame.tree.column("smf名", anchor=tkinter.CENTER, width=130)
-            self.treeviewFrame.tree.column("長さ", anchor=tkinter.CENTER, width=50)
-            self.treeviewFrame.tree.column("Mesh表示1", anchor=tkinter.CENTER, width=50)
-            self.treeviewFrame.tree.column("Mesh表示2", anchor=tkinter.CENTER, width=50)
-            self.treeviewFrame.tree.column("リスト数", anchor=tkinter.CENTER, width=50)
+            self.treeviewFrame.tree.column("treeNum", anchor=tkinter.CENTER, width=50, stretch=False)
+            self.treeviewFrame.tree.column("smfInfoName", anchor=tkinter.CENTER, width=130)
+            self.treeviewFrame.tree.column("smfInfoLength", anchor=tkinter.CENTER, width=50)
+            self.treeviewFrame.tree.column("smfInfoMesh1", anchor=tkinter.CENTER, width=50)
+            self.treeviewFrame.tree.column("smfInfoMesh2", anchor=tkinter.CENTER, width=50)
+            self.treeviewFrame.tree.column("smfInfoElementList", anchor=tkinter.CENTER, width=50)
 
-            self.treeviewFrame.tree.heading("番号", text="番号", anchor=tkinter.CENTER)
-            self.treeviewFrame.tree.heading("smf名", text="smf名", anchor=tkinter.CENTER)
-            self.treeviewFrame.tree.heading("長さ", text="長さ", anchor=tkinter.CENTER)
-            self.treeviewFrame.tree.heading("Mesh表示1", text="Mesh表示1", anchor=tkinter.CENTER)
-            self.treeviewFrame.tree.heading("Mesh表示2", text="Mesh表示2", anchor=tkinter.CENTER)
-            self.treeviewFrame.tree.heading("リスト数", text="リスト数", anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("treeNum", text=textSetting.textList["railEditor"]["smfInfoNum"], anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("smfInfoName", text=textSetting.textList["railEditor"]["smfInfoName"], anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("smfInfoLength", text=textSetting.textList["railEditor"]["smfInfoLength"], anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("smfInfoMesh1", text=textSetting.textList["railEditor"]["smfInfoMesh1"], anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("smfInfoMesh2", text=textSetting.textList["railEditor"]["smfInfoMesh2"], anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("smfInfoElementList", text=textSetting.textList["railEditor"]["smfInfoElementList"], anchor=tkinter.CENTER)
 
             self.treeviewFrame.tree["displaycolumns"] = col_tuple
 
@@ -149,24 +167,30 @@ class SmfListWidget:
                 else:
                     tags = "amb"
                 data += (smfInfo[0], smfInfo[1], smfInfo[2], smfInfo[3], len(smfInfo[4]))
-                self.treeviewFrame.tree.insert(parent='', index='end', iid=index, values=data, tags=tags)
+                self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data, tags=tags)
                 index += 1
         else:
-            col_tuple = ("番号", "smf名", "長さ", "e1", "リスト数")
+            col_tuple = (
+                "treeNum",
+                "smfInfoName",
+                "smfInfoLength",
+                "smfInfoE1",
+                "smfInfoElementList"
+            )
 
-            self.treeviewFrame.tree['columns'] = col_tuple
+            self.treeviewFrame.tree["columns"] = col_tuple
             self.treeviewFrame.tree.column("#0", width=0, stretch=False)
-            self.treeviewFrame.tree.column("番号", anchor=tkinter.CENTER, width=50, stretch=False)
-            self.treeviewFrame.tree.column("smf名", anchor=tkinter.CENTER, width=130)
-            self.treeviewFrame.tree.column("長さ", anchor=tkinter.CENTER, width=50)
-            self.treeviewFrame.tree.column("e1", anchor=tkinter.CENTER, width=50)
-            self.treeviewFrame.tree.column("リスト数", anchor=tkinter.CENTER, width=50)
+            self.treeviewFrame.tree.column("treeNum", anchor=tkinter.CENTER, width=50, stretch=False)
+            self.treeviewFrame.tree.column("smfInfoName", anchor=tkinter.CENTER, width=130)
+            self.treeviewFrame.tree.column("smfInfoLength", anchor=tkinter.CENTER, width=50)
+            self.treeviewFrame.tree.column("smfInfoE1", anchor=tkinter.CENTER, width=50)
+            self.treeviewFrame.tree.column("smfInfoElementList", anchor=tkinter.CENTER, width=50)
 
-            self.treeviewFrame.tree.heading("番号", text="番号", anchor=tkinter.CENTER)
-            self.treeviewFrame.tree.heading("smf名", text="smf名", anchor=tkinter.CENTER)
-            self.treeviewFrame.tree.heading("長さ", text="長さ", anchor=tkinter.CENTER)
-            self.treeviewFrame.tree.heading("e1", text="e1", anchor=tkinter.CENTER)
-            self.treeviewFrame.tree.heading("リスト数", text="リスト数", anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("treeNum", text=textSetting.textList["railEditor"]["smfInfoNum"], anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("smfInfoName", text=textSetting.textList["railEditor"]["smfInfoName"], anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("smfInfoLength", text=textSetting.textList["railEditor"]["smfInfoLength"], anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("smfInfoE1", text=textSetting.textList["railEditor"]["smfInfoE1"], anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("smfInfoElementList", text=textSetting.textList["railEditor"]["smfInfoElementList"], anchor=tkinter.CENTER)
 
             self.treeviewFrame.tree["displaycolumns"] = col_tuple
 
@@ -187,12 +211,12 @@ class SmfListWidget:
                     data += (smfInfo[0], smfInfo[1], smfInfo[2], -1)
                 else:
                     data += (smfInfo[0], smfInfo[1], smfInfo[2], len(smfInfo[3]))
-                self.treeviewFrame.tree.insert(parent='', index='end', iid=index, values=data, tags=tags)
+                self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data, tags=tags)
                 index += 1
 
-        self.treeviewFrame.tree.tag_configure("notUse", background='#CCCCCC')
-        self.treeviewFrame.tree.tag_configure("rail", background='#FFC8C8')
-        self.treeviewFrame.tree.tag_configure("amb", background='#C8FFFF')
+        self.treeviewFrame.tree.tag_configure("notUse", background="#CCCCCC")
+        self.treeviewFrame.tree.tag_configure("rail", background="#FFC8C8")
+        self.treeviewFrame.tree.tag_configure("amb", background="#C8FFFF")
 
         if selectId is not None:
             if selectId >= len(self.smfList):
@@ -207,7 +231,7 @@ class SmfListWidget:
         return "0x{0:02x}".format(num)
 
     def fixed_map(self, style, option):
-        return [elm for elm in style.map('Treeview', query_opt=option) if elm[:2] != ('!disabled', '!selected')]
+        return [elm for elm in style.map("Treeview", query_opt=option) if elm[:2] != ("!disabled", "!selected")]
 
     def getUseModelList(self):
         mdlInfoObj = {}
@@ -326,14 +350,14 @@ class SmfListWidget:
     def editLine(self):
         selectId = self.treeviewFrame.tree.selection()[0]
         selectItem = self.treeviewFrame.tree.set(selectId)
-        num = int(selectItem["番号"])
-        result = EditSmfListWidget(self.frame, "smf修正", self.decryptFile, "modify", num, selectItem)
+        num = int(selectItem["treeNum"])
+        result = EditSmfListWidget(self.frame, textSetting.textList["railEditor"]["modifySmfInfo"], self.decryptFile, "modify", num, selectItem)
         if result.reloadFlag:
             if not self.decryptFile.saveSmfInfo(num, "modify", result.resultValueList):
                 self.decryptFile.printError()
-                mb.showerror(title="エラー", message="予想外のエラーが発生しました")
+                mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
                 return
-            mb.showinfo(title="成功", message="smf情報を修正しました")
+            mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I79"])
             self.reloadFunc(selectId)
 
     def insertLine(self):
@@ -342,38 +366,38 @@ class SmfListWidget:
             noSmfInfoFlag = True
             selectId = None
             num = 0
-            keyList = self.treeviewFrame.tree['columns']
+            keyList = self.treeviewFrame.tree["columns"]
             selectItem = {}
             for key in keyList:
                 selectItem[key] = None
         else:
             selectId = self.treeviewFrame.tree.selection()[0]
             selectItem = self.treeviewFrame.tree.set(selectId)
-            num = int(selectItem["番号"])
-        result = EditSmfListWidget(self.frame, "smf挿入", self.decryptFile, "insert", num, selectItem)
+            num = int(selectItem["treeNum"])
+        result = EditSmfListWidget(self.frame, textSetting.textList["railEditor"]["insertSmfInfo"], self.decryptFile, "insert", num, selectItem)
         if result.reloadFlag:
             if not noSmfInfoFlag:
                 if result.insert == 0:
                     num += 1
             if not self.decryptFile.saveSmfInfo(num, "insert", result.resultValueList):
                 self.decryptFile.printError()
-                mb.showerror(title="エラー", message="予想外のエラーが発生しました")
+                mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
                 return
-            mb.showinfo(title="成功", message="smf情報を修正しました")
+            mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I79"])
             self.reloadFunc(selectId)
 
     def deleteLine(self):
         selectId = self.treeviewFrame.tree.selection()[0]
         selectItem = self.treeviewFrame.tree.set(selectId)
-        num = int(selectItem["番号"])
-        warnMsg = "選択した行を削除します。\nそれでもよろしいですか？"
-        result = mb.askokcancel(title="警告", message=warnMsg, icon="warning")
+        num = int(selectItem["treeNum"])
+        warnMsg = textSetting.textList["infoList"]["I9"]
+        result = mb.askokcancel(title=textSetting.textList["warning"], message=warnMsg, icon="warning")
         if result:
             if not self.decryptFile.saveSmfInfo(num, "delete", []):
                 self.decryptFile.printError()
-                mb.showerror(title="エラー", message="予想外のエラーが発生しました")
+                mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
                 return
-            mb.showinfo(title="成功", message="smf情報を修正しました")
+            mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I79"])
             if len(self.smfList) == 1:
                 selectId = None
             self.reloadFunc(selectId)
@@ -416,26 +440,26 @@ class SmfListWidget:
                     tempInfo = self.smfList[int(selectId)][3]
                     copyList.append(tempInfo)
         self.copySmfInfo = copyList
-        mb.showinfo(title="成功", message="コピーしました")
+        mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I12"])
         self.pasteLineBtn["state"] = "normal"
 
     def pasteLine(self):
         selectId = self.treeviewFrame.tree.selection()[0]
         selectItem = self.treeviewFrame.tree.set(selectId)
-        result = PasteSmfListDialog(self.frame, "smf貼り付け", self.decryptFile, int(selectItem["番号"]), self.copySmfInfo)
+        result = PasteSmfListDialog(self.frame, textSetting.textList["railEditor"]["pasteSmfInfo"], self.decryptFile, int(selectItem["treeNum"]), self.copySmfInfo)
         if result.reloadFlag:
             self.reloadFunc(selectId)
 
     def listModify(self):
         selectId = self.treeviewFrame.tree.selection()[0]
         originTempList = self.decryptFile.smfList[int(selectId)][-1]
-        result = EditListElement(self.frame, "リストの変更", self.decryptFile, originTempList)
+        result = EditListElement(self.frame, textSetting.textList["railEditor"]["editSmfElementList"], self.decryptFile, originTempList)
         if result.reloadFlag:
             if not self.decryptFile.saveSmfListElement(int(selectId), result.tempList):
                 self.decryptFile.printError()
-                mb.showerror(title="エラー", message="予想外のエラーが発生しました")
+                mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
                 return False
-            mb.showinfo(title="成功", message="リストを修正しました")
+            mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I80"])
             self.reloadFunc(selectId)
 
 
@@ -457,23 +481,20 @@ class EditSmfListWidget(sd.Dialog):
         smfInfoKeyList = list(self.smfInfo.keys())
         smfInfoKeyList.pop(0)
         if self.decryptFile.game in ["CS", "RS"]:
-            modelFlagList = [
-                ["レール", "架線柱", "架線", "ボーン背景オブジェクト", "踏切音", "橋通過音", "スラブ軌道音", "雪が積もる"],
-                ["ドリフト検索除外", "フラグ2", "フラグ3", "フラグ4", "片輪ドリフト時飛ぶ", "左側線路片輪ドリフト時飛ぶ", "右側線路片輪ドリフト時飛ぶ", "ドリフト時吹っ飛ぶ"],
-            ]
+            modelFlagList = textSetting.textList["railEditor"]["modelFlagList"]
             for i in range(len(smfInfoKeyList)):
-                self.smfInfoLb = ttk.Label(master, text=smfInfoKeyList[i], font=("", 14))
+                self.smfInfoLb = ttk.Label(master, text=textSetting.textList["railEditor"][smfInfoKeyList[i]], font=textSetting.textList["font2"])
                 self.smfInfoLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
                 if i == 0:
                     self.varSmfInfo = tkinter.StringVar()
                     self.varList.append(self.varSmfInfo)
-                    self.smfInfoEt = ttk.Entry(master, textvariable=self.varSmfInfo, font=("", 14))
+                    self.smfInfoEt = ttk.Entry(master, textvariable=self.varSmfInfo, font=textSetting.textList["font2"])
                     self.smfInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
 
                     if self.mode == "modify":
                         self.varSmfInfo.set(self.smfInfo[smfInfoKeyList[i]])
                 elif i in [1, 2]:
-                    mb = ttk.Menubutton(master, text="switch設定")
+                    mb = ttk.Menubutton(master, text=textSetting.textList["railEditor"]["setSmfSwitch"])
                     menu = tkinter.Menu(mb, tearoff=0)
                     mb["menu"] = menu
 
@@ -507,7 +528,7 @@ class EditSmfListWidget(sd.Dialog):
                 else:
                     self.varSmfInfo = tkinter.IntVar()
                     self.varList.append(self.varSmfInfo)
-                    self.smfInfoEt = ttk.Entry(master, textvariable=self.varSmfInfo, font=("", 14))
+                    self.smfInfoEt = ttk.Entry(master, textvariable=self.varSmfInfo, font=textSetting.textList["font2"])
                     self.smfInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
                     if self.mode == "modify":
                         self.varSmfInfo.set(self.smfInfo[smfInfoKeyList[i]])
@@ -520,12 +541,12 @@ class EditSmfListWidget(sd.Dialog):
         elif self.decryptFile.game == "BS":
             smfInfoKeyList.pop()
             for i in range(len(smfInfoKeyList)):
-                self.smfInfoLb = ttk.Label(master, text=smfInfoKeyList[i], font=("", 14))
+                self.smfInfoLb = ttk.Label(master, text=smfInfoKeyList[i], font=textSetting.textList["font2"])
                 self.smfInfoLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
                 if i == 0:
                     self.varSmfInfo = tkinter.StringVar()
                     self.varList.append(self.varSmfInfo)
-                    self.smfInfoEt = ttk.Entry(master, textvariable=self.varSmfInfo, font=("", 14))
+                    self.smfInfoEt = ttk.Entry(master, textvariable=self.varSmfInfo, font=textSetting.textList["font2"])
                     self.smfInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
 
                     if self.mode == "modify":
@@ -533,7 +554,7 @@ class EditSmfListWidget(sd.Dialog):
                 else:
                     self.varSmfInfo = tkinter.IntVar()
                     self.varList.append(self.varSmfInfo)
-                    self.smfInfoEt = ttk.Entry(master, textvariable=self.varSmfInfo, font=("", 14))
+                    self.smfInfoEt = ttk.Entry(master, textvariable=self.varSmfInfo, font=textSetting.textList["font2"])
                     self.smfInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
                     if self.mode == "modify":
                         self.varSmfInfo.set(self.smfInfo[smfInfoKeyList[i]])
@@ -546,12 +567,12 @@ class EditSmfListWidget(sd.Dialog):
         else:
             smfInfoKeyList.pop()
             for i in range(len(smfInfoKeyList)):
-                self.smfInfoLb = ttk.Label(master, text=smfInfoKeyList[i], font=("", 14))
+                self.smfInfoLb = ttk.Label(master, text=smfInfoKeyList[i], font=textSetting.textList["font2"])
                 self.smfInfoLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
                 if i == 0:
                     self.varSmfInfo = tkinter.StringVar()
                     self.varList.append(self.varSmfInfo)
-                    self.smfInfoEt = ttk.Entry(master, textvariable=self.varSmfInfo, font=("", 14))
+                    self.smfInfoEt = ttk.Entry(master, textvariable=self.varSmfInfo, font=textSetting.textList["font2"])
                     self.smfInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
 
                     if self.mode == "modify":
@@ -559,7 +580,7 @@ class EditSmfListWidget(sd.Dialog):
                 else:
                     self.varSmfInfo = tkinter.IntVar()
                     self.varList.append(self.varSmfInfo)
-                    self.smfInfoEt = ttk.Entry(master, textvariable=self.varSmfInfo, font=("", 14))
+                    self.smfInfoEt = ttk.Entry(master, textvariable=self.varSmfInfo, font=textSetting.textList["font2"])
                     self.smfInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
                     if self.mode == "modify":
                         self.varSmfInfo.set(self.smfInfo[smfInfoKeyList[i]])
@@ -577,16 +598,16 @@ class EditSmfListWidget(sd.Dialog):
         self.xLine = ttk.Separator(master, orient=tkinter.HORIZONTAL)
         self.xLine.grid(row=index, column=0, columnspan=2, sticky=tkinter.W + tkinter.E, pady=10)
 
-        self.insertLb = ttk.Label(master, text="挿入する位置", font=("", 12))
+        self.insertLb = ttk.Label(master, text=textSetting.textList["railEditor"]["posLabel"], font=textSetting.textList["font2"])
         self.insertLb.grid(row=index + 1, column=0, sticky=tkinter.W + tkinter.E)
         self.v_insert = tkinter.StringVar()
-        self.insertCb = ttk.Combobox(master, state="readonly", font=("", 12), textvariable=self.v_insert, values=["後", "前"])
+        self.insertCb = ttk.Combobox(master, state="readonly", font=textSetting.textList["font2"], textvariable=self.v_insert, values=textSetting.textList["railEditor"]["posValue"])
         self.insertCb.grid(row=index + 1, column=1, sticky=tkinter.W + tkinter.E)
         self.insertCb.current(0)
 
     def validate(self):
         self.resultValueList = []
-        result = mb.askokcancel(title="確認", message="この値で修正しますか？", parent=self)
+        result = mb.askokcancel(title=textSetting.textList["confirm"], message=textSetting.textList["infoList"]["I21"], parent=self)
         if result:
             try:
                 if self.decryptFile.game in ["CS", "RS"]:
@@ -607,8 +628,8 @@ class EditSmfListWidget(sd.Dialog):
                             self.insert = self.insertCb.current()
                         return True
                     except Exception:
-                        errorMsg = "整数で入力してください。"
-                        mb.showerror(title="数字エラー", message=errorMsg)
+                        errorMsg = textSetting.textList["errorList"]["E60"]
+                        mb.showerror(title=textSetting.textList["numberError"], message=errorMsg)
                         return False
                 elif self.decryptFile.game == "BS":
                     try:
@@ -629,8 +650,8 @@ class EditSmfListWidget(sd.Dialog):
                             self.insert = self.insertCb.current()
                         return True
                     except Exception:
-                        errorMsg = "整数で入力してください。"
-                        mb.showerror(title="数字エラー", message=errorMsg)
+                        errorMsg = textSetting.textList["errorList"]["E60"]
+                        mb.showerror(title=textSetting.textList["numberError"], message=errorMsg)
                         return False
                 else:
                     try:
@@ -651,12 +672,12 @@ class EditSmfListWidget(sd.Dialog):
                             self.insert = self.insertCb.current()
                         return True
                     except Exception:
-                        errorMsg = "整数で入力してください。"
-                        mb.showerror(title="数字エラー", message=errorMsg)
+                        errorMsg = textSetting.textList["errorList"]["E60"]
+                        mb.showerror(title=textSetting.textList["numberError"], message=errorMsg)
                         return False
             except Exception:
-                errorMsg = "予想外のエラーです"
-                mb.showerror(title="エラー", message=errorMsg)
+                errorMsg = textSetting.textList["errorList"]["E14"]
+                mb.showerror(title=textSetting.textList["error"], message=errorMsg)
                 return False
 
     def apply(self):
@@ -673,16 +694,16 @@ class PasteSmfListDialog(sd.Dialog):
 
     def body(self, master):
         self.resizable(False, False)
-        self.posLb = ttk.Label(master, text="挿入する位置を選んでください", font=("", 14))
+        self.posLb = ttk.Label(master, text=textSetting.textList["infoList"]["I4"], font=textSetting.textList["font2"])
         self.posLb.pack(padx=10, pady=10)
 
     def buttonbox(self):
         box = tkinter.Frame(self, padx=5, pady=5)
-        self.frontBtn = tkinter.Button(box, text="前", font=("", 12), width=10, command=self.frontInsert)
+        self.frontBtn = tkinter.Button(box, text=textSetting.textList["railEditor"]["pasteFront"], font=textSetting.textList["font2"], width=10, command=self.frontInsert)
         self.frontBtn.grid(row=0, column=0, padx=5)
-        self.backBtn = tkinter.Button(box, text="後", font=("", 12), width=10, command=self.backInsert)
+        self.backBtn = tkinter.Button(box, text=textSetting.textList["railEditor"]["pasteBack"], font=textSetting.textList["font2"], width=10, command=self.backInsert)
         self.backBtn.grid(row=0, column=1, padx=5)
-        self.cancelBtn = tkinter.Button(box, text="Cancel", font=("", 12), width=10, command=self.cancel)
+        self.cancelBtn = tkinter.Button(box, text=textSetting.textList["railEditor"]["pasteCancel"], font=textSetting.textList["font2"], width=10, command=self.cancel)
         self.cancelBtn.grid(row=0, column=2, padx=5)
         box.pack()
 
@@ -690,18 +711,18 @@ class PasteSmfListDialog(sd.Dialog):
         self.ok()
         if not self.decryptFile.saveSmfInfo(self.num, "insert", self.copySmfInfo):
             self.decryptFile.printError()
-            mb.showerror(title="エラー", message="予想外のエラーが発生しました")
+            mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
             return
-        mb.showinfo(title="成功", message="smf情報を修正しました")
+        mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I79"])
         self.reloadFlag = True
 
     def backInsert(self):
         self.ok()
         if not self.decryptFile.saveSmfInfo(self.num + 1, "insert", self.copySmfInfo):
             self.decryptFile.printError()
-            mb.showerror(title="エラー", message="予想外のエラーが発生しました")
+            mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
             return
-        mb.showinfo(title="成功", message="smf情報を修正しました")
+        mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I79"])
         self.reloadFlag = True
 
 
@@ -721,11 +742,11 @@ class EditListElement(sd.Dialog):
         self.btnFrame = ttk.Frame(self.frame)
         self.btnFrame.pack()
 
-        self.modifyBtn = tkinter.Button(self.btnFrame, font=("", 14), text="修正", state="disabled", command=self.modify)
+        self.modifyBtn = tkinter.Button(self.btnFrame, font=textSetting.textList["font2"], text=textSetting.textList["modify"], state="disabled", command=self.modify)
         self.modifyBtn.grid(padx=10, row=0, column=0, sticky=tkinter.W + tkinter.E)
-        self.insertBtn = tkinter.Button(self.btnFrame, font=("", 14), text="挿入", state="disabled", command=self.insert)
+        self.insertBtn = tkinter.Button(self.btnFrame, font=textSetting.textList["font2"], text=textSetting.textList["insert"], state="disabled", command=self.insert)
         self.insertBtn.grid(padx=10, row=0, column=1, sticky=tkinter.W + tkinter.E)
-        self.deleteBtn = tkinter.Button(self.btnFrame, font=("", 14), text="削除", state="disabled", command=self.delete)
+        self.deleteBtn = tkinter.Button(self.btnFrame, font=textSetting.textList["font2"], text=textSetting.textList["delete"], state="disabled", command=self.delete)
         self.deleteBtn.grid(padx=10, row=0, column=2, sticky=tkinter.W + tkinter.E)
 
         self.listFrame = ttk.Frame(self.frame)
@@ -733,7 +754,7 @@ class EditListElement(sd.Dialog):
 
         copyTempList = self.setListboxInfo(self.tempList)
         self.v_tempList = tkinter.StringVar(value=copyTempList)
-        self.tempListListbox = tkinter.Listbox(self.listFrame, selectmode="single", font=("", 14), width=25, listvariable=self.v_tempList)
+        self.tempListListbox = tkinter.Listbox(self.listFrame, selectmode="single", font=textSetting.textList["font2"], width=25, listvariable=self.v_tempList)
         self.tempListListbox.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
         self.tempListListbox.bind("<<ListboxSelect>>", lambda e: self.buttonActive(self.tempListListbox, self.tempListListbox.curselection()))
 
@@ -745,7 +766,7 @@ class EditListElement(sd.Dialog):
             return
         self.selectIndexNum = value[0]
 
-        if listbox.get(value[0]) == "(なし)":
+        if listbox.get(value[0]) == textSetting.textList["railEditor"]["noList"]:
             self.modifyBtn["state"] = "disabled"
             self.deleteBtn["state"] = "disabled"
         else:
@@ -760,12 +781,12 @@ class EditListElement(sd.Dialog):
                 tempInfo = copyTempList[i]
                 copyTempList[i] = "{0:02d}→{1}".format(i, tempInfo)
         else:
-            copyTempList = ["(なし)"]
+            copyTempList = [textSetting.textList["railEditor"]["noList"]]
 
         return copyTempList
 
     def modify(self):
-        result = EditListElementWidget(self.frame, "リスト変更", self.decryptFile, "modify", self.selectIndexNum, self.tempList)
+        result = EditListElementWidget(self.frame, textSetting.textList["railEditor"]["modifySmfElementListLabel"], self.decryptFile, "modify", self.selectIndexNum, self.tempList)
         if result.dirtyFlag:
             self.dirtyFlag = True
             self.tempList[self.selectIndexNum] = result.resultValueList
@@ -773,7 +794,7 @@ class EditListElement(sd.Dialog):
             self.v_tempList.set(copyTempList)
 
     def insert(self):
-        result = EditListElementWidget(self.frame, "リスト挿入", self.decryptFile, "insert", self.selectIndexNum, self.tempList)
+        result = EditListElementWidget(self.frame, textSetting.textList["railEditor"]["insertSmfElementListLabel"], self.decryptFile, "insert", self.selectIndexNum, self.tempList)
         if result.dirtyFlag:
             self.dirtyFlag = True
             self.tempList.insert(self.selectIndexNum + result.insertPos, result.resultValueList)
@@ -781,8 +802,8 @@ class EditListElement(sd.Dialog):
             self.v_tempList.set(copyTempList)
 
     def delete(self):
-        msg = "{0}番目を削除します。\nそれでもよろしいですか？".format(self.selectIndexNum + 1)
-        result = mb.askokcancel(title="警告", message=msg, icon="warning")
+        msg = textSetting.textList["infoList"]["I25"].format(self.selectIndexNum + 1)
+        result = mb.askokcancel(title=textSetting.textList["warning"], message=msg, icon="warning")
         if result:
             self.dirtyFlag = True
             self.tempList.pop(self.selectIndexNum)
@@ -794,7 +815,7 @@ class EditListElement(sd.Dialog):
 
     def validate(self):
         if self.dirtyFlag:
-            result = mb.askokcancel(title="確認", message="このリストで修正しますか？", parent=self)
+            result = mb.askokcancel(title=textSetting.textList["confirm"], message=textSetting.textList["infoList"]["I70"], parent=self)
             if result:
                 self.reloadFlag = True
                 return True
@@ -818,18 +839,18 @@ class EditListElementWidget(sd.Dialog):
         self.resizable(False, False)
 
         if self.decryptFile.game == "BS":
-            tempInfoLb = ["e1", "e2", "e3"]
+            tempInfoLb = textSetting.textList["railEditor"]["smfElementListLabel1"]
         else:
-            tempInfoLb = ["e1", "e2"]
+            tempInfoLb = textSetting.textList["railEditor"]["smfElementListLabel2"]
         for i in range(len(tempInfoLb)):
-            self.tempLb = ttk.Label(master, text=tempInfoLb[i], font=("", 14))
+            self.tempLb = ttk.Label(master, text=tempInfoLb[i], font=textSetting.textList["font2"])
             self.tempLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
             self.varTemp = tkinter.IntVar()
             if self.mode == "modify":
                 tempInfo = self.tempList[self.index]
                 self.varTemp.set(tempInfo[i])
             self.varList.append(self.varTemp)
-            self.tempEt = ttk.Entry(master, textvariable=self.varTemp, font=("", 14))
+            self.tempEt = ttk.Entry(master, textvariable=self.varTemp, font=textSetting.textList["font2"])
             self.tempEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
 
         if self.mode == "insert":
@@ -839,36 +860,36 @@ class EditListElementWidget(sd.Dialog):
         self.xLine = ttk.Separator(master, orient=tkinter.HORIZONTAL)
         self.xLine.grid(row=index, column=0, columnspan=2, sticky=tkinter.W + tkinter.E, pady=10)
 
-        self.insertLb = ttk.Label(master, text="挿入する位置", font=("", 12))
+        self.insertLb = ttk.Label(master, text=textSetting.textList["railEditor"]["posLabel"], font=textSetting.textList["font2"])
         self.insertLb.grid(row=index + 1, column=0, sticky=tkinter.W + tkinter.E)
         self.v_insert = tkinter.StringVar()
-        self.insertCb = ttk.Combobox(master, state="readonly", font=("", 12), textvariable=self.v_insert, values=["後", "前"])
+        self.insertCb = ttk.Combobox(master, state="readonly", font=textSetting.textList["font2"], textvariable=self.v_insert, values=textSetting.textList["railEditor"]["posValue"])
         self.insertCb.grid(row=index + 1, column=1, sticky=tkinter.W + tkinter.E)
         self.insertCb.current(0)
 
     def validate(self):
-        infoMsg = "この値で修正しますか？"
+        infoMsg = textSetting.textList["infoList"]["I21"]
         if self.mode == "insert":
-            infoMsg = "この値で挿入しますか？"
+            infoMsg = textSetting.textList["infoList"]["I71"]
             self.insertPos = 1
             if self.insertCb.current() == 1:
                 self.insertPos = 0
         self.resultValueList = []
-        result = mb.askokcancel(title="確認", message=infoMsg, parent=self)
+        result = mb.askokcancel(title=textSetting.textList["confirm"], message=infoMsg, parent=self)
         if result:
             try:
                 for i in range(len(self.varList)):
                     try:
                         res = int(self.varList[i].get())
                     except Exception:
-                        errorMsg = "数字で入力してください。"
-                        mb.showerror(title="数字エラー", message=errorMsg)
+                        errorMsg = textSetting.textList["errorList"]["E3"]
+                        mb.showerror(title=textSetting.textList["numberError"], message=errorMsg)
                         return False
                     self.resultValueList.append(res)
                 return True
             except Exception:
-                errorMsg = "予想外のエラーです"
-                mb.showerror(title="エラー", message=errorMsg)
+                errorMsg = textSetting.textList["errorList"]["E14"]
+                mb.showerror(title=textSetting.textList["error"], message=errorMsg)
                 return False
 
     def apply(self):

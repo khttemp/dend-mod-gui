@@ -14,5 +14,5 @@ class ScrollbarTreeviewMusicEditor(ScrollbarTreeview):
         editButton = self.btnList[0]
         swapButton = self.btnList[1]
 
-        editButton['state'] = 'normal'
-        swapButton['state'] = 'normal'
+        editButton["state"] = "normal"
+        swapButton["state"] = "normal"

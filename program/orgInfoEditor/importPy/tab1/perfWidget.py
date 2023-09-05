@@ -2,6 +2,7 @@ import tkinter
 from tkinter import ttk
 from tkinter import simpledialog as sd
 from tkinter import messagebox as mb
+import program.textSetting as textSetting
 
 
 class PerfWidget():
@@ -13,15 +14,15 @@ class PerfWidget():
         self.btnList = btnList
         self.defaultData = defaultData
 
-        self.perfNameLb = tkinter.Label(frame, text=self.decryptFile.trainPerfNameList[i], font=("", 20), width=24, borderwidth=1, relief="solid")
-        self.perfNameLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
+        self.perfNameLb = tkinter.Label(frame, text=self.decryptFile.trainPerfNameList[i], font=textSetting.textList["font6"], width=27, borderwidth=1, relief="solid")
+        self.perfNameLb.grid(row=i, column=0, sticky=tkinter.N + tkinter.W + tkinter.S + tkinter.E)
         self.varPerf = tkinter.DoubleVar()
         self.varPerf.set(str(perf[i]))
         self.varList.append(self.varPerf)
-        self.perfLb = tkinter.Label(frame, textvariable=self.varPerf, font=("", 20), width=7, borderwidth=1, relief="solid")
-        self.perfLb.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
-        self.perfBtn = tkinter.Button(frame, text="修正", font=("", 14), command=lambda: self.editVar([self.perfNameLb, self.perfLb], self.varPerf, self.varPerf.get(), self.defaultData[self.cbIdx]["att"][i]), state="disabled")
-        self.perfBtn.grid(row=i, column=2, sticky=tkinter.W + tkinter.E)
+        self.perfLb = tkinter.Label(frame, textvariable=self.varPerf, font=textSetting.textList["font6"], width=10, borderwidth=1, relief="solid")
+        self.perfLb.grid(row=i, column=1, sticky=tkinter.N + tkinter.W + tkinter.S + tkinter.E)
+        self.perfBtn = tkinter.Button(frame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], font=textSetting.textList["font7"], command=lambda: self.editVar([self.perfNameLb, self.perfLb], self.varPerf, self.varPerf.get(), self.defaultData[self.cbIdx]["att"][i]), state="disabled")
+        self.perfBtn.grid(row=i, column=2, sticky=tkinter.N + tkinter.W + tkinter.S + tkinter.E)
         self.btnList.append(self.perfBtn)
 
         color = ""
@@ -35,7 +36,7 @@ class PerfWidget():
         self.perfLb["fg"] = color
 
     def editVar(self, labelList, var, value, defaultValue, flag=False):
-        EditPerfVarInfo(self.root, "値変更", labelList, var, value, defaultValue, flag)
+        EditPerfVarInfo(self.root, textSetting.textList["orgInfoEditor"]["valueModify"], labelList, var, value, defaultValue, flag)
 
 
 class EditPerfVarInfo(sd.Dialog):
@@ -48,18 +49,18 @@ class EditPerfVarInfo(sd.Dialog):
         super(EditPerfVarInfo, self).__init__(parent=master, title=title)
 
     def body(self, frame):
-        self.defaultLb = tkinter.Label(frame, text="デフォルトの値＝" + str(self.defaultValue), font=("", 14))
+        self.defaultLb = tkinter.Label(frame, text=textSetting.textList["orgInfoEditor"]["defaultValueLabel"] + str(self.defaultValue), font=textSetting.textList["font2"])
         self.defaultLb.pack()
 
-        sep = ttk.Separator(frame, orient='horizontal')
+        sep = ttk.Separator(frame, orient="horizontal")
         sep.pack(fill=tkinter.X, ipady=5)
 
-        self.inputLb = tkinter.Label(frame, text="値を入力してください", font=("", 14))
+        self.inputLb = tkinter.Label(frame, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
         self.inputLb.pack()
 
         v_val = tkinter.StringVar()
         v_val.set(self.value)
-        self.inputEt = tkinter.Entry(frame, textvariable=v_val, font=("", 14))
+        self.inputEt = tkinter.Entry(frame, textvariable=v_val, font=textSetting.textList["font2"])
         self.inputEt.pack()
 
     def validate(self):
@@ -70,25 +71,25 @@ class EditPerfVarInfo(sd.Dialog):
                     try:
                         result = int(result)
                         if result < 0:
-                            errorMsg = "0以上の整数で入力してください。"
-                            mb.showerror(title="整数エラー", message=errorMsg)
+                            errorMsg = textSetting.textList["errorList"]["E61"].format(0)
+                            mb.showerror(title=textSetting.textList["intError"], message=errorMsg)
                             return False
                         self.var.set(result)
                     except Exception:
-                        errorMsg = "整数で入力してください。"
-                        mb.showerror(title="整数エラー", message=errorMsg)
+                        errorMsg = textSetting.textList["errorList"]["E60"]
+                        mb.showerror(title=textSetting.textList["intError"], message=errorMsg)
                         return False
                 else:
                     try:
                         result = float(result)
                         self.var.set(result)
                     except Exception:
-                        errorMsg = "数字で入力してください。"
-                        mb.showerror(title="数字エラー", message=errorMsg)
+                        errorMsg = textSetting.textList["errorList"]["E3"]
+                        mb.showerror(title=textSetting.textList["numberError"], message=errorMsg)
                         return False
             except Exception:
-                errorMsg = "予想外のエラーです"
-                mb.showerror(title="エラー", message=errorMsg)
+                errorMsg = textSetting.textList["errorList"]["E14"]
+                mb.showerror(title=textSetting.textList["error"], message=errorMsg)
                 return False
 
             if self.defaultValue is not None:

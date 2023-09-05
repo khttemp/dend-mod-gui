@@ -2,6 +2,7 @@ import tkinter
 from tkinter import ttk
 from tkinter import simpledialog as sd
 from tkinter import messagebox as mb
+import program.textSetting as textSetting
 
 import program.orgInfoEditor.importPy.gameDefine as gameDefine
 gameDefine.load()
@@ -14,40 +15,46 @@ class ElsePerfWidget():
         self.game = game
         self.frame = frame
         self.title = title
+        self.perfTitle = ""
         self.titleList = titleList
         self.elsePerfList = elsePerfList
         self.isRequire = isRequire
         self.defaultData = defaultData
         self.decryptFile = decryptFile
         self.reloadFunc = reloadFunc
-        
+
         if self.game == gameDefine.SS:
-            self.editButton = tkinter.Button(self.frame, text="修正する", font=("", 14), command=lambda: self.editElsePerf())
+            self.editButton = tkinter.Button(self.frame, text=textSetting.textList["orgInfoEditor"]["SSElsePerfModifyBtn"], font=textSetting.textList["font7"], command=lambda: self.editElsePerf())
             self.editButton.grid(columnspan=2, row=0, column=0, sticky=tkinter.W + tkinter.E)
 
             for i in range(len(self.titleList)):
-                self.titleLb = tkinter.Label(self.frame, text=self.titleList[i], font=("", 20), borderwidth=1, relief="solid")
+                self.titleLb = tkinter.Label(self.frame, text=self.titleList[i], font=textSetting.textList["font6"], borderwidth=1, relief="solid")
                 self.titleLb.grid(row=i + 1, column=0, sticky=tkinter.W + tkinter.E, ipadx=5)
                 if self.elsePerfList is not None:
-                    self.perfValueLb = tkinter.Label(self.frame, text=self.elsePerfList[i], font=("", 20), borderwidth=1, relief="solid")
+                    self.perfValueLb = tkinter.Label(self.frame, text=self.elsePerfList[i], font=textSetting.textList["font6"], borderwidth=1, relief="solid")
                     self.perfValueLb.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E, ipadx=5)
                 else:
-                    self.perfValueLb = tkinter.Label(self.frame, text="ー", font=("", 20), borderwidth=1, relief="solid")
+                    self.perfValueLb = tkinter.Label(self.frame, text=textSetting.textList["orgInfoEditor"]["noPerf"], font=textSetting.textList["font6"], borderwidth=1, relief="solid")
                     self.perfValueLb.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E, ipadx=5)
-                
-                if self.title == "雨":
+
+                if self.title == "rain":
                     defDataList = self.defaultData[self.trainIdx]["rain"]
-                elif self.title == "カーブ":
+                    self.perfTitle = textSetting.textList["orgInfoEditor"]["SSRainLfLabel"]
+                elif self.title == "carb":
                     defDataList = self.defaultData[self.trainIdx]["carb"]
-                elif self.title == "Other":
+                    self.perfTitle = textSetting.textList["orgInfoEditor"]["SSCarbLfLabel"]
+                elif self.title == "other":
                     defDataList = self.defaultData[self.trainIdx]["other"]
-                elif self.title == "振り子":
+                    self.perfTitle = textSetting.textList["orgInfoEditor"]["SSOtherLfLabel"]
+                elif self.title == "huriko":
                     defDataList = self.defaultData[self.trainIdx]["huriko"]
-                elif self.title == "片輪走行":
+                    self.perfTitle = textSetting.textList["orgInfoEditor"]["SSHurikoLfLabel"]
+                elif self.title == "oneWheel":
                     defDataList = self.defaultData[self.trainIdx]["oneWheel"]
-                
+                    self.perfTitle = textSetting.textList["orgInfoEditor"]["SSOneWheelLfLabel"]
+
                 if self.elsePerfList is not None and defDataList is not None:
-                    if self.title == "Other":
+                    if self.title == "other":
                         if i in [0, 1, 2, 3]:
                             if self.elsePerfList[i] < defDataList[i]:
                                 self.titleLb["fg"] = "blue"
@@ -69,16 +76,16 @@ class ElsePerfWidget():
                     self.titleLb["fg"] = "green"
                     self.perfValueLb["fg"] = "green"
 
-    
     def editElsePerf(self):
-        result = EditElsePerfInfo(self.root, "{0}情報修正".format(self.title), self.trainIdx, self.title, self.titleList, self.elsePerfList, self.isRequire, self.defaultData, self.decryptFile)
+        result = EditElsePerfInfo(self.root, textSetting.textList["orgInfoEditor"]["SSElsePerfModifyLabel"].format(self.perfTitle), self.trainIdx, self.title, self.titleList, self.elsePerfList, self.isRequire, self.defaultData, self.decryptFile)
         if result.reloadFlag:
             if not self.decryptFile.saveElsePerfList(self.trainIdx, self.title, result.resultValueList):
                 self.decryptFile.printError()
-                mb.showerror(title="エラー", message="予想外のエラーが発生しました")
+                mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
                 return
-            mb.showinfo(title="成功", message="情報を修正しました")
+            mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I49"])
             self.reloadFunc()
+
 
 class EditElsePerfInfo(sd.Dialog):
     def __init__(self, master, title, trainIdx, perfTitle, titleList, elsePerfList, isRequire, defaultData, decryptFile):
@@ -95,7 +102,7 @@ class EditElsePerfInfo(sd.Dialog):
 
     def body(self, frame):
         if not self.isRequire:
-            self.perfUseLb = tkinter.Label(frame, text="この性能を使う", font=("", 14))
+            self.perfUseLb = tkinter.Label(frame, text=textSetting.textList["orgInfoEditor"]["useThisPerfLabel"], font=textSetting.textList["font2"])
             self.perfUseLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, ipadx=5)
             self.v_check = tkinter.IntVar()
             self.useCheck = tkinter.Checkbutton(frame, variable=self.v_check, command=self.enablePerfInput)
@@ -107,9 +114,9 @@ class EditElsePerfInfo(sd.Dialog):
         self.varList = []
         self.varEtList = []
         for i in range(len(self.titleList)):
-            self.titleLb = tkinter.Label(frame, text=self.titleList[i], font=("", 14))
+            self.titleLb = tkinter.Label(frame, text=self.titleList[i], font=textSetting.textList["font2"])
             self.titleLb.grid(row=i + 1, column=0, sticky=tkinter.W + tkinter.E, ipadx=5)
-            if self.perfTitle == "Other":
+            if self.perfTitle == "other":
                 if i in [0, 2, 3]:
                     self.v_perf = tkinter.IntVar()
                 elif i == 1:
@@ -123,30 +130,30 @@ class EditElsePerfInfo(sd.Dialog):
                 if self.elsePerfList is not None:
                     self.v_perf.set(self.elsePerfList[i])
                 self.varList.append(self.v_perf)
-            self.txtEt = ttk.Entry(frame, textvariable=self.v_perf, font=("", 14))
+            self.txtEt = ttk.Entry(frame, textvariable=self.v_perf, font=textSetting.textList["font2"])
             self.txtEt.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
             self.varEtList.append(self.txtEt)
 
-            if self.perfTitle == "雨":
+            if self.perfTitle == "rain":
                 defDataList = self.defaultData[self.trainIdx]["rain"]
-            elif self.perfTitle == "カーブ":
+            elif self.perfTitle == "carb":
                 defDataList = self.defaultData[self.trainIdx]["carb"]
-            elif self.perfTitle == "Other":
+            elif self.perfTitle == "other":
                 defDataList = self.defaultData[self.trainIdx]["other"]
-            elif self.perfTitle == "振り子":
+            elif self.perfTitle == "huriko":
                 defDataList = self.defaultData[self.trainIdx]["huriko"]
-            elif self.perfTitle == "片輪走行":
+            elif self.perfTitle == "oneWheel":
                 defDataList = self.defaultData[self.trainIdx]["oneWheel"]
-            
-            if self.perfTitle == "Other":
+
+            if self.perfTitle == "other":
                 if i in [0, 1, 2, 3]:
-                    self.defLb = tkinter.Label(frame, text=defDataList[i], font=("", 14))
+                    self.defLb = tkinter.Label(frame, text=defDataList[i], font=textSetting.textList["font2"])
                     self.defLb.grid(row=i + 1, column=2, sticky=tkinter.W + tkinter.E, ipadx=5)
             elif defDataList is not None:
-                self.defLb = tkinter.Label(frame, text=defDataList[i], font=("", 14))
+                self.defLb = tkinter.Label(frame, text=defDataList[i], font=textSetting.textList["font2"])
                 self.defLb.grid(row=i + 1, column=2, sticky=tkinter.W + tkinter.E, ipadx=5)
         self.enablePerfInput()
-    
+
     def enablePerfInput(self):
         if not self.isRequire:
             usedFlag = (self.v_check.get() == 1)
@@ -158,7 +165,7 @@ class EditElsePerfInfo(sd.Dialog):
 
     def validate(self):
         self.resultValueList = []
-        result = mb.askokcancel(title="確認", message="この値で修正しますか？", parent=self)
+        result = mb.askokcancel(title=textSetting.textList["confirm"], message=textSetting.textList["infoList"]["I60"], parent=self)
         if result:
             try:
                 if not self.isRequire and self.v_check.get() == 0:
@@ -169,9 +176,9 @@ class EditElsePerfInfo(sd.Dialog):
                 return True
             except Exception as e:
                 print(e)
-                errorMsg = "予想外のエラーです"
-                mb.showerror(title="エラー", message=errorMsg)
+                errorMsg = textSetting.textList["errorList"]["E14"]
+                mb.showerror(title=textSetting.textList["error"], message=errorMsg)
                 return False
 
     def apply(self):
-        self.reloadFlag = True     
+        self.reloadFlag = True

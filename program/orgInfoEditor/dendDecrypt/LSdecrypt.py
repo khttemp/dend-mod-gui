@@ -1,6 +1,7 @@
 import struct
 import traceback
 import codecs
+import program.textSetting as textSetting
 
 LSTrainName = [
     "H2000",
@@ -26,20 +27,20 @@ perfName = [
     "Weight",
     "CompPower",
     "First_break",
-    "未詳(未使用)",
+    textSetting.textList["orgInfoEditor"]["unknown"] + textSetting.textList["orgInfoEditor"]["noUsed"],
     "Second_Breake",
-    "未詳(未使用)",
-    "未詳(未使用)",
-    "未詳(未使用)",
+    textSetting.textList["orgInfoEditor"]["unknown"] + textSetting.textList["orgInfoEditor"]["noUsed"],
+    textSetting.textList["orgInfoEditor"]["unknown"] + textSetting.textList["orgInfoEditor"]["noUsed"],
+    textSetting.textList["orgInfoEditor"]["unknown"] + textSetting.textList["orgInfoEditor"]["noUsed"],
     "SpBreake",
-    "未詳(未使用)",
-    "未詳(未使用)",
-    "D_Speed(未使用)",
+    textSetting.textList["orgInfoEditor"]["unknown"] + textSetting.textList["orgInfoEditor"]["noUsed"],
+    textSetting.textList["orgInfoEditor"]["unknown"] + textSetting.textList["orgInfoEditor"]["noUsed"],
+    "D_Speed" + textSetting.textList["orgInfoEditor"]["noUsed"],
     "One_Speed",
     "OutParam",
     "D_Add",
-    "未詳(未使用)",
-    "未詳(未使用)",
+    textSetting.textList["orgInfoEditor"]["unknown"] + textSetting.textList["orgInfoEditor"]["noUsed"],
+    textSetting.textList["orgInfoEditor"]["unknown"] + textSetting.textList["orgInfoEditor"]["noUsed"],
     "Carbe",
     "Jump",
     "ChangeFrame",
@@ -91,7 +92,7 @@ class LSdecrypt():
             return False
 
     def printError(self):
-        w = open("error.log", "w")
+        w = codecs.open("error.log", "w", "utf-8", "strict")
         w.write(self.error)
         w.close()
 
@@ -215,7 +216,7 @@ class LSdecrypt():
                     train["pantaNames"].append(pantaModelName)
                     index += pantaModelNameCnt
 
-                train["pantaNames"].append("なし")
+                train["pantaNames"].append(textSetting.textList["orgInfoEditor"]["noList"])
 
                 for j in range(henseiCnt):
                     idx = line[index]
@@ -962,8 +963,11 @@ class LSdecrypt():
             index = self.indexList[trainIdx]
             notchCnt = self.byteArr[index]
 
-            w.write("ノッチ:{0}\n".format(notchCnt))
-            w.write("speed,tlk\n")
+            w.write("{0}:{1}\n".format(textSetting.textList["orgInfoEditor"]["notchLabel"], notchCnt))
+            w.write("{0},{1}\n".format(
+                textSetting.textList["orgInfoEditor"]["csvNotchSpeed"],
+                textSetting.textList["orgInfoEditor"]["csvNotchTlk"])
+            )
 
             for i in range(notchCnt):
                 for j in range(self.notchContentCnt):
@@ -972,7 +976,7 @@ class LSdecrypt():
                         w.write("\n")
                     else:
                         w.write(",")
-            w.write("性能\n")
+            w.write("{0}\n".format(textSetting.textList["orgInfoEditor"]["perfLabel"]))
 
             perfList = trainOrgInfo[1]
             perfNameList = self.trainPerfNameList
@@ -980,38 +984,38 @@ class LSdecrypt():
                 w.write("{0},{1}\n".format(perfNameList[i], perfList[i]))
 
             train = self.trainModelList[trainIdx]
-            w.write("台車モデル:{0}\n".format(train["daishaCnt"]))
+            w.write("{0}:{1}\n".format(textSetting.textList["orgInfoEditor"]["csvDaishaTitle"], train["daishaCnt"]))
             w.write(",".join(train["trackNames"]))
             w.write("\n")
 
-            w.write("編成数:{0}\n".format(train["mdlCnt"]))
+            w.write("{0}:{1}\n".format(textSetting.textList["orgInfoEditor"]["csvOrgNumTitle"], train["mdlCnt"]))
 
             # mdlCnt = len(train["mdlNames"])
-            w.write("車両モデル\n")
+            w.write("{0}\n".format(textSetting.textList["orgInfoEditor"]["csvMdlTitle"]))
             w.write(",".join(train["mdlNames"]))
             w.write("\n")
 
             # colCnt = len(train["colNames"])
-            w.write("COLモデル\n")
+            w.write("{0}\n".format(textSetting.textList["orgInfoEditor"]["csvColTitle"]))
             w.write(",".join(train["colNames"]))
             w.write("\n")
 
             if len(train["pantaNames"]) > 0:
-                w.write("パンタモデル:{0}\n".format(len(train["pantaNames"][:-1])))
+                w.write("{0}:{1}\n".format(textSetting.textList["orgInfoEditor"]["csvPantaTitle"], len(train["pantaNames"][:-1])))
                 w.write(",".join(train["pantaNames"][:-1]))
                 w.write("\n")
 
-                w.write("パンタindex,")
+                w.write("{0},".format(textSetting.textList["orgInfoEditor"]["csvPantaIdxTitle"]))
                 w.write(",".join([str(x) for x in train["pantaList"]]))
                 w.write("\n")
             else:
-                w.write("パンタモデル:0\n")
+                w.write("{0}:0\n".format(textSetting.textList["orgInfoEditor"]["csvPantaTitle"]))
 
-            w.write("属性index,")
+            w.write("{0},".format(textSetting.textList["orgInfoEditor"]["csvElseTitle"]))
             w.write(",".join([str(x) for x in train["elseModel"]]))
             w.write("\n")
 
-            w.write("レンズフレア:{0}\n".format(len(train["lensList"])))
+            w.write("{0}:{1}\n".format(textSetting.textList["orgInfoEditor"]["csvLensTitle"], len(train["lensList"])))
             for i in range(len(train["lensList"])):
                 lensInfo = train["lensList"][i]
                 w.write("{0},{1}\n".format(lensInfo[0], lensInfo[1]))
@@ -1020,7 +1024,7 @@ class LSdecrypt():
                 w.write("\n")
 
             tailCnt = len(train["tailList"][0])
-            w.write("テールランプ:{0}\n".format(tailCnt))
+            w.write("{0}:{1}\n".format(textSetting.textList["orgInfoEditor"]["csvTailTitle"], tailCnt))
             w.write(",".join(train["tailList"][0]))
             w.write("\n")
             w.write(",".join([str(x) for x in train["tailList"][1]]))
@@ -1042,23 +1046,27 @@ class LSdecrypt():
         cnt = 0
         self.csvReadInfo = {}
         try:
-            if csvLines[cnt].strip().split(":")[0] != "ノッチ":
-                self.error = "ノッチ情報を探せません"
+            if csvLines[cnt].strip().split(":")[0] != textSetting.textList["orgInfoEditor"]["notchLabel"]:
+                self.error = textSetting.textList["errorList"]["E22"]
                 return False
 
             arr = csvLines[cnt].strip().split(":")[1]
 
             notchCnt = int(arr.split(",")[0])
             if notchCnt not in [3, 4, 5]:
-                self.error = "{0}ノッチは非対応です".format(notchCnt)
+                self.error = textSetting.textList["errorList"]["E23"].format(notchCnt)
                 return False
             self.csvReadInfo["notchCnt"] = notchCnt
             cnt += 1
 
             arr = csvLines[cnt].strip().split(",")[0:2]
             header = ",".join(arr)
-            if header != "speed,tlk":
-                self.error = "ノッチのヘッダーがありません"
+            inspHeader = "{0},{1}".format(
+                textSetting.textList["orgInfoEditor"]["csvNotchSpeed"],
+                textSetting.textList["orgInfoEditor"]["csvNotchTlk"]
+            )
+            if header != inspHeader:
+                self.error = textSetting.textList["errorList"]["E24"]
                 return False
             cnt += 1
 
@@ -1071,13 +1079,13 @@ class LSdecrypt():
                     tlk.append(float(arr[1]))
                     cnt += 1
             except Exception:
-                self.error = "{0}ノッチ読み込み中\n{1}ノッチ情報読み込み失敗".format(notchCnt, i + 1)
+                self.error = textSetting.textList["errorList"]["E25"].format(notchCnt, i + 1)
                 return False
             speed.extend(tlk)
             self.csvReadInfo["speed"] = speed
 
-            if csvLines[cnt].strip().split(",")[0] != "性能":
-                self.error = "性能情報を探せません"
+            if csvLines[cnt].strip().split(",")[0] != textSetting.textList["orgInfoEditor"]["perfLabel"]:
+                self.error = textSetting.textList["errorList"]["E26"]
                 return False
             cnt += 1
 
@@ -1088,8 +1096,8 @@ class LSdecrypt():
                 cnt += 1
             self.csvReadInfo["perf"] = perf
 
-            if csvLines[cnt].strip().split(":")[0] != "台車モデル":
-                self.error = "台車モデル情報を探せません"
+            if csvLines[cnt].strip().split(":")[0] != textSetting.textList["orgInfoEditor"]["csvDaishaTitle"]:
+                self.error = textSetting.textList["errorList"]["E27"]
                 return False
             arr = csvLines[cnt].strip().split(":")[1]
             daishaCnt = int(arr.split(",")[0])
@@ -1102,20 +1110,20 @@ class LSdecrypt():
             cnt += 1
             self.csvReadInfo["trackInfo"] = trackInfo
 
-            if csvLines[cnt].strip().split(":")[0] != "編成数":
-                self.error = "編成数情報を探せません"
+            if csvLines[cnt].strip().split(":")[0] != textSetting.textList["orgInfoEditor"]["csvOrgNumTitle"]:
+                self.error = textSetting.textList["errorList"]["E28"]
                 return False
 
             arr = csvLines[cnt].strip().split(":")[1]
             orgCnt = int(arr.split(",")[0])
             if orgCnt < 1:
-                self.error = "編成数が1個より少ないです"
+                self.error = textSetting.textList["errorList"]["E29"]
                 return False
             cnt += 1
             self.csvReadInfo["orgCnt"] = orgCnt
 
-            if csvLines[cnt].strip().split(",")[0] != "車両モデル":
-                self.error = "車両モデル情報を探せません"
+            if csvLines[cnt].strip().split(",")[0] != textSetting.textList["orgInfoEditor"]["csvMdlTitle"]:
+                self.error = textSetting.textList["errorList"]["E30"]
                 return False
 
             mdlCnt = 3
@@ -1128,8 +1136,8 @@ class LSdecrypt():
             cnt += 1
             self.csvReadInfo["mdlNameList"] = mdlNameList
 
-            if csvLines[cnt].strip().split(",")[0] != "COLモデル":
-                self.error = "COLモデル情報を探せません"
+            if csvLines[cnt].strip().split(",")[0] != textSetting.textList["orgInfoEditor"]["csvColTitle"]:
+                self.error = textSetting.textList["errorList"]["E31"]
                 return False
 
             colCnt = 3
@@ -1142,8 +1150,8 @@ class LSdecrypt():
             cnt += 1
             self.csvReadInfo["colNameList"] = colNameList
 
-            if csvLines[cnt].strip().split(":")[0] != "パンタモデル":
-                self.error = "パンタモデル情報を探せません"
+            if csvLines[cnt].strip().split(":")[0] != textSetting.textList["orgInfoEditor"]["csvPantaTitle"]:
+                self.error = textSetting.textList["errorList"]["E32"]
                 return False
 
             arr = csvLines[cnt].strip().split(":")[1]
@@ -1159,8 +1167,8 @@ class LSdecrypt():
                 cnt += 1
                 self.csvReadInfo["pantaNameList"] = pantaNameList
 
-                if csvLines[cnt].strip().split(",")[0] != "パンタindex":
-                    self.error = "パンタindex情報を探せません"
+                if csvLines[cnt].strip().split(",")[0] != textSetting.textList["orgInfoEditor"]["csvPantaIdxTitle"]:
+                    self.error = textSetting.textList["errorList"]["E33"]
                     return False
 
                 pantaList = []
@@ -1169,17 +1177,17 @@ class LSdecrypt():
                     try:
                         idx = int(arr[i])
                         if idx < -1 or idx >= pantaCnt:
-                            self.error = "パンタindex情報が不正です"
+                            self.error = textSetting.textList["errorList"]["E34"]
                             return False
                     except Exception:
-                        self.error = "パンタindex情報 読み込み失敗"
+                        self.error = textSetting.textList["errorList"]["E35"]
                         return False
                     pantaList.append(idx)
                 cnt += 1
                 self.csvReadInfo["pantaList"] = pantaList
 
-            if csvLines[cnt].strip().split(",")[0] != "属性index":
-                self.error = "属性index情報を探せません"
+            if csvLines[cnt].strip().split(",")[0] != textSetting.textList["orgInfoEditor"]["csvElseTitle"]:
+                self.error = textSetting.textList["errorList"]["E36"]
                 return False
 
             arr = csvLines[cnt].strip().split(",")[1:]
@@ -1189,8 +1197,8 @@ class LSdecrypt():
             self.csvReadInfo["elseModel"] = elseModel
             cnt += 1
 
-            if csvLines[cnt].strip().split(":")[0] != "レンズフレア":
-                self.error = "レンズフレア情報を探せません"
+            if csvLines[cnt].strip().split(":")[0] != textSetting.textList["orgInfoEditor"]["csvLensTitle"]:
+                self.error = textSetting.textList["errorList"]["E37"]
                 return False
 
             arr = csvLines[cnt].strip().split(":")[1]
@@ -1223,8 +1231,8 @@ class LSdecrypt():
                 lensList.append(lensInfo)
             self.csvReadInfo["lensList"] = lensList
 
-            if csvLines[cnt].strip().split(":")[0] != "テールランプ":
-                self.error = "テールランプ情報を探せません"
+            if csvLines[cnt].strip().split(":")[0] != textSetting.textList["orgInfoEditor"]["csvTailTitle"]:
+                self.error = textSetting.textList["errorList"]["E38"]
                 return False
 
             arr = csvLines[cnt].strip().split(":")[1]
@@ -1275,7 +1283,7 @@ class LSdecrypt():
 
             return True
         except Exception:
-            self.error = "{0}行目の読み込み失敗".format(cnt + 1)
+            self.error = textSetting.textList["errorList"]["E39"].format(cnt + 1)
             return False
 
     def saveCsvTrainInfo(self, trainIdx):

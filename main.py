@@ -11,6 +11,7 @@ from tkinter import ttk
 
 from tkinter import messagebox as mb
 
+import program.textSetting as textSetting
 import program.comicscript.comicscript as comicscriptProgram
 import program.mdlBin.mdlBin as mdlBinProgram
 import program.mdlinfo.mdlinfo as mdlinfoProgram
@@ -24,7 +25,7 @@ import program.rsRail.rsRail as rsRailProgram
 
 
 def resource_path(relative_path):
-    bundle_dir = getattr(sys, '_MEIPASS', os.path.join(os.path.abspath(os.path.dirname(__file__))))
+    bundle_dir = getattr(sys, "_MEIPASS", os.path.join(os.path.abspath(os.path.dirname(__file__))))
     return os.path.join(bundle_dir, relative_path)
 
 
@@ -97,7 +98,7 @@ def loadFile():
     elif selectedProgram == "rsRail":
         rsRailProgram.openFile()
     else:
-        mb.showerror(title="エラー", message="プログラムを選択してください")
+        mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E1"])
 
 
 def configCheckOption(section, options):
@@ -159,14 +160,14 @@ def add_railCsvOptionMenu():
         v_ambCsvRadio = tkinter.IntVar()
         v_ambCsvRadio.set(int(configRead.get("AMB_CSV", "mode")))
         railCsvOptionMenu = tkinter.Menu(menubar, tearoff=False)
-        railCsvOptionMenu.add_radiobutton(label="レールCSVを常に確認", variable=v_railCsvRadio, value=0, command=writeRailConfig)
-        railCsvOptionMenu.add_radiobutton(label="レールCSVを常に上書きする", variable=v_railCsvRadio, value=1, command=writeRailConfig)
-        railCsvOptionMenu.add_radiobutton(label="レールCSVを上書きしない", variable=v_railCsvRadio, value=2, command=writeRailConfig)
+        railCsvOptionMenu.add_radiobutton(label=textSetting.textList["menu"]["csv"]["rail"]["opt1"], variable=v_railCsvRadio, value=0, command=writeRailConfig)
+        railCsvOptionMenu.add_radiobutton(label=textSetting.textList["menu"]["csv"]["rail"]["opt2"], variable=v_railCsvRadio, value=1, command=writeRailConfig)
+        railCsvOptionMenu.add_radiobutton(label=textSetting.textList["menu"]["csv"]["rail"]["opt3"], variable=v_railCsvRadio, value=2, command=writeRailConfig)
         railCsvOptionMenu.add_separator()
-        railCsvOptionMenu.add_radiobutton(label="AMBのCSVを常に確認", variable=v_ambCsvRadio, value=0, command=writeRailConfig)
-        railCsvOptionMenu.add_radiobutton(label="AMBのCSVを常に上書きする", variable=v_ambCsvRadio, value=1, command=writeRailConfig)
-        railCsvOptionMenu.add_radiobutton(label="AMBのCSVを上書きしない", variable=v_ambCsvRadio, value=2, command=writeRailConfig)
-        menubar.add_cascade(label="CSVオプション", menu=railCsvOptionMenu)
+        railCsvOptionMenu.add_radiobutton(label=textSetting.textList["menu"]["csv"]["amb"]["opt1"], variable=v_ambCsvRadio, value=0, command=writeRailConfig)
+        railCsvOptionMenu.add_radiobutton(label=textSetting.textList["menu"]["csv"]["amb"]["opt2"], variable=v_ambCsvRadio, value=1, command=writeRailConfig)
+        railCsvOptionMenu.add_radiobutton(label=textSetting.textList["menu"]["csv"]["amb"]["opt3"], variable=v_ambCsvRadio, value=2, command=writeRailConfig)
+        menubar.add_cascade(label=textSetting.textList["menu"]["csv"]["name"], menu=railCsvOptionMenu)
 
 
 def add_smfWriteOptionMenu():
@@ -212,11 +213,11 @@ def add_smfWriteOptionMenu():
         v_mtrlCheck = tkinter.IntVar()
         v_mtrlCheck.set(int(configRead.get("SMF_MTRL", "mode")))
         smfWriteOptionMenu = tkinter.Menu(menubar, tearoff=False)
-        smfWriteOptionMenu.add_checkbutton(label="FRMを書込む", variable=v_frameCheck, command=writeSmfConfig)
-        smfWriteOptionMenu.add_checkbutton(label="MESHを書込む", variable=v_meshCheck, command=writeSmfConfig)
-        smfWriteOptionMenu.add_checkbutton(label="MESHの詳しい箇所まで書込む", variable=v_XYZCheck, command=writeSmfConfig)
-        smfWriteOptionMenu.add_checkbutton(label="MTRLを書込む", variable=v_mtrlCheck, command=writeSmfConfig)
-        menubar.add_cascade(label="SMF書込みオプション", menu=smfWriteOptionMenu)
+        smfWriteOptionMenu.add_checkbutton(label=textSetting.textList["menu"]["smf"]["write"]["opt1"], variable=v_frameCheck, command=writeSmfConfig)
+        smfWriteOptionMenu.add_checkbutton(label=textSetting.textList["menu"]["smf"]["write"]["opt2"], variable=v_meshCheck, command=writeSmfConfig)
+        smfWriteOptionMenu.add_checkbutton(label=textSetting.textList["menu"]["smf"]["write"]["opt3"], variable=v_XYZCheck, command=writeSmfConfig)
+        smfWriteOptionMenu.add_checkbutton(label=textSetting.textList["menu"]["smf"]["write"]["opt4"], variable=v_mtrlCheck, command=writeSmfConfig)
+        menubar.add_cascade(label=textSetting.textList["menu"]["smf"]["name"], menu=smfWriteOptionMenu)
 
 
 def delete_OptionMenu():
@@ -341,8 +342,8 @@ def confirmUpdate():
     global updateFlag
 
     if updateFlag:
-        msg = "最新バージョン {0}があります。\nダウンロードページを開きますか？".format(onlineUpdateVer)
-        result = mb.askyesno(title="バージョン(1回のみの確認)", message=msg)
+        msg = textSetting.textList["update"]["message"].format(onlineUpdateVer)
+        result = mb.askyesno(title=textSetting.textList["update"]["title"], message=msg)
         if result == tkinter.YES:
             webbrowser.open_new("https://github.com/khttemp/dend-mod-gui/releases")
 
@@ -380,36 +381,40 @@ updateFlag = False
 getUpdateVer()
 
 root = tkinter.Tk()
-root.title("電車でD 改造 統合版 {0}".format(version))
+root.title(textSetting.textList["app"]["title"].format(version))
+root.option_add("*font", textSetting.textList["defaultFont"])
 root.geometry("1024x768")
+
+style = ttk.Style()
+style.configure(".", font=textSetting.textList["defaultFont"])
 
 menubar = tkinter.Menu(root)
 
 v_prog = tkinter.IntVar()
 
 progmenu = tkinter.Menu(menubar, tearoff=False)
-progmenu.add_radiobutton(label="SS改造", value=-1, variable=v_prog, command=lambda: callProgram("SSUnity"))
+progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["SSUnity"], value=-1, variable=v_prog, command=lambda: callProgram("SSUnity"))
 progmenu.add_separator()
-progmenu.add_radiobutton(label="車両性能", value=1, variable=v_prog, command=lambda: callProgram("orgInfoEditor"))
-progmenu.add_radiobutton(label="モデルバイナリ", value=2, variable=v_prog, command=lambda: callProgram("mdlBin"))
-progmenu.add_radiobutton(label="MDLINFO", value=3, variable=v_prog, command=lambda: callProgram("mdlinfo"))
+progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["orgInfoEditor"], value=1, variable=v_prog, command=lambda: callProgram("orgInfoEditor"))
+progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["mdlBin"], value=2, variable=v_prog, command=lambda: callProgram("mdlBin"))
+progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["mdlinfo"], value=3, variable=v_prog, command=lambda: callProgram("mdlinfo"))
 progmenu.add_separator()
-progmenu.add_radiobutton(label="コミックスクリプト", value=4, variable=v_prog, command=lambda: callProgram("comicscript"))
-progmenu.add_radiobutton(label="BGMリスト", value=5, variable=v_prog, command=lambda: callProgram("musicEditor"))
-progmenu.add_radiobutton(label="FVT作成", value=6, variable=v_prog, command=lambda: callProgram("fvtMaker"))
+progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["comicscript"], value=4, variable=v_prog, command=lambda: callProgram("comicscript"))
+progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["musicEditor"], value=5, variable=v_prog, command=lambda: callProgram("musicEditor"))
+progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["fvtMaker"], value=6, variable=v_prog, command=lambda: callProgram("fvtMaker"))
 progmenu.add_separator()
-progmenu.add_radiobutton(label="レールエディター", value=7, variable=v_prog, command=lambda: callProgram("railEditor"))
-progmenu.add_radiobutton(label="RSのレール・AMB", value=8, variable=v_prog, command=lambda: callProgram("rsRail"))
+progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["railEditor"], value=7, variable=v_prog, command=lambda: callProgram("railEditor"))
+progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["rsRail"], value=8, variable=v_prog, command=lambda: callProgram("rsRail"))
 progmenu.add_separator()
-progmenu.add_radiobutton(label="SMF", value=9, variable=v_prog, command=lambda: callProgram("smf"))
+progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["smf"], value=9, variable=v_prog, command=lambda: callProgram("smf"))
 progmenu.add_separator()
-progmenu.add_radiobutton(label="終了", value=-2, variable=v_prog, command=sys.exit)
+progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["exit"], value=-2, variable=v_prog, command=sys.exit)
 
 filemenu = tkinter.Menu(menubar, tearoff=False)
-filemenu.add_command(label="ファイルを開く", command=loadFile)
+filemenu.add_command(label=textSetting.textList["menu"]["file"]["loadFile"], command=loadFile)
 
-menubar.add_cascade(label="改造プログラム", menu=progmenu)
-menubar.add_cascade(label="ファイル", menu=filemenu)
+menubar.add_cascade(label=textSetting.textList["menu"]["program"]["name"], menu=progmenu)
+menubar.add_cascade(label=textSetting.textList["menu"]["file"]["name"], menu=filemenu)
 
 root.config(menu=menubar)
 

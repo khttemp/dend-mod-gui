@@ -5,6 +5,7 @@ import tkinter
 from tkinter import ttk
 from tkinter import messagebox as mb
 from tkinter import filedialog as fd
+import program.textSetting as textSetting
 
 
 class RailListWidget:
@@ -18,25 +19,25 @@ class RailListWidget:
         self.reloadFunc = reloadFunc
 
         if self.decryptFile.game in ["CS", "RS"]:
-            self.smfList.extend(["なし", "モデル設定通り"])
+            self.smfList.extend(textSetting.textList["railEditor"]["smfListAddList1"])
         elif self.decryptFile.game in ["LS", "BS"]:
-            self.smfList.extend(["なし"])
+            self.smfList.extend(textSetting.textList["railEditor"]["smfListAddList2"])
 
         self.railNoFrame = ttk.Frame(self.frame)
         self.railNoFrame.pack(anchor=tkinter.NW, padx=30, pady=30, fill=tkinter.X)
-        self.railNoLb = ttk.Label(self.railNoFrame, text="レールNo", font=("", 14))
+        self.railNoLb = ttk.Label(self.railNoFrame, text=textSetting.textList["railEditor"]["railRailNo"], font=textSetting.textList["font2"])
         self.railNoLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
         self.v_railNo = tkinter.IntVar()
-        self.railNoEt = ttk.Entry(self.railNoFrame, textvariable=self.v_railNo, font=("", 14), width=7, justify="center")
+        self.railNoEt = ttk.Entry(self.railNoFrame, textvariable=self.v_railNo, font=textSetting.textList["font2"], width=7, justify="center")
         self.railNoEt.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10)
-        self.searchBtn = ttk.Button(self.railNoFrame, text="照会", command=lambda: self.searchRail(self.v_railNo.get()))
+        self.searchBtn = ttk.Button(self.railNoFrame, text=textSetting.textList["railEditor"]["railSearchBtnLabel"], command=lambda: self.searchRail(self.v_railNo.get()))
         self.searchBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E, padx=30)
 
-        self.csvSaveBtn = ttk.Button(self.railNoFrame, text="CSVで上書きする", command=self.saveCsv)
+        self.csvSaveBtn = ttk.Button(self.railNoFrame, text=textSetting.textList["railEditor"]["railCsvSaveLabel"], command=self.saveCsv)
         self.csvSaveBtn.grid(row=0, column=3, sticky=tkinter.W + tkinter.E, padx=30)
 
         if self.decryptFile.game == "CS":
-            self.csToRsBtn = ttk.Button(self.railNoFrame, text="RS移植ファイル作成", command=self.csToRs)
+            self.csToRsBtn = ttk.Button(self.railNoFrame, text=textSetting.textList["railEditor"]["railCsToRs"], command=self.csToRs)
             self.csToRsBtn.grid(row=0, column=4, sticky=tkinter.W + tkinter.E, padx=30)
 
         ###
@@ -45,231 +46,190 @@ class RailListWidget:
 
         if self.decryptFile.game in ["BS", "CS", "RS"]:
             #
-            self.blockFrameLf = ttk.LabelFrame(self.sidePackFrame, text="ブロック情報")
+            self.blockFrameLf = ttk.LabelFrame(self.sidePackFrame, text=textSetting.textList["railEditor"]["railBlockInfo"])
             self.blockFrameLf.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=5, pady=15)
-            self.prevRailLb = ttk.Label(self.blockFrameLf, text="繋げるレールNo", font=("", 14))
+            self.prevRailLb = ttk.Label(self.blockFrameLf, text=textSetting.textList["railEditor"]["railPrevRailNo"], font=textSetting.textList["font2"])
             self.prevRailLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             self.v_prevRail = tkinter.IntVar()
-            self.prevRailEt = ttk.Entry(self.blockFrameLf, textvariable=self.v_prevRail, font=("", 14), width=7, justify="center", state="readonly")
+            self.prevRailEt = ttk.Entry(self.blockFrameLf, textvariable=self.v_prevRail, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
             self.prevRailEt.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            self.blockLb = ttk.Label(self.blockFrameLf, text="ブロックNo", font=("", 14))
+            self.blockLb = ttk.Label(self.blockFrameLf, text=textSetting.textList["railEditor"]["railBlockNo"], font=textSetting.textList["font2"])
             self.blockLb.grid(row=1, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             self.v_block = tkinter.IntVar()
-            self.blockEt = ttk.Entry(self.blockFrameLf, textvariable=self.v_block, font=("", 14), width=7, justify="center", state="readonly")
+            self.blockEt = ttk.Entry(self.blockFrameLf, textvariable=self.v_block, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
             self.blockEt.grid(row=1, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
             #
-            self.xyzFrame = ttk.LabelFrame(self.sidePackFrame, text="向きXYZ情報")
+            self.xyzFrame = ttk.LabelFrame(self.sidePackFrame, text=textSetting.textList["railEditor"]["railXyzInfo"])
             self.xyzFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=5, pady=15)
-            self.xLb = ttk.Label(self.xyzFrame, text="xの向き", font=("", 14))
+            self.xLb = ttk.Label(self.xyzFrame, text=textSetting.textList["railEditor"]["railDirX"], font=textSetting.textList["font2"])
             self.xLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             self.v_x = tkinter.DoubleVar()
-            self.xEt = ttk.Entry(self.xyzFrame, textvariable=self.v_x, font=("", 14), width=7, justify="center", state="readonly")
+            self.xEt = ttk.Entry(self.xyzFrame, textvariable=self.v_x, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
             self.xEt.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            self.yLb = ttk.Label(self.xyzFrame, text="yの向き", font=("", 14))
+            self.yLb = ttk.Label(self.xyzFrame, text=textSetting.textList["railEditor"]["railDirY"], font=textSetting.textList["font2"])
             self.yLb.grid(row=1, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             self.v_y = tkinter.DoubleVar()
-            self.yEt = ttk.Entry(self.xyzFrame, textvariable=self.v_y, font=("", 14), width=7, justify="center", state="readonly")
+            self.yEt = ttk.Entry(self.xyzFrame, textvariable=self.v_y, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
             self.yEt.grid(row=1, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            self.zLb = ttk.Label(self.xyzFrame, text="zの向き", font=("", 14))
+            self.zLb = ttk.Label(self.xyzFrame, text=textSetting.textList["railEditor"]["railDirZ"], font=textSetting.textList["font2"])
             self.zLb.grid(row=2, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             self.v_z = tkinter.DoubleVar()
-            self.zEt = ttk.Entry(self.xyzFrame, textvariable=self.v_z, font=("", 14), width=7, justify="center", state="readonly")
+            self.zEt = ttk.Entry(self.xyzFrame, textvariable=self.v_z, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
             self.zEt.grid(row=2, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            self.kasenFrame = ttk.LabelFrame(self.sidePackFrame, text="モデル、架線情報")
+            self.kasenFrame = ttk.LabelFrame(self.sidePackFrame, text=textSetting.textList["railEditor"]["railModelKasenInfo"])
             self.kasenFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=5, pady=15)
-            self.mdlNoLb = ttk.Label(self.kasenFrame, text="モデル(smf)", font=("", 14))
+            self.mdlNoLb = ttk.Label(self.kasenFrame, text=textSetting.textList["railEditor"]["railModelLabel"], font=textSetting.textList["font2"])
             self.mdlNoLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
-            self.mdlNoCb = ttk.Combobox(self.kasenFrame, width=40, values=self.smfList, state="disabled")
+            self.mdlNoCb = ttk.Combobox(self.kasenFrame, width=30, font=textSetting.textList["font2"], values=self.smfList, state="disabled")
             self.mdlNoCb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
             if self.decryptFile.game in ["CS", "RS"]:
-                self.mdlKasenLb = ttk.Label(self.kasenFrame, text="架線", font=("", 14))
+                self.mdlKasenLb = ttk.Label(self.kasenFrame, text=textSetting.textList["railEditor"]["railKasenNoLabel"], font=textSetting.textList["font2"])
                 self.mdlKasenLb.grid(row=1, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
                 self.v_mdlKasen = tkinter.IntVar()
-                self.mdlKasenEt = ttk.Entry(self.kasenFrame, textvariable=self.v_mdlKasen, font=("", 14), width=7, justify="center", state="readonly")
+                self.mdlKasenEt = ttk.Entry(self.kasenFrame, textvariable=self.v_mdlKasen, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
                 self.mdlKasenEt.grid(row=1, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             elif self.decryptFile.game == "BS":
-                self.mdlKasenLb = ttk.Label(self.kasenFrame, text="架線(smf)", font=("", 14))
+                self.mdlKasenLb = ttk.Label(self.kasenFrame, text=textSetting.textList["railEditor"]["railKasenLabel"], font=textSetting.textList["font2"])
                 self.mdlKasenLb.grid(row=1, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
-                self.mdlKasenCb = ttk.Combobox(self.kasenFrame, width=30, values=self.smfList, state="disabled")
+                self.mdlKasenCb = ttk.Combobox(self.kasenFrame, width=30, font=textSetting.textList["font2"], values=self.smfList, state="disabled")
                 self.mdlKasenCb.grid(row=1, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            self.mdlKasenchuLb = ttk.Label(self.kasenFrame, text="架線柱(smf)", font=("", 14))
+            self.mdlKasenchuLb = ttk.Label(self.kasenFrame, text=textSetting.textList["railEditor"]["railKasenchuLabel"], font=textSetting.textList["font2"])
             self.mdlKasenchuLb.grid(row=2, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
-            self.mdlKasenchuCb = ttk.Combobox(self.kasenFrame, width=40, values=self.smfList, state="disabled")
+            self.mdlKasenchuCb = ttk.Combobox(self.kasenFrame, width=30, font=textSetting.textList["font2"], values=self.smfList, state="disabled")
             self.mdlKasenchuCb.grid(row=2, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            self.perLb = ttk.Label(self.kasenFrame, text="per", font=("", 14))
+            self.perLb = ttk.Label(self.kasenFrame, text=textSetting.textList["railEditor"]["railPer"], font=textSetting.textList["font2"])
             self.perLb.grid(row=3, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             self.v_per = tkinter.DoubleVar()
-            self.perEt = ttk.Entry(self.kasenFrame, textvariable=self.v_per, font=("", 14), width=7, justify="center", state="readonly")
+            self.perEt = ttk.Entry(self.kasenFrame, textvariable=self.v_per, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
             self.perEt.grid(row=3, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
         elif self.decryptFile.game == "LS":
             if self.decryptFile.ver == "DEND_MAP_VER0101":
-                self.verLf = ttk.LabelFrame(self.sidePackFrame, text="VER0101情報")
+                self.verLf = ttk.LabelFrame(self.sidePackFrame, text=textSetting.textList["railEditor"]["railLsVer0101"])
                 self.verLf.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=5, pady=15)
-                self.prevRailLb = ttk.Label(self.verLf, text="繋げる\nレールNo(2)", font=("", 14))
+                self.prevRailLb = ttk.Label(self.verLf, text=textSetting.textList["railEditor"]["railPrevRail2No"], font=textSetting.textList["font2"])
                 self.prevRailLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
                 self.v_prevRail2 = tkinter.IntVar()
-                self.prevRailEt = ttk.Entry(self.verLf, textvariable=self.v_prevRail2, font=("", 14), width=7, justify="center", state="readonly")
+                self.prevRailEt = ttk.Entry(self.verLf, textvariable=self.v_prevRail2, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
                 self.prevRailEt.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
             #
-            self.xyzFrame = ttk.LabelFrame(self.sidePackFrame, text="XYZ情報")
+            self.xyzFrame = ttk.LabelFrame(self.sidePackFrame, text=textSetting.textList["railEditor"]["railPosXyzInfo"])
             self.xyzFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=5, pady=15)
-            self.xLb = ttk.Label(self.xyzFrame, text="xのpos", font=("", 14))
+            self.xLb = ttk.Label(self.xyzFrame, text=textSetting.textList["railEditor"]["railPosX"], font=textSetting.textList["font2"])
             self.xLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             self.v_x_pos = tkinter.DoubleVar()
-            self.x_posEt = ttk.Entry(self.xyzFrame, textvariable=self.v_x_pos, font=("", 14), width=7, justify="center", state="readonly")
+            self.x_posEt = ttk.Entry(self.xyzFrame, textvariable=self.v_x_pos, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
             self.x_posEt.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            self.yLb = ttk.Label(self.xyzFrame, text="yのpos", font=("", 14))
+            self.yLb = ttk.Label(self.xyzFrame, text=textSetting.textList["railEditor"]["railPosY"], font=textSetting.textList["font2"])
             self.yLb.grid(row=1, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             self.v_y_pos = tkinter.DoubleVar()
-            self.y_posEt = ttk.Entry(self.xyzFrame, textvariable=self.v_y_pos, font=("", 14), width=7, justify="center", state="readonly")
+            self.y_posEt = ttk.Entry(self.xyzFrame, textvariable=self.v_y_pos, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
             self.y_posEt.grid(row=1, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            self.zLb = ttk.Label(self.xyzFrame, text="zのpos", font=("", 14))
+            self.zLb = ttk.Label(self.xyzFrame, text=textSetting.textList["railEditor"]["railPosZ"], font=textSetting.textList["font2"])
             self.zLb.grid(row=2, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             self.v_z_pos = tkinter.DoubleVar()
-            self.z_posEt = ttk.Entry(self.xyzFrame, textvariable=self.v_z_pos, font=("", 14), width=7, justify="center", state="readonly")
+            self.z_posEt = ttk.Entry(self.xyzFrame, textvariable=self.v_z_pos, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
             self.z_posEt.grid(row=2, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
             #
-            self.xLb = ttk.Label(self.xyzFrame, text="xのdir", font=("", 14))
+            self.xLb = ttk.Label(self.xyzFrame, text=textSetting.textList["railEditor"]["railDirX"], font=textSetting.textList["font2"])
             self.xLb.grid(row=0, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             self.v_x_dir = tkinter.DoubleVar()
-            self.x_dirEt = ttk.Entry(self.xyzFrame, textvariable=self.v_x_dir, font=("", 14), width=7, justify="center", state="readonly")
+            self.x_dirEt = ttk.Entry(self.xyzFrame, textvariable=self.v_x_dir, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
             self.x_dirEt.grid(row=0, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            self.yLb = ttk.Label(self.xyzFrame, text="yのdir", font=("", 14))
+            self.yLb = ttk.Label(self.xyzFrame, text=textSetting.textList["railEditor"]["railDirY"], font=textSetting.textList["font2"])
             self.yLb.grid(row=1, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             self.v_y_dir = tkinter.DoubleVar()
-            self.y_dirEt = ttk.Entry(self.xyzFrame, textvariable=self.v_y_dir, font=("", 14), width=7, justify="center", state="readonly")
+            self.y_dirEt = ttk.Entry(self.xyzFrame, textvariable=self.v_y_dir, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
             self.y_dirEt.grid(row=1, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            self.zLb = ttk.Label(self.xyzFrame, text="zのdir", font=("", 14))
+            self.zLb = ttk.Label(self.xyzFrame, text=textSetting.textList["railEditor"]["railDirZ"], font=textSetting.textList["font2"])
             self.zLb.grid(row=2, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             self.v_z_dir = tkinter.DoubleVar()
-            self.z_dirEt = ttk.Entry(self.xyzFrame, textvariable=self.v_z_dir, font=("", 14), width=7, justify="center", state="readonly")
+            self.z_dirEt = ttk.Entry(self.xyzFrame, textvariable=self.v_z_dir, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
             self.z_dirEt.grid(row=2, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
             #
-            self.xyzRotFrame = ttk.LabelFrame(self.sidePackFrame, text="XYZ_Rot情報")
+            self.xyzRotFrame = ttk.LabelFrame(self.sidePackFrame, text=textSetting.textList["railEditor"]["railRotXyzInfo"])
             self.xyzRotFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=5, pady=15)
-            self.xLb = ttk.Label(self.xyzRotFrame, text="xのrot", font=("", 14))
+            self.xLb = ttk.Label(self.xyzRotFrame, text=textSetting.textList["railEditor"]["railRotX"], font=textSetting.textList["font2"])
             self.xLb.grid(row=0, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             self.v_x_rot = tkinter.StringVar()
-            self.x_dirEt = ttk.Entry(self.xyzRotFrame, textvariable=self.v_x_rot, font=("", 14), width=7, justify="center", state="readonly")
+            self.x_dirEt = ttk.Entry(self.xyzRotFrame, textvariable=self.v_x_rot, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
             self.x_dirEt.grid(row=0, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            self.yLb = ttk.Label(self.xyzRotFrame, text="yのrot", font=("", 14))
+            self.yLb = ttk.Label(self.xyzRotFrame, text=textSetting.textList["railEditor"]["railRotY"], font=textSetting.textList["font2"])
             self.yLb.grid(row=1, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             self.v_y_rot = tkinter.StringVar()
-            self.y_dirEt = ttk.Entry(self.xyzRotFrame, textvariable=self.v_y_rot, font=("", 14), width=7, justify="center", state="readonly")
+            self.y_dirEt = ttk.Entry(self.xyzRotFrame, textvariable=self.v_y_rot, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
             self.y_dirEt.grid(row=1, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            self.zLb = ttk.Label(self.xyzRotFrame, text="zのrot", font=("", 14))
+            self.zLb = ttk.Label(self.xyzRotFrame, text=textSetting.textList["railEditor"]["railRotZ"], font=textSetting.textList["font2"])
             self.zLb.grid(row=2, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             self.v_z_rot = tkinter.StringVar()
-            self.z_dirEt = ttk.Entry(self.xyzRotFrame, textvariable=self.v_z_rot, font=("", 14), width=7, justify="center", state="readonly")
+            self.z_dirEt = ttk.Entry(self.xyzRotFrame, textvariable=self.v_z_rot, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
             self.z_dirEt.grid(row=2, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
             ###
             self.sidePackFrame2 = ttk.Frame(self.frame)
             self.sidePackFrame2.pack(anchor=tkinter.NW, padx=20)
 
-            self.kasenFrame = ttk.LabelFrame(self.sidePackFrame2, text="モデル、架線情報")
+            self.kasenFrame = ttk.LabelFrame(self.sidePackFrame2, text=textSetting.textList["railEditor"]["railModelKasenInfo"])
             self.kasenFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=5, pady=15)
-            self.mdlNoLb = ttk.Label(self.kasenFrame, text="モデル(smf)", font=("", 14))
+            self.mdlNoLb = ttk.Label(self.kasenFrame, text=textSetting.textList["railEditor"]["railModelLabel"], font=textSetting.textList["font2"])
             self.mdlNoLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
-            self.mdlNoCb = ttk.Combobox(self.kasenFrame, width=30, values=self.smfList, state="disabled")
+            self.mdlNoCb = ttk.Combobox(self.kasenFrame, width=30, font=textSetting.textList["font2"], values=self.smfList, state="disabled")
             self.mdlNoCb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            self.prevRailLb = ttk.Label(self.kasenFrame, text="繋げるレールNo", font=("", 14))
+            self.prevRailLb = ttk.Label(self.kasenFrame, text=textSetting.textList["railEditor"]["railPrevRailNo"], font=textSetting.textList["font2"])
             self.prevRailLb.grid(row=0, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             self.v_prevRail = tkinter.IntVar()
-            self.prevRailEt = ttk.Entry(self.kasenFrame, textvariable=self.v_prevRail, font=("", 14), width=7, justify="center", state="readonly")
+            self.prevRailEt = ttk.Entry(self.kasenFrame, textvariable=self.v_prevRail, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
             self.prevRailEt.grid(row=0, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            self.mdlKasenchuLb = ttk.Label(self.kasenFrame, text="架線柱(smf)", font=("", 14))
+            self.mdlKasenchuLb = ttk.Label(self.kasenFrame, text=textSetting.textList["railEditor"]["railKasenchuLabel"], font=textSetting.textList["font2"])
             self.mdlKasenchuLb.grid(row=1, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
-            self.mdlKasenchuCb = ttk.Combobox(self.kasenFrame, width=30, values=self.smfList, state="disabled")
+            self.mdlKasenchuCb = ttk.Combobox(self.kasenFrame, width=30, font=textSetting.textList["font2"], values=self.smfList, state="disabled")
             self.mdlKasenchuCb.grid(row=1, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            self.mdlKasenLb = ttk.Label(self.kasenFrame, text="架線(smf)", font=("", 14))
+            self.mdlKasenLb = ttk.Label(self.kasenFrame, text=textSetting.textList["railEditor"]["railKasenLabel"], font=textSetting.textList["font2"])
             self.mdlKasenLb.grid(row=1, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
-            self.mdlKasenCb = ttk.Combobox(self.kasenFrame, width=30, values=self.smfList, state="disabled")
+            self.mdlKasenCb = ttk.Combobox(self.kasenFrame, width=30, font=textSetting.textList["font2"], values=self.smfList, state="disabled")
             self.mdlKasenCb.grid(row=1, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            self.fixAmbLb = ttk.Label(self.kasenFrame, text="固定AMB(smf)", font=("", 14))
+            self.fixAmbLb = ttk.Label(self.kasenFrame, text=textSetting.textList["railEditor"]["railFixAmbLabel"], font=textSetting.textList["font2"])
             self.fixAmbLb.grid(row=2, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
-            self.fixAmbCb = ttk.Combobox(self.kasenFrame, width=30, values=self.smfList, state="disabled")
+            self.fixAmbCb = ttk.Combobox(self.kasenFrame, width=30, font=textSetting.textList["font2"], values=self.smfList, state="disabled")
             self.fixAmbCb.grid(row=2, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            self.perLb = ttk.Label(self.kasenFrame, text="per", font=("", 14))
+            self.perLb = ttk.Label(self.kasenFrame, text=textSetting.textList["railEditor"]["railPer"], font=textSetting.textList["font2"])
             self.perLb.grid(row=2, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             self.v_per = tkinter.DoubleVar()
-            self.perEt = ttk.Entry(self.kasenFrame, textvariable=self.v_per, font=("", 14), width=7, justify="center", state="readonly")
+            self.perEt = ttk.Entry(self.kasenFrame, textvariable=self.v_per, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
             self.perEt.grid(row=2, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
         ###
-        self.flagFrameLf = ttk.LabelFrame(self.frame, text="フラグ情報")
+        self.flagFrameLf = ttk.LabelFrame(self.frame, text=textSetting.textList["railEditor"]["railFlagInfo"])
         self.flagFrameLf.pack(padx=30, pady=15, fill=tkinter.X)
 
-        flagInfoList = [
-            [
-                "踏み切り\n通過中の音",
-                "複線ドリフトで\n飛ぶ",
-                "手前位置に\n180度回転",
-                "LAST_POS",
-                "LAST01",
-                "LAST00",
-                "橋\n通過中の音",
-                "Noドリフト"
-            ],
-            [
-                "クラッシュ時\nカメラ位置を\n高く",
-                "他のレールも\nドリフト対象",
-                "長い車体は\n複線ドリフト\n以外は\n壁にぶつかる",
-                "脱線しても\n速度が\n落ちにくい",
-                "CPU振り子車両\n振り子のみ",
-                "CPU\n片輪ドリフト\n戻し",
-                "CPU\n右片輪ドリフト",
-                "CPU\n左片輪ドリフト"
-            ],
-            [
-                "片輪ドリフト時\n飛ぶ",
-                "右側線路\n片輪ドリフト時\n飛ぶ",
-                "左側線路\n片輪ドリフト時\n飛ぶ",
-                "レール非表示",
-                "左入力で\n土讃線",
-                "右入力で\n土讃線",
-                "右側に\nレールガード",
-                "左側に\nレールガード"
-            ],
-            [
-                "Disabled\nレール",
-                "CPU\n転線",
-                "L_RUN",
-                "R_RUN",
-                "フラグ5",
-                "CPU\nドリフト\n戻し",
-                "CPU\n右ドリフト",
-                "CPU\n左ドリフト"
-            ]
-        ]
+        flagInfoList = textSetting.textList["railEditor"]["railFlagInfoList"]
 
         if self.decryptFile.game != "RS":
-            flagInfoList[1][4] = "踏み込めば\n即ジャンプ"
-            flagInfoList[1][5] = "ドライバー視点\nぐらぐら揺れる"
-            flagInfoList[1][6] = "トロリー線"
-            flagInfoList[1][7] = "低速軌道"
+            flagInfoList[1][4] = textSetting.textList["railEditor"]["railOldFlag1"]
+            flagInfoList[1][5] = textSetting.textList["railEditor"]["railOldFlag2"]
+            flagInfoList[1][6] = textSetting.textList["railEditor"]["railOldFlag3"]
+            flagInfoList[1][7] = textSetting.textList["railEditor"]["railOldFlag4"]
 
         self.v_flagHexList = []
         self.v_flagInfoList = []
@@ -284,7 +244,7 @@ class RailListWidget:
             self.v_flagHex = tkinter.StringVar()
             self.v_flagHex.set("0x00")
             self.v_flagHexList.append(self.v_flagHex)
-            self.flagHexLb = ttk.Label(self.flagFrame, textvariable=self.v_flagHex, font=("", 14))
+            self.flagHexLb = ttk.Label(self.flagFrame, textvariable=self.v_flagHex, font=textSetting.textList["font2"])
             self.flagHexLb.grid(row=0, column=0, columnspan=8, sticky=tkinter.W + tkinter.E, padx=3, pady=3)
             for j in range(len(flagInfoList[i])):
                 self.v_flag = tkinter.IntVar()
@@ -297,19 +257,19 @@ class RailListWidget:
             self.chkInfoList.append(chkInfo)
 
         ###
-        self.railFrameLf = ttk.LabelFrame(self.frame, text="レール情報")
+        self.railFrameLf = ttk.LabelFrame(self.frame, text=textSetting.textList["railEditor"]["railRailInfo"])
         self.railFrameLf.pack(anchor=tkinter.NW, padx=30, pady=15)
 
         self.railFrameCntFrame = ttk.Frame(self.railFrameLf)
         self.railFrameCntFrame.pack(anchor=tkinter.NW, padx=10, pady=10)
-        self.railDataCntLb = ttk.Label(self.railFrameCntFrame, text="レール本数", font=("", 14))
+        self.railDataCntLb = ttk.Label(self.railFrameCntFrame, text=textSetting.textList["railEditor"]["railRailDataCnt"], font=textSetting.textList["font2"])
         self.railDataCntLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
         self.v_railDataCnt = tkinter.IntVar()
-        self.railDataCntEt = ttk.Entry(self.railFrameCntFrame, textvariable=self.v_railDataCnt, font=("", 14), width=7, justify="center", state="readonly")
+        self.railDataCntEt = ttk.Entry(self.railFrameCntFrame, textvariable=self.v_railDataCnt, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
         self.railDataCntEt.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
         if self.decryptFile.ver == "DEND_MAP_VER0300":
-            self.csvRevRailSaveBtn = ttk.Button(self.railFrameCntFrame, text="往復レール作成", command=self.saveRevRailCsv)
+            self.csvRevRailSaveBtn = ttk.Button(self.railFrameCntFrame, text=textSetting.textList["railEditor"]["railCreateRevRail"], command=self.saveRevRailCsv)
             self.csvRevRailSaveBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E, padx=30)
 
         self.railFrame = ttk.Frame(self.railFrameLf)
@@ -337,26 +297,26 @@ class RailListWidget:
             child.destroy()
 
         for i in range(cnt):
-            self.nextRailLb = ttk.Label(self.railFrame, text="次レール", width=11, font=("", 14))
+            self.nextRailLb = ttk.Label(self.railFrame, text=textSetting.textList["railEditor"]["railNextRail"], width=11, font=textSetting.textList["font2"])
             self.nextRailLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=5)
             self.v_nextRailNo = tkinter.IntVar()
             self.varRailList.append(self.v_nextRailNo)
-            self.nextRailNoEt = ttk.Entry(self.railFrame, textvariable=self.v_nextRailNo, font=("", 14), width=7, justify="center", state="readonly")
+            self.nextRailNoEt = ttk.Entry(self.railFrame, textvariable=self.v_nextRailNo, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
             self.nextRailNoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E, pady=5)
             self.v_nextRailPos = tkinter.IntVar()
             self.varRailList.append(self.v_nextRailPos)
-            self.nextRailPosEt = ttk.Entry(self.railFrame, textvariable=self.v_nextRailPos, font=("", 14), width=7, justify="center", state="readonly")
+            self.nextRailPosEt = ttk.Entry(self.railFrame, textvariable=self.v_nextRailPos, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
             self.nextRailPosEt.grid(row=i, column=2, sticky=tkinter.W + tkinter.E, pady=5)
 
-            self.prevRailLb = ttk.Label(self.railFrame, text="前レール", width=11, font=("", 14))
+            self.prevRailLb = ttk.Label(self.railFrame, text=textSetting.textList["railEditor"]["railPrevRail"], width=11, font=textSetting.textList["font2"])
             self.prevRailLb.grid(row=i, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=5)
             self.v_prevRailNo = tkinter.IntVar()
             self.varRailList.append(self.v_prevRailNo)
-            self.prevRailNoEt = ttk.Entry(self.railFrame, textvariable=self.v_prevRailNo, font=("", 14), width=7, justify="center", state="readonly")
+            self.prevRailNoEt = ttk.Entry(self.railFrame, textvariable=self.v_prevRailNo, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
             self.prevRailNoEt.grid(row=i, column=4, sticky=tkinter.W + tkinter.E, pady=5)
             self.v_prevRailPos = tkinter.IntVar()
             self.varRailList.append(self.v_prevRailPos)
-            self.prevRailPosEt = ttk.Entry(self.railFrame, textvariable=self.v_prevRailPos, font=("", 14), width=7, justify="center", state="readonly")
+            self.prevRailPosEt = ttk.Entry(self.railFrame, textvariable=self.v_prevRailPos, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
             self.prevRailPosEt.grid(row=i, column=5, sticky=tkinter.W + tkinter.E, pady=5)
 
     def setRevRailInfo(self, cnt):
@@ -366,31 +326,31 @@ class RailListWidget:
             child.destroy()
 
         for i in range(cnt):
-            self.revNextRailLb = ttk.Label(self.revRailFrame, text="次レール(rev)", font=("", 14))
+            self.revNextRailLb = ttk.Label(self.revRailFrame, text=textSetting.textList["railEditor"]["railRevNextRail"], font=textSetting.textList["font2"])
             self.revNextRailLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=5)
             self.v_revNextRailNo = tkinter.IntVar()
             self.varRevRailList.append(self.v_revNextRailNo)
-            self.revNextRailNoEt = ttk.Entry(self.revRailFrame, textvariable=self.v_revNextRailNo, font=("", 14), width=7, justify="center", state="readonly")
+            self.revNextRailNoEt = ttk.Entry(self.revRailFrame, textvariable=self.v_revNextRailNo, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
             self.revNextRailNoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E, pady=5)
             self.v_revNextRailPos = tkinter.IntVar()
             self.varRevRailList.append(self.v_revNextRailPos)
-            self.revNextRailPosEt = ttk.Entry(self.revRailFrame, textvariable=self.v_revNextRailPos, font=("", 14), width=7, justify="center", state="readonly")
+            self.revNextRailPosEt = ttk.Entry(self.revRailFrame, textvariable=self.v_revNextRailPos, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
             self.revNextRailPosEt.grid(row=i, column=2, sticky=tkinter.W + tkinter.E, pady=5)
 
-            self.revPrevRailLb = ttk.Label(self.revRailFrame, text="前レール(rev)", font=("", 14))
+            self.revPrevRailLb = ttk.Label(self.revRailFrame, text=textSetting.textList["railEditor"]["railRevPrevRail"], font=textSetting.textList["font2"])
             self.revPrevRailLb.grid(row=i, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=5)
             self.v_revPrevRailNo = tkinter.IntVar()
             self.varRevRailList.append(self.v_revPrevRailNo)
-            self.revPrevRailNoEt = ttk.Entry(self.revRailFrame, textvariable=self.v_revPrevRailNo, font=("", 14), width=7, justify="center", state="readonly")
+            self.revPrevRailNoEt = ttk.Entry(self.revRailFrame, textvariable=self.v_revPrevRailNo, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
             self.revPrevRailNoEt.grid(row=i, column=4, sticky=tkinter.W + tkinter.E, pady=5)
             self.v_revPrevRailPos = tkinter.IntVar()
             self.varRevRailList.append(self.v_revPrevRailPos)
-            self.revPrevRailPosEt = ttk.Entry(self.revRailFrame, textvariable=self.v_revPrevRailPos, font=("", 14), width=7, justify="center", state="readonly")
+            self.revPrevRailPosEt = ttk.Entry(self.revRailFrame, textvariable=self.v_revPrevRailPos, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
             self.revPrevRailPosEt.grid(row=i, column=5, sticky=tkinter.W + tkinter.E, pady=5)
 
     def searchRail(self, railNo):
         if railNo < 0 or railNo >= len(self.railList):
-            mb.showerror(title="エラー", message="存在しないレールです")
+            mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E70"])
             return
         railInfo = self.railList[railNo]
 
@@ -509,8 +469,8 @@ class RailListWidget:
                 railIdx += 1
 
     def saveCsv(self):
-        errorMsg = "CSVで上書きが失敗しました。\n権限問題の可能性があります。"
-        file_path = fd.askopenfilename(defaultextension='csv', filetypes=[("レールデータCSV", "*.csv")])
+        errorMsg = textSetting.textList["errorList"]["E71"]
+        file_path = fd.askopenfilename(defaultextension="csv", filetypes=[(textSetting.textList["railEditor"]["ambCsvFileType"], "*.csv")])
         if not file_path:
             return
         try:
@@ -518,7 +478,8 @@ class RailListWidget:
             csvLines = f.readlines()
             f.close()
         except Exception:
-            mb.showerror(title="読み込みエラー", message=errorMsg)
+            errorMsg = textSetting.textList["errorList"]["E74"]
+            mb.showerror(title=textSetting.textList["readError"], message=errorMsg)
             return
 
         try:
@@ -709,20 +670,20 @@ class RailListWidget:
                     railList.append(railInfo)
                     count += 1
 
-            msg = "{0}行のデータを読み込みしました。\n上書きしますか？".format(count)
-            result = mb.askokcancel(title="警告", message=msg, icon="warning")
+            msg = textSetting.textList["infoList"]["I15"].format(count)
+            result = mb.askokcancel(title=textSetting.textList["warning"], message=msg, icon="warning")
 
             if result:
                 if not self.decryptFile.saveRailCsv(railList):
                     self.decryptFile.printError()
-                    mb.showerror(title="エラー", message="予想外のエラーが発生しました")
+                    mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
                     return
-                mb.showinfo(title="成功", message="レール情報を修正しました")
+                mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I88"])
                 self.reloadFunc()
 
         except Exception:
-            errorMsg = "{0}行のデータを読み込み失敗しました。".format(count + 1)
-            mb.showerror(title="読み込みエラー", message=errorMsg)
+            errorMsg = textSetting.textList["errorList"]["E15"].format(count + 1)
+            mb.showerror(title=textSetting.textList["readError"], message=errorMsg)
             return
 
     def saveRevRailCsv(self):
@@ -753,9 +714,9 @@ class RailListWidget:
         allModelRailLen = {i: self.decryptFile.smfList[i][3] for i in range(len(self.decryptFile.smfList))}
 
         filename = self.decryptFile.filename + "_rev.csv"
-        file_path = fd.asksaveasfilename(initialfile=filename, defaultextension='csv', filetypes=[('レールcsv', '*.csv')])
+        file_path = fd.asksaveasfilename(initialfile=filename, defaultextension="csv", filetypes=[(textSetting.textList["railEditor"]["railCsvFileType"], "*.csv")])
         newRailList = []
-        errorMsg = "CSVで取り出す機能が失敗しました。\n権限問題の可能性があります。"
+        errorMsg = textSetting.textList["errorList"]["E7"]
         if file_path:
             try:
                 directory = os.path.dirname(file_path)
@@ -862,26 +823,26 @@ class RailListWidget:
                 self.decryptFile.filePath = path
                 if not self.decryptFile.saveRailCsv(newRailList):
                     self.decryptFile.printError()
-                    mb.showerror(title="エラー", message="予想外のエラーが発生しました")
+                    mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
                     return
-                mb.showinfo(title="成功", message="CSVで自動作成しました。\n(細かい分岐調整はCSVを修正する必要があります)")
+                mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I89"])
                 self.reloadFunc()
 
             except Exception:
-                mb.showerror(title="エラー", message=errorMsg)
+                mb.showerror(title=textSetting.textList["error"], message=errorMsg)
 
     def csToRs(self):
         filename = self.decryptFile.filename + "_RS.bin"
-        file_path = fd.asksaveasfilename(initialfile=filename, defaultextension='bin', filetypes=[('RS移植BIN', '*.bin')])
+        file_path = fd.asksaveasfilename(initialfile=filename, defaultextension="bin", filetypes=[(textSetting.textList["railEditor"]["railCsToRsBinType"], "*.bin")])
         if file_path:
             newByteArr = self.decryptFile.csToRs()
             if newByteArr is None:
                 self.decryptFile.printError()
-                mb.showerror(title="エラー", message="RS移植ファイル作成失敗しました。\n権限問題の可能性があります。")
+                mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E72"])
                 return
 
             w = open(file_path, "wb")
             w.write(newByteArr)
             w.close()
 
-            mb.showinfo(title="成功", message="RS移植ファイルを作成しました。")
+            mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I90"])

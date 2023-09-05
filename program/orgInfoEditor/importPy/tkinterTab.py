@@ -1,5 +1,6 @@
 import tkinter
 from tkinter import ttk
+import program.textSetting as textSetting
 
 from program.tkinterScrollbarFrameClass import ScrollbarFrame
 import program.orgInfoEditor.importPy.gameDefine as gameDefine
@@ -28,29 +29,29 @@ def tab1AllWidget(tabFrame, decryptFile, trainIdx, game, varList, btnList, defau
     btnFrame = ttk.Frame(tab_one_frame)
     btnFrame.pack(anchor=tkinter.NW, padx=10, pady=5)
 
-    set_default_train_info_button = ttk.Button(btnFrame, width=25, command=lambda: setDefault(tabFrame, decryptFile, game, trainIdx, defaultData, reloadFunc), text="車両の性能をデフォルトに戻す")
+    set_default_train_info_button = ttk.Button(btnFrame, width=25, command=lambda: setDefault(tabFrame, decryptFile, game, trainIdx, defaultData, reloadFunc), text=textSetting.textList["orgInfoEditor"]["setDefaultBtnLabel"])
     set_default_train_info_button.pack(side=tkinter.LEFT, padx=15, pady=5)
 
     if game in [gameDefine.LS, gameDefine.BS, gameDefine.CS, gameDefine.RS]:
-        extract_csv_train_info_text = "車両情報をCSVで取り出す"
+        extract_csv_train_info_text = textSetting.textList["orgInfoEditor"]["extractCsv"]
     else:
-        extract_csv_train_info_text = "車両情報をテキストで取り出す"
+        extract_csv_train_info_text = textSetting.textList["orgInfoEditor"]["extractText"]
     extract_csv_train_info_button = ttk.Button(btnFrame, width=25, text=extract_csv_train_info_text, command=lambda: extractCsvTrainInfo(game, trainIdx, decryptFile))
     extract_csv_train_info_button.pack(side=tkinter.LEFT, padx=15, pady=5)
 
     if game in [gameDefine.LS, gameDefine.BS, gameDefine.CS, gameDefine.RS]:
-        save_csv_train_inf_text = "車両情報をCSVで上書き"
+        save_csv_train_inf_text = textSetting.textList["orgInfoEditor"]["saveCsv"]
     else:
-        save_csv_train_inf_text = "車両情報をテキストで上書き"
+        save_csv_train_inf_text = textSetting.textList["orgInfoEditor"]["saveText"]
     save_csv_train_info_button = ttk.Button(btnFrame, width=25, text=save_csv_train_inf_text, command=lambda: saveCsvTrainInfo(game, trainIdx, decryptFile, reloadFunc))
     save_csv_train_info_button.pack(side=tkinter.LEFT, padx=15, pady=5)
 
     v_edit = widgetList[0]
-    v_edit.set("この車両を修正する")
+    v_edit.set(textSetting.textList["orgInfoEditor"]["trainModify"])
     edit_button = ttk.Button(btnFrame, textvariable=v_edit, width=25)
     edit_button.pack(side=tkinter.LEFT, padx=15, pady=5)
 
-    edit_all_button = ttk.Button(btnFrame, width=25, text="同じ倍率で全部修正する", command=lambda: editAllTrain(tabFrame, decryptFile, reloadFunc))
+    edit_all_button = ttk.Button(btnFrame, width=25, text=textSetting.textList["orgInfoEditor"]["allSave"], command=lambda: editAllTrain(tabFrame, decryptFile, reloadFunc))
     edit_all_button.pack(side=tkinter.LEFT, padx=15, pady=5)
 
     innerButtonList = [
@@ -69,7 +70,7 @@ def tab1AllWidget(tabFrame, decryptFile, trainIdx, game, varList, btnList, defau
     notchPerfFrame = ttk.Frame(tab_one_frame)
     notchPerfFrame.pack(anchor=tkinter.NW, padx=10, pady=5, expand=True, fill=tkinter.BOTH)
 
-    speedLf = ttk.LabelFrame(notchPerfFrame, text="速度")
+    speedLf = ttk.LabelFrame(notchPerfFrame, text=textSetting.textList["orgInfoEditor"]["speedLfLabel"])
     speedLf.place(relx=0, rely=0, relwidth=0.4, relheight=0.98)
     speedScrollFrame = ScrollbarFrame(speedLf)
 
@@ -77,7 +78,7 @@ def tab1AllWidget(tabFrame, decryptFile, trainIdx, game, varList, btnList, defau
     for i in range(notchCnt):
         NotchWidget(tabFrame, trainIdx, i, notchCnt, speedScrollFrame.frame, speed, decryptFile, decryptFile.notchContentCnt, varList, btnList, defaultData)
 
-    perfLf = ttk.LabelFrame(notchPerfFrame, text="性能")
+    perfLf = ttk.LabelFrame(notchPerfFrame, text=textSetting.textList["orgInfoEditor"]["perfLfLabel"])
     perfLf.place(relx=0.43, rely=0, relwidth=0.56, relheight=0.98)
     perfScrollFrame = ScrollbarFrame(perfLf)
 
@@ -96,19 +97,22 @@ def tab2AllWidget(tabFrame, decryptFile, trainIdx, game, defaultData, widgetList
     tab_two_frame.pack(anchor=tkinter.NW, fill=tkinter.X)
 
     if game in [gameDefine.LS, gameDefine.BS, gameDefine.CS, gameDefine.RS]:
-        countModelLf = ttk.LabelFrame(tab_two_frame, text="車両", height=250)
+        countModelLf = ttk.LabelFrame(tab_two_frame, text=textSetting.textList["orgInfoEditor"]["trainLfLabel"], height=250)
         countModelLf.pack(anchor=tkinter.NW, padx=10, pady=5, fill=tkinter.X)
         countModelLf.propagate(False)
 
         countWidget = CountWidget(tabFrame, trainIdx, game, countModelLf, decryptFile, reloadFunc)
 
         v_edit = widgetList[0]
-        v_edit.set("この編成を修正する")
+        v_edit.set(textSetting.textList["orgInfoEditor"]["orgModify"])
         edit_hensei_button = ttk.Button(countWidget.countFrame, textvariable=v_edit)
         edit_hensei_button.grid(columnspan=3, row=3, column=0, sticky=tkinter.W + tkinter.E, pady=15)
 
-        edit_model_button = ttk.Button(countWidget.countFrame, text="モデル情報を修正")
+        edit_model_button = ttk.Button(countWidget.countFrame, text=textSetting.textList["orgInfoEditor"]["modelInfoModify"])
         edit_model_button.grid(columnspan=3, row=4, column=0, sticky=tkinter.W + tkinter.E, pady=5)
+
+        sep = ttk.Separator(countModelLf, orient="vertical")
+        sep.pack(side=tkinter.LEFT, fill=tkinter.Y)
 
         countModelScrollFrame = ScrollbarFrame(countModelLf, True, False)
 
@@ -149,7 +153,7 @@ def tab2AllWidget(tabFrame, decryptFile, trainIdx, game, defaultData, widgetList
         scrollMainFrame = ScrollbarFrame(mainFrame)
         scrollFrame = scrollMainFrame.frame
 
-        countModelLf = ttk.LabelFrame(scrollFrame, text="車両")
+        countModelLf = ttk.LabelFrame(scrollFrame, text=textSetting.textList["orgInfoEditor"]["SSTrainLfLabel"])
         countModelLf.pack(anchor=tkinter.NW, padx=10, pady=3)
 
         countWidget = CountWidget(tabFrame, trainIdx, game, countModelLf, decryptFile, reloadFunc)
@@ -158,27 +162,27 @@ def tab2AllWidget(tabFrame, decryptFile, trainIdx, game, defaultData, widgetList
 
         sidePackFrame = ttk.Frame(scrollFrame)
         sidePackFrame.pack(anchor=tkinter.NW)
-        rainPerfLf = ttk.LabelFrame(sidePackFrame, text="雨")
+        rainPerfLf = ttk.LabelFrame(sidePackFrame, text=textSetting.textList["orgInfoEditor"]["SSRainLfLabel"])
         rainPerfLf.pack(side=tkinter.LEFT, anchor=tkinter.NW, padx=10, pady=3)
-        ElsePerfWidget(tabFrame, trainIdx, game, rainPerfLf, "雨", decryptFile.trainRainNameList, trainOrgInfo[2], True, defaultData, decryptFile, reloadFunc)
+        ElsePerfWidget(tabFrame, trainIdx, game, rainPerfLf, "rain", decryptFile.trainRainNameList, trainOrgInfo[2], True, defaultData, decryptFile, reloadFunc)
 
-        carbPerfLf = ttk.LabelFrame(sidePackFrame, text="カーブ")
+        carbPerfLf = ttk.LabelFrame(sidePackFrame, text=textSetting.textList["orgInfoEditor"]["SSCarbLfLabel"])
         carbPerfLf.pack(side=tkinter.LEFT, anchor=tkinter.NW, padx=10, pady=3)
-        ElsePerfWidget(tabFrame, trainIdx, game, carbPerfLf, "カーブ", decryptFile.trainCarbNameList, trainOrgInfo[3], True, defaultData, decryptFile, reloadFunc)
+        ElsePerfWidget(tabFrame, trainIdx, game, carbPerfLf, "carb", decryptFile.trainCarbNameList, trainOrgInfo[3], True, defaultData, decryptFile, reloadFunc)
 
-        otherPerfLf = ttk.LabelFrame(scrollFrame, text="Other")
+        otherPerfLf = ttk.LabelFrame(scrollFrame, text=textSetting.textList["orgInfoEditor"]["SSOtherLfLabel"])
         otherPerfLf.pack(anchor=tkinter.NW, padx=10, pady=3)
-        ElsePerfWidget(tabFrame, trainIdx, game, otherPerfLf, "Other", decryptFile.trainOtherNameList, trainOrgInfo[4], True, defaultData, decryptFile, reloadFunc)
+        ElsePerfWidget(tabFrame, trainIdx, game, otherPerfLf, "other", decryptFile.trainOtherNameList, trainOrgInfo[4], True, defaultData, decryptFile, reloadFunc)
 
         sidePackFrame2 = ttk.Frame(scrollFrame)
         sidePackFrame2.pack(anchor=tkinter.NW)
-        hurikoPerfLf = ttk.LabelFrame(sidePackFrame2, text="振り子")
+        hurikoPerfLf = ttk.LabelFrame(sidePackFrame2, text=textSetting.textList["orgInfoEditor"]["SSHurikoLfLabel"])
         hurikoPerfLf.pack(side=tkinter.LEFT, anchor=tkinter.NW, padx=8, pady=3)
-        ElsePerfWidget(tabFrame, trainIdx, game, hurikoPerfLf, "振り子", decryptFile.trainHurikoNameList, trainOrgInfo[5], False, defaultData, decryptFile, reloadFunc)
+        ElsePerfWidget(tabFrame, trainIdx, game, hurikoPerfLf, "huriko", decryptFile.trainHurikoNameList, trainOrgInfo[5], False, defaultData, decryptFile, reloadFunc)
 
-        oneWheelPerfLf = ttk.LabelFrame(sidePackFrame2, text="片輪走行")
+        oneWheelPerfLf = ttk.LabelFrame(sidePackFrame2, text=textSetting.textList["orgInfoEditor"]["SSOneWheelLfLabel"])
         oneWheelPerfLf.pack(side=tkinter.LEFT, anchor=tkinter.NW, padx=8, pady=3)
-        ElsePerfWidget(tabFrame, trainIdx, game, oneWheelPerfLf, "片輪走行", decryptFile.trainOneWheelNameList, trainOrgInfo[6], False, defaultData, decryptFile, reloadFunc)
+        ElsePerfWidget(tabFrame, trainIdx, game, oneWheelPerfLf, "oneWheel", decryptFile.trainOneWheelNameList, trainOrgInfo[6], False, defaultData, decryptFile, reloadFunc)
 
 
 def tab3AllWidget(tabFrame, decryptFile, trainIdx, game, widgetList, reloadFunc):

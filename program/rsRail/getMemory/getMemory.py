@@ -3,6 +3,7 @@ import codecs
 import copy
 import traceback
 import time
+import program.textSetting as textSetting
 from pymem import Pymem
 from pymem.process import module_from_name
 
@@ -76,11 +77,11 @@ class GetMemory:
             self.game_module = module_from_name(self.mem.process_handle, self.fileName).lpBaseOfDll
         except Exception as e:
             if "Could not find process" in str(e):
-                self.error = "ゲームを見つけられませんでした。"
+                self.error = textSetting.textList["errorList"]["E77"]
             elif "Could not open process" in str(e):
-                self.error = "ゲームのメモリーを参照できません\n管理者権限で実行してください"
+                self.error = textSetting.textList["errorList"]["E78"]
             else:
-                self.error = "予想外のエラーです\n"
+                self.error = textSetting.textList["errorList"]["E14"] + "\n"
                 self.error += traceback.format_exc()
             return False
         return True

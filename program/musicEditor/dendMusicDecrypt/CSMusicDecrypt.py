@@ -1,15 +1,17 @@
 import struct
+import codecs
 import traceback
+import program.textSetting as textSetting
 
 
 headerList = [
-    ["No", 40],
-    ["1.06基準 BGMリスト", 200],
-    ["BGM ファイル名", 200],
-    ["BGM名", 200],
-    ["start", 120],
-    ["loop start", 120],
-    ["loop end", 120]
+    [textSetting.textList["musicEditor"]["bgmNo"], 40],
+    [textSetting.textList["musicEditor"]["csTitle"], 200],
+    [textSetting.textList["musicEditor"]["bgmFilename"], 200],
+    [textSetting.textList["musicEditor"]["bgmName"], 200],
+    [textSetting.textList["musicEditor"]["commonTitle"][0], 120],
+    [textSetting.textList["musicEditor"]["commonTitle"][1], 120],
+    [textSetting.textList["musicEditor"]["commonTitle"][2], 120]
 ]
 
 ver106Music = [
@@ -75,7 +77,7 @@ class CSMusicDecrypt():
             return False
 
     def printError(self):
-        w = open("error.log", "w")
+        w = codecs.open("error.log", "w", "utf-8", "strict")
         w.write(self.error)
         w.close()
 
@@ -143,9 +145,10 @@ class CSMusicDecrypt():
     def saveMusic(self):
         try:
             newByteArr = bytearray(self.byteArr[0:self.indexList[0]])
+            title = textSetting.textList["musicEditor"]["commonTitle"]
             for i in range(len(self.musicList)):
                 for j in range(2, len(headerList)):
-                    if headerList[j][0] in ["start", "loop start", "loop end"]:
+                    if headerList[j][0] in [title[0], title[1], title[2]]:
                         time = struct.pack("<f", self.musicList[i][j - 1])
                         for n in time:
                             newByteArr.append(n)

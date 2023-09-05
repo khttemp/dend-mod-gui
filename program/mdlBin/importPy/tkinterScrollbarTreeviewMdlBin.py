@@ -25,7 +25,7 @@ class ScrollbarTreeviewMdlBin(ScrollbarTreeview):
         deleteLineBtn["state"] = "normal"
         copyLineBtn["state"] = "normal"
 
-        if "#" in selectItem["コマンド名"]:
+        if "#" in selectItem["treeName"]:
             listNumModifyBtn["state"] = "normal"
             listHeadeModifyBtn["state"] = "normal"
             numModifyBtn["state"] = "normal"

@@ -3,6 +3,7 @@ import struct
 import codecs
 import copy
 import traceback
+import program.textSetting as textSetting
 
 
 class SmfDecrypt:
@@ -114,7 +115,7 @@ class SmfDecrypt:
             return False
 
     def printError(self):
-        w = open("error.log", "w")
+        w = codecs.open("error.log", "w", "utf-8", "strict")
         w.write(self.error)
         w.close()
 
@@ -178,7 +179,7 @@ class SmfDecrypt:
         index = self.index
 
         if index >= len(self.byteArr):
-            return ('SMF READ END!', 0)
+            return ("SMF READ END!", 0)
         nameAndLength = struct.unpack("<ll", self.byteArr[index:index+8])
         nameChar4 = str(hex(nameAndLength[0]))[2:]
         index += 4
@@ -195,19 +196,19 @@ class SmfDecrypt:
         index = self.index
 
         self.guid = hex(struct.unpack("<L", self.byteArr[index:index+4])[0])
-        self.writeInfo("SMFバージョン：{0}".format(self.guid))
+        self.writeInfo(textSetting.textList["smf"]["smfVersion"].format(self.guid))
         index += 4
 
         self.meshCount = struct.unpack("<l", self.byteArr[index:index+4])[0]
-        self.writeInfo("メッシュの数：{0}".format(self.meshCount))
+        self.writeInfo(textSetting.textList["smf"]["meshNum"].format(self.meshCount))
         index += 4
 
         self.frameCount = struct.unpack("<l", self.byteArr[index:index+4])[0]
-        self.writeInfo("フラームの数：{0}".format(self.frameCount))
+        self.writeInfo(textSetting.textList["smf"]["frameNum"].format(self.frameCount))
         index += 4
 
         self.animationSetCount = struct.unpack("<l", self.byteArr[index:index+4])[0]
-        self.writeInfo("アニメーションの数：{0}".format(self.animationSetCount))
+        self.writeInfo(textSetting.textList["smf"]["animeNum"].format(self.animationSetCount))
         index += 4
 
         if self.index + length == index:
@@ -222,8 +223,8 @@ class SmfDecrypt:
         frameInfo = []
 
         if self.printFRM:
-            self.writeInfo("Frame No.{0}/{1}".format(frame, self.frameCount-1))
-            self.writeInfo("フレーム用変換行列")
+            self.writeInfo(textSetting.textList["smf"]["frameNumFormat"].format(frame, self.frameCount-1))
+            self.writeInfo(textSetting.textList["smf"]["frameMatrixLabel"])
 
         matrix = []
         for i in range(4):
@@ -240,7 +241,7 @@ class SmfDecrypt:
         frameInfo.append(matrix)
 
         if self.printFRM:
-            self.writeInfo("フレームの名前", end=", ")
+            self.writeInfo(textSetting.textList["smf"]["frameName"], end=", ")
         fName = struct.unpack("<64s", self.byteArr[index:index+self.MAX_NAME_SIZE])[0]
         fName = fName.decode("shift-jis").rstrip("\x00")
         frameInfo.append(fName)
@@ -249,7 +250,7 @@ class SmfDecrypt:
             self.writeInfo(fName)
 
         if self.printFRM:
-            self.writeInfo("所持しているメッシュのインデックス", end=", ")
+            self.writeInfo(textSetting.textList["smf"]["frameMeshIndex"], end=", ")
         meshNo = struct.unpack("<l", self.byteArr[index:index+4])[0]
         frameInfo.append(meshNo)
         index += 4
@@ -257,7 +258,7 @@ class SmfDecrypt:
             self.writeInfo(meshNo)
 
         if self.printFRM:
-            self.writeInfo("親のフレームのインデックス", end=", ")
+            self.writeInfo(textSetting.textList["smf"]["parentFrameIndex"], end=", ")
         parentFrameNo = struct.unpack("<l", self.byteArr[index:index+4])[0]
         frameInfo.append(parentFrameNo)
         index += 4
@@ -279,7 +280,7 @@ class SmfDecrypt:
                 vCenter.append(vec)
             obbInfo.append(vCenter)
             if self.printFRM:
-                self.writeInfo("中心座標 {0}".format(vCenter))
+                self.writeInfo(textSetting.textList["smf"]["vCenterLabel"].format(vCenter))
 
             vAxisList = []
             for i in range(3):
@@ -290,7 +291,7 @@ class SmfDecrypt:
                     vAxis.append(axis)
                 vAxisList.append(vAxis)
                 if self.printFRM:
-                    self.writeInfo("ローカルXYZ軸 {0}".format(vAxis))
+                    self.writeInfo(textSetting.textList["smf"]["vAxisLabel"].format(vAxis))
             obbInfo.append(vAxisList)
 
             fLength = []
@@ -299,7 +300,7 @@ class SmfDecrypt:
                 index += 4
                 fLength.append(fLen)
             if self.printFRM:
-                self.writeInfo("XYZ軸の長さ {0}".format(fLength))
+                self.writeInfo(textSetting.textList["smf"]["fLengthLabel"].format(fLength))
             obbInfo.append(fLength)
         frameInfo.append(obbInfo)
         self.frameList.append(frameInfo)
@@ -317,10 +318,10 @@ class SmfDecrypt:
         self.meshInfo = []
 
         if self.printMESH:
-            self.writeInfo("Mesh No.{0}/{1}".format(mesh, self.meshCount-1))
+            self.writeInfo(textSetting.textList["smf"]["meshNumFormat"].format(mesh, self.meshCount-1))
 
         if self.printMESH:
-            self.writeInfo("メッシュの名前", end=", ")
+            self.writeInfo(textSetting.textList["smf"]["meshName"], end=", ")
         mName = struct.unpack("<64s", self.byteArr[index:index+self.MAX_NAME_SIZE])[0]
         mName = mName.decode("shift-jis").rstrip("\x00")
         self.meshInfo.append(mName)
@@ -329,7 +330,7 @@ class SmfDecrypt:
             self.writeInfo(mName)
 
         if self.printMESH:
-            self.writeInfo("所持しているマテリアルの数", end=", ")
+            self.writeInfo(textSetting.textList["smf"]["meshMtrlNum"], end=", ")
         materialCount = struct.unpack("<l", self.byteArr[index:index+4])[0]
         self.meshInfo.append(materialCount)
         index += 4
@@ -355,7 +356,7 @@ class SmfDecrypt:
                 vCenter.append(vec)
             obbInfo.append(vCenter)
             if self.printMESH and self.printXYZ:
-                self.writeInfo("中心座標 {0}".format(vCenter))
+                self.writeInfo(textSetting.textList["smf"]["vCenterLabel"].format(vCenter))
 
             vAxisList = []
             for i in range(3):
@@ -366,7 +367,7 @@ class SmfDecrypt:
                     vAxis.append(axis)
                 vAxisList.append(vAxis)
                 if self.printMESH and self.printXYZ:
-                    self.writeInfo("ローカルXYZ軸 {0}".format(vAxis))
+                    self.writeInfo(textSetting.textList["smf"]["vAxisLabel"].format(vAxis))
             obbInfo.append(vAxisList)
 
             fLength = []
@@ -376,7 +377,7 @@ class SmfDecrypt:
                 fLength.append(fLen)
             obbInfo.append(fLength)
             if self.printMESH and self.printXYZ:
-                self.writeInfo("XYZ軸の長さ {0}".format(fLength))
+                self.writeInfo(textSetting.textList["smf"]["fLengthLabel"].format(fLength))
                 self.writeInfo()
 
             if self.index + nextNameAndLength[1] != index:
@@ -402,7 +403,7 @@ class SmfDecrypt:
             for i in range(count):
                 matrix = []
                 if self.printMESH:
-                    self.writeInfo("ボーンのローカルオフセット行列")
+                    self.writeInfo(textSetting.textList["smf"]["boneLocalMatrix"])
                 for j in range(4):
                     rows = []
                     for k in range(4):
@@ -419,7 +420,7 @@ class SmfDecrypt:
                     self.writeInfo()
 
                 if self.printMESH:
-                    self.writeInfo("骨の対象となるフレームのインデックス", end=", ")
+                    self.writeInfo(textSetting.textList["smf"]["boneFrameIndex"], end=", ")
                 frameNo = struct.unpack("<l", self.byteArr[index:index+4])[0]
                 index += 4
                 boneInfo.append(frameNo)
@@ -454,10 +455,10 @@ class SmfDecrypt:
                     index += 4
                     vPC.append(vec)
                 if self.printMESH and self.printXYZ:
-                    self.writeInfo("頂点の位置 {0}".format(vPC))
+                    self.writeInfo(textSetting.textList["smf"]["vPCLabel"].format(vPC))
 
                 if self.printMESH and self.printXYZ:
-                    self.writeInfo("頂点の色", end=", ")
+                    self.writeInfo(textSetting.textList["smf"]["vPCColor"], end=", ")
                 vPCcolor = struct.unpack("<l", self.byteArr[index:index+4])[0]
                 index += 4
                 vPCInfo.append(vPC)
@@ -494,7 +495,7 @@ class SmfDecrypt:
                     vN.append(vec)
                 vNInfo.append(vN)
                 if self.printMESH and self.printXYZ:
-                    self.writeInfo("頂点の法線 {0}".format(vN))
+                    self.writeInfo(textSetting.textList["smf"]["vNLabel"].format(vN))
             if self.printMESH and self.printXYZ:
                 self.writeInfo()
 
@@ -526,7 +527,7 @@ class SmfDecrypt:
                     vB.append(vec)
                 vBInfo.append(vB)
                 if self.printMESH and self.printXYZ:
-                    self.writeInfo("頂点の接線 {0}".format(vB))
+                    self.writeInfo(textSetting.textList["smf"]["vBLabel"].format(vB))
             if self.printMESH and self.printXYZ:
                 self.writeInfo()
 
@@ -588,7 +589,7 @@ class SmfDecrypt:
             count = nextNameAndLength[1] // 16
             for i in range(count):
                 if self.printMESH and self.printXYZ:
-                    self.writeInfo("頂点のテクスチャUV", end=", ")
+                    self.writeInfo(textSetting.textList["smf"]["uvLabel"], end=", ")
                 list1 = []
                 for j in range(2):
                     f = struct.unpack("<f", self.byteArr[index:index+4])[0]
@@ -598,7 +599,7 @@ class SmfDecrypt:
                     self.writeInfo(list1)
 
                 if self.printMESH and self.printXYZ:
-                    self.writeInfo("頂点のライトマップ用テクスチャUV", end=", ")
+                    self.writeInfo(textSetting.textList["smf"]["lightMapUvLabel"], end=", ")
                 list2 = []
                 for j in range(2):
                     f = struct.unpack("<f", self.byteArr[index:index+4])[0]
@@ -633,7 +634,7 @@ class SmfDecrypt:
             count = nextNameAndLength[1] // 2
             for i in range(count):
                 if self.printMESH and self.printXYZ:
-                    self.writeInfo("頂点インデックス", end=", ")
+                    self.writeInfo(textSetting.textList["smf"]["idxLabel"], end=", ")
                 h = struct.unpack("<h", self.byteArr[index:index+2])[0]
                 index += 2
                 idx2Info.append(h)
@@ -665,7 +666,7 @@ class SmfDecrypt:
             count = nextNameAndLength[1] // 4
             for i in range(count):
                 if self.printMESH and self.printXYZ:
-                    self.writeInfo("頂点インデックス", end=", ")
+                    self.writeInfo(textSetting.textList["smf"]["idxLabel"], end=", ")
                 long = struct.unpack("<l", self.byteArr[index:index+4])[0]
                 index += 4
                 idx4Info.append(long)
@@ -722,21 +723,21 @@ class SmfDecrypt:
             count = nextNameAndLength[1] // 12
             for i in range(count):
                 if self.printMESH:
-                    self.writeInfo("面の開始位置", end=", ")
+                    self.writeInfo(textSetting.textList["smf"]["colStart"], end=", ")
                 colStart = struct.unpack("<l", self.byteArr[index:index+4])[0]
                 index += 4
                 if self.printMESH:
                     self.writeInfo(colStart)
 
                 if self.printMESH:
-                    self.writeInfo("面の数", end=", ")
+                    self.writeInfo(textSetting.textList["smf"]["colCount"], end=", ")
                 colCount = struct.unpack("<l", self.byteArr[index:index+4])[0]
                 index += 4
                 if self.printMESH:
                     self.writeInfo(colCount)
 
                 if self.printMESH:
-                    self.writeInfo("面の属性", end=", ")
+                    self.writeInfo(textSetting.textList["smf"]["colAttribute"], end=", ")
                 colAttribute = struct.unpack("<l", self.byteArr[index:index+4])[0]
                 index += 4
                 if self.printMESH:
@@ -765,14 +766,14 @@ class SmfDecrypt:
             count = nextNameAndLength[1] // 32
             for i in range(count):
                 if self.printMESH:
-                    self.writeInfo("面の属性", end=", ")
+                    self.writeInfo(textSetting.textList["smf"]["colAttribute"], end=", ")
                 colAttribute = struct.unpack("<l", self.byteArr[index:index+4])[0]
                 index += 4
                 if self.printMESH:
                     self.writeInfo(colAttribute)
 
                 if self.printMESH:
-                    self.writeInfo("面を構成する頂点のインデックス", end=", ")
+                    self.writeInfo(textSetting.textList["smf"]["colIndexList"], end=", ")
                 indexList = []
                 for i in range(3):
                     iindex = struct.unpack("<l", self.byteArr[index:index+4])[0]
@@ -782,7 +783,7 @@ class SmfDecrypt:
                     self.writeInfo(indexList)
 
                 if self.printMESH:
-                    self.writeInfo("面データ", end=", ")
+                    self.writeInfo(textSetting.textList["smf"]["plainLabel"], end=", ")
                 planeList = []
                 for i in range(4):
                     f = struct.unpack("<f", self.byteArr[index:index+4])[0]
@@ -814,7 +815,7 @@ class SmfDecrypt:
             count = nextNameAndLength[1] // 28
             for i in range(count):
                 if self.printMESH and self.printXYZ:
-                    self.writeInfo("頂点の位置", end=", ")
+                    self.writeInfo(textSetting.textList["smf"]["vxLabel"], end=", ")
                 vecList = []
                 for i in range(3):
                     vec = struct.unpack("<f", self.byteArr[index:index+4])[0]
@@ -824,14 +825,14 @@ class SmfDecrypt:
                     self.writeInfo(vecList)
 
                 if self.printMESH and self.printXYZ:
-                    self.writeInfo("頂点の色", end=", ")
+                    self.writeInfo(textSetting.textList["smf"]["vxColor"], end=", ")
                 colColor = struct.unpack("<l", self.byteArr[index:index+4])[0]
                 index += 4
                 if self.printMESH and self.printXYZ:
                     self.writeInfo(colColor)
 
                 if self.printMESH and self.printXYZ:
-                    self.writeInfo("頂点の法線", end=", ")
+                    self.writeInfo(textSetting.textList["smf"]["vxNLabel"], end=", ")
                 vecList = []
                 for i in range(3):
                     vec = struct.unpack("<f", self.byteArr[index:index+4])[0]
@@ -864,7 +865,7 @@ class SmfDecrypt:
 
         if self.printMTRL:
             self.writeInfo("MESH, MTRL:{0}-{1}".format(mesh, mtrl))
-            self.writeInfo("マテリアル名", end=", ")
+            self.writeInfo(textSetting.textList["smf"]["mtrlName"], end=", ")
         mName = struct.unpack("<64s", self.byteArr[index:index+self.MAX_NAME_SIZE])[0]
         mName = mName.decode("shift-jis").rstrip("\x00")
         mtrlInfo.append(mName)
@@ -873,7 +874,7 @@ class SmfDecrypt:
             self.writeInfo(mName)
 
         if self.printMTRL:
-            self.writeInfo("ポリゴン開始位置", end=", ")
+            self.writeInfo(textSetting.textList["smf"]["polyStart"], end=", ")
         long = struct.unpack("<l", self.byteArr[index:index+4])[0]
         mtrlInfo.append(long)
         index += 4
@@ -881,7 +882,7 @@ class SmfDecrypt:
             self.writeInfo(long)
 
         if self.printMTRL:
-            self.writeInfo("ポリゴン数", end=", ")
+            self.writeInfo(textSetting.textList["smf"]["polyCount"], end=", ")
         long = struct.unpack("<l", self.byteArr[index:index+4])[0]
         mtrlInfo.append(long)
         index += 4
@@ -889,7 +890,7 @@ class SmfDecrypt:
             self.writeInfo(long)
 
         if self.printMTRL:
-            self.writeInfo("頂点開始位置", end=", ")
+            self.writeInfo(textSetting.textList["smf"]["mtrlPStart"], end=", ")
         long = struct.unpack("<l", self.byteArr[index:index+4])[0]
         mtrlInfo.append(long)
         index += 4
@@ -897,7 +898,7 @@ class SmfDecrypt:
             self.writeInfo(long)
 
         if self.printMTRL:
-            self.writeInfo("頂点数", end=", ")
+            self.writeInfo(textSetting.textList["smf"]["mtrlPCount"], end=", ")
         long = struct.unpack("<l", self.byteArr[index:index+4])[0]
         mtrlInfo.append(long)
         index += 4
@@ -916,7 +917,7 @@ class SmfDecrypt:
             index = self.index
 
             if self.printMTRL:
-                self.writeInfo("テクスチャ名チャンク(通常)", end=", ")
+                self.writeInfo(textSetting.textList["smf"]["texCommon"], end=", ")
             mName = struct.unpack("<64s", self.byteArr[index:index+self.MAX_NAME_SIZE])[0]
             mName = mName.decode("shift-jis").rstrip("\x00")
             texcInfo.append(mName)
@@ -940,7 +941,7 @@ class SmfDecrypt:
             index = self.index
 
             if self.printMTRL:
-                self.writeInfo("テクスチャ名チャンク(ライトマップ)", end=", ")
+                self.writeInfo(textSetting.textList["smf"]["texLight"], end=", ")
             mName = struct.unpack("<64s", self.byteArr[index:index+self.MAX_NAME_SIZE])[0]
             mName = mName.decode("shift-jis").rstrip("\x00")
             texlInfo.append(mName)
@@ -964,7 +965,7 @@ class SmfDecrypt:
             index = self.index
 
             if self.printMTRL:
-                self.writeInfo("テクスチャ名チャンク(DDS)", end=", ")
+                self.writeInfo(textSetting.textList["smf"]["texDds"], end=", ")
             mName = struct.unpack("<64s", self.byteArr[index:index+self.MAX_NAME_SIZE])[0]
             mName = mName.decode("shift-jis").rstrip("\x00")
             texeInfo.append(mName)
@@ -988,7 +989,7 @@ class SmfDecrypt:
             index = self.index
 
             if self.printMTRL:
-                self.writeInfo("テクスチャ名チャンク(スペキュラー用)", end=", ")
+                self.writeInfo(textSetting.textList["smf"]["texSpe"], end=", ")
             mName = struct.unpack("<64s", self.byteArr[index:index+self.MAX_NAME_SIZE])[0]
             mName = mName.decode("shift-jis").rstrip("\x00")
             texsInfo.append(texsInfo)
@@ -1012,7 +1013,7 @@ class SmfDecrypt:
             index = self.index
 
             if self.printMTRL:
-                self.writeInfo("テクスチャ名チャンク(法線マップ用)", end=", ")
+                self.writeInfo(textSetting.textList["smf"]["texN"], end=", ")
             mName = struct.unpack("<64s", self.byteArr[index:index+self.MAX_NAME_SIZE])[0]
             mName = mName.decode("shift-jis").rstrip("\x00")
             texnInfo.append(mName)
@@ -1036,7 +1037,7 @@ class SmfDecrypt:
             index = self.index
 
             if self.printMTRL:
-                self.writeInfo("マテリアルの描画属性", end=", ")
+                self.writeInfo(textSetting.textList["smf"]["mtrlDraw"], end=", ")
             long = struct.unpack("<l", self.byteArr[index:index+4])[0]
             drawInfo.append(long)
             index += 4
@@ -1059,7 +1060,7 @@ class SmfDecrypt:
             index = self.index
 
             if self.printMTRL:
-                self.writeInfo("Zテスト", end=", ")
+                self.writeInfo(textSetting.textList["smf"]["zTest"], end=", ")
             long = struct.unpack("<l", self.byteArr[index:index+4])[0]
             ztesInfo.append(long)
             index += 4
@@ -1082,7 +1083,7 @@ class SmfDecrypt:
             index = self.index
 
             if self.printMTRL:
-                self.writeInfo("Z書き込み", end=", ")
+                self.writeInfo(textSetting.textList["smf"]["zWrite"], end=", ")
             long = struct.unpack("<l", self.byteArr[index:index+4])[0]
             zwriInfo.append(long)
             index += 4
@@ -1105,7 +1106,7 @@ class SmfDecrypt:
             index = self.index
 
             if self.printMTRL:
-                self.writeInfo("アルファテスト", end=", ")
+                self.writeInfo(textSetting.textList["smf"]["alphaTest"], end=", ")
             long = struct.unpack("<l", self.byteArr[index:index+4])[0]
             atesInfo.append(long)
             index += 4
@@ -1128,7 +1129,7 @@ class SmfDecrypt:
             index = self.index
 
             if self.printMTRL:
-                self.writeInfo("アルファテスト(閾値)", end=", ")
+                self.writeInfo(textSetting.textList["smf"]["alphaBND"], end=", ")
             long = struct.unpack("<l", self.byteArr[index:index+4])[0]
             abndInfo.append(long)
             index += 4
@@ -1151,7 +1152,7 @@ class SmfDecrypt:
             index = self.index
 
             if self.printMTRL:
-                self.writeInfo("背面カリング", end=", ")
+                self.writeInfo(textSetting.textList["smf"]["cull"], end=", ")
             long = struct.unpack("<l", self.byteArr[index:index+4])[0]
             cullInfo.append(long)
             index += 4
@@ -1174,7 +1175,7 @@ class SmfDecrypt:
             index = self.index
 
             if self.printMTRL:
-                self.writeInfo("ライティング", end=", ")
+                self.writeInfo(textSetting.textList["smf"]["lgt"], end=", ")
             long = struct.unpack("<l", self.byteArr[index:index+4])[0]
             lgtInfo.append(long)
             index += 4
@@ -1198,7 +1199,7 @@ class SmfDecrypt:
 
             vecList = []
             if self.printMTRL:
-                self.writeInfo("拡散反射の色")
+                self.writeInfo(textSetting.textList["smf"]["diffLabel"])
             for i in range(4):
                 vec = struct.unpack("<f", self.byteArr[index:index+4])[0]
                 vecList.append(vec)
@@ -1226,7 +1227,7 @@ class SmfDecrypt:
 
             vecList = []
             if self.printMTRL:
-                self.writeInfo("自己発光の色")
+                self.writeInfo(textSetting.textList["smf"]["emisLabel"])
             for i in range(3):
                 vec = struct.unpack("<f", self.byteArr[index:index+4])[0]
                 vecList.append(vec)
@@ -1254,7 +1255,7 @@ class SmfDecrypt:
 
             vecList = []
             if self.printMTRL:
-                self.writeInfo("スペキュラーの色", end=", ")
+                self.writeInfo(textSetting.textList["smf"]["speColor"], end=", ")
             for i in range(3):
                 vec = struct.unpack("<f", self.byteArr[index:index+4])[0]
                 vecList.append(vec)
@@ -1265,14 +1266,14 @@ class SmfDecrypt:
                 self.writeInfo()
 
             if self.printMTRL:
-                self.writeInfo("反射率（大きいほど強い反射）", end=", ")
+                self.writeInfo(textSetting.textList["smf"]["refractive"], end=", ")
             fRefractive = struct.unpack("<f", self.byteArr[index:index+4])[0]
             index += 4
             if self.printMTRL:
                 self.writeInfo(fRefractive)
 
             if self.printMTRL:
-                self.writeInfo("荒さ（大きいほどソフトな反射）", end=", ")
+                self.writeInfo(textSetting.textList["smf"]["roughly"], end=", ")
             fRoughly = struct.unpack("<f", self.byteArr[index:index+4])[0]
             index += 4
             if self.printMTRL:
@@ -1295,7 +1296,7 @@ class SmfDecrypt:
             index = self.index
 
             if self.printMTRL:
-                self.writeInfo("視差マップ用の視差", end=", ")
+                self.writeInfo(textSetting.textList["smf"]["bump"], end=", ")
             fParallaxDepth = struct.unpack("<f", self.byteArr[index:index+4])[0]
             bumpInfo.append(fParallaxDepth)
             index += 4

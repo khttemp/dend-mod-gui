@@ -4,6 +4,7 @@ import tkinter
 from tkinter import ttk
 from tkinter import filedialog as fd
 from tkinter import messagebox as mb
+import program.textSetting as textSetting
 
 from program.tkinterScrollbarFrameClass import ScrollbarFrame
 from program.fvtMaker.importPy.tkinterWidgetClass import CsvWidget, DescWidget
@@ -28,29 +29,29 @@ def openFile():
     global content
 
     if content == -1:
-        mb.showerror(title="エラー", message="ゲームを選択してください")
+        mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E13"])
         return
 
-    file_path = fd.askopenfilename(filetypes=[("CSVファイル", "*.csv")])
+    file_path = fd.askopenfilename(filetypes=[(textSetting.textList["fvtMaker"]["fileType"], "*.csv")])
 
     if file_path:
         del fvtConvertFile
         fvtConvertFile = FvtConvert(file_path, content)
         if not fvtConvertFile.open():
-            mb.showerror(title="エラー", message=fvtConvertFile.error)
+            mb.showerror(title=textSetting.textList["error"], message=fvtConvertFile.error)
             return
 
-        warnMsg = "変換準備ができました。\n既存のファイルは上書きされます。\nそれでもよろしいですか？"
-        result = mb.askokcancel(title="警告", message=warnMsg, icon="warning", parent=root)
+        warnMsg = textSetting.textList["infoList"]["I13"]
+        result = mb.askokcancel(title=textSetting.textList["warning"], message=warnMsg, icon="warning", parent=root)
         if result:
             try:
                 fvtConvertFile.write()
-                mb.showinfo(title="成功", message="全てのリストを書込みしました")
+                mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I14"])
             except Exception:
                 w = open("error.log", "w")
                 w.write(traceback.format_exc())
                 w.close()
-                mb.showerror(title="保存エラー", message="予想外のエラーです。変換失敗しました")
+                mb.showerror(title=textSetting.textList["saveError"], message=textSetting.textList["errorList"]["E14"])
 
 
 def selectGame():
@@ -104,8 +105,8 @@ def call_fvtMaker(rootTk, programFrame):
     rsRb = tkinter.Radiobutton(programFrame, text="Rising Stage", command=selectGame, variable=v_radio, value=RS)
     rsRb.place(relx=0.8, rely=0.02)
 
-    csvLf = ttk.LabelFrame(programFrame, text="CSVの様式（CSVの1行目はヘッダー扱いになり、読み込みを省略する）")
+    csvLf = ttk.LabelFrame(programFrame, text=textSetting.textList["fvtMaker"]["csvLfLabel"])
     csvLf.place(relx=0.03, rely=0.07, relwidth=0.95, relheight=0.3)
 
-    descLf = ttk.LabelFrame(programFrame, text="作成方法")
+    descLf = ttk.LabelFrame(programFrame, text=textSetting.textList["fvtMaker"]["howWrite"])
     descLf.place(relx=0.03, rely=0.38, relwidth=0.95, relheight=0.59)

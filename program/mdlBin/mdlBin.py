@@ -1,11 +1,13 @@
 import os
 import copy
+import codecs
 import traceback
 
 import tkinter
 from tkinter import ttk
 from tkinter import filedialog as fd
 from tkinter import messagebox as mb
+import program.textSetting as textSetting
 
 from program.cmdList import cmdList
 
@@ -23,7 +25,7 @@ copyLineBtn = None
 pasteLineBtn = None
 headerFileEditBtn = None
 listNumModifyBtn = None
-listHeadeModifyBtn = None
+listHeaderModifyBtn = None
 numModifyBtn = None
 csvExtractBtn = None
 csvLoadAndSaveBtn = None
@@ -36,9 +38,9 @@ copyScriptData = None
 def openFile():
     global v_fileName
     global decryptFile
-    file_path = fd.askopenfilename(filetypes=[("MODEL_SCRIPT", "*.BIN")])
+    file_path = fd.askopenfilename(filetypes=[(textSetting.textList["mdlBin"]["fileType"], "*.BIN")])
 
-    errorMsg = "予想外のエラーが出ました。\n電車でDのモデルバイナリではない、またはファイルが壊れた可能性があります。"
+    errorMsg = textSetting.textList["errorList"]["E6"]
     if file_path:
         try:
             filename = os.path.basename(file_path)
@@ -49,16 +51,16 @@ def openFile():
             decryptFile = MdlBinDecrypt(file_path, cmdList)
             if not decryptFile.open():
                 decryptFile.printError()
-                mb.showerror(title="エラー", message=errorMsg)
+                mb.showerror(title=textSetting.textList["error"], message=errorMsg)
                 return
 
             deleteWidget()
             createWidget()
         except Exception:
-            w = open("error.log", "a")
+            w = codecs.open("error.log", "a", "utf-8", "strict")
             w.write(traceback.format_exc())
             w.close()
-            mb.showerror(title="エラー", message=errorMsg)
+            mb.showerror(title=textSetting.textList["error"], message=errorMsg)
 
 
 def deleteWidget():
@@ -74,10 +76,10 @@ def deleteWidget():
         child.destroy()
 
     v_select.set("")
-    editLineBtn['state'] = 'disabled'
-    insertLineBtn['state'] = 'disabled'
-    deleteLineBtn['state'] = 'disabled'
-    headerFileEditBtn['state'] = 'disabled'
+    editLineBtn["state"] = "disabled"
+    insertLineBtn["state"] = "disabled"
+    deleteLineBtn["state"] = "disabled"
+    headerFileEditBtn["state"] = "disabled"
 
 
 def createWidget():
@@ -88,7 +90,7 @@ def createWidget():
     global copyLineBtn
     global headerFileEditBtn
     global listNumModifyBtn
-    global listHeadeModifyBtn
+    global listHeaderModifyBtn
     global numModifyBtn
     global csvExtractBtn
     global csvLoadAndSaveBtn
@@ -102,43 +104,53 @@ def createWidget():
         deleteLineBtn,
         copyLineBtn,
         listNumModifyBtn,
-        listHeadeModifyBtn,
+        listHeaderModifyBtn,
         numModifyBtn
     ]
-    headerFileEditBtn['state'] = 'normal'
-    csvExtractBtn['state'] = 'normal'
-    csvLoadAndSaveBtn['state'] = 'normal'
+    headerFileEditBtn["state"] = "normal"
+    csvExtractBtn["state"] = "normal"
+    csvLoadAndSaveBtn["state"] = "normal"
     frame = ScrollbarTreeviewMdlBin(scriptLf, v_select, btnList)
 
-    col_tuple = ('番号', 'delay', 'コマンド名', 'ファイルフラグ', 'セクション')
+    col_tuple = (
+        "treeNum",
+        "treeDelay",
+        "treeName",
+        "treeFileFlag",
+        "treeSection"
+    )
     paramList = []
     for i in range(decryptFile.max_param):
-        paramList.append("param{0}".format(i + 1))
+        paramList.append(textSetting.textList["mdlBin"]["paramNumLabel"].format(i + 1))
     col_tuple = col_tuple + tuple(paramList)
 
-    frame.tree['columns'] = col_tuple
+    frame.tree["columns"] = col_tuple
 
-    frame.tree.column('#0', width=0, stretch=False)
-    frame.tree.column('番号', anchor=tkinter.CENTER, width=50, minwidth=50)
-    frame.tree.column('delay', anchor=tkinter.CENTER, width=50, minwidth=50)
-    frame.tree.column('コマンド名', anchor=tkinter.CENTER, width=150, minwidth=150)
-    frame.tree.column('ファイルフラグ', stretch=False)
-    frame.tree.column('セクション', stretch=False)
+    frame.tree.column("#0", width=0, stretch=False)
+    frame.tree.column("treeNum", anchor=tkinter.CENTER, width=50, minwidth=50)
+    frame.tree.column("treeDelay", anchor=tkinter.CENTER, width=50, minwidth=50)
+    frame.tree.column("treeName", anchor=tkinter.CENTER, width=150, minwidth=150)
+    frame.tree.column("treeFileFlag", stretch=False)
+    frame.tree.column("treeSection", stretch=False)
     for i in range(decryptFile.max_param):
-        col_name = "param{0}".format(i + 1)
+        col_name = textSetting.textList["mdlBin"]["paramNumLabel"].format(i + 1)
         frame.tree.column(col_name, anchor=tkinter.CENTER, width=100, minwidth=100)
 
     displayList = []
 
-    frame.tree.heading('番号', text='番号', anchor=tkinter.CENTER)
-    frame.tree.heading('delay', text='delay', anchor=tkinter.CENTER)
-    frame.tree.heading('コマンド名', text='コマンド名', anchor=tkinter.CENTER)
+    frame.tree.heading("treeNum", text=textSetting.textList["mdlBin"]["treeNum"], anchor=tkinter.CENTER)
+    frame.tree.heading("treeDelay", text=textSetting.textList["mdlBin"]["treeDelay"], anchor=tkinter.CENTER)
+    frame.tree.heading("treeName", text=textSetting.textList["mdlBin"]["treeName"], anchor=tkinter.CENTER)
     for i in range(decryptFile.max_param):
-        col_name = "param{0}".format(i + 1)
+        col_name = textSetting.textList["mdlBin"]["paramNumLabel"].format(i + 1)
         displayList.append(col_name)
         frame.tree.heading(col_name, text=col_name, anchor=tkinter.CENTER)
 
-    frame.tree["displaycolumns"] = ["番号", "delay", "コマンド名"]
+    frame.tree["displaycolumns"] = [
+        "treeNum",
+        "treeDelay",
+        "treeName"
+    ]
     frame.tree["displaycolumns"] += tuple(displayList)
 
     index = 0
@@ -149,7 +161,7 @@ def createWidget():
         for scriptDataInfo in scriptDataInfoList:
             headerInfo = (index, "-", "---#{0}, {1}#---".format(num, listNum), "-", "{0},{1},{2}".format(num, listNum, sectionNum))
             headerInfo += (",".join(str(n) for n in scriptDataInfo[0]), )
-            frame.tree.insert(parent='', index='end', iid=index, values=headerInfo)
+            frame.tree.insert(parent="", index="end", iid=index, values=headerInfo)
             index += 1
             sectionNum = 1
             for scriptData in scriptDataInfo[1:]:
@@ -159,7 +171,7 @@ def createWidget():
                 for i in range(paramCnt):
                     paramList.append(scriptData[4 + i])
                 data = data + tuple(paramList)
-                frame.tree.insert(parent='', index='end', iid=index, values=data)
+                frame.tree.insert(parent="", index="end", iid=index, values=data)
                 index += 1
                 sectionNum += 1
             listNum += 1
@@ -174,7 +186,7 @@ def editLine():
     global frame
     selectId = frame.tree.selection()[0]
     selectItem = frame.tree.set(selectId)
-    result = InputDialog(root, "コマンド修正", decryptFile, cmdList, int(selectItem["番号"]), selectItem["セクション"], selectItem)
+    result = InputDialog(root, textSetting.textList["mdlBin"]["cmdModify"], decryptFile, cmdList, int(selectItem["treeNum"]), selectItem["treeSection"], selectItem)
     if result.reloadFlag:
         reloadFile()
 
@@ -185,7 +197,7 @@ def insertLine():
     global frame
     selectId = frame.tree.selection()[0]
     selectItem = frame.tree.set(selectId)
-    result = InputDialog(root, "コマンド挿入", decryptFile, cmdList, int(selectItem["番号"]), selectItem["セクション"])
+    result = InputDialog(root, textSetting.textList["mdlBin"]["cmdInsert"], decryptFile, cmdList, int(selectItem["treeNum"]), selectItem["treeSection"])
     if result.reloadFlag:
         reloadFile()
 
@@ -195,18 +207,18 @@ def deleteLine():
     global frame
     selectId = int(frame.tree.selection()[0])
     selectItem = frame.tree.set(selectId)
-    warnMsg = "選択した行を削除します。\nそれでもよろしいですか？"
-    result = mb.askokcancel(title="警告", message=warnMsg, icon="warning")
+    warnMsg = textSetting.textList["infoList"]["I9"]
+    result = mb.askokcancel(title=textSetting.textList["warning"], message=warnMsg, icon="warning")
     if result:
-        sectionList = selectItem["セクション"].split(",")
+        sectionList = selectItem["treeSection"].split(",")
         num = int(sectionList[0])
         listNum = int(sectionList[1])
         cmdDiff = int(sectionList[2])
         if not decryptFile.saveFile(num, listNum, cmdDiff, "delete"):
             decryptFile.printError()
-            errorMsg = "保存に失敗しました。\nファイルが他のプログラムによって開かれている\nまたは権限問題の可能性があります"
-            mb.showerror(title="保存エラー", message=errorMsg)
-        mb.showinfo(title="成功", message="スクリプトを改造しました")
+            errorMsg = textSetting.textList["errorList"]["E4"]
+            mb.showerror(title=textSetting.textList["saveError"], message=errorMsg)
+        mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I3"])
         reloadFile()
 
 
@@ -218,21 +230,21 @@ def copyLine():
     scriptData = []
     selectId = frame.tree.selection()[0]
     selectItem = frame.tree.set(selectId)
-    scriptData.append(int(selectItem["delay"]))
-    scriptData.append(cmdList.index(selectItem["コマンド名"]))
+    scriptData.append(int(selectItem["treeDelay"]))
+    scriptData.append(cmdList.index(selectItem["treeName"]))
     paramCnt = len(selectItem) - 5
     scriptData.append(paramCnt)
-    scriptData.append(int(selectItem["ファイルフラグ"]))
+    scriptData.append(int(selectItem["treeFileFlag"]))
     for i in range(paramCnt):
         try:
-            temp = float(selectItem["param{0}".format(i + 1)])
+            temp = float(selectItem[textSetting.textList["mdlBin"]["paramNumLabel"].format(i + 1)])
         except Exception:
-            temp = selectItem["param{0}".format(i + 1)]
+            temp = selectItem[textSetting.textList["mdlBin"]["paramNumLabel"].format(i + 1)]
         scriptData.append(temp)
     copyScriptData = copy.deepcopy(scriptData)
 
-    mb.showinfo(title="成功", message="コピーしました")
-    pasteLineBtn['state'] = 'normal'
+    mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I12"])
+    pasteLineBtn["state"] = "normal"
 
 
 def pasteLine():
@@ -242,8 +254,8 @@ def pasteLine():
     global copyScriptData
     selectId = frame.tree.selection()[0]
     selectItem = frame.tree.set(selectId)
-    num = int(selectItem["番号"])
-    result = PasteDialog(root, "コマンド貼り付け", decryptFile, cmdList, num, selectItem["セクション"], copyScriptData)
+    num = int(selectItem["treeNum"])
+    result = PasteDialog(root, textSetting.textList["mdlBin"]["cmdPaste"], decryptFile, cmdList, num, selectItem["treeSection"], copyScriptData)
     if result.reloadFlag:
         reloadFile()
 
@@ -252,7 +264,7 @@ def headerFileEdit():
     global root
     global decryptFile
     global frame
-    result = HeaderDialog(root, "ヘッダー情報", decryptFile)
+    result = HeaderDialog(root, textSetting.textList["mdlBin"]["headerInfo"], decryptFile)
     if result.reloadFlag:
         reloadFile()
 
@@ -262,12 +274,12 @@ def reloadFile():
     global decryptFile
     global frame
 
-    errorMsg = "予想外のエラーが出ました。\n電車でDのコミックスクリプトではない、またはファイルが壊れた可能性があります。"
+    errorMsg = textSetting.textList["errorList"]["E6"]
     if decryptFile.filePath:
         try:
             if not decryptFile.open():
                 decryptFile.printError()
-                mb.showerror(title="エラー", message=errorMsg)
+                mb.showerror(title=textSetting.textList["error"], message=errorMsg)
                 return
 
             selectId = -1
@@ -286,10 +298,10 @@ def reloadFile():
             if selectId >= 0:
                 frame.tree.selection_set(selectId)
         except Exception:
-            w = open("error.log", "a")
+            w = codecs.open("error.log", "a", "utf-8", "strict")
             w.write(traceback.format_exc())
             w.close()
-            mb.showerror(title="エラー", message=errorMsg)
+            mb.showerror(title=textSetting.textList["error"], message=errorMsg)
 
 
 def listNumModify():
@@ -298,27 +310,27 @@ def listNumModify():
     global frame
     selectId = frame.tree.selection()[0]
     selectItem = frame.tree.set(selectId)
-    arr = selectItem["コマンド名"].split(", ")
+    arr = selectItem["treeName"].split(", ")
     num = arr[0].strip("-").strip("#")
 
     scriptDataInfoList = decryptFile.scriptDataAllInfoList[int(num)]
-    result = ListNumModifyDialog(root, "セクションの数変更", decryptFile, num, len(scriptDataInfoList))
+    result = ListNumModifyDialog(root, textSetting.textList["mdlBin"]["listNumModifyLabel"], decryptFile, num, len(scriptDataInfoList))
     if result.reloadFlag:
         reloadFile()
 
 
-def listHeadeModify():
+def listHeaderModify():
     global root
     global decryptFile
     global frame
     selectId = frame.tree.selection()[0]
     selectItem = frame.tree.set(selectId)
-    arr = selectItem["コマンド名"].split(", ")
+    arr = selectItem["treeName"].split(", ")
     num = arr[0].strip("-").strip("#")
     listNum = arr[1].strip("-").strip("#")
     headerInfo = [int(n) for n in selectItem["param1"].split(",")]
 
-    result = ListHeaderModifyDialog(root, "セクションの内容変更", decryptFile, int(num), int(listNum), headerInfo)
+    result = ListHeaderModifyDialog(root, textSetting.textList["mdlBin"]["listHeaderModifyLabel"], decryptFile, int(num), int(listNum), headerInfo)
     if result.reloadFlag:
         reloadFile()
 
@@ -329,7 +341,7 @@ def numModify():
     global frame
 
     scriptDataAllInfoList = decryptFile.scriptDataAllInfoList
-    result = NumModifyDialog(root, "リストの数変更", decryptFile, len(scriptDataAllInfoList))
+    result = NumModifyDialog(root, textSetting.textList["mdlBin"]["numModifyLabel"], decryptFile, len(scriptDataAllInfoList))
     if result.reloadFlag:
         reloadFile()
 
@@ -340,8 +352,8 @@ def csvExtract():
 
     file = v_fileName.get()
     filename = os.path.splitext(os.path.basename(file))[0]
-    file_path = fd.asksaveasfilename(initialfile=filename, defaultextension='csv', filetypes=[('mdlbin_csv', '*.csv')])
-    errorMsg = "CSVで取り出す機能が失敗しました。\n権限問題の可能性があります。"
+    file_path = fd.asksaveasfilename(initialfile=filename, defaultextension="csv", filetypes=[("mdlbin_csv", "*.csv")])
+    errorMsg = textSetting.textList["errorList"]["E7"]
     if file_path:
         try:
             w = open(file_path, "w")
@@ -365,17 +377,17 @@ def csvExtract():
                     listNum += 1
                 num += 1
             w.close()
-            mb.showinfo(title="成功", message="CSVで取り出しました")
+            mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I10"])
         except Exception:
-            w = open("error.log", "a")
+            w = codecs.open("error.log", "a", "utf-8", "strict")
             w.write(traceback.format_exc())
             w.close()
-            mb.showerror(title="エラー", message=errorMsg)
+            mb.showerror(title=textSetting.textList["error"], message=errorMsg)
 
 
 def csvLoadAndSave():
     global decryptFile
-    file_path = fd.askopenfilename(defaultextension='csv', filetypes=[("mdlbin_csv", "*.csv")])
+    file_path = fd.askopenfilename(defaultextension="csv", filetypes=[("mdlbin_csv", "*.csv")])
     if not file_path:
         return
     f = open(file_path)
@@ -415,25 +427,25 @@ def csvLoadAndSave():
             else:
                 cmdName = arr[1]
                 if cmdName not in cmdList:
-                    errorMsg = "{0}行のコマンドは存在しません [{1}]".format(i + 1, cmdName)
-                    mb.showerror(title="読み込みエラー", message=errorMsg)
+                    errorMsg = textSetting.textList["errorList"]["E8"].format(i + 1, cmdName)
+                    mb.showerror(title=textSetting.textList["error"], message=errorMsg)
                     return
                 csvScriptData.append(arr)
         except Exception:
-            errorMsg = "{0}行のデータを読み込み失敗しました。".format(i + 1)
-            mb.showerror(title="読み込みエラー", message=errorMsg)
+            errorMsg = textSetting.textList["errorList"]["E15"].format(i + 1)
+            mb.showerror(title=textSetting.textList["error"], message=errorMsg)
             return
 
-    msg = "{0}行のデータを読み込みしました。\n上書きしますか？".format(i + 1)
-    result = mb.askokcancel(title="警告", message=msg, icon="warning")
+    msg = textSetting.textList["infoList"]["I15"].format(i + 1)
+    result = mb.askokcancel(title=textSetting.textList["warning"], message=msg, icon="warning")
 
     if result:
         if not decryptFile.saveCsv(csvScriptDataAllInfoList):
             decryptFile.printError()
-            errorMsg = "保存に失敗しました。\nファイルが他のプログラムによって開かれている\nまたは権限問題の可能性があります"
-            mb.showerror(title="保存エラー", message=errorMsg)
+            errorMsg = textSetting.textList["errorList"]["E4"]
+            mb.showerror(title=textSetting.textList["saveError"], message=errorMsg)
             return
-        mb.showinfo(title="成功", message="CSVで上書きしました")
+        mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I16"])
         reloadFile()
 
 
@@ -448,7 +460,7 @@ def call_mdlBin(rootTk, programFrame):
     global pasteLineBtn
     global headerFileEditBtn
     global listNumModifyBtn
-    global listHeadeModifyBtn
+    global listHeaderModifyBtn
     global numModifyBtn
     global csvExtractBtn
     global csvLoadAndSaveBtn
@@ -456,48 +468,48 @@ def call_mdlBin(rootTk, programFrame):
 
     root = rootTk
     v_fileName = tkinter.StringVar()
-    fileNameEt = ttk.Entry(programFrame, textvariable=v_fileName, font=("", 14), width=23, state="readonly", justify="center")
+    fileNameEt = ttk.Entry(programFrame, textvariable=v_fileName, font=textSetting.textList["font2"], width=23, state="readonly", justify="center")
     fileNameEt.place(relx=0.053, rely=0.03)
 
-    selectLb = ttk.Label(programFrame, text="選択した行番号：", font=("", 14))
+    selectLb = ttk.Label(programFrame, text=textSetting.textList["mdlBin"]["selectNum"], font=textSetting.textList["font2"])
     selectLb.place(relx=0.05, rely=0.09)
 
     v_select = tkinter.StringVar()
-    selectEt = ttk.Entry(programFrame, textvariable=v_select, font=("", 14), width=6, state="readonly", justify="center")
+    selectEt = ttk.Entry(programFrame, textvariable=v_select, font=textSetting.textList["font2"], width=6, state="readonly", justify="center")
     selectEt.place(relx=0.22, rely=0.09)
 
-    editLineBtn = ttk.Button(programFrame, text="選択した行を修正する", width=25, state="disabled", command=editLine)
+    editLineBtn = ttk.Button(programFrame, text=textSetting.textList["mdlBin"]["editLineLabel"], width=25, state="disabled", command=editLine)
     editLineBtn.place(relx=0.43, rely=0.03)
 
-    insertLineBtn = ttk.Button(programFrame, text="選択した行に挿入する", width=25, state="disabled", command=insertLine)
+    insertLineBtn = ttk.Button(programFrame, text=textSetting.textList["mdlBin"]["insertLineLabel"], width=25, state="disabled", command=insertLine)
     insertLineBtn.place(relx=0.62, rely=0.03)
 
-    deleteLineBtn = ttk.Button(programFrame, text="選択した行を削除する", width=25, state="disabled", command=deleteLine)
+    deleteLineBtn = ttk.Button(programFrame, text=textSetting.textList["mdlBin"]["deleteLineLabel"], width=25, state="disabled", command=deleteLine)
     deleteLineBtn.place(relx=0.81, rely=0.03)
 
-    copyLineBtn = ttk.Button(programFrame, text="選択した行をコピーする", width=25, state="disabled", command=copyLine)
+    copyLineBtn = ttk.Button(programFrame, text=textSetting.textList["mdlBin"]["copyLineLabel"], width=25, state="disabled", command=copyLine)
     copyLineBtn.place(relx=0.43, rely=0.09)
 
-    pasteLineBtn = ttk.Button(programFrame, text="選択した行に貼り付けする", width=25, state="disabled", command=pasteLine)
+    pasteLineBtn = ttk.Button(programFrame, text=textSetting.textList["mdlBin"]["pasteLineLabel"], width=25, state="disabled", command=pasteLine)
     pasteLineBtn.place(relx=0.62, rely=0.09)
 
-    headerFileEditBtn = ttk.Button(programFrame, text="ヘッダー情報を修正する", width=25, state="disabled", command=headerFileEdit)
+    headerFileEditBtn = ttk.Button(programFrame, text=textSetting.textList["mdlBin"]["headerEditLabel"], width=25, state="disabled", command=headerFileEdit)
     headerFileEditBtn.place(relx=0.81, rely=0.09)
 
-    listNumModifyBtn = ttk.Button(programFrame, text="セクションの数を修正する", width=25, state="disabled", command=listNumModify)
+    listNumModifyBtn = ttk.Button(programFrame, text=textSetting.textList["mdlBin"]["listNumModifyBtnLabel"], width=25, state="disabled", command=listNumModify)
     listNumModifyBtn.place(relx=0.43, rely=0.15)
 
-    listHeadeModifyBtn = ttk.Button(programFrame, text="セクションの内容を修正する", width=25, state="disabled", command=listHeadeModify)
-    listHeadeModifyBtn.place(relx=0.62, rely=0.15)
+    listHeaderModifyBtn = ttk.Button(programFrame, text=textSetting.textList["mdlBin"]["listHeaderModifyBtnLabel"], width=25, state="disabled", command=listHeaderModify)
+    listHeaderModifyBtn.place(relx=0.62, rely=0.15)
 
-    numModifyBtn = ttk.Button(programFrame, text="リストの数を修正する", width=25, state="disabled", command=numModify)
+    numModifyBtn = ttk.Button(programFrame, text=textSetting.textList["mdlBin"]["numModifyBtnLabel"], width=25, state="disabled", command=numModify)
     numModifyBtn.place(relx=0.81, rely=0.15)
 
-    csvExtractBtn = ttk.Button(programFrame, text="CSVで取り出す", width=25, state="disabled", command=csvExtract)
+    csvExtractBtn = ttk.Button(programFrame, text=textSetting.textList["mdlBin"]["csvExtractLabel"], width=25, state="disabled", command=csvExtract)
     csvExtractBtn.place(relx=0.05, rely=0.15)
 
-    csvLoadAndSaveBtn = ttk.Button(programFrame, text="CSVで上書きする", width=25, state="disabled", command=csvLoadAndSave)
+    csvLoadAndSaveBtn = ttk.Button(programFrame, text=textSetting.textList["mdlBin"]["csvSaveLabel"], width=25, state="disabled", command=csvLoadAndSave)
     csvLoadAndSaveBtn.place(relx=0.22, rely=0.15)
 
-    scriptLf = ttk.LabelFrame(programFrame, text="スクリプト内容")
+    scriptLf = ttk.LabelFrame(programFrame, text=textSetting.textList["mdlBin"]["scriptLabel"])
     scriptLf.place(relx=0.03, rely=0.20, relwidth=0.95, relheight=0.77)

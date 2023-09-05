@@ -1,5 +1,6 @@
 import tkinter
 from tkinter import ttk
+import program.textSetting as textSetting
 
 from program.tkinterScrollbarFrameClass import ScrollbarFrame
 
@@ -46,16 +47,16 @@ def tab1AllWidget(tabFrame, decryptFile, reloadFunc):
     railPos1Frame = ttk.Frame(railPosFrame)
     railPos1Frame.grid(sticky=tkinter.NW, row=0, column=0, pady=3)
 
-    RailPosWidget(railPos1Frame, "初期配置", 0, decryptFile, decryptFile.trainList, reloadFunc)
+    RailPosWidget(railPos1Frame, textSetting.textList["railEditor"]["initPos"], 0, decryptFile, decryptFile.trainList, reloadFunc)
 
     if decryptFile.game in ["BS", "CS", "RS"]:
         railPos2Frame = ttk.Frame(railPosFrame)
         railPos2Frame.grid(sticky=tkinter.NW, row=1, column=0, pady=3)
-        RailPosWidget(railPos2Frame, "ダミー配置？", 1, decryptFile, decryptFile.trainList2, reloadFunc)
+        RailPosWidget(railPos2Frame, textSetting.textList["railEditor"]["dummyPos"], 1, decryptFile, decryptFile.trainList2, reloadFunc)
 
         railPos3Frame = ttk.Frame(railPosFrame)
         railPos3Frame.grid(sticky=tkinter.NW, row=2, column=0, pady=3)
-        RailPosWidget(railPos3Frame, "試運転、二人バトル配置", 2, decryptFile, decryptFile.trainList3, reloadFunc)
+        RailPosWidget(railPos3Frame, textSetting.textList["railEditor"]["pracOrVsPos"], 2, decryptFile, decryptFile.trainList3, reloadFunc)
 
 
 def tab2AllWidget(tabFrame, decryptFile, reloadFunc):
@@ -68,16 +69,16 @@ def tab2AllWidget(tabFrame, decryptFile, reloadFunc):
     if decryptFile.game in ["BS", "CS", "RS"]:
         simpleListFrame = ttk.Frame(frame.frame)
         simpleListFrame.pack(anchor=tkinter.NW)
-        SimpleListWidget(simpleListFrame, "light情報", decryptFile, decryptFile.lightList, decryptFile.lightIdx, 1, reloadFunc)
+        SimpleListWidget(simpleListFrame, textSetting.textList["railEditor"]["lightInfo"], decryptFile, decryptFile.lightList, decryptFile.lightIdx, 1, reloadFunc)
         if decryptFile.game in ["CS", "RS"]:
-            SimpleListWidget(simpleListFrame, "駅名標画像情報", decryptFile, decryptFile.pngList, decryptFile.pngIdx, 2, reloadFunc)
+            SimpleListWidget(simpleListFrame, textSetting.textList["railEditor"]["stationInfo"], decryptFile, decryptFile.pngList, decryptFile.pngIdx, 2, reloadFunc)
             StationWidget(frame.frame, decryptFile, decryptFile.stationList, reloadFunc)
 
     simpleListFrame2 = ttk.Frame(frame.frame)
     simpleListFrame2.pack(anchor=tkinter.NW)
 
     if decryptFile.game in ["BS", "CS", "RS"]:
-        SimpleListWidget(simpleListFrame2, "ベースbin情報", decryptFile, decryptFile.baseBinList, decryptFile.binIdx, 1, reloadFunc)
+        SimpleListWidget(simpleListFrame2, textSetting.textList["railEditor"]["baseBinInfo"], decryptFile, decryptFile.baseBinList, decryptFile.binIdx, 1, reloadFunc)
     BinAnimeListWidget(simpleListFrame2, decryptFile, decryptFile.binAnimeList, reloadFunc)
 
 

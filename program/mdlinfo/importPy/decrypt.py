@@ -1,5 +1,7 @@
 import struct
+import codecs
 import traceback
+import program.textSetting as textSetting
 
 
 class MdlDecrypt:
@@ -23,7 +25,7 @@ class MdlDecrypt:
             return False
 
     def printError(self):
-        w = open("error.log", "w")
+        w = codecs.open("error.log", "w", "utf-8", "strict")
         w.write(self.error)
         w.close()
 
@@ -34,7 +36,7 @@ class MdlDecrypt:
         index = 16
         header = line[0:index].decode("shift-jis")
         if header != "MDL_INFO_VER_100":
-            self.error = "ヘッダー一致しない"
+            self.error = textSetting.textList["errorList"]["E16"]
             raise False
 
         allcnt = struct.unpack("<h", line[index:index + 2])[0]

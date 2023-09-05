@@ -4,6 +4,7 @@ import tkinter
 from tkinter import ttk
 from tkinter import simpledialog as sd
 from tkinter import messagebox as mb
+import program.textSetting as textSetting
 
 import program.orgInfoEditor.importPy.gameDefine as gameDefine
 gameDefine.load()
@@ -37,26 +38,26 @@ class TrainModelWidget():
         self.mdlFrame = ttk.Frame(self.frame)
         self.mdlFrame.pack(side=tkinter.LEFT, padx=20)
 
-        self.trainLb = tkinter.Label(self.mdlFrame, text="車両", font=("", 20), width=6, borderwidth=1, relief="solid")
+        self.trainLb = tkinter.Label(self.mdlFrame, text=textSetting.textList["orgInfoEditor"]["modelTrainLabel"], font=textSetting.textList["font6"], width=6, borderwidth=1, relief="solid")
         self.trainLb.grid(row=0, column=0)
-        self.modelLb = tkinter.Label(self.mdlFrame, text="モデル", font=("", 20), width=6, borderwidth=1, relief="solid")
+        self.modelLb = tkinter.Label(self.mdlFrame, text=textSetting.textList["orgInfoEditor"]["modelModelLabel"], font=textSetting.textList["font6"], width=6, borderwidth=1, relief="solid")
         self.modelLb.grid(row=1, column=0)
         if len(modelInfo["pantaNames"]) > 0:
-            self.pantaLb = tkinter.Label(self.mdlFrame, text="パンタ", font=("", 20), width=6, borderwidth=1, relief="solid")
+            self.pantaLb = tkinter.Label(self.mdlFrame, text=textSetting.textList["orgInfoEditor"]["modelPantaLabel"], font=textSetting.textList["font6"], width=6, borderwidth=1, relief="solid")
             self.pantaLb.grid(row=2, column=0)
         if len(modelInfo["colList"]) > 0:
-            self.colLb = tkinter.Label(self.mdlFrame, text="COL", font=("", 20), width=6, borderwidth=1, relief="solid")
+            self.colLb = tkinter.Label(self.mdlFrame, text=textSetting.textList["orgInfoEditor"]["modelColLabel"], font=textSetting.textList["font6"], width=6, borderwidth=1, relief="solid")
             self.colLb.grid(row=3, column=0)
 
         self.mdlNoLbList = []
         self.comboList = []
 
         for i in range(modelInfo["mdlCnt"]):
-            self.mdlNoLb = tkinter.Label(self.mdlFrame, text=str(i + 1), font=("", 20), width=16, borderwidth=1, relief="solid")
-            self.mdlNoLb.grid(row=0, column=i + 1)
+            self.mdlNoLb = tkinter.Label(self.mdlFrame, text=str(i + 1), font=textSetting.textList["font6"], width=16, borderwidth=1, relief="solid")
+            self.mdlNoLb.grid(row=0, column=i + 1, sticky=tkinter.W + tkinter.E)
             self.mdlNoLbList.append(self.mdlNoLb)
 
-            self.mdlCb = ttk.Combobox(self.mdlFrame, font=("", 14), width=20, value=modelInfo["mdlNames"], state="disabled")
+            self.mdlCb = ttk.Combobox(self.mdlFrame, font=textSetting.textList["font6"], width=20, value=modelInfo["mdlNames"], state="disabled")
             self.mdlCb.grid(row=1, column=i + 1)
             if modelInfo["mdlList"][i] == -1:
                 self.mdlCb.current(len(modelInfo["mdlNames"]) - 1)
@@ -65,7 +66,7 @@ class TrainModelWidget():
             self.comboList.append(self.mdlCb)
 
             if len(modelInfo["pantaNames"]) > 0:
-                self.pantaCb = ttk.Combobox(self.mdlFrame, font=("", 14), width=20, value=modelInfo["pantaNames"], state="disabled")
+                self.pantaCb = ttk.Combobox(self.mdlFrame, font=textSetting.textList["font6"], width=20, value=modelInfo["pantaNames"], state="disabled")
                 self.pantaCb.grid(row=2, column=i + 1)
                 if modelInfo["pantaList"][i] == -1:
                     self.pantaCb.current(len(modelInfo["pantaNames"]) - 1)
@@ -74,7 +75,7 @@ class TrainModelWidget():
                 self.comboList.append(self.pantaCb)
 
             if len(modelInfo["colList"]) > 0:
-                self.colCb = ttk.Combobox(self.mdlFrame, font=("", 14), width=20, value=modelInfo["colNames"], state="disabled")
+                self.colCb = ttk.Combobox(self.mdlFrame, font=textSetting.textList["font6"], width=20, value=modelInfo["colNames"], state="disabled")
                 self.colCb.grid(row=3, column=i + 1)
                 if modelInfo["colList"][i] == -1:
                     self.colCb.current(len(modelInfo["colNames"]) - 1)
@@ -88,7 +89,7 @@ class TrainModelWidget():
         menuCb = widgetList[2]
         edit_stage_train_button = widgetList[3]
 
-        v_edit.set("保存する")
+        v_edit.set(textSetting.textList["orgInfoEditor"]["trainSave"])
         cb["state"] = "disabled"
         menuCb["state"] = "disabled"
         edit_stage_train_button["state"] = "disabled"
@@ -130,15 +131,15 @@ class TrainModelWidget():
 
         if not self.decryptFile.saveHensei(self.trainIdx, self):
             self.decryptFile.printError()
-            errorMsg = "保存に失敗しました。\nファイルが他のプログラムによって開かれている\nまたは権限問題の可能性があります"
-            mb.showerror(title="保存エラー", message=errorMsg)
+            errorMsg = textSetting.textList["errorList"]["E4"]
+            mb.showerror(title=textSetting.textList["saveError"], message=errorMsg)
             return
 
-        mb.showinfo(title="成功", message="編成数を修正しました")
+        mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I55"])
         self.reloadFunc()
 
     def editModel(self):
-        result = EditModelInfo(self.root, "モデル情報修正", self.game, self.trainIdx, self.decryptFile, self)
+        result = EditModelInfo(self.root, textSetting.textList["orgInfoEditor"]["editModelLabel"], self.game, self.trainIdx, self.decryptFile, self)
         if result.reloadFlag:
             self.reloadFunc()
 
@@ -169,56 +170,56 @@ class EditModelInfo(sd.Dialog):
         self.selectValue = ""
         self.modelInfo = None
 
-        self.modifyBtn = tkinter.Button(self.btnFrame, font=("", 14), text="修正", state="disabled", command=self.modify)
+        self.modifyBtn = tkinter.Button(self.btnFrame, font=textSetting.textList["font2"], text=textSetting.textList["modify"], state="disabled", command=self.modify)
         self.modifyBtn.grid(padx=10, row=0, column=0, sticky=tkinter.W + tkinter.E)
-        self.insertBtn = tkinter.Button(self.btnFrame, font=("", 14), text="挿入", state="disabled", command=self.insert)
+        self.insertBtn = tkinter.Button(self.btnFrame, font=textSetting.textList["font2"], text=textSetting.textList["insert"], state="disabled", command=self.insert)
         self.insertBtn.grid(padx=10, row=0, column=1, sticky=tkinter.W + tkinter.E)
-        self.deleteBtn = tkinter.Button(self.btnFrame, font=("", 14), text="削除", state="disabled", command=self.delete)
+        self.deleteBtn = tkinter.Button(self.btnFrame, font=textSetting.textList["font2"], text=textSetting.textList["delete"], state="disabled", command=self.delete)
         self.deleteBtn.grid(padx=10, row=0, column=2, sticky=tkinter.W + tkinter.E)
 
-        self.trackModelLb = tkinter.Label(self.listFrame, font=("", 14), text="台車モデル")
+        self.trackModelLb = tkinter.Label(self.listFrame, font=textSetting.textList["font2"], text=textSetting.textList["orgInfoEditor"]["csvDaishaTitle"])
         self.trackModelLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
         self.v_trackModel = tkinter.StringVar(value=modelInfo["trackNames"])
-        self.trackModelList = tkinter.Listbox(self.listFrame, font=("", 14), listvariable=self.v_trackModel)
+        self.trackModelList = tkinter.Listbox(self.listFrame, font=textSetting.textList["font2"], listvariable=self.v_trackModel)
         self.trackModelList.grid(row=1, column=0, sticky=tkinter.W + tkinter.E)
-        self.trackModelList.bind('<<ListboxSelect>>', lambda e: self.buttonActive(e, 0, self.trackModelList.curselection()))
+        self.trackModelList.bind("<<ListboxSelect>>", lambda e: self.buttonActive(e, 0, self.trackModelList.curselection()))
 
         self.padLb = tkinter.Label(self.listFrame, width=3)
         self.padLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
 
-        self.trainModelLb = tkinter.Label(self.listFrame, font=("", 14), text="車両モデル")
+        self.trainModelLb = tkinter.Label(self.listFrame, font=textSetting.textList["font2"], text=textSetting.textList["orgInfoEditor"]["csvMdlTitle"])
         self.trainModelLb.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
         trainModelList = copy.deepcopy(modelInfo["mdlNames"])
         trainModelList.pop()
         self.v_trainModel = tkinter.StringVar(value=trainModelList)
-        self.trainModelList = tkinter.Listbox(self.listFrame, font=("", 14), listvariable=self.v_trainModel)
+        self.trainModelList = tkinter.Listbox(self.listFrame, font=textSetting.textList["font2"], listvariable=self.v_trainModel)
         self.trainModelList.grid(row=1, column=2, sticky=tkinter.W + tkinter.E)
-        self.trainModelList.bind('<<ListboxSelect>>', lambda e: self.buttonActive(e, 1, self.trainModelList.curselection()))
+        self.trainModelList.bind("<<ListboxSelect>>", lambda e: self.buttonActive(e, 1, self.trainModelList.curselection()))
 
         self.padLb = tkinter.Label(self.listFrame, width=3)
         self.padLb.grid(row=0, column=3, sticky=tkinter.W + tkinter.E)
 
-        self.pantaModelLb = tkinter.Label(self.listFrame, font=("", 14), text="パンタモデル")
+        self.pantaModelLb = tkinter.Label(self.listFrame, font=textSetting.textList["font2"], text=textSetting.textList["orgInfoEditor"]["csvPantaTitle"])
         self.pantaModelLb.grid(row=0, column=4, sticky=tkinter.W + tkinter.E)
         pantaModelList = copy.deepcopy(modelInfo["pantaNames"])
         pantaModelList.pop()
         self.v_pantaModel = tkinter.StringVar(value=pantaModelList)
-        self.pantaModelList = tkinter.Listbox(self.listFrame, font=("", 14), listvariable=self.v_pantaModel)
+        self.pantaModelList = tkinter.Listbox(self.listFrame, font=textSetting.textList["font2"], listvariable=self.v_pantaModel)
         self.pantaModelList.grid(row=1, column=4, sticky=tkinter.W + tkinter.E)
-        self.pantaModelList.bind('<<ListboxSelect>>', lambda e: self.buttonActive(e, 2, self.pantaModelList.curselection()))
+        self.pantaModelList.bind("<<ListboxSelect>>", lambda e: self.buttonActive(e, 2, self.pantaModelList.curselection()))
 
         if self.editableNum == 3:
             self.padLb = tkinter.Label(self.listFrame, width=3)
             self.padLb.grid(row=0, column=5, sticky=tkinter.W + tkinter.E)
 
-            self.colModelLb = tkinter.Label(self.listFrame, font=("", 14), text="COLモデル")
+            self.colModelLb = tkinter.Label(self.listFrame, font=textSetting.textList["font2"], text=textSetting.textList["orgInfoEditor"]["csvColTitle"])
             self.colModelLb.grid(row=0, column=6, sticky=tkinter.W + tkinter.E)
             colModelList = copy.deepcopy(modelInfo["colNames"])
             colModelList.pop()
             self.v_colModel = tkinter.StringVar(value=colModelList)
-            self.colModelList = tkinter.Listbox(self.listFrame, font=("", 14), listvariable=self.v_colModel)
+            self.colModelList = tkinter.Listbox(self.listFrame, font=textSetting.textList["font2"], listvariable=self.v_colModel)
             self.colModelList.grid(row=1, column=6, sticky=tkinter.W + tkinter.E)
-            self.colModelList.bind('<<ListboxSelect>>', lambda e: self.buttonActive(e, 3, self.colModelList.curselection()))
+            self.colModelList.bind("<<ListboxSelect>>", lambda e: self.buttonActive(e, 3, self.colModelList.curselection()))
 
     def buttonActive(self, event, num, value):
         if len(value) == 0:
@@ -239,7 +240,7 @@ class EditModelInfo(sd.Dialog):
         self.deleteBtn["state"] = "normal"
 
     def modify(self):
-        result = sd.askstring(title="変更", prompt="入力してください", initialvalue=self.selectValue, parent=self)
+        result = sd.askstring(title=textSetting.textList["modify"], prompt=textSetting.textList["infoList"]["I27"], initialvalue=self.selectValue, parent=self)
 
         if result:
             if self.selectListNum == 0:
@@ -260,7 +261,7 @@ class EditModelInfo(sd.Dialog):
             self.deleteBtn["state"] = "disabled"
 
     def insert(self):
-        result = sd.askstring(title="挿入", prompt="入力してください", initialvalue=self.selectValue, parent=self)
+        result = sd.askstring(title=textSetting.textList["insert"], prompt=textSetting.textList["infoList"]["I27"], initialvalue=self.selectValue, parent=self)
 
         if result:
             if self.selectListNum == 0:
@@ -280,36 +281,36 @@ class EditModelInfo(sd.Dialog):
         selectName = ""
 
         if self.selectListNum == 0:
-            selectName = "台車モデル"
+            selectName = textSetting.textList["orgInfoEditor"]["csvDaishaTitle"]
             if self.game in [gameDefine.LS, gameDefine.BS]:
                 if self.trackModelList.size() <= 1:
-                    mb.showerror(title="エラー", message="台車モデルは1個以上である必要あります")
+                    mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E67"].format(1))
                     return
             elif self.game in [gameDefine.CS, gameDefine.RS]:
                 if self.trackModelList.size() <= 2:
-                    mb.showerror(title="エラー", message="台車モデルは2個以上である必要あります")
+                    mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E67"].format(2))
                     return
         elif self.selectListNum == 1:
-            selectName = "車両モデル"
+            selectName = textSetting.textList["orgInfoEditor"]["csvMdlTitle"]
             for i in range(self.henseiCnt):
                 if self.selectIndex == self.trainWidget.comboList[self.editableNum * i].current():
-                    mb.showerror(title="エラー", message="選択したモデルは{0}両目で使ってます".format(i + 1))
+                    mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E68"].format(i + 1))
                     return
         elif self.selectListNum == 2:
-            selectName = "パンタモデル"
+            selectName = textSetting.textList["orgInfoEditor"]["csvPantaTitle"]
             for i in range(self.henseiCnt):
                 if self.selectIndex == self.trainWidget.comboList[self.editableNum * i + 1].current():
-                    mb.showerror(title="エラー", message="選択したモデルは{0}両目で使ってます".format(i + 1))
+                    mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E68"].format(i + 1))
                     return
         elif self.selectListNum == 3:
-            selectName = "COLモデル"
+            selectName = textSetting.textList["orgInfoEditor"]["csvColTitle"]
             for i in range(self.henseiCnt):
                 if self.selectIndex == self.trainWidget.comboList[self.editableNum * i + 2].current():
-                    mb.showerror(title="エラー", message="選択したモデルは{0}両目で使ってます".format(i + 1))
+                    mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E68"].format(i + 1))
                     return
 
-        warnMsg = "{0}の{1}番目を削除します。\nそれでもよろしいですか？".format(selectName, self.selectIndex + 1)
-        result = mb.askokcancel(title="警告", message=warnMsg, icon="warning", parent=self)
+        warnMsg = textSetting.textList["infoList"]["I62"].format(selectName, self.selectIndex + 1)
+        result = mb.askokcancel(title=textSetting.textList["warning"], message=warnMsg, icon="warning", parent=self)
 
         if result:
             if self.selectListNum == 0:
@@ -326,8 +327,8 @@ class EditModelInfo(sd.Dialog):
             self.deleteBtn["state"] = "disabled"
 
     def validate(self):
-        warnMsg = "モデル情報を修正しますか？"
-        result = mb.askokcancel(message=warnMsg, icon="warning", parent=self)
+        warnMsg = textSetting.textList["infoList"]["I63"]
+        result = mb.askokcancel(title=textSetting.textList["confirm"], message=warnMsg, icon="warning", parent=self)
         if result:
             modelInfo = self.decryptFile.trainModelList[self.trainIdx]
 
@@ -339,37 +340,36 @@ class EditModelInfo(sd.Dialog):
             newTrainList = []
             for i in range(self.trainModelList.size()):
                 newTrainList.append(self.trainModelList.get(i))
-            newTrainList.append("なし")
+            newTrainList.append(textSetting.textList["orgInfoEditor"]["noList"])
             modelInfo["mdlNames"] = newTrainList
 
             newPantaList = []
             for i in range(self.pantaModelList.size()):
                 newPantaList.append(self.pantaModelList.get(i))
-            newPantaList.append("なし")
+            newPantaList.append(textSetting.textList["orgInfoEditor"]["noList"])
             modelInfo["pantaNames"] = newPantaList
 
             if self.editableNum == 3:
                 newColList = []
                 for i in range(self.colModelList.size()):
                     newColList.append(self.colModelList.get(i))
-                newColList.append("なし")
+                newColList.append(textSetting.textList["orgInfoEditor"]["noList"])
                 modelInfo["colNames"] = newColList
             else:
                 newColList = []
                 colName = modelInfo["colNames"][0]
                 for i in range(self.trainModelList.size()):
                     newColList.append(colName)
-                newColList.append("なし")
+                newColList.append(textSetting.textList["orgInfoEditor"]["noList"])
                 modelInfo["colNames"] = newColList
 
             if not self.decryptFile.saveModelInfo(self.trainIdx, modelInfo):
                 self.decryptFile.printError()
-                errorMsg = "保存に失敗しました。\nファイルが他のプログラムによって開かれている\nまたは権限問題の可能性があります"
-                mb.showerror(title="保存エラー", message=errorMsg)
+                errorMsg = textSetting.textList["errorList"]["E4"]
+                mb.showerror(title=textSetting.textList["saveError"], message=errorMsg)
                 return
-
             return True
 
     def apply(self):
-        mb.showinfo(title="成功", message="モデルリストを修正しました")
+        mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I64"])
         self.reloadFlag = True

@@ -1,6 +1,7 @@
 import os
 import struct
 import codecs
+import program.textSetting as textSetting
 
 LS = 0
 BS = 1
@@ -38,7 +39,7 @@ class FvtConvert:
                 fvtNum = int(arr[0])
                 fvtNumList = [d["fvtNum"] for d in self.fvtList]
                 if fvtNum in fvtNumList:
-                    self.error = "重複してるFVT番号があります[ {0} ]".format(fvtNum)
+                    self.error = textSetting.textList["errorList"]["E10"].format(fvtNum)
                     return False
                 faceNum = int(arr[1])
 
@@ -53,13 +54,13 @@ class FvtConvert:
                 effect = int(arr[contentCnt + 2])
                 voNum = int(arr[contentCnt + 3])
             except Exception:
-                self.error = "{0}行に数字で変換できない要素があります".format(cnt)
+                self.error = textSetting.textList["errorList"]["E11"].format(cnt)
                 return False
 
             try:
                 text = arr[contentCnt + 4].encode("shift-jis")
             except Exception:
-                self.error = "{0}行のテキストをShift-jis変換できません".format(cnt)
+                self.error = textSetting.textList["errorList"]["E12"].format(cnt)
                 return False
 
             newLine = bytearray()
