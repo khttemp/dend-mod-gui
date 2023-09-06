@@ -335,6 +335,7 @@ class ResourcesDecrypt:
 
             data = self.trainOrgInfoList[num][-2]
             data.save(raw_data=newByteArr)
+            self.trainOrgInfoList[num][-3] = len(newByteArr) + 32
             return True
         except Exception:
             self.error = traceback.format_exc()

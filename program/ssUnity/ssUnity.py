@@ -114,7 +114,7 @@ def extract():
 
     selectId = frame.tree.selection()[0]
     selectItem = frame.tree.set(selectId)
-    num = int(selectItem["treeNum"])
+    num = int(selectItem["treeNum"]) - 1
     data = decryptFile.allList[num][-1]
     fileType = selectItem["treeKind"]
     if fileType == "TextAsset":
@@ -151,7 +151,7 @@ def loadAndSave():
 
     selectId = frame.tree.selection()[0]
     selectItem = frame.tree.set(selectId)
-    num = int(selectItem["treeNum"])
+    num = int(selectItem["treeNum"]) - 1
     data = decryptFile.allList[num][-1]
     fileType = selectItem["treeKind"]
     if fileType == "TextAsset":
@@ -191,7 +191,7 @@ def csvExtract():
 
     selectId = frame.tree.selection()[0]
     selectItem = frame.tree.set(selectId)
-    num = int(selectItem["treeNum"])
+    num = int(selectItem["treeNum"]) - 1
     data = decryptFile.trainOrgInfoList[num][-1]
     filename = selectItem["treeName"] + ".csv"
     file_path = fd.asksaveasfilename(initialfile=filename, defaultextension="csv", filetypes=[("trainOrgInfo", "*.csv")])
@@ -231,7 +231,7 @@ def csvExtract():
 def csvLoadAndSave():
     selectId = frame.tree.selection()[0]
     selectItem = frame.tree.set(selectId)
-    num = int(selectItem["treeNum"])
+    num = int(selectItem["treeNum"]) - 1
     file_path = fd.askopenfilename(defaultextension="csv", filetypes=[("trainOrgInfo", "*.csv")])
     if not file_path:
         return
@@ -253,6 +253,7 @@ def csvLoadAndSave():
             mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
             return
         mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I111"])
+        frame.tree.set(selectId, column="treeSize", value=str(decryptFile.trainOrgInfoList[num][-3]))
     except Exception:
         w = codecs.open("error.log", "a", "utf-8", "strict")
         w.write(traceback.format_exc())
