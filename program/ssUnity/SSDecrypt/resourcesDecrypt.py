@@ -5,15 +5,174 @@ import struct
 import traceback
 import program.textSetting as textSetting
 
+SSTrainName = [
+    "H2000",
+    "X200",
+    "H4050",
+    "H7011",
+    "E233",
+    "H8200",
+    "TQ5050",
+    "TQ5000",
+    "TQ9001",
+    "TQ300",
+    "TQ8500",
+    "Pano",
+    "Mu2000",
+    "T50000",
+    "T200",
+    "DRC",
+    "H2800",
+    "H9000",
+    "KQ21XX",
+    "JR2000",
+    "Rapit",
+    "K8000",
+    "Arban21000R",
+    "H8008",
+    "KQ2199",
+    "H2300",
+    "JR223",
+    "K800",
+    "H7001",
+    "K80",
+    "Yuri",
+    "AE86",
+    "Deki",
+    "MIZ1000",
+    "KB1300",
+]
+
+SSBodyName = [
+    "H2000Body",
+    "H1000Body",
+    "H4050Body",
+    "H7011Body",
+    "E233Body",
+    "H8200Body",
+    "TQ5050Body",
+    "TQ5000Body",
+    "TQ9001Body",
+    "TQ300Body",
+    "TQ8500Body",
+    "PanoBody",
+    "Mu2000Body",
+    "TB50000Body",
+    "TB200Body",
+    "DRCBody",
+    "H2800Body",
+    "HS9000Body",
+    "KQ21XXBody",
+    "JR2000Body",
+    "RapitBody",
+    "K8000Body",
+    "UVBody",
+    "H8008Body",
+    "H2300Body",
+    "JR223Body",
+    "K800Body",
+    "H7001Body",
+    "K80Body",
+    "YuriBody",
+    "AE86",
+    # "DekiBody",
+    "MIZ1000Body",
+    "Kb_Body",
+]
+
+SSModelName = [
+    "H2000Mdl00",
+    "H2000Mdl01",
+    "H1000Mdl00",
+    "H1000Mdl01",
+    "H4050Mdl",
+    "H7000Mdl4050",
+    "H920Mdl",
+    "H7011Mdl00",
+    "H7011Mdl01",
+    "E233Mdl00",
+    "E233Mdl01",
+    "H8200Mdl00",
+    "TQ5050Mdl00",
+    "TQ5050Mdl01",
+    "TQ5000Mdl00",
+    "TQ5000Mdl01",
+    "TQ9001Mdl00",
+    "TQ9001Mdl01",
+    "TQ300Mdl",
+    "TQ8500Mdl00",
+    "TQ8500Mdl01",
+    "PanoMdl00",
+    "PanoMdl01",
+    "Mu2000Mdl00",
+    "Mu2000Mdl01",
+    "Mu2000Mdl02",
+    "T50000Mdl00",
+    "T50000Mdl01",
+    "T200Mdl00",
+    "T200Mdl01",
+    "T200Mdl02",
+    "T200Mdl03",
+    "DRCMdl00",
+    "DRCMdl01",
+    "DRCMdl02",
+    "DRCMdl03",
+    "H2800Mdl00",
+    "H2800Mdl01",
+    "H9000Mdl00",
+    "H9000Mdl01",
+    "KQ21XXMdl00",
+    "KQ21XXMdl01",
+    "JR2000Mdl00",
+    "JR2000Mdl01",
+    "JR2000Mdl02",
+    "RapitMdl00",
+    "RapitMdl01",
+    "K8000Mdl00",
+    "K8000Mdl01",
+    "K8000Mdl02",
+    "UVMdl00",
+    "UVMdl01",
+    "UVMdl02",
+    "H8008Mdl00",
+    "H8008Mdl01",
+    "H2300Mdl00",
+    "H2300Mdl01",
+    "KQ2199Mdl00",
+    "JR223Mdl00",
+    "JR223Mdl01",
+    "K800Mdl00",
+    "K800Mdl01",
+    "H7001Mdl00",
+    "H7001Mdl01",
+    "K80Mdl",
+    "YuMdl0",
+    "YuMdl1",
+    "AE86Mdl",
+    # "DekiMdl",
+    "MIZ1000Mdl",
+    "KBMdl0",
+]
+
 
 class ResourcesDecrypt:
     def __init__(self, filePath):
         self.filePath = filePath
         self.fileDir = os.path.dirname(filePath)
         self.filenameAndExt = os.path.splitext(os.path.basename(filePath))
+        self.trainNameList = SSTrainName
+        self.texNameList = SSBodyName
+        self.trainModelNameList = SSModelName
         self.env = None
+        self.keyNameList = [
+            "TrainOrgInfo",
+            "ChangeMeshTex",
+        ]
         self.monoBehaviourList = []
-        self.trainOrgInfoList = []
+        self.trainOrgInfoList = {}
+        self.allChangeMeshTexList = []
+        self.allModelToMeshTexList = {}
+        self.changeMeshTexList = {}
         self.newTrainOrgInfo = []
 
     def open(self):
@@ -31,22 +190,63 @@ class ResourcesDecrypt:
 
     def decrypt(self):
         try:
-            self.monoBehaviourList = []
-            self.trainOrgInfoList = []
-
+            self.trainOrgInfoList = {}
+            self.allChangeMeshTexList = []
+            self.allModelToMeshTexList = {}
+            self.changeMeshTexList = {}
             self.monoBehaviourList = [env for env in self.env.objects if env.type.name == "MonoBehaviour"]
             for mono in self.monoBehaviourList:
                 data = mono.read()
                 script = data.m_Script
                 if script:
                     script = script.read()
-                    if script.m_ClassName == "TrainOrgInfo":
+                    if script.m_ClassName in self.keyNameList:
+                        if script.m_ClassName == self.keyNameList[0]:
+                            gameObject = data.m_GameObject.read()
+                            if gameObject.name in self.trainNameList:
+                                self.trainOrgInfoList[gameObject.name] = {
+                                    "num": data.path_id,
+                                    "data": {
+                                        "className": script.m_ClassName,
+                                        "monoData": data,
+                                        "size": data.byte_size
+                                    }
+                                }
+                        elif script.m_ClassName == self.keyNameList[1]:
+                            self.allChangeMeshTexList.append({
+                                "num": data.path_id,
+                                "data": {
+                                    "className": script.m_ClassName,
+                                    "monoData": data,
+                                    "size": data.byte_size
+                                }
+                            })
+                    elif script.m_ClassName in self.texNameList:
                         gameObject = data.m_GameObject.read()
-                        self.trainOrgInfoList.append([gameObject.name, script.m_ClassName, data.byte_size, data, data.raw_data])
+                        trainModelName = gameObject.name
+                        if trainModelName in self.trainModelNameList:
+                            meshTexInfoPathIdList = self.getMeshTexInfoPathIdList(data.raw_data)
+                            self.allModelToMeshTexList[trainModelName] = meshTexInfoPathIdList
+
+            for trainModelName in self.trainModelNameList:
+                meshTexInfoPathIdList = self.allModelToMeshTexList[trainModelName]
+                meshTexInfoList = []
+                for meshTexInfoPathId in meshTexInfoPathIdList:
+                    meshTexFilterList = [item for item in self.allChangeMeshTexList if item["num"] == meshTexInfoPathId]
+                    meshTexFilterInfo = meshTexFilterList[0]
+                    gameObject = meshTexFilterInfo["data"]["monoData"].m_GameObject.read()
+                    meshTexFilterInfo["data"]["meshData"] = self.getChangeMeshTexInfo(meshTexFilterInfo["data"]["monoData"].raw_data)
+                    meshTexInfoList.append(meshTexFilterInfo)
+                self.changeMeshTexList[trainModelName] = meshTexInfoList
             return True
         except Exception:
             self.error = traceback.format_exc()
             return False
+
+    def readStringPadding(self, nameLen):
+        if nameLen % 4 != 0:
+            return (4 - (nameLen % 4))
+        return 0
 
     def getTrainOrgInfo(self, byteArr):
         try:
@@ -78,8 +278,7 @@ class ResourcesDecrypt:
                 bodyClassName = byteArr[index:index + bodyClassNameCnt].decode("shift-jis")
                 bodyClassList.append(bodyClassName)
                 index += bodyClassNameCnt
-                if bodyClassNameCnt % 4 != 0:
-                    index += 4 - bodyClassNameCnt % 4
+                index += self.readStringPadding(bodyClassNameCnt)
             trainOrgInfo.append(bodyClassList)
 
             bodyMdlCnt = struct.unpack("<i", byteArr[index:index + 4])[0]
@@ -91,8 +290,7 @@ class ResourcesDecrypt:
                 bodyMdlName = byteArr[index:index + bodyMdlNameCnt].decode("shift-jis")
                 bodyMdlList.append(bodyMdlName)
                 index += bodyMdlNameCnt
-                if bodyMdlNameCnt % 4 != 0:
-                    index += 4 - bodyMdlNameCnt % 4
+                index += self.readStringPadding(bodyMdlNameCnt)
             trainOrgInfo.append(bodyMdlList)
 
             pantaMdlCnt = struct.unpack("<i", byteArr[index:index + 4])[0]
@@ -104,8 +302,7 @@ class ResourcesDecrypt:
                 pantaMdlName = byteArr[index:index + pantaMdlNameCnt].decode("shift-jis")
                 pantaMdlList.append(pantaMdlName)
                 index += pantaMdlNameCnt
-                if pantaMdlNameCnt % 4 != 0:
-                    index += 4 - pantaMdlNameCnt % 4
+                index += self.readStringPadding(pantaMdlNameCnt)
             trainOrgInfo.append(pantaMdlList)
 
             bodyIndexCnt = struct.unpack("<i", byteArr[index:index + 4])[0]
@@ -255,9 +452,9 @@ class ResourcesDecrypt:
         self.newTrainOrgInfo.append(pantaMdlIndexList)
         return True
 
-    def saveCsv(self, num):
+    def saveCsv(self, trainName):
         try:
-            originData = self.trainOrgInfoList[num][-1]
+            originData = self.trainOrgInfoList[trainName]["data"]["monoData"].raw_data
             newByteArr = bytearray()
             index = 0
             trainNo = struct.unpack("<i", originData[index:index + 4])[0]
@@ -282,9 +479,8 @@ class ResourcesDecrypt:
                 newByteArr.extend(struct.pack("<i", bodyClassNameCnt))
                 newByteArr.extend(bodyClass.encode("shift-jis"))
 
-                if bodyClassNameCnt % 4 != 0:
-                    for i in range(4 - bodyClassNameCnt % 4):
-                        newByteArr.append(0)
+                for i in range(self.readStringPadding(bodyClassNameCnt)):
+                    newByteArr.append(0)
 
             bodyMdlCnt = len(self.newTrainOrgInfo[3])
             newByteArr.extend(struct.pack("<i", bodyMdlCnt))
@@ -293,9 +489,8 @@ class ResourcesDecrypt:
                 newByteArr.extend(struct.pack("<i", bodyMdlNameCnt))
                 newByteArr.extend(bodyMdl.encode("shift-jis"))
 
-                if bodyMdlNameCnt % 4 != 0:
-                    for i in range(4 - bodyMdlNameCnt % 4):
-                        newByteArr.append(0)
+                for i in range(self.readStringPadding(bodyMdlNameCnt)):
+                    newByteArr.append(0)
 
             pantaMdlCnt = len(self.newTrainOrgInfo[4])
             newByteArr.extend(struct.pack("<i", pantaMdlCnt))
@@ -304,9 +499,8 @@ class ResourcesDecrypt:
                 newByteArr.extend(struct.pack("<i", pantaMdlNameCnt))
                 newByteArr.extend(pantaMdl.encode("shift-jis"))
 
-                if pantaMdlNameCnt % 4 != 0:
-                    for i in range(4 - pantaMdlNameCnt % 4):
-                        newByteArr.append(0)
+                for i in range(self.readStringPadding(pantaMdlNameCnt)):
+                    newByteArr.append(0)
 
             bodyClassIndexCnt = len(self.newTrainOrgInfo[5])
             newByteArr.extend(struct.pack("<i", bodyClassIndexCnt))
@@ -333,9 +527,176 @@ class ResourcesDecrypt:
                 for j in range(henseiNo * trackNum):
                     newByteArr.extend(struct.pack("<i", 0))
 
-            data = self.trainOrgInfoList[num][-2]
+            data = self.trainOrgInfoList[trainName]["data"]["monoData"]
             data.save(raw_data=newByteArr)
-            self.trainOrgInfoList[num][-3] = len(newByteArr) + 32
+            self.trainOrgInfoList[trainName]["data"]["size"] = len(newByteArr) + 32
+            return True
+        except Exception:
+            self.error = traceback.format_exc()
+            return False
+
+    def getMeshTexInfoPathIdList(self, byteArr):
+        try:
+            meshTexInfoPathIdList = []
+            index = 0
+            # BodyOffset (fileId, pathId, padding)
+            index += 12
+            # fBodyOffset
+            index += 4
+            # FJOffset
+            index += 4
+            # BJOffset
+            index += 4
+            # PantaOffset
+            index += 4
+            # mBodyMat (fileId, pathId, padding)
+            index += 12
+            # MeshTexList
+            meshTexListCnt = struct.unpack("<i", byteArr[index:index + 4])[0]
+            index += 4
+            for i in range(meshTexListCnt):
+                # MeshTexInfo (fileId, pathId, padding)
+                # fileId
+                index += 4
+                # pathId
+                pathId = struct.unpack("<i", byteArr[index:index + 4])[0]
+                meshTexInfoPathIdList.append(pathId)
+                index += 4
+                # padding
+                index += 4
+            return meshTexInfoPathIdList
+        except Exception:
+            self.error = traceback.format_exc()
+            return None
+
+    def getChangeMeshTexInfo(self, byteArr):
+        try:
+            changeMeshTexInfo = []
+            index = 0
+            # Target
+            fileId = struct.unpack("<i", byteArr[index:index + 4])[0]
+            index += 4
+            pathId = struct.unpack("<i", byteArr[index:index + 4])[0]
+            index += 4
+            changeMeshTexInfo.append([fileId, pathId])
+            index += 4
+            # Target2
+            fileId = struct.unpack("<i", byteArr[index:index + 4])[0]
+            index += 4
+            pathId = struct.unpack("<i", byteArr[index:index + 4])[0]
+            index += 4
+            changeMeshTexInfo.append([fileId, pathId])
+            index += 4
+            # MatIndex
+            matIndex = struct.unpack("<i", byteArr[index:index + 4])[0]
+            index += 4
+            changeMeshTexInfo.append(matIndex)
+            # MatName
+            matNameLen = struct.unpack("<i", byteArr[index:index + 4])[0]
+            index += 4
+            matName = byteArr[index:index + matNameLen].decode("shift-jis")
+            changeMeshTexInfo.append(matName)
+            index += matNameLen
+            index += self.readStringPadding(matNameLen)
+            # shader_tex_name
+            shaderTexNameLen = struct.unpack("<i", byteArr[index:index + 4])[0]
+            index += 4
+            shaderTexName = byteArr[index:index + shaderTexNameLen].decode("shift-jis")
+            changeMeshTexInfo.append(shaderTexName)
+            index += shaderTexNameLen
+            index += self.readStringPadding(shaderTexNameLen)
+            # shader_emission_name
+            shaderEmisNameLen = struct.unpack("<i", byteArr[index:index + 4])[0]
+            index += 4
+            shaderEmisName = byteArr[index:index + shaderEmisNameLen].decode("shift-jis")
+            changeMeshTexInfo.append(shaderEmisName)
+            index += shaderEmisNameLen
+            index += self.readStringPadding(shaderEmisNameLen)
+            # asset_name
+            assetNameLen = struct.unpack("<i", byteArr[index:index + 4])[0]
+            index += 4
+            assetName = byteArr[index:index + assetNameLen].decode("shift-jis")
+            changeMeshTexInfo.append(assetName)
+            index += assetNameLen
+            index += self.readStringPadding(assetNameLen)
+            # TexName
+            texNameListCnt = struct.unpack("<i", byteArr[index:index + 4])[0]
+            index += 4
+            texNameList = []
+            for i in range(texNameListCnt):
+                texNameLen = struct.unpack("<i", byteArr[index:index + 4])[0]
+                index += 4
+                texName = byteArr[index:index + texNameLen].decode("shift-jis")
+                texNameList.append(texName)
+                index += texNameLen
+                index += self.readStringPadding(texNameLen)
+            changeMeshTexInfo.append(texNameList)
+            return changeMeshTexInfo
+        except Exception:
+            self.error = traceback.format_exc()
+            return None
+
+    def saveChangeMeshTex(self, csvLines, trainModelName, pathId):
+        texNameList = [""] * 23
+        for i in range(len(texNameList)):
+            arr = csvLines[i].strip().split(",")
+            texNameList[i] = arr[1]
+        try:
+            changeMeshTexInfoList = self.changeMeshTexList[trainModelName]
+            changeMeshTexFilterInfo = [item for item in changeMeshTexInfoList if item["num"] == pathId][0]
+            byteArr = changeMeshTexFilterInfo["data"]["monoData"].raw_data
+            index = 0
+            newByteArr = bytearray()
+            # Target
+            index += 12
+            # Target2
+            index += 12
+            # MatIndex
+            index += 4
+            # MatName
+            matNameLen = struct.unpack("<i", byteArr[index:index + 4])[0]
+            index += 4
+            index += matNameLen
+            index += self.readStringPadding(matNameLen)
+            # shader_tex_name
+            shaderTexNameLen = struct.unpack("<i", byteArr[index:index + 4])[0]
+            index += 4
+            index += shaderTexNameLen
+            index += self.readStringPadding(shaderTexNameLen)
+            # shader_emission_name
+            shaderEmisNameLen = struct.unpack("<i", byteArr[index:index + 4])[0]
+            index += 4
+            index += shaderEmisNameLen
+            index += self.readStringPadding(shaderEmisNameLen)
+            # asset_name
+            assetNameLen = struct.unpack("<i", byteArr[index:index + 4])[0]
+            index += 4
+            index += assetNameLen
+            index += self.readStringPadding(assetNameLen)
+            # TexName
+            newByteArr = bytearray(byteArr[0:index])
+
+            texNameListCnt = struct.unpack("<i", byteArr[index:index + 4])[0]
+            index += 4
+            for i in range(texNameListCnt):
+                texNameLen = struct.unpack("<i", byteArr[index:index + 4])[0]
+                index += 4
+                index += texNameLen
+                index += self.readStringPadding(texNameLen)
+
+            newTexNameListCnt = len(texNameList)
+            iNewTexNameListCnt = struct.pack("<i", newTexNameListCnt)
+            newByteArr.extend(iNewTexNameListCnt)
+            for i in range(newTexNameListCnt):
+                texNameLen = len(texNameList[i])
+                iTexNameLen = struct.pack("<i", texNameLen)
+                newByteArr.extend(iTexNameLen)
+                newByteArr.extend(texNameList[i].encode("shift-jis"))
+                for j in range(self.readStringPadding(texNameLen)):
+                    newByteArr.append(0)
+            newByteArr.extend(byteArr[index:])
+            changeMeshTexFilterInfo["data"]["monoData"].save(raw_data=newByteArr)
+            changeMeshTexFilterInfo["data"]["size"] = len(newByteArr) + 32
             return True
         except Exception:
             self.error = traceback.format_exc()

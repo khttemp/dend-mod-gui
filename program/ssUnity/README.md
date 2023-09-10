@@ -27,14 +27,22 @@ TextAssetしか上書きができない。
 
 ![title](image/assets.png)
 
+![title](image/assets2.png)
 
-### 車両編成を修正する(resoureces.assets)
 
-resoureces.assetsにある、車両やパンタのモデル、
+### resoureces.assetsを修正する
 
-それぞれの編成方法を定義している
+resoureces.assetsにある、TrainOrgInfoとChangeMeshTexを修正できる。
 
-TrainOrgInfoをCSVとして取り出したり、上書きする。
+- TrainOrgInfo
+
+  車両やパンタのモデル、それぞれの編成方法を定義している
+
+- ChangeMeshTex
+
+  車両の幕を、どのテクスチャで表示するかリストで定義している
+
+それぞれの要素をCSVとして取り出したり、上書きする。
 
 「resources.assetsを保存する」ボタンで
 
