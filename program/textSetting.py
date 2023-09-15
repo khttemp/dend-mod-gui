@@ -313,6 +313,7 @@ textList = {
         "perfCalcList": ["倍にする", "にする"],
         "editNotchLabel": "ノッチ情報修正",
         "editNotchList": ["４ノッチ", "５ノッチ", "１２ノッチ"],
+        "calcMinSpeedLabel": "{0} -> {1}ノッチになる最低速度",
         "SSElsePerfModifyBtn": "修正する",
         "SSElsePerfModifyLabel": "{0}情報修正",
         "useThisPerfLabel": "この性能を使う",

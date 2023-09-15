@@ -463,7 +463,7 @@ def reloadFile():
 
             selectId = None
             if v_select.get() != "":
-                selectId = int(v_select.get())
+                selectId = int(v_select.get()) - 1
 
             deleteAllWidget()
             createWidget()

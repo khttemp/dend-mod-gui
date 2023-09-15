@@ -40,7 +40,7 @@ class NotchWidget():
         self.varList.append(self.varSpeed)
         self.speedLb = tkinter.Label(frame, textvariable=self.varSpeed, font=textSetting.textList["font6"], width=5, borderwidth=1, relief="solid")
         self.speedLb.grid(row=self.notchContentCnt * i, column=2, sticky=tkinter.N + tkinter.W + tkinter.S + tkinter.E)
-        self.speedBtn = tkinter.Button(frame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], font=textSetting.textList["font7"], command=lambda: self.editVar([self.speedNameLb, self.speedLb], self.varSpeed, self.varSpeed.get(), speedDefaultValue), state="disabled")
+        self.speedBtn = tkinter.Button(frame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], font=textSetting.textList["font7"], command=lambda: self.editVar([self.speedNameLb, self.speedLb], self.varSpeed, self.varSpeed.get(), "speed", i, speedDefaultValue), state="disabled")
         self.speedBtn.grid(row=self.notchContentCnt * i, column=3, sticky=tkinter.N + tkinter.W + tkinter.S + tkinter.E)
         self.btnList.append(self.speedBtn)
 
@@ -67,7 +67,7 @@ class NotchWidget():
         self.varList.append(self.varTlk)
         self.tlkLb = tkinter.Label(frame, textvariable=self.varTlk, font=textSetting.textList["font6"], width=5, borderwidth=1, relief="solid")
         self.tlkLb.grid(row=self.notchContentCnt * i + 1, column=2, sticky=tkinter.N + tkinter.W + tkinter.S + tkinter.E)
-        self.tlkBtn = tkinter.Button(frame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], font=textSetting.textList["font7"], command=lambda: self.editVar([self.tlkNameLb, self.tlkLb], self.varTlk, self.varTlk.get(), tlkDefaultValue), state="disabled")
+        self.tlkBtn = tkinter.Button(frame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], font=textSetting.textList["font7"], command=lambda: self.editVar([self.tlkNameLb, self.tlkLb], self.varTlk, self.varTlk.get(), "tlk", i, tlkDefaultValue), state="disabled")
         self.tlkBtn.grid(row=self.notchContentCnt * i + 1, column=3, sticky=tkinter.N + tkinter.W + tkinter.S + tkinter.E)
         self.btnList.append(self.tlkBtn)
 
@@ -95,7 +95,7 @@ class NotchWidget():
             self.varList.append(self.varSound)
             self.soundLb = tkinter.Label(frame, textvariable=self.varSound, font=textSetting.textList["font6"], width=5, borderwidth=1, relief="solid")
             self.soundLb.grid(row=self.notchContentCnt * i + 2, column=2, sticky=tkinter.N + tkinter.W + tkinter.S + tkinter.E)
-            self.soundBtn = tkinter.Button(frame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], font=textSetting.textList["font7"], command=lambda: self.editVar([self.soundNameLb, self.soundLb], self.varSound, self.varSound.get(), soundDefaultValue, True), state="disabled")
+            self.soundBtn = tkinter.Button(frame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], font=textSetting.textList["font7"], command=lambda: self.editVar([self.soundNameLb, self.soundLb], self.varSound, self.varSound.get(), "sound", i, soundDefaultValue, True), state="disabled")
             self.soundBtn.grid(row=self.notchContentCnt * i + 2, column=3, sticky=tkinter.N + tkinter.W + tkinter.S + tkinter.E)
             self.btnList.append(self.soundBtn)
 
@@ -122,22 +122,25 @@ class NotchWidget():
             self.varList.append(self.varAdd)
             self.addLb = tkinter.Label(frame, textvariable=self.varAdd, font=textSetting.textList["font6"], width=5, borderwidth=1, relief="solid")
             self.addLb.grid(row=self.notchContentCnt * i + 3, column=2, sticky=tkinter.N + tkinter.W + tkinter.S + tkinter.E)
-            self.addBtn = tkinter.Button(frame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], font=textSetting.textList["font7"], command=lambda: self.editVar([self.addNameLb, self.addLb], self.varAdd, self.varAdd.get(), addDefaultValue), state="disabled")
+            self.addBtn = tkinter.Button(frame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], font=textSetting.textList["font7"], command=lambda: self.editVar([self.addNameLb, self.addLb], self.varAdd, self.varAdd.get(), "add", i, addDefaultValue), state="disabled")
             self.addBtn.grid(row=self.notchContentCnt * i + 3, column=3, sticky=tkinter.N + tkinter.W + tkinter.S + tkinter.E)
             self.btnList.append(self.addBtn)
 
             self.addNameLb["fg"] = color
             self.addLb["fg"] = color
 
-    def editVar(self, labelList, var, value, defaultValue, flag=False):
-        EditNotchVarInfo(self.root, textSetting.textList["orgInfoEditor"]["valueModify"], labelList, var, value, defaultValue, flag)
+    def editVar(self, labelList, var, value, notchName, notchNum, defaultValue, flag=False):
+        EditNotchVarInfo(self.root, textSetting.textList["orgInfoEditor"]["valueModify"], labelList, var, value, notchName, notchNum, defaultValue, flag)
 
 
 class EditNotchVarInfo(sd.Dialog):
-    def __init__(self, master, title, labelList, var, value, defaultValue, flag=False):
+    def __init__(self, master, title, labelList, var, value, notchName, notchNum, defaultValue, flag=False):
         self.labelList = labelList
+        self.master = master
         self.var = var
         self.value = value
+        self.notchName = notchName
+        self.notchNum = notchNum
         self.defaultValue = defaultValue
         self.flag = flag
         super(EditNotchVarInfo, self).__init__(parent=master, title=title)
@@ -149,13 +152,59 @@ class EditNotchVarInfo(sd.Dialog):
         sep = ttk.Separator(frame, orient="horizontal")
         sep.pack(fill=tkinter.X, ipady=5)
 
+        self.v_calcMinSpeed = tkinter.DoubleVar()
+        self.v_calcMinSpeed.set(0.0)
+        if self.notchName == "tlk":
+            calcMinSpeedLb = tkinter.Label(frame, text=textSetting.textList["orgInfoEditor"]["calcMinSpeedLabel"].format(self.notchNum, self.notchNum + 1), font=textSetting.textList["font2"])
+            calcMinSpeedLb.pack()
+            calcMinSpeedValue = tkinter.Label(frame, textvariable=self.v_calcMinSpeed, font=textSetting.textList["font2"])
+            calcMinSpeedValue.pack()
+            sep = ttk.Separator(frame, orient="horizontal")
+            sep.pack(fill=tkinter.X, ipady=5)
+
         self.inputLb = tkinter.Label(frame, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
         self.inputLb.pack()
 
-        v_val = tkinter.StringVar()
-        v_val.set(self.value)
-        self.inputEt = tkinter.Entry(frame, textvariable=v_val, font=textSetting.textList["font2"])
+        self.v_val = tkinter.StringVar()
+        self.v_val.set(self.value)
+        self.inputEt = tkinter.Entry(frame, textvariable=self.v_val, font=textSetting.textList["font2"])
         self.inputEt.pack()
+        if self.notchName == "tlk":
+            self.inputEt.bind("<KeyRelease>", self.calcMinSpeedHandler)
+        self.calcMinSpeed()
+
+    def calcMinSpeedHandler(self, event):
+        self.calcMinSpeed()
+
+    def calcMinSpeed(self):
+        try:
+            inputTlk = float(self.v_val.get())
+        except Exception:
+            inputTlk = float(self.value)
+
+        tabFrame = self.master.winfo_children()[0]
+        notchPerfFrame = tabFrame.winfo_children()[1]
+        perfLabelFrame = notchPerfFrame.winfo_children()[1]
+        perfCanvas = perfLabelFrame.winfo_children()[0]
+        perfCanvasInFrame = perfCanvas.winfo_children()[0]
+
+        weightIdx = -1
+        noneTlkIdx = -1
+        perfWidgetList = perfCanvasInFrame.winfo_children()
+        for i in range(len(perfWidgetList) // 3):
+            nameLabel = perfWidgetList[3 * i]
+            if nameLabel["text"] == "Weight":
+                weightIdx = i
+            if nameLabel["text"] == "None_Tlk":
+                noneTlkIdx = i
+
+        weight = float(perfWidgetList[3 * weightIdx + 1]["text"])
+        noneTlk = float(perfWidgetList[3 * noneTlkIdx + 1]["text"])
+        minSpeed = ((weight - inputTlk) / noneTlk)
+        if minSpeed < 0:
+            minSpeed = 0
+        minSpeed = round(minSpeed * 60 / 1.11, 3)
+        self.v_calcMinSpeed.set(minSpeed)
 
     def validate(self):
         result = self.inputEt.get()
