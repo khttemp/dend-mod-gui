@@ -109,8 +109,8 @@ def tab8AllWidget(tabFrame, decryptFile, reloadFunc):
     RailListWidget(frame.frame, decryptFile, decryptFile.railList, reloadFunc)
 
 
-def tab9AllWidget(tabFrame, decryptFile, reloadFunc):
-    Else3ListWidget(tabFrame, decryptFile, decryptFile.else3List, reloadFunc)
+def tab9AllWidget(tabFrame, decryptFile, reloadFunc, selectId):
+    Else3ListWidget(tabFrame, decryptFile, decryptFile.else3List, reloadFunc, selectId)
 
 
 def tab10AllWidget(tabFrame, decryptFile, reloadFunc):

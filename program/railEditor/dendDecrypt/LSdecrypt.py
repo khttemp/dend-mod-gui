@@ -1094,6 +1094,7 @@ class RailDecrypt:
     def saveElse3List(self, valList):
         try:
             index = self.else3Idx
+            newElse3Cnt = len(valList)
             index += 1
             newByteArr = self.byteArr[0:index]
             for i in range(len(valList)):
@@ -1108,6 +1109,9 @@ class RailDecrypt:
                         tempF = struct.pack("<f", tempList[k])
                         newByteArr.extend(tempF)
                     newByteArr.append(tempList[4])
+
+            index = self.else3Idx
+            newByteArr[index] = newElse3Cnt
 
             index = self.cpuIdx
             newByteArr.extend(self.byteArr[index:])

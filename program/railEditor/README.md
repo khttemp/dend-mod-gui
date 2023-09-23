@@ -75,6 +75,8 @@ RSのレール情報の要素についは、[【こちら】](/program/railEdito
 
 ![else3](image/else3.png)
 
+![else3List](image/else3List.png)
+
 指定のレール、または架線柱に
 
 モデルを置き、ANIME効果を適用する。

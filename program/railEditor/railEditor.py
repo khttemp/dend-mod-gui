@@ -127,7 +127,7 @@ def selectInfo(index, selectId=None):
     elif index == 7:
         tab8AllWidget(tabFrame, decryptFile, reloadWidget)
     elif index == 8:
-        tab9AllWidget(tabFrame, decryptFile, reloadWidget)
+        tab9AllWidget(tabFrame, decryptFile, reloadWidget, selectId)
     elif index == 9:
         tab10AllWidget(tabFrame, decryptFile, reloadWidget)
     elif index == 10:
