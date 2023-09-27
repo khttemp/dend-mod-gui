@@ -303,7 +303,7 @@ class Else3ListWidget:
         tempList = []
         csvLines.pop(0)
         firstReadFlag = True
-        num = 1
+        num = 0
         readNum = 0
         try:
             for i in range(len(csvLines)):

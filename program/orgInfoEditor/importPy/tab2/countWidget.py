@@ -64,7 +64,7 @@ class CountWidget():
             self.varNotch.set(notchNum)
             self.notchTextLb = tkinter.Label(self.frame, textvariable=self.varNotch, font=textSetting.textList["font6"], width=7, borderwidth=1, relief="solid")
             self.notchTextLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
-            self.notchBtn = tkinter.Button(self.frame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], font=textSetting.textList["font7"], command=lambda: self.editNotchVar(self.varNotch, self.varNotch.get()))
+            self.notchBtn = tkinter.Button(self.frame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], font=textSetting.textList["font7"], command=lambda: self.editNotchVar())
             self.notchBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
 
     def editNotchVar(self):

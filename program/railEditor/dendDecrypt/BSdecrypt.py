@@ -1228,12 +1228,13 @@ class RailDecrypt:
             for i in range(len(self.railList)):
                 railInfo = self.railList[i]
                 copyRailInfo = copy.deepcopy(railInfo)
+                copyRailData = copyRailInfo[14]
+                copyElse3ListIndex = 15 + copyRailData * 4
                 if copyRailInfo[0] in else3RailList:
                     railListIndex = [index for (index, item) in enumerate(else3RailList) if item == copyRailInfo[0]][0]
-                    copyRailData = copyRailInfo[14]
-                    copyElse3ListIndex = 15 + copyRailData * 4
                     copyRailInfo[copyElse3ListIndex] = valList[railListIndex][1]
-
+                else:
+                    copyRailInfo[copyElse3ListIndex] = []
                 copyRailInfo.pop(0)
                 railList.append(copyRailInfo)
             return self.saveRailCsv(railList)

@@ -223,7 +223,7 @@ class RailListWidget:
         self.flagFrameLf = ttk.LabelFrame(self.frame, text=textSetting.textList["railEditor"]["railFlagInfo"])
         self.flagFrameLf.pack(padx=30, pady=15, fill=tkinter.X)
 
-        flagInfoList = textSetting.textList["railEditor"]["railFlagInfoList"]
+        flagInfoList = copy.deepcopy(textSetting.textList["railEditor"]["railFlagInfoList"])
 
         if self.decryptFile.game != "RS":
             flagInfoList[1][4] = textSetting.textList["railEditor"]["railOldFlag1"]
