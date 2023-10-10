@@ -6,7 +6,7 @@ import copy
 
 
 class RailDecrypt:
-    def __init__(self, filePath, writeFlag, ambWriteFlag):
+    def __init__(self, filePath):
         self.game = "LS"
         self.filePath = filePath
         self.directory = os.path.dirname(self.filePath)
@@ -34,8 +34,6 @@ class RailDecrypt:
         self.else3List = []
         self.else4List = []
         self.ambList = []
-        self.writeFlag = writeFlag
-        self.ambWriteFlag = ambWriteFlag
         self.error = ""
 
     def open(self):
@@ -214,55 +212,18 @@ class RailDecrypt:
 
         self.railIdx = index
         # Map
-        writeFlag = self.writeFlag
-        ambWriteFlag = self.ambWriteFlag
-
-        if writeFlag:
-            try:
-                path = os.path.join(self.directory, self.filename + ".csv")
-                w = open(path, "w")
-                w.write("index,")
-                if readFlag:
-                    w.write("prev_rail2,")
-                w.write("pos_x,pos_y,pos_z,")
-                w.write("dir_x,dir_y,dir_z,")
-                w.write("mdl_no,prev_rail,")
-                w.write("rot_x,rot_y,rot_z,")
-                w.write("mdl_kasenchu,mdl_kasen,fix_amb_mdl,per,")
-                w.write("flg,flg,flg,flg,")
-                w.write("rail_data,")
-                w.write("next_rail,next_no,prev_rail,prev_no,\n")
-            except PermissionError:
-                writeFlag = False
-
-        if ambWriteFlag:
-            try:
-                path = os.path.join(self.directory, self.filename + "_amb.csv")
-                ambW = open(path, "w")
-                ambW.write("rail_no,pos,")
-                ambW.write("rail_pos,smf_no,anime_no,\n")
-                ambW.close()
-
-                ambW = open(path, "a")
-            except PermissionError:
-                ambWriteFlag = False
-
         mapCnt = struct.unpack("<h", self.byteArr[index:index + 2])[0]
         index += 2
 
         for i in range(mapCnt):
             railInfo = []
             railInfo.append(i)
-            if writeFlag:
-                w.write("{0},".format(i))
 
             if readFlag:
                 else4Info = []
                 prev_rail2 = struct.unpack("<h", self.byteArr[index:index + 2])[0]
                 index += 2
                 railInfo.append(prev_rail2)
-                if writeFlag:
-                    w.write("{0},".format(prev_rail2))
 
                 if prev_rail2 != -1:
                     else4Info.append(i)
@@ -281,8 +242,6 @@ class RailDecrypt:
                 tempF = round(tempF, 5)
                 railInfo.append(tempF)
                 index += 4
-                if writeFlag:
-                    w.write("{0},".format(tempF))
 
             # base_dir
             for j in range(3):
@@ -290,20 +249,14 @@ class RailDecrypt:
                 tempF = round(tempF, 5)
                 railInfo.append(tempF)
                 index += 4
-                if writeFlag:
-                    w.write("{0},".format(tempF))
 
             mdl_no = struct.unpack("<B", self.byteArr[index].to_bytes(1, "little"))[0]
             railInfo.append(mdl_no)
             index += 1
-            if writeFlag:
-                w.write("{0},".format(mdl_no))
 
             prev_rail = struct.unpack("<h", self.byteArr[index:index + 2])[0]
             railInfo.append(prev_rail)
             index += 2
-            if writeFlag:
-                w.write("{0},".format(prev_rail))
 
             # base_rot
             if prev_rail == -1:
@@ -312,28 +265,18 @@ class RailDecrypt:
                     tempF = round(tempF, 5)
                     railInfo.append(tempF)
                     index += 4
-                    if writeFlag:
-                        w.write("{0},".format(tempF))
-            else:
-                for j in range(3):
-                    if writeFlag:
-                        w.write(",")
 
             mdl_kasenchu = struct.unpack("<B", self.byteArr[index].to_bytes(1, "little"))[0]
             if mdl_kasenchu == 255:
                 mdl_kasenchu = -1
             railInfo.append(mdl_kasenchu)
             index += 1
-            if writeFlag:
-                w.write("{0},".format(mdl_kasenchu))
 
             mdl_kasen = struct.unpack("<B", self.byteArr[index].to_bytes(1, "little"))[0]
             if mdl_kasen == 255:
                 mdl_kasen = -1
             railInfo.append(mdl_kasen)
             index += 1
-            if writeFlag:
-                w.write("{0},".format(mdl_kasen))
 
             # dummy?
             for j in range(2):
@@ -347,28 +290,20 @@ class RailDecrypt:
                 fix_amb_mdl = -1
             railInfo.append(fix_amb_mdl)
             index += 1
-            if writeFlag:
-                w.write("{0},".format(fix_amb_mdl))
 
             perF = struct.unpack("<f", self.byteArr[index:index + 4])[0]
             perF = round(perF, 5)
             railInfo.append(perF)
             index += 4
-            if writeFlag:
-                w.write("{0},".format(perF))
 
             for j in range(4):
                 flag = self.byteArr[index]
                 railInfo.append(flag)
                 index += 1
-                if writeFlag:
-                    w.write("0x{:02x},".format(flag))
 
             rail_data = self.byteArr[index]
             railInfo.append(rail_data)
             index += 1
-            if writeFlag:
-                w.write("{0},".format(rail_data))
 
             for j in range(rail_data):
                 next_rail = struct.unpack("<h", self.byteArr[index:index + 2])[0]
@@ -383,8 +318,6 @@ class RailDecrypt:
                 prev_no = struct.unpack("<h", self.byteArr[index:index + 2])[0]
                 railInfo.append(prev_no)
                 index += 2
-                if writeFlag:
-                    w.write("{0},{1},{2},{3},".format(next_rail, next_no, prev_rail, prev_no))
 
             ambcnt = self.byteArr[index]
             index += 1
@@ -392,48 +325,30 @@ class RailDecrypt:
             for j in range(ambcnt):
                 ambInfo = []
                 ambInfo.append(i)
-                if ambWriteFlag:
-                    ambW.write("{0},".format(i))
 
-                amb_mdl_no = struct.unpack("<B", self.byteArr[index].to_bytes(1, "little"))[0]
-                ambInfo.append(amb_mdl_no)
+                pos = struct.unpack("<B", self.byteArr[index].to_bytes(1, "little"))[0]
+                ambInfo.append(pos)
                 index += 1
-                if ambWriteFlag:
-                    ambW.write("{0},".format(amb_mdl_no))
 
                 railPos = struct.unpack("<h", self.byteArr[index:index + 2])[0]
                 ambInfo.append(railPos)
                 index += 2
-                if ambWriteFlag:
-                    ambW.write("{0},".format(railPos))
 
                 smfNo = self.byteArr[index]
                 ambInfo.append(smfNo)
                 index += 1
-                if ambWriteFlag:
-                    ambW.write("{0},".format(smfNo))
 
                 animeNo = self.byteArr[index]
                 if animeNo == 255:
                     animeNo = -1
                 ambInfo.append(animeNo)
                 index += 1
-                if ambWriteFlag:
-                    ambW.write("{0},".format(animeNo))
 
                 ambList.append(ambInfo)
-                if ambWriteFlag:
-                    ambW.write("\n")
                 self.ambList.append(ambInfo)
             railInfo.append(ambList)
 
             self.railList.append(railInfo)
-            if writeFlag:
-                w.write("\n")
-        if writeFlag:
-            w.close()
-        if ambWriteFlag:
-            ambW.close()
 
         # stationName
         self.stationNameIdx = index
@@ -556,6 +471,90 @@ class RailDecrypt:
             comicScriptInfo.append(tempList)
 
             self.comicScriptList.append(comicScriptInfo)
+        return True
+
+    def extractRailCsv(self, file_path):
+        readFlag = False
+        if self.ver == "DEND_MAP_VER0101":
+            readFlag = True
+
+        try:
+            w = open(file_path, "w")
+            w.write("index,prev_rail,")
+            w.write("pos_x,pos_y,pos_z,")
+            w.write("dir_x,dir_y,dir_z,")
+            w.write("mdl_no,mdl_kasen,mdl_kasenchu,")
+            w.write("rot_x,rot_y,rot_z,fix_amb_mdl,per,")
+            w.write("flg,flg,flg,flg,")
+            w.write("rail_data,")
+            w.write("next_rail,next_no,prev_rail,prev_no,\n")
+        except PermissionError:
+            return False
+
+        for railInfo in self.railList:
+            offset = 0
+            # index
+            w.write("{0},".format(railInfo[0]))
+
+            if readFlag:
+                offset = 2
+
+            prev_rail = railInfo[8 + offset]
+            w.write("{0},".format(prev_rail))
+
+            # pos, dir, mdl_no
+            for i in range(7):
+                w.write("{0},".format(railInfo[1 + offset + i]))
+
+            # base_rot
+            rotList = []
+            if prev_rail == -1:
+                for i in range(3):
+                    rotList.append(railInfo[9 + offset + i])
+                offset += 3
+
+            kasenchu = railInfo[9 + offset]
+            kasen = railInfo[10 + offset]
+            w.write("{0},{1},".format(kasen, kasenchu))
+
+            if len(rotList) > 0:
+                for rot in rotList:
+                    w.write("{0},".format(rot))
+            else:
+                w.write("," * 3)
+
+            fix_amb_mdl = railInfo[11 + offset]
+            per = railInfo[12 + offset]
+            w.write("{0},{1},".format(fix_amb_mdl, per))
+
+            # flg
+            for i in range(4):
+                w.write("0x{0:02x},".format(railInfo[13 + offset + i]))
+            # raildata
+            raildata = railInfo[17 + offset]
+            w.write("{0},".format(raildata))
+
+            for i in range(raildata):
+                for j in range(4):
+                    w.write("{0},".format(railInfo[18 + offset + 4*i + j]))
+
+            w.write("\n")
+        w.close()
+        return True
+
+    def extractAmbCsv(self, file_path):
+        try:
+            w = open(file_path, "w")
+            w.write("rail_no,pos,")
+            w.write("rail_pos,smf_no,anime_no,\n")
+        except PermissionError:
+            return False
+
+        for ambInfo in self.ambList:
+            for i in range(5):
+                w.write("{0},".format(ambInfo[i]))
+            w.write("\n")
+        w.close()
         return True
 
     def saveMusicList(self, musicList):
@@ -966,7 +965,7 @@ class RailDecrypt:
                     railListIdx += 1
 
                     if prev_rail2 != -1:
-                        else4Info = railInfo[railListIdx]
+                        else4Info = railInfo[railListIdx][2:]
                         for j in range(6):
                             tempF = struct.pack("<f", else4Info[j])
                             newByteArr.extend(tempF)

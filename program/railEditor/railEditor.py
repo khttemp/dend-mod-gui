@@ -25,7 +25,7 @@ info = textSetting.textList["railEditor"]["railComboValue"]
 lsInfo = textSetting.textList["railEditor"]["railLsComboValue"]
 
 
-def openFile(v_railCsvMode, v_ambCsvMode):
+def openFile():
     global v_radio
     global v_filename
     global cb
@@ -41,43 +41,14 @@ def openFile(v_railCsvMode, v_ambCsvMode):
         del decryptFile
         decryptFile = None
 
-        writeFlag = True
-        ambWriteFlag = True
-
-        if v_railCsvMode == 0:
-            file = os.path.splitext(os.path.basename(file_path))[0]
-            directory = os.path.dirname(file_path)
-            if os.path.exists(os.path.join(directory, file + ".csv")):
-                result = mb.askquestion(title=textSetting.textList["confirm"], message=textSetting.textList["infoList"]["I96"], icon="warning")
-                if result == "no":
-                    writeFlag = False
-        elif v_railCsvMode == 2:
-            file = os.path.splitext(os.path.basename(file_path))[0]
-            directory = os.path.dirname(file_path)
-            if os.path.exists(os.path.join(directory, file + ".csv")):
-                writeFlag = False
-
-        if v_ambCsvMode == 0:
-            file = os.path.splitext(os.path.basename(file_path))[0]
-            directory = os.path.dirname(file_path)
-            if os.path.exists(os.path.join(directory, file + "_amb.csv")):
-                result = mb.askquestion(title=textSetting.textList["confirm"], message=textSetting.textList["infoList"]["I97"], icon="warning")
-                if result == "no":
-                    ambWriteFlag = False
-        elif v_ambCsvMode == 2:
-            file = os.path.splitext(os.path.basename(file_path))[0]
-            directory = os.path.dirname(file_path)
-            if os.path.exists(os.path.join(directory, file + ".csv")):
-                ambWriteFlag = False
-
         if v_radio.get() == RS:
-            decryptFile = dendRs.RailDecrypt(file_path, writeFlag, ambWriteFlag)
+            decryptFile = dendRs.RailDecrypt(file_path)
         elif v_radio.get() == CS:
-            decryptFile = dendCs.RailDecrypt(file_path, writeFlag, ambWriteFlag)
+            decryptFile = dendCs.RailDecrypt(file_path)
         elif v_radio.get() == BS:
-            decryptFile = dendBs.RailDecrypt(file_path, writeFlag, ambWriteFlag)
+            decryptFile = dendBs.RailDecrypt(file_path)
         elif v_radio.get() == LS:
-            decryptFile = dendLs.RailDecrypt(file_path, writeFlag, ambWriteFlag)
+            decryptFile = dendLs.RailDecrypt(file_path)
 
         if not decryptFile.open():
             if decryptFile.error == "":

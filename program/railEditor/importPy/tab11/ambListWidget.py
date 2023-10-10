@@ -26,8 +26,10 @@ class AmbListWidget:
         self.searchBtn = ttk.Button(self.ambNoFrame, text=textSetting.textList["railEditor"]["ambSearchBtnLabel"], command=lambda: self.searchAmb(self.v_ambNo.get()))
         self.searchBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E, padx=30)
 
-        self.csvSaveBtn = ttk.Button(self.ambNoFrame, text=textSetting.textList["railEditor"]["ambCsvSaveLabel"], command=self.saveCsv)
-        self.csvSaveBtn.grid(row=0, column=3, sticky=tkinter.W + tkinter.E, padx=30)
+        self.csvExtractBtn = ttk.Button(self.ambNoFrame, width=25, text=textSetting.textList["railEditor"]["ambCsvExtractLabel"], command=self.extractCsv)
+        self.csvExtractBtn.grid(row=0, column=3, sticky=tkinter.W + tkinter.E, padx=5)
+        self.csvSaveBtn = ttk.Button(self.ambNoFrame, width=25, text=textSetting.textList["railEditor"]["ambCsvSaveLabel"], command=self.saveCsv)
+        self.csvSaveBtn.grid(row=0, column=4, sticky=tkinter.W + tkinter.E, padx=5)
 
         ###
         self.sidePackFrame = ttk.Frame(self.frame)
@@ -445,9 +447,19 @@ class AmbListWidget:
                 self.mdlNoCb.current(ambInfo[3])
             self.v_animeNo.set(ambInfo[4])
 
+    def extractCsv(self):
+        filename = self.decryptFile.filename + "_amb.csv"
+        file_path = fd.asksaveasfilename(initialfile=filename, defaultextension="csv", filetypes=[(textSetting.textList["railEditor"]["ambCsvFileType"], "*.csv")])
+        errorMsg = textSetting.textList["errorList"]["E7"]
+        if file_path:
+            if not self.decryptFile.extractAmbCsv(file_path):
+                mb.showerror(title=textSetting.textList["error"], message=errorMsg)
+                return
+            mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I10"])
+
     def saveCsv(self):
         errorMsg = textSetting.textList["errorList"]["E71"]
-        file_path = fd.askopenfilename(defaultextension="csv", filetypes=[(textSetting.textList["railEditor"]["railCsvFileType"], "*.csv")])
+        file_path = fd.askopenfilename(defaultextension="csv", filetypes=[(textSetting.textList["railEditor"]["ambCsvFileType"], "*.csv")])
         if not file_path:
             return
         try:

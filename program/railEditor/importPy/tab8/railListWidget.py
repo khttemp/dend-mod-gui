@@ -33,12 +33,14 @@ class RailListWidget:
         self.searchBtn = ttk.Button(self.railNoFrame, text=textSetting.textList["railEditor"]["railSearchBtnLabel"], command=lambda: self.searchRail(self.v_railNo.get()))
         self.searchBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E, padx=30)
 
-        self.csvSaveBtn = ttk.Button(self.railNoFrame, text=textSetting.textList["railEditor"]["railCsvSaveLabel"], command=self.saveCsv)
-        self.csvSaveBtn.grid(row=0, column=3, sticky=tkinter.W + tkinter.E, padx=30)
+        self.csvExtractBtn = ttk.Button(self.railNoFrame, width=25, text=textSetting.textList["railEditor"]["railCsvExtractLabel"], command=self.extractCsv)
+        self.csvExtractBtn.grid(row=0, column=3, sticky=tkinter.W + tkinter.E, padx=5)
+        self.csvSaveBtn = ttk.Button(self.railNoFrame, width=25, text=textSetting.textList["railEditor"]["railCsvSaveLabel"], command=self.saveCsv)
+        self.csvSaveBtn.grid(row=0, column=4, sticky=tkinter.W + tkinter.E, padx=5)
 
         if self.decryptFile.game == "CS":
             self.csToRsBtn = ttk.Button(self.railNoFrame, text=textSetting.textList["railEditor"]["railCsToRs"], command=self.csToRs)
-            self.csToRsBtn.grid(row=0, column=4, sticky=tkinter.W + tkinter.E, padx=30)
+            self.csToRsBtn.grid(row=0, column=5, sticky=tkinter.W + tkinter.E, padx=10)
 
         ###
         self.sidePackFrame = ttk.Frame(self.frame)
@@ -468,9 +470,19 @@ class RailListWidget:
                 self.varRailList[i].set(railInfo[railIdx])
                 railIdx += 1
 
+    def extractCsv(self):
+        filename = self.decryptFile.filename + ".csv"
+        file_path = fd.asksaveasfilename(initialfile=filename, defaultextension="csv", filetypes=[(textSetting.textList["railEditor"]["railCsvFileType"], "*.csv")])
+        errorMsg = textSetting.textList["errorList"]["E7"]
+        if file_path:
+            if not self.decryptFile.extractRailCsv(file_path):
+                mb.showerror(title=textSetting.textList["error"], message=errorMsg)
+                return
+            mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I10"])
+
     def saveCsv(self):
         errorMsg = textSetting.textList["errorList"]["E71"]
-        file_path = fd.askopenfilename(defaultextension="csv", filetypes=[(textSetting.textList["railEditor"]["ambCsvFileType"], "*.csv")])
+        file_path = fd.askopenfilename(defaultextension="csv", filetypes=[(textSetting.textList["railEditor"]["railCsvFileType"], "*.csv")])
         if not file_path:
             return
         try:
@@ -532,28 +544,13 @@ class RailListWidget:
                         railInfo.append(rail)
 
                     if self.decryptFile.game in ["BS", "CS"]:
-                        endcnt = int(arr[15 + rail_data * readCount])
                         copyElse3List = []
-                        if endcnt > 0:
-                            if int(arr[0]) < len(self.decryptFile.railList):
-                                originRailInfo = self.decryptFile.railList[int(arr[0])]
-                                originRailData = originRailInfo[14]
-                                originEndcntIndex = 15 + originRailData * readCount
-                                originElse3List = originRailInfo[originEndcntIndex]
-                                copyElse3List = copy.deepcopy(originElse3List)
-
-                                for i in range(endcnt):
-                                    if i >= len(originElse3List):
-                                        tempInfo = []
-                                        for j in range(8):
-                                            tempInfo.append(0)
-                                        copyElse3List.append(tempInfo)
-                            else:
-                                for i in range(endcnt):
-                                    tempInfo = []
-                                    for j in range(8):
-                                        tempInfo.append(0)
-                                    copyElse3List.append(tempInfo)
+                        if int(arr[0]) < len(self.decryptFile.railList):
+                            originRailInfo = self.decryptFile.railList[int(arr[0])]
+                            originRailData = originRailInfo[14]
+                            originEndcntIndex = 15 + originRailData * readCount
+                            originElse3List = originRailInfo[originEndcntIndex]
+                            copyElse3List = copy.deepcopy(originElse3List)
                         railInfo.append(copyElse3List)
 
                         else4Info = []
@@ -586,18 +583,16 @@ class RailListWidget:
                     if len(arr) < 21:
                         raise Exception
 
-                    csvIdx = 1
                     if self.decryptFile.ver == "DEND_MAP_VER0101":
-                        prev_rail2 = int(arr[csvIdx])
+                        originRailInfo = self.decryptFile.railList[int(arr[0])]
+                        prev_rail2 = originRailInfo[1]
                         railInfo.append(prev_rail2)
-                        csvIdx += 1
 
                         if prev_rail2 != -1:
                             if int(arr[0]) < len(self.decryptFile.railList):
-                                originRailInfo = self.decryptFile.railList[int(arr[0])]
                                 originElse4Info = originRailInfo[2]
                                 if len(originElse4Info) > 0:
-                                    railInfo.append(originRailInfo[2][2:])
+                                    railInfo.append(originRailInfo[2])
                                 else:
                                     else4Info = []
                                     for i in range(6):
@@ -611,6 +606,7 @@ class RailListWidget:
                         else:
                             railInfo.append([])
 
+                    csvIdx = 2
                     for i in range(6):
                         tempF = float(arr[csvIdx])
                         railInfo.append(tempF)
@@ -620,9 +616,14 @@ class RailListWidget:
                     railInfo.append(mdl_no)
                     csvIdx += 1
 
-                    prev_rail = int(arr[csvIdx])
-                    railInfo.append(prev_rail)
+                    kasen = int(arr[csvIdx])
                     csvIdx += 1
+
+                    kasenchu = int(arr[csvIdx])
+                    csvIdx += 1
+
+                    prev_rail = int(arr[1])
+                    railInfo.append(prev_rail)
 
                     for i in range(3):
                         if prev_rail == -1:
@@ -630,13 +631,8 @@ class RailListWidget:
                             railInfo.append(tempF)
                         csvIdx += 1
 
-                    kasenchu = int(arr[csvIdx])
                     railInfo.append(kasenchu)
-                    csvIdx += 1
-
-                    kasen = int(arr[csvIdx])
                     railInfo.append(kasen)
-                    csvIdx += 1
 
                     fixAmbNo = int(arr[csvIdx])
                     railInfo.append(fixAmbNo)

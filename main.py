@@ -62,15 +62,11 @@ def callProgram(programName):
         rsRailProgram.call_rsRail(root, programFrame)
 
     delete_OptionMenu()
-    if selectedProgram == "railEditor":
-        add_railCsvOptionMenu()
-    elif selectedProgram == "smf":
+    if selectedProgram == "smf":
         add_smfWriteOptionMenu()
 
 
 def loadFile():
-    global v_railCsvRadio
-    global v_ambCsvRadio
     global v_frameCheck
     global v_meshCheck
     global v_XYZCheck
@@ -90,7 +86,7 @@ def loadFile():
     elif selectedProgram == "fvtMaker":
         fvtMakerProgram.openFile()
     elif selectedProgram == "railEditor":
-        railEditorProgram.openFile(v_railCsvRadio.get(), v_ambCsvRadio.get())
+        railEditorProgram.openFile()
     elif selectedProgram == "smf":
         smfProgram.openFile(v_frameCheck.get(), v_meshCheck.get(), v_XYZCheck.get(), v_mtrlCheck.get())
     elif selectedProgram == "SSUnity":
@@ -125,49 +121,6 @@ def configCheckOption(section, options):
 
         return True
     return False
-
-
-def add_railCsvOptionMenu():
-    global config_ini_path
-    global v_railCsvRadio
-    global v_ambCsvRadio
-    global menubar
-    global maxMenubarLen
-
-    if not os.path.exists(config_ini_path):
-        writeDefaultConfig()
-
-    configRead = configparser.ConfigParser()
-    configRead.read(config_ini_path, encoding="utf-8")
-
-    readErrorFlag = False
-    if configCheckOption("RAIL_CSV", "mode"):
-        readErrorFlag = True
-    if configCheckOption("AMB_CSV", "mode"):
-        readErrorFlag = True
-
-    if readErrorFlag:
-        try:
-            f = codecs.open(config_ini_path, "w", "utf-8", "strict")
-            configRead.write(f)
-            f.close()
-        except PermissionError:
-            pass
-
-    if menubar.entryconfig(tkinter.END) == menubar.entryconfig(maxMenubarLen):
-        v_railCsvRadio = tkinter.IntVar()
-        v_railCsvRadio.set(int(configRead.get("RAIL_CSV", "mode")))
-        v_ambCsvRadio = tkinter.IntVar()
-        v_ambCsvRadio.set(int(configRead.get("AMB_CSV", "mode")))
-        railCsvOptionMenu = tkinter.Menu(menubar, tearoff=False)
-        railCsvOptionMenu.add_radiobutton(label=textSetting.textList["menu"]["csv"]["rail"]["opt1"], variable=v_railCsvRadio, value=0, command=writeRailConfig)
-        railCsvOptionMenu.add_radiobutton(label=textSetting.textList["menu"]["csv"]["rail"]["opt2"], variable=v_railCsvRadio, value=1, command=writeRailConfig)
-        railCsvOptionMenu.add_radiobutton(label=textSetting.textList["menu"]["csv"]["rail"]["opt3"], variable=v_railCsvRadio, value=2, command=writeRailConfig)
-        railCsvOptionMenu.add_separator()
-        railCsvOptionMenu.add_radiobutton(label=textSetting.textList["menu"]["csv"]["amb"]["opt1"], variable=v_ambCsvRadio, value=0, command=writeRailConfig)
-        railCsvOptionMenu.add_radiobutton(label=textSetting.textList["menu"]["csv"]["amb"]["opt2"], variable=v_ambCsvRadio, value=1, command=writeRailConfig)
-        railCsvOptionMenu.add_radiobutton(label=textSetting.textList["menu"]["csv"]["amb"]["opt3"], variable=v_ambCsvRadio, value=2, command=writeRailConfig)
-        menubar.add_cascade(label=textSetting.textList["menu"]["csv"]["name"], menu=railCsvOptionMenu)
 
 
 def add_smfWriteOptionMenu():
@@ -239,11 +192,6 @@ def writeDefaultConfig():
                 os.makedirs(config_ini_folder)
 
             config = configparser.RawConfigParser()
-            config.add_section("RAIL_CSV")
-            config.set("RAIL_CSV", "mode", 0)
-            config.add_section("AMB_CSV")
-            config.set("AMB_CSV", "mode", 0)
-
             config.add_section("SMF_FRAME")
             config.set("SMF_FRAME", "mode", 0)
             config.add_section("SMF_MESH")
@@ -261,25 +209,6 @@ def writeDefaultConfig():
             f.close()
         except PermissionError:
             pass
-
-
-def writeRailConfig():
-    global v_railCsvRadio
-    global v_ambCsvRadio
-    global config_ini_path
-
-    configRead = configparser.ConfigParser()
-    configRead.read(config_ini_path, encoding="utf-8")
-
-    configRead.set("RAIL_CSV", "mode", str(v_railCsvRadio.get()))
-    configRead.set("AMB_CSV", "mode", str(v_ambCsvRadio.get()))
-
-    try:
-        f = codecs.open(config_ini_path, "w", "utf-8", "strict")
-        configRead.write(f)
-        f.close()
-    except PermissionError:
-        pass
 
 
 def writeSmfConfig():
@@ -365,8 +294,6 @@ def confirmUpdate():
 config_ini_path = "config.ini"
 if platform.system() == "Windows":
     config_ini_path = os.path.join(os.getenv("APPDATA"), "dend-mod-gui", "config.ini")
-v_railCsvRadio = None
-v_ambCsvRadio = None
 v_frameCheck = None
 v_meshCheck = None
 v_XYZCheck = None

@@ -5,8 +5,10 @@ import program.textSetting as textSetting
 from program.tkinterScrollbarFrameClass import ScrollbarFrame
 
 from program.railEditor.importPy.tab1.musicWidget import MusicWidget
+from program.railEditor.importPy.tab1.excelWidget import ExcelWidget
 from program.railEditor.importPy.tab1.trainCountWidget import TrainCountWidget
 from program.railEditor.importPy.tab1.railPosWidget import RailPosWidget
+from program.railEditor.importPy.tab1.stationNoWidget import StationNoWidget
 
 from program.railEditor.importPy.tab2.else1ListWidget import Else1ListWidget
 from program.railEditor.importPy.tab2.simpleListWidget import SimpleListWidget
@@ -38,7 +40,22 @@ def tab1AllWidget(tabFrame, decryptFile, reloadFunc):
     tab_one_frame.pack(expand=True, fill=tkinter.BOTH)
     frame = ScrollbarFrame(tab_one_frame)
 
-    MusicWidget(frame.frame, decryptFile, reloadFunc)
+    musicExcelFrame = ttk.Frame(frame.frame)
+    musicExcelFrame.pack(anchor=tkinter.NW)
+
+    musicFrame = ttk.Frame(musicExcelFrame)
+    musicFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT)
+    MusicWidget(musicFrame, decryptFile, reloadFunc)
+
+    excelFrame = ttk.Frame(musicExcelFrame)
+    excelFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT)
+
+    excelWidget = ExcelWidget(decryptFile, reloadFunc)
+    excelExtractBtn = ttk.Button(excelFrame, text=textSetting.textList["railEditor"]["railDataExtractExcel"], width=30, command=excelWidget.extract)
+    excelExtractBtn.grid(row=0, column=0, padx=10, pady=10)
+    excelSaveBtn = ttk.Button(excelFrame, text=textSetting.textList["railEditor"]["railDataSaveExcel"], width=30, command=excelWidget.save)
+    excelSaveBtn.grid(row=0, column=1, padx=10, pady=10)
+
     TrainCountWidget(frame.frame, decryptFile, reloadFunc)
 
     railPosFrame = ttk.Frame(frame.frame)
@@ -57,6 +74,25 @@ def tab1AllWidget(tabFrame, decryptFile, reloadFunc):
         railPos3Frame = ttk.Frame(railPosFrame)
         railPos3Frame.grid(sticky=tkinter.NW, row=2, column=0, pady=3)
         RailPosWidget(railPos3Frame, textSetting.textList["railEditor"]["pracOrVsPos"], 2, decryptFile, decryptFile.trainList3, reloadFunc)
+
+        stationNoFrame = ttk.Frame(railPosFrame)
+        stationNoFrame.grid(sticky=tkinter.NW, row=3, column=0, pady=3)
+        StationNoWidget(stationNoFrame, decryptFile, decryptFile.stationNo, 0, reloadFunc)
+
+        if decryptFile.game == "BS":
+            separator = ttk.Separator(frame.frame, orient="horizontal")
+            separator.pack(fill=tkinter.X)
+
+            railPosDummyFrame = ttk.Frame(frame.frame)
+            railPosDummyFrame.pack(anchor=tkinter.NW, padx=10, pady=5)
+
+            railPos4Frame = ttk.Frame(railPosDummyFrame)
+            railPos4Frame.grid(sticky=tkinter.NW, row=0, column=0, pady=3)
+            RailPosWidget(railPos4Frame, textSetting.textList["railEditor"]["dummyPos"], 3, decryptFile, decryptFile.trainList4, reloadFunc)
+
+            stationNo2Frame = ttk.Frame(railPosDummyFrame)
+            stationNo2Frame.grid(sticky=tkinter.NW, row=1, column=0, pady=3)
+            StationNoWidget(stationNo2Frame, decryptFile, decryptFile.stationNo2, 1, reloadFunc)
 
 
 def tab2AllWidget(tabFrame, decryptFile, reloadFunc):

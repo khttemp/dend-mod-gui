@@ -5,7 +5,7 @@ import traceback
 
 
 class RailDecrypt:
-    def __init__(self, filePath, writeFlag, ambWriteFlag):
+    def __init__(self, filePath):
         self.game = "RS"
         self.filePath = filePath
         self.directory = os.path.dirname(self.filePath)
@@ -16,6 +16,7 @@ class RailDecrypt:
         self.trainList = []
         self.trainList2 = []
         self.trainList3 = []
+        self.stationNo = 0
         self.else1List = []
         self.lightList = []
         self.pngList = []
@@ -32,8 +33,6 @@ class RailDecrypt:
         self.else3List = []
         self.else4List = []
         self.ambList = []
-        self.writeFlag = writeFlag
-        self.ambWriteFlag = ambWriteFlag
         self.error = ""
 
     def open(self):
@@ -60,6 +59,7 @@ class RailDecrypt:
         self.trainList = []
         self.trainList2 = []
         self.trainList3 = []
+        self.stationNo = 0
         self.else1List = []
         self.lightList = []
         self.pngList = []
@@ -170,7 +170,11 @@ class RailDecrypt:
             self.trainList3.append(trainInfo3)
             # unknown
 
+        # 駅表示を始める番号
+        self.stationNoIndex = index
+        self.stationNo = self.byteArr[index]
         index += 1
+
         # unknown
         self.elseIdx = index
         tempF = struct.unpack("<f", self.byteArr[index:index + 4])[0]
@@ -425,21 +429,6 @@ class RailDecrypt:
 
         self.railIdx = index
         # Map
-        writeFlag = self.writeFlag
-
-        if writeFlag:
-            try:
-                path = os.path.join(self.directory, self.filename + ".csv")
-                w = open(path, "w")
-                w.write("index,prev_rail,block,")
-                w.write("dir_x,dir_y,dir_z,")
-                w.write("mdl_no,mdl_kasen,mdl_kasenchu,per,")
-                w.write("flg,flg,flg,flg,")
-                w.write("rail_data,")
-                w.write("next_rail,next_no,prev_rail,prev_no,\n")
-            except PermissionError:
-                writeFlag = False
-
         mapCnt = struct.unpack("<h", self.byteArr[index:index + 2])[0]
         index += 2
 
@@ -454,28 +443,19 @@ class RailDecrypt:
             railInfo.append(block)
             index += 1
 
-            if writeFlag:
-                w.write("{0},{1},{2},".format(i, prev_rail, block))
-
             for j in range(3):
                 tempF = struct.unpack("<f", self.byteArr[index:index + 4])[0]
                 tempF = round(tempF, 5)
                 railInfo.append(tempF)
                 index += 4
-                if writeFlag:
-                    w.write("{0},".format(tempF))
 
             mdl_no = struct.unpack("<B", self.byteArr[index].to_bytes(1, "little"))[0]
             railInfo.append(mdl_no)
             index += 1
-            if writeFlag:
-                w.write("{0},".format(mdl_no))
 
             mdl_kasen = struct.unpack("<b", self.byteArr[index].to_bytes(1, "little"))[0]
             railInfo.append(mdl_kasen)
             index += 1
-            if writeFlag:
-                w.write("{0},".format(mdl_kasen))
 
             mdl_kasenchu = struct.unpack("<B", self.byteArr[index].to_bytes(1, "little"))[0]
             if mdl_kasenchu in [254, 255]:
@@ -485,28 +465,20 @@ class RailDecrypt:
                     mdl_kasenchu = -1
             railInfo.append(mdl_kasenchu)
             index += 1
-            if writeFlag:
-                w.write("{0},".format(mdl_kasenchu))
 
             perF = struct.unpack("<f", self.byteArr[index:index + 4])[0]
             perF = round(perF, 5)
             railInfo.append(perF)
             index += 4
-            if writeFlag:
-                w.write("{0},".format(perF))
 
             for j in range(4):
                 flag = self.byteArr[index]
                 railInfo.append(flag)
                 index += 1
-                if writeFlag:
-                    w.write("0x{:02x},".format(flag))
 
             rail_data = self.byteArr[index]
             railInfo.append(rail_data)
             index += 1
-            if writeFlag:
-                w.write("{0},".format(rail_data))
 
             for j in range(rail_data):
                 if readFlag:
@@ -522,8 +494,6 @@ class RailDecrypt:
                     prev_no = struct.unpack("<h", self.byteArr[index:index + 2])[0]
                     railInfo.append(prev_no)
                     index += 2
-                    if writeFlag:
-                        w.write("{0},{1},{2},{3},".format(next_rail, next_no, prev_rail, prev_no))
 
                 next_rail = struct.unpack("<h", self.byteArr[index:index + 2])[0]
                 railInfo.append(next_rail)
@@ -537,13 +507,7 @@ class RailDecrypt:
                 prev_no = struct.unpack("<h", self.byteArr[index:index + 2])[0]
                 railInfo.append(prev_no)
                 index += 2
-                if writeFlag:
-                    w.write("{0},{1},{2},{3},".format(next_rail, next_no, prev_rail, prev_no))
             self.railList.append(railInfo)
-            if writeFlag:
-                w.write("\n")
-        if writeFlag:
-            w.close()
 
         # unknown
         self.else3Idx = index
@@ -561,14 +525,14 @@ class RailDecrypt:
             tempList = []
             for j in range(endcnt):
                 tempInfo = []
-                type1 = self.byteArr[index]
-                tempInfo.append(type1)
+                pos = self.byteArr[index]
+                tempInfo.append(pos)
                 index += 1
-                type2 = struct.unpack("<h", self.byteArr[index:index + 2])[0]
-                tempInfo.append(type2)
+                railPos = struct.unpack("<h", self.byteArr[index:index + 2])[0]
+                tempInfo.append(railPos)
                 index += 2
-                binType = self.byteArr[index]
-                tempInfo.append(binType)
+                binIndex = self.byteArr[index]
+                tempInfo.append(binIndex)
                 index += 1
                 for k in range(2):
                     animeNum = struct.unpack("<h", self.byteArr[index:index + 2])[0]
@@ -583,8 +547,8 @@ class RailDecrypt:
         index += 2
         for i in range(cnt):
             else4Info = []
-            ambNo = struct.unpack("<h", self.byteArr[index:index + 2])[0]
-            else4Info.append(ambNo)
+            railNo = struct.unpack("<h", self.byteArr[index:index + 2])[0]
+            else4Info.append(railNo)
             index += 2
 
             prevRail = struct.unpack("<h", self.byteArr[index:index + 2])[0]
@@ -603,53 +567,25 @@ class RailDecrypt:
         ambcnt = struct.unpack("<h", self.byteArr[index:index + 2])[0]
         index += 2
 
-        ambWriteFlag = self.ambWriteFlag
-
-        if ambWriteFlag:
-            try:
-                path = os.path.join(self.directory, self.filename + "_amb.csv")
-                w = open(path, "w")
-                w.write("index,type,length,")
-                w.write("rail_no,rail_pos,")
-                w.write("base_pos_x,base_pos_y,base_pos_z,")
-                w.write("base_dir_x,base_dir_y,base_dir_z,")
-                w.write("priority,fog|child count,")
-                w.write("mdl_no,")
-                w.write("pos_x,pos_y,pos_z,")
-                w.write("dir_x,dir_y,dir_z,")
-                w.write("dir_x2,dir_y2,dir_z2,")
-                w.write("per,\n")
-            except PermissionError:
-                ambWriteFlag = False
-
         for i in range(ambcnt):
             ambInfo = []
-            # index
-            if ambWriteFlag:
-                w.write("{0},".format(i))
 
             # type
             temp = self.byteArr[index]
             ambInfo.append(temp)
             index += 1
-            if ambWriteFlag:
-                w.write("{0},".format(temp))
 
             # length
             tempF = struct.unpack("<f", self.byteArr[index:index + 4])[0]
             tempF = round(tempF, 5)
             ambInfo.append(tempF)
             index += 4
-            if ambWriteFlag:
-                w.write("{0},".format(tempF))
 
             # RailNo, RailPos
             for j in range(2):
                 temp = struct.unpack("<h", self.byteArr[index:index + 2])[0]
                 ambInfo.append(temp)
                 index += 2
-                if ambWriteFlag:
-                    w.write("{0},".format(temp))
 
             # base pos_xyz base rot_xyz
             for j in range(6):
@@ -657,27 +593,19 @@ class RailDecrypt:
                 tempF = round(tempF, 5)
                 ambInfo.append(tempF)
                 index += 4
-                if ambWriteFlag:
-                    w.write("{0},".format(tempF))
 
             temp = self.byteArr[index]
             ambInfo.append(temp)
             index += 1
-            if ambWriteFlag:
-                w.write("{0},".format(temp))
 
             temp = self.byteArr[index]
             ambInfo.append(temp)
             index += 1
-            if ambWriteFlag:
-                w.write("{0},".format(temp))
 
             # mdl_no
             temp = struct.unpack("<h", self.byteArr[index:index + 2])[0]
             ambInfo.append(temp)
             index += 2
-            if ambWriteFlag:
-                w.write("{0},".format(temp))
 
             # pos xyz, dir xyz dir2 xyz
             for j in range(9):
@@ -685,35 +613,23 @@ class RailDecrypt:
                 tempF = round(tempF, 5)
                 ambInfo.append(tempF)
                 index += 4
-                if ambWriteFlag:
-                    w.write("{0},".format(tempF))
 
             # per
             tempF = struct.unpack("<f", self.byteArr[index:index + 4])[0]
             tempF = round(tempF, 5)
             ambInfo.append(tempF)
             index += 4
-            if ambWriteFlag:
-                w.write("{0},".format(tempF))
-
-            if ambWriteFlag:
-                w.write("\n")
-                w.write("," * 12)
 
             # AMB子mdl_no数
             cnta = self.byteArr[index]
             ambInfo.append(cnta)
             index += 1
-            if ambWriteFlag:
-                w.write("{0},".format(cnta))
 
             for j in range(cnta):
                 # mdl_no
                 temp = struct.unpack("<h", self.byteArr[index:index + 2])[0]
                 ambInfo.append(temp)
                 index += 2
-                if ambWriteFlag:
-                    w.write("{0},".format(temp))
 
                 # pos xyz, dir xyz, dir2 xyz
                 for k in range(9):
@@ -721,27 +637,90 @@ class RailDecrypt:
                     tempF = round(tempF, 5)
                     ambInfo.append(tempF)
                     index += 4
-                    if ambWriteFlag:
-                        w.write("{0},".format(tempF))
 
                 # per
                 tempF = struct.unpack("<f", self.byteArr[index:index + 4])[0]
                 tempF = round(tempF, 5)
                 ambInfo.append(tempF)
                 index += 4
-                if ambWriteFlag:
-                    w.write("{0},".format(tempF))
 
-                if ambWriteFlag:
-                    if j < (cnta - 1):
-                        w.write("\n")
-                        w.write("," * 13)
             self.ambList.append(ambInfo)
-            if ambWriteFlag:
-                w.write("\n")
-        if ambWriteFlag:
-            w.close()
 
+        return True
+
+    def extractRailCsv(self, file_path):
+        readFlag = False
+        if self.ver == "DEND_MAP_VER0400":
+            readFlag = True
+
+        try:
+            w = open(file_path, "w")
+            w.write("index,prev_rail,block,")
+            w.write("dir_x,dir_y,dir_z,")
+            w.write("mdl_no,mdl_kasen,mdl_kasenchu,per,")
+            w.write("flg,flg,flg,flg,")
+            w.write("rail_data,")
+            w.write("next_rail,next_no,prev_rail,prev_no,\n")
+        except PermissionError:
+            return False
+
+        for railInfo in self.railList:
+            for i in range(10):
+                w.write("{0},".format(railInfo[i]))
+            # flg
+            for i in range(4):
+                w.write("0x{0:02x},".format(railInfo[10 + i]))
+            # raildata
+            raildata = railInfo[14]
+            w.write("{0},".format(raildata))
+
+            for i in range(raildata):
+                for j in range(4):
+                    w.write("{0},".format(railInfo[15 + 4*i + j]))
+
+            if readFlag:
+                for i in range(raildata):
+                    for j in range(4):
+                        w.write("{0},".format(railInfo[15 + 4*raildata + 4*i + j]))
+            w.write("\n")
+        w.close()
+        return True
+
+    def extractAmbCsv(self, file_path):
+        try:
+            w = open(file_path, "w")
+            w.write("index,type,length,")
+            w.write("rail_no,rail_pos,")
+            w.write("base_pos_x,base_pos_y,base_pos_z,")
+            w.write("base_dir_x,base_dir_y,base_dir_z,")
+            w.write("priority,fog|child count,")
+            w.write("mdl_no,")
+            w.write("pos_x,pos_y,pos_z,")
+            w.write("dir_x,dir_y,dir_z,")
+            w.write("dir_x2,dir_y2,dir_z2,")
+            w.write("per,\n")
+        except PermissionError:
+            return False
+
+        for ambIdx, ambInfo in enumerate(self.ambList):
+            w.write("{0},".format(ambIdx))
+            for i in range(23):
+                w.write("{0},".format(ambInfo[i]))
+            w.write("\n")
+            w.write("," * 12)
+
+            childCount = ambInfo[23]
+            w.write("{0},".format(childCount))
+
+            for i in range(childCount):
+                for j in range(11):
+                    w.write("{0},".format(ambInfo[24 + 11*i + j]))
+
+                if i < (childCount - 1):
+                    w.write("\n")
+                    w.write("," * 13)
+            w.write("\n")
+        w.close()
         return True
 
     def saveMusic(self, cnt):
@@ -821,6 +800,21 @@ class RailDecrypt:
                         tempH = struct.pack("<h", trainInfo[j])
                         newByteArr.extend(tempH)
                         index += 2
+
+            newByteArr.extend(self.byteArr[index:])
+            self.save(newByteArr)
+            return True
+        except Exception:
+            self.error = traceback.format_exc()
+            return False
+
+    def saveStationNo(self, num, stationNo):
+        try:
+            index = self.stationNoIndex
+
+            newByteArr = self.byteArr[0:index]
+            newByteArr.append(stationNo)
+            index += 1
 
             newByteArr.extend(self.byteArr[index:])
             self.save(newByteArr)
