@@ -2499,6 +2499,7 @@ class ExcelWidget:
             w.write(newByteArr)
             w.close()
             mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I114"])
+            self.reloadFunc()
         except Exception:
             w = codecs.open("error.log", "w", "utf-8", "strict")
             w.write(traceback.format_exc())
