@@ -98,6 +98,7 @@ class SmfDecrypt:
             "K800_TRACK_D4.SMF",
             "Mu_Track_D4.SMF",
         ]
+        self.texList = set()
         self.lastParentIdx = 0
         self.popFrameByteArr = bytearray()
         self.popMeshByteArr = bytearray()
@@ -133,6 +134,7 @@ class SmfDecrypt:
         if self.writeFlag:
             w = codecs.open(os.path.join(self.directory, self.originFilename), "w", "utf-8", "strict")
             w.close()
+        self.texList = set()
         self.frameList = []
         self.meshList = []
         self.index = 0
@@ -158,6 +160,15 @@ class SmfDecrypt:
         if self.processFlag:
             self.v_process.set(50)
             self.processBar.update()
+
+        self.anisStartIdx = self.index
+        for anis in range(self.animationSetCount):
+            nameAndLength = self.getStructNameAndLength()
+            if self.printFRM:
+                self.writeInfo("="*20)
+                self.writeInfo("{0}, 0x{1:02x}".format(nameAndLength[0], nameAndLength[1]))
+            if not self.readANIS(anis, nameAndLength[1]):
+                return False
 
         self.meshStartIdx = self.index
         self.writeInfo("="*30)
@@ -304,6 +315,103 @@ class SmfDecrypt:
             obbInfo.append(fLength)
         frameInfo.append(obbInfo)
         self.frameList.append(frameInfo)
+
+        if startIndex + length == index:
+            self.index = index
+            return True
+        else:
+            return False
+
+    def readANIS(self, anis, length):
+        index = self.index
+        startIndex = self.index
+
+        if self.printFRM:
+            self.writeInfo(textSetting.textList["smf"]["anisNumFormat"].format(anis, self.animationSetCount-1))
+
+        if self.printFRM:
+            self.writeInfo(textSetting.textList["smf"]["anisName"], end=", ")
+        mName = struct.unpack("<64s", self.byteArr[index:index+self.MAX_NAME_SIZE])[0]
+        mName = mName.decode("shift-jis").rstrip("\x00")
+        index += self.MAX_NAME_SIZE
+        if self.printFRM:
+            self.writeInfo(mName)
+
+        if self.printFRM:
+            self.writeInfo(textSetting.textList["smf"]["anisCount"], end=", ")
+        animationCount = struct.unpack("<l", self.byteArr[index:index+4])[0]
+        index += 4
+        if self.printFRM:
+            self.writeInfo(animationCount)
+
+        if self.printFRM:
+            self.writeInfo(textSetting.textList["smf"]["anisTime"], end=", ")
+        lastTime = struct.unpack("<l", self.byteArr[index:index+4])[0]
+        index += 4
+        if self.printFRM:
+            self.writeInfo(lastTime)
+
+        for ani in range(animationCount):
+            self.index = index
+            nextNameAndLength = self.getStructNameAndLength()
+
+            index = self.index
+            subStartIdx = self.index
+            if self.printFRM:
+                self.writeInfo(textSetting.textList["smf"]["aniNumFormat"].format(nextNameAndLength[0], ani, animationCount-1))
+
+            targetFrame = struct.unpack("<l", self.byteArr[index:index+4])[0]
+            index += 4
+            if self.printFRM:
+                self.writeInfo(textSetting.textList["smf"]["anisTargetFrameIndex"].format(targetFrame))
+
+            keyMaxScale = struct.unpack("<l", self.byteArr[index:index+4])[0]
+            index += 4
+            keyMaxRotate = struct.unpack("<l", self.byteArr[index:index+4])[0]
+            index += 4
+            keyMaxTranslate = struct.unpack("<l", self.byteArr[index:index+4])[0]
+            index += 4
+
+            for keyScale in range(keyMaxScale):
+                keyScaleList = []
+                tempL = struct.unpack("<l", self.byteArr[index:index+4])[0]
+                keyScaleList.append(tempL)
+                index += 4
+                for i in range(3):
+                    vec = struct.unpack("<f", self.byteArr[index:index+4])[0]
+                    keyScaleList.append(vec)
+                    index += 4
+                if self.printFRM:
+                    self.writeInfo(keyScaleList)
+
+            for keyRotate in range(keyMaxRotate):
+                keyRotateList = []
+                tempL = struct.unpack("<l", self.byteArr[index:index+4])[0]
+                keyRotateList.append(tempL)
+                index += 4
+                for i in range(4):
+                    vec = struct.unpack("<f", self.byteArr[index:index+4])[0]
+                    keyRotateList.append(vec)
+                    index += 4
+                if self.printFRM:
+                    self.writeInfo(keyRotateList)
+
+            for keyTransLate in range(keyMaxTranslate):
+                keyTransLateList = []
+                tempL = struct.unpack("<l", self.byteArr[index:index+4])[0]
+                keyTransLateList.append(tempL)
+                index += 4
+                for i in range(3):
+                    vec = struct.unpack("<f", self.byteArr[index:index+4])[0]
+                    keyTransLateList.append(vec)
+                    index += 4
+                if self.printFRM:
+                    self.writeInfo(keyTransLateList)
+
+            if subStartIdx + nextNameAndLength[1] == index:
+                self.index = index
+            else:
+                return False
 
         if startIndex + length == index:
             self.index = index
@@ -928,6 +1036,7 @@ class SmfDecrypt:
             if self.index + nextNameAndLength[1] != index:
                 return False
         mtrlInfo.append(texcInfo)
+        self.texList |= set(texcInfo)
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -952,6 +1061,7 @@ class SmfDecrypt:
             if self.index + nextNameAndLength[1] != index:
                 return False
         mtrlInfo.append(texlInfo)
+        self.texList |= set(texlInfo)
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -976,6 +1086,7 @@ class SmfDecrypt:
             if self.index + nextNameAndLength[1] != index:
                 return False
         mtrlInfo.append(texeInfo)
+        self.texList |= set(texeInfo)
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -1000,6 +1111,7 @@ class SmfDecrypt:
             if self.index + nextNameAndLength[1] != index:
                 return False
         mtrlInfo.append(texsInfo)
+        self.texList |= set(texsInfo)
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -1024,6 +1136,7 @@ class SmfDecrypt:
             if self.index + nextNameAndLength[1] != index:
                 return False
         mtrlInfo.append(texnInfo)
+        self.texList |= set(texnInfo)
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
