@@ -23,6 +23,10 @@ gameDefine.load()
 
 
 def tab1AllWidget(tabFrame, decryptFile, trainIdx, game, varList, btnList, defaultData, widgetList, reloadFunc):
+    trainInfo = decryptFile.trainInfoList[trainIdx]
+    if trainInfo is None:
+        return
+    
     tab_one_frame = ttk.Frame(tabFrame)
     tab_one_frame.pack(expand=True, fill=tkinter.BOTH)
 
@@ -40,10 +44,10 @@ def tab1AllWidget(tabFrame, decryptFile, trainIdx, game, varList, btnList, defau
     extract_csv_train_info_button.pack(side=tkinter.LEFT, padx=15, pady=5)
 
     if game in [gameDefine.LS, gameDefine.BS, gameDefine.CS, gameDefine.RS]:
-        save_csv_train_inf_text = textSetting.textList["orgInfoEditor"]["saveCsv"]
+        save_csv_train_info_text = textSetting.textList["orgInfoEditor"]["saveCsv"]
     else:
-        save_csv_train_inf_text = textSetting.textList["orgInfoEditor"]["saveText"]
-    save_csv_train_info_button = ttk.Button(btnFrame, width=25, text=save_csv_train_inf_text, command=lambda: saveCsvTrainInfo(game, trainIdx, decryptFile, reloadFunc))
+        save_csv_train_info_text = textSetting.textList["orgInfoEditor"]["saveText"]
+    save_csv_train_info_button = ttk.Button(btnFrame, width=25, text=save_csv_train_info_text, command=lambda: saveCsvTrainInfo(game, trainIdx, decryptFile, reloadFunc))
     save_csv_train_info_button.pack(side=tkinter.LEFT, padx=15, pady=5)
 
     v_edit = widgetList[0]
@@ -63,7 +67,6 @@ def tab1AllWidget(tabFrame, decryptFile, trainIdx, game, varList, btnList, defau
     ]
     edit_button["command"] = lambda: editTrain(decryptFile, varList, btnList, widgetList, innerButtonList, reloadFunc)
 
-    trainInfo = decryptFile.trainInfoList[trainIdx]
     speed = trainInfo[0]
     perf = trainInfo[1]
 
@@ -148,6 +151,10 @@ def tab2AllWidget(tabFrame, decryptFile, trainIdx, game, defaultData, widgetList
         elseList2 = decryptFile.trainModelList[trainIdx]["elseList2"]
         FixedList2Widget(elseFrame2, trainIdx, decryptFile, "else3", elseList2, reloadFunc)
     else:
+        trainOrgInfo = decryptFile.trainInfoList[trainIdx]
+        if trainOrgInfo is None:
+            return
+
         mainFrame = ttk.Frame(tabFrame)
         mainFrame.pack(fill=tkinter.BOTH, expand=True)
         scrollMainFrame = ScrollbarFrame(mainFrame)
@@ -157,8 +164,6 @@ def tab2AllWidget(tabFrame, decryptFile, trainIdx, game, defaultData, widgetList
         countModelLf.pack(anchor=tkinter.NW, padx=10, pady=3)
 
         countWidget = CountWidget(tabFrame, trainIdx, game, countModelLf, decryptFile, reloadFunc)
-
-        trainOrgInfo = decryptFile.trainInfoList[trainIdx]
 
         sidePackFrame = ttk.Frame(scrollFrame)
         sidePackFrame.pack(anchor=tkinter.NW)

@@ -165,8 +165,6 @@ class SSdecrypt:
             for name in SSTrainName:
                 lines = self.allList[name]
                 resultList = self.decryptLines(lines)
-                if resultList is None:
-                    return False
                 self.trainInfoList.append(resultList)
             return True
         except Exception:
@@ -371,7 +369,7 @@ class SSdecrypt:
             originLines = self.allList[SSTrainName[srcIdx]]
             newLines = copy.deepcopy(originLines)
 
-            index = self.findLines(originLines, notchCntLineName)
+            index = self.findLines(newLines, notchCntLineName)
             index += 1
             if notchCheckStatus:
                 loopCnt = 0
@@ -396,35 +394,35 @@ class SSdecrypt:
                     newLines[index] = newSpeedLine
                     index += 1
 
-            index = self.findLines(originLines, perfLineName)
+            index = self.findLines(newLines, perfLineName)
             index += 1
             if perfCheckStatus:
                 newPerfLine = "\t".join([str(x) for x in distData["att"]])
                 newPerfLine += "\r"
                 newLines[index] = newPerfLine
 
-            index = self.findLines(originLines, rainLineName)
+            index = self.findLines(newLines, rainLineName)
             index += 1
             if rainCheckStatus:
                 newRainLine = "\t".join([str(x) for x in distData["rain"]])
                 newRainLine += "\r"
                 newLines[index] = newRainLine
 
-            index = self.findLines(originLines, carbLineName)
+            index = self.findLines(newLines, carbLineName)
             index += 1
             if carbCheckStatus:
                 newCarbLine = "\t".join([str(x) for x in distData["carb"]])
                 newCarbLine += "\r"
                 newLines[index] = newCarbLine
 
-            index = self.findLines(originLines, otherLineName)
+            index = self.findLines(newLines, otherLineName)
             index += 1
             if otherCheckStatus:
                 newOtherLine = "\t".join([str(x) for x in distData["other"]])
                 newOtherLine += "\r"
                 newLines[index] = newOtherLine
 
-            index = self.findLines(originLines, hurikoLineName)
+            index = self.findLines(newLines, hurikoLineName)
             if index != -1:
                 if hurikoCheckStatus:
                     if distData["huriko"] is not None:
@@ -433,9 +431,27 @@ class SSdecrypt:
                         newHurikoLine += "\r"
                         newLines[index] = newHurikoLine
                     else:
-                        newLines[index:index+3] = []
+                        for i in range(3):
+                            if i == 2:
+                                if newLines[index].strip() != "":
+                                    continue
+                            newLines.pop(index)
+            else:
+                if hurikoCheckStatus:
+                    index = self.findLines(newLines, otherLineName)
+                    if distData["huriko"] is not None:
+                        index += 3
+                        newHurikoLines = ["\r"]
+                        newHurikoLines.append("{0}\r".format(hurikoLineName))
+                        newHurikoLine = "\t".join([str(x) for x in distData["huriko"]])
+                        newHurikoLine += "\r"
+                        newHurikoLines.append(newHurikoLine)
+                        if newLines[index].strip() != "":
+                            newHurikoLines.append("\r")
+                        for line in reversed(newHurikoLines):
+                            newLines.insert(index, line)
 
-            index = self.findLines(originLines, oneWheelLineName)
+            index = self.findLines(newLines, oneWheelLineName)
             if index != -1:
                 if oneWheelCheckStatus:
                     if distData["oneWheel"] is not None:
@@ -444,7 +460,30 @@ class SSdecrypt:
                         newOneWheelLine += "\r"
                         newLines[index] = newOneWheelLine
                     else:
-                        newLines[index:index+3] = []
+                        for i in range(3):
+                            if i == 2:
+                                if newLines[index].strip() != "":
+                                    continue
+                            newLines.pop(index)
+            else:
+                if oneWheelCheckStatus:
+                    index = self.findLines(newLines, hurikoLineName)
+                    if index != -1:
+                        index += 2
+                    else:
+                        index = self.findLines(newLines, otherLineName)
+                        index += 3
+                    if distData["oneWheel"] is not None:
+                        newOneWheelLines = ["\r"]
+                        newOneWheelLines.append("{0}\r".format(oneWheelLineName))
+                        newOneWheelLine = "\t".join([str(x) for x in distData["oneWheel"]])
+                        newOneWheelLine += "\r"
+                        newOneWheelLines.append(newOneWheelLine)
+                        if newLines[index].strip() != "":
+                            newOneWheelLines.append("\r")
+                        for line in reversed(newOneWheelLines):
+                            newLines.insert(index, line)
+
             return self.saveTrain(srcIdx, newLines)
         except Exception:
             self.error = traceback.format_exc()
@@ -524,20 +563,24 @@ class SSdecrypt:
                         newHurikoLine += "\r"
                         newLines[index] = newHurikoLine
                     else:
-                        newLines[index:index+3] = []
+                        for i in range(3):
+                            if i == 2:
+                                if newLines[index].strip() != "":
+                                    continue
+                            newLines.pop(index)
                 else:
                     if resultValueList is not None:
                         index = self.findLines(originLines, otherLineName)
                         index += 3
-                        originElement = newLines[index]
-                        newHurikoLines = [originElement]
+                        newHurikoLines = ["\r"]
                         newHurikoLines.append("{0}\r".format(hurikoLineName))
                         newHurikoLine = "\t".join([str(x) for x in resultValueList])
                         newHurikoLine += "\r"
                         newHurikoLines.append(newHurikoLine)
-                        newHurikoLines.append("\r")
-
-                        newLines[index:index+1] = newHurikoLines
+                        if originLines[index].strip() != "":
+                            newHurikoLines.append("\r")
+                        for line in reversed(newHurikoLines):
+                            newLines.insert(index, line)
             elif title == "oneWheel":
                 index = self.findLines(originLines, oneWheelLineName)
                 if index != -1:
@@ -547,25 +590,28 @@ class SSdecrypt:
                         newOneWheelLine += "\r"
                         newLines[index] = newOneWheelLine
                     else:
-                        newLines[index:index+3] = []
+                        for i in range(3):
+                            if i == 2:
+                                if newLines[index].strip() != "":
+                                    continue
+                            newLines.pop(index)
                 else:
                     if resultValueList is not None:
-                        index2 = self.findLines(originLines, hurikoLineName)
-                        if index2 != -1:
-                            index = index2
+                        index = self.findLines(originLines, hurikoLineName)
+                        if index != -1:
                             index += 2
                         else:
                             index = self.findLines(originLines, otherLineName)
                             index += 3
-                        originElement = newLines[index]
-                        newOneWheelLines = [originElement]
+                        newOneWheelLines = ["\r"]
                         newOneWheelLines.append("{0}\r".format(oneWheelLineName))
                         newOneWheelLine = "\t".join([str(x) for x in resultValueList])
                         newOneWheelLine += "\r"
                         newOneWheelLines.append(newOneWheelLine)
-                        newOneWheelLines.append("\r")
-
-                        newLines[index:index+1] = newOneWheelLines
+                        if originLines[index].strip() != "":
+                            newOneWheelLines.append("\r")
+                        for line in reversed(newOneWheelLines):
+                            newLines.insert(index, line)
             return self.saveTrain(trainIdx, newLines)
         except Exception:
             self.error = traceback.format_exc()

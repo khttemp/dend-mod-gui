@@ -314,6 +314,9 @@ def modifiedTrainNameList():
     copyTrainNameList = copy.deepcopy(decryptFile.trainNameList)
     for index, trainName in enumerate(copyTrainNameList):
         trainOrgInfo = decryptFile.trainInfoList[index]
+        if trainOrgInfo is None:
+            copyTrainNameList[index] = trainName + textSetting.textList["orgInfoEditor"]["dataCorrupted"]
+            continue
         editFlag = False
 
         speedList = trainOrgInfo[0]

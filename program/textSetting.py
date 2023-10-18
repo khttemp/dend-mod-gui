@@ -357,6 +357,7 @@ textList = {
         "menuComboSSValues": ["速度・性能情報", "数・その他情報"],
         "editStageLabel": "ステージ情報修正",
         "modified": "(改)",
+        "dataCorrupted": "(データ破損)",
         "editStageDefaultTrain": "ステージのデフォルト車両変更",
     },
     "railEditor": {
@@ -1067,6 +1068,7 @@ textList = {
         "E95": "シート名「{0}」が存在しません。",
         "E96": "No.{0}のモデル「{1}」は存在しません",
         "E97": "レールNo.{0}の要素４の要素がありません",
+        "E98": "形式が合わないテキストファイルです。\n{0}",
     },
     "menu": {
         "program": {

@@ -85,7 +85,7 @@ class SetDefaultEdit(sd.Dialog):
             if self.copySrcCb.current() in [12, 19, 25]:
                 self.v_hurikoText.set(textSetting.textList["orgInfoEditor"]["SSHurikoLfLabel"])
             else:
-                self.v_hurikoText.set(textSetting.textList["orgInfoEditor"]["SSOneWheelLfLabel"] + textSetting.textList["orgInfoEditor"]["setDeleteLabel"])
+                self.v_hurikoText.set(textSetting.textList["orgInfoEditor"]["SSHurikoLfLabel"] + textSetting.textList["orgInfoEditor"]["setDeleteLabel"])
 
             if self.copySrcCb.current() in [27, 29]:
                 self.v_oneWheelText.set(textSetting.textList["orgInfoEditor"]["SSOneWheelLfLabel"])
@@ -248,6 +248,16 @@ def saveCsvTrainInfo(game, trainIdx, decryptFile, reloadFunc):
         file_path = fd.askopenfilename(filetypes=[("traininfo_text", "*.txt")])
         if not file_path:
             return
+        
+        f = codecs.open(file_path, "r", "utf-8", "strict")
+        lines = f.readlines()
+        f.close()
+        resultList = decryptFile.decryptLines(lines)
+        if resultList is None:
+            errorMsg = textSetting.textList["errorList"]["E98"].format(decryptFile.error)
+            mb.showerror(title=textSetting.textList["error"], message=errorMsg)
+            return
+
         result = mb.askquestion(title=textSetting.textList["confirm"], message=textSetting.textList["infoList"]["I50"], icon="warning")
         if result == "no":
             return
