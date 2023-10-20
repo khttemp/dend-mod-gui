@@ -350,7 +350,7 @@ class RailDecrypt:
             index += 1
             cpuInfo.append(mode)
 
-            for j in range(4):
+            for j in range(5):
                 tempF = struct.unpack("<f", self.byteArr[index:index + 4])[0]
                 tempF = round(tempF, 5)
                 index += 4
@@ -1168,7 +1168,7 @@ class RailDecrypt:
                 index += 2
                 index += 1
                 index += 1
-                for j in range(4):
+                for j in range(5):
                     index += 4
 
             newByteArr = self.byteArr[0:index]
@@ -1178,7 +1178,7 @@ class RailDecrypt:
                 newByteArr.extend(tempH)
                 newByteArr.append(smfInfo[1])
                 newByteArr.append(smfInfo[2])
-                for i in range(4):
+                for i in range(5):
                     tempF = struct.pack("<f", smfInfo[3 + i])
                     newByteArr.extend(tempF)
 
@@ -1186,7 +1186,7 @@ class RailDecrypt:
                     index += 2
                     index += 1
                     index += 1
-                    for j in range(4):
+                    for j in range(5):
                         index += 4
                 else:
                     cnt += 1
@@ -1194,7 +1194,7 @@ class RailDecrypt:
                 index += 2
                 index += 1
                 index += 1
-                for j in range(4):
+                for j in range(5):
                     index += 4
                 cnt -= 1
 

@@ -72,6 +72,9 @@ class CpuWidget:
                 "cpuInfoMinSpeed"
             )
 
+            if self.decryptFile.game == "CS":
+                col_tuple += ("cpuInfoDefSpeed", )
+
             self.treeviewFrame.tree["columns"] = col_tuple
             self.treeviewFrame.tree.column("#0", width=0, stretch=False)
             self.treeviewFrame.tree.column("treeNum", anchor=tkinter.CENTER, width=50, stretch=False)
@@ -82,6 +85,8 @@ class CpuWidget:
             self.treeviewFrame.tree.column("cpuInfoMaxLen", anchor=tkinter.CENTER, width=50)
             self.treeviewFrame.tree.column("cpuInfoMaxSpeed", anchor=tkinter.CENTER, width=50)
             self.treeviewFrame.tree.column("cpuInfoMinSpeed", anchor=tkinter.CENTER, width=50)
+            if self.decryptFile.game == "CS":
+                self.treeviewFrame.tree.column("cpuInfoDefSpeed", anchor=tkinter.CENTER, width=50)
 
             self.treeviewFrame.tree.heading("treeNum", text=textSetting.textList["railEditor"]["cpuInfoNum"], anchor=tkinter.CENTER)
             self.treeviewFrame.tree.heading("cpuInfoRailNo", text=textSetting.textList["railEditor"]["cpuInfoRailNo"], anchor=tkinter.CENTER)
@@ -91,6 +96,8 @@ class CpuWidget:
             self.treeviewFrame.tree.heading("cpuInfoMaxLen", text=textSetting.textList["railEditor"]["cpuInfoMaxLen"], anchor=tkinter.CENTER)
             self.treeviewFrame.tree.heading("cpuInfoMaxSpeed", text=textSetting.textList["railEditor"]["cpuInfoMaxSpeed"], anchor=tkinter.CENTER)
             self.treeviewFrame.tree.heading("cpuInfoMinSpeed", text=textSetting.textList["railEditor"]["cpuInfoMinSpeed"], anchor=tkinter.CENTER)
+            if self.decryptFile.game == "CS":
+                self.treeviewFrame.tree.heading("cpuInfoDefSpeed", text=textSetting.textList["railEditor"]["cpuInfoDefSpeed"], anchor=tkinter.CENTER)
 
             self.treeviewFrame.tree["displaycolumns"] = col_tuple
 
@@ -100,6 +107,8 @@ class CpuWidget:
                 data += (cpuInfo[0], cpuInfo[1], cpuInfo[2])
                 data += (cpuInfo[3], cpuInfo[4])
                 data += (cpuInfo[5], cpuInfo[6])
+                if self.decryptFile.game == "CS":
+                    data += (cpuInfo[7], )
                 self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data)
                 index += 1
         else:
@@ -278,7 +287,7 @@ class EditCpuListWidget(sd.Dialog):
             for i in range(len(cpuInfoKeyList)):
                 self.cpuInfoLb = ttk.Label(master, text=textSetting.textList["railEditor"][cpuInfoKeyList[i]], font=textSetting.textList["font2"])
                 self.cpuInfoLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
-                if i in [3, 4, 5, 6]:
+                if i >= 3:
                     self.varCpuInfo = tkinter.DoubleVar()
                     self.varList.append(self.varCpuInfo)
                     self.cpuInfoEt = ttk.Entry(master, textvariable=self.varCpuInfo, font=textSetting.textList["font2"])
@@ -353,7 +362,7 @@ class EditCpuListWidget(sd.Dialog):
                 if self.decryptFile.game in ["BS", "CS", "RS"]:
                     for i in range(len(self.varList)):
                         try:
-                            if i in [3, 4, 5, 6]:
+                            if i >= 3:
                                 res = float(self.varList[i].get())
                             else:
                                 res = int(self.varList[i].get())

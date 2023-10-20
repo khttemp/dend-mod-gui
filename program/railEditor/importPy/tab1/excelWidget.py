@@ -1674,7 +1674,7 @@ class ExcelWidget:
                     mode = ws.cell(row, 4).value
                     newByteArr.append(mode)
 
-                    for j in range(4):
+                    for j in range(5):
                         tempF = struct.pack("<f", ws.cell(row, 5 + j).value)
                         newByteArr.extend(tempF)
                     row += 1
