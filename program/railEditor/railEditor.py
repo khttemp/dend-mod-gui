@@ -6,6 +6,7 @@ from tkinter import messagebox as mb
 import program.textSetting as textSetting
 
 from program.railEditor.importPy.tkinterTab import tab1AllWidget, tab2AllWidget, tab3AllWidget, tab4AllWidget, tab5AllWidget, tab6AllWidget, tab7AllWidget, tab8AllWidget, tab9AllWidget, tab10AllWidget, tab11AllWidget
+from program.railEditor.importPy.excelWidget import ExcelWidget
 import program.railEditor.dendDecrypt.RSdecrypt as dendRs
 import program.railEditor.dendDecrypt.CSdecrypt as dendCs
 import program.railEditor.dendDecrypt.BSdecrypt as dendBs
@@ -21,6 +22,9 @@ v_filename = None
 cb = None
 tabFrame = None
 decryptFile = None
+excelWidget = None
+excelExtractBtn = None
+excelSaveBtn = None
 info = textSetting.textList["railEditor"]["railComboValue"]
 lsInfo = textSetting.textList["railEditor"]["railLsComboValue"]
 
@@ -32,6 +36,9 @@ def openFile():
     global lsInfo
     global info
     global decryptFile
+    global excelWidget
+    global excelExtractBtn
+    global excelSaveBtn
 
     errorMsg = textSetting.textList["errorList"]["E21"]
     file_path = fd.askopenfilename(filetypes=[(textSetting.textList["railEditor"]["fileType"], "*.BIN")])
@@ -66,6 +73,11 @@ def openFile():
             cb["values"] = info
         cb.current(0)
         cb["state"] = "readonly"
+        excelWidget = ExcelWidget(decryptFile, reloadWidget)
+        excelExtractBtn["command"] = excelWidget.extract
+        excelSaveBtn["command"] = excelWidget.save
+        excelExtractBtn["state"] = "normal"
+        excelSaveBtn["state"] = "normal"
         selectInfo(cb.current())
 
 
@@ -119,9 +131,16 @@ def reloadWidget(*selectId):
 def selectGame():
     global v_filename
     global cb
+    global excelWidget
+    global excelExtractBtn
+    global excelSaveBtn
+
     v_filename.set("")
     cb.set("")
     cb["state"] = "disabled"
+    excelWidget = None
+    excelExtractBtn["state"] = "disabled"
+    excelSaveBtn["state"] = "disabled"
     deleteAllWidget()
 
 
@@ -132,6 +151,8 @@ def call_railEditor(rootTk, programFrame):
     global v_filename
     global cb
     global tabFrame
+    global excelExtractBtn
+    global excelSaveBtn
 
     root = rootTk
     v_radio = tkinter.IntVar()
@@ -146,6 +167,11 @@ def call_railEditor(rootTk, programFrame):
     rsRb = tkinter.Radiobutton(programFrame, text="Rising Stage", command=selectGame, variable=v_radio, value=RS)
     rsRb.place(relx=0.86, rely=0.02)
     rsRb.select()
+
+    excelExtractBtn = ttk.Button(programFrame, text=textSetting.textList["railEditor"]["railDataExtractExcel"], width=30, state="disabled")
+    excelExtractBtn.place(relx=0.40, rely=0.08)
+    excelSaveBtn = ttk.Button(programFrame, text=textSetting.textList["railEditor"]["railDataSaveExcel"], width=30, state="disabled")
+    excelSaveBtn.place(relx=0.70, rely=0.08)
 
     v_filename = tkinter.StringVar()
     filenameEt = ttk.Entry(programFrame, textvariable=v_filename, font=textSetting.textList["font2"], width=20, state="readonly", justify="center")

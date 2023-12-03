@@ -5,7 +5,6 @@ import program.textSetting as textSetting
 from program.tkinterScrollbarFrameClass import ScrollbarFrame
 
 from program.railEditor.importPy.tab1.musicWidget import MusicWidget
-from program.railEditor.importPy.tab1.excelWidget import ExcelWidget
 from program.railEditor.importPy.tab1.trainCountWidget import TrainCountWidget
 from program.railEditor.importPy.tab1.railPosWidget import RailPosWidget
 from program.railEditor.importPy.tab1.stationNoWidget import StationNoWidget
@@ -46,15 +45,6 @@ def tab1AllWidget(tabFrame, decryptFile, reloadFunc):
     musicFrame = ttk.Frame(musicExcelFrame)
     musicFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT)
     MusicWidget(musicFrame, decryptFile, reloadFunc)
-
-    excelFrame = ttk.Frame(musicExcelFrame)
-    excelFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT)
-
-    excelWidget = ExcelWidget(decryptFile, reloadFunc)
-    excelExtractBtn = ttk.Button(excelFrame, text=textSetting.textList["railEditor"]["railDataExtractExcel"], width=30, command=excelWidget.extract)
-    excelExtractBtn.grid(row=0, column=0, padx=10, pady=10)
-    excelSaveBtn = ttk.Button(excelFrame, text=textSetting.textList["railEditor"]["railDataSaveExcel"], width=30, command=excelWidget.save)
-    excelSaveBtn.grid(row=0, column=1, padx=10, pady=10)
 
     TrainCountWidget(frame.frame, decryptFile, reloadFunc)
 

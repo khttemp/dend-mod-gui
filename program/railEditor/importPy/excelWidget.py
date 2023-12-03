@@ -13,12 +13,14 @@ class ExcelWidget:
     def __init__(self, decryptFile, reloadFunc):
         self.decryptFile = decryptFile
         self.reloadFunc = reloadFunc
+        self.error = ""
 
     def extract(self):
         filename = self.decryptFile.filename + ".xlsx"
         file_path = fd.asksaveasfilename(initialfile=filename, defaultextension="xlsx", filetypes=[("railData", "*.xlsx")])
         if not file_path:
             return
+        self.error = ""
         wb = openpyxl.Workbook()
 
         # シート初期化
@@ -62,6 +64,10 @@ class ExcelWidget:
                     for idx, music in enumerate(musicInfo):
                         ws.cell(row, 1 + idx).value = music
                     row += 1
+            elif self.decryptFile.game in ["CS"]:
+                for idx, musicIndex in enumerate(self.decryptFile.musicList):
+                    ws.cell(row, 1 + idx).value = musicIndex
+                row += 1
             row += 1
 
             # 車両の初期レール位置
@@ -516,10 +522,43 @@ class ExcelWidget:
             row += 1
             mdlList = [x[0] for x in self.decryptFile.smfList]
 
-            if self.decryptFile.game in ["LS", "BS"]:
+            if self.decryptFile.game == "LS":
                 for ambIdx, ambInfo in enumerate(self.decryptFile.ambList):
                     ws.cell(row, 1).value = ambIdx
                     for idx, amb in enumerate(ambInfo):
+                        ws.cell(row, 2 + idx).value = amb
+                        idx += 1
+                    row += 1
+                row += 1
+            elif self.decryptFile.game == "BS":
+                row += 1
+                titleList = [
+                    "index",
+                    "rail_no",
+                    "priority",
+                    "fog",
+                    "mdl_no",
+                    "rail_pos",
+                    "base_pos_x",
+                    "base_pos_y",
+                    "base_pos_z",
+                    "base_dir_x",
+                    "base_dir_y",
+                    "base_dir_z",
+                    "per"
+                ]
+                idx = 0
+                for title in titleList:
+                    ws.cell(row, 1 + idx).value = title
+                    idx += 1
+                row += 1
+
+                for ambIdx, ambInfo in enumerate(self.decryptFile.ambList):
+                    ws.cell(row, 1).value = ambIdx
+                    for idx, amb in enumerate(ambInfo):
+                        # mdl_no
+                        if idx == 3:
+                            amb = self.getSmfModelName(amb, mdlList)
                         ws.cell(row, 2 + idx).value = amb
                         idx += 1
                     row += 1
@@ -596,6 +635,7 @@ class ExcelWidget:
         if not file_path:
             return
 
+        self.error = ""
         wb = openpyxl.load_workbook(file_path, data_only=True)
         # TabList
         tabList = textSetting.textList["railEditor"]["railComboValue"]
@@ -608,25 +648,79 @@ class ExcelWidget:
                 return
 
         newByteArr = bytearray()
+
+        if self.decryptFile.game == "LS":
+            if not self.lsSave(wb, tabList, newByteArr):
+                if self.error == "":
+                    errMsg = textSetting.textList["errorList"]["E14"]
+                else:
+                    errMsg = self.error
+                mb.showerror(title=textSetting.textList["error"], message=errMsg)
+                return
+        elif self.decryptFile.game == "BS":
+            if not self.bsSave(wb, tabList, newByteArr):
+                if self.error == "":
+                    errMsg = textSetting.textList["errorList"]["E14"]
+                else:
+                    errMsg = self.error
+                mb.showerror(title=textSetting.textList["error"], message=errMsg)
+                return
+        elif self.decryptFile.game == "CS":
+            if not self.csSave(wb, tabList, newByteArr):
+                if self.error == "":
+                    errMsg = textSetting.textList["errorList"]["E14"]
+                else:
+                    errMsg = self.error
+                mb.showerror(title=textSetting.textList["error"], message=errMsg)
+                return
+        elif self.decryptFile.game == "RS":
+            if not self.rsSave(wb, tabList, newByteArr):
+                if self.error == "":
+                    errMsg = textSetting.textList["errorList"]["E14"]
+                else:
+                    errMsg = self.error
+                mb.showerror(title=textSetting.textList["error"], message=errMsg)
+                return
+        warnMsg = textSetting.textList["infoList"]["I117"]
+        result = mb.askokcancel(title=textSetting.textList["warning"], message=warnMsg, icon="warning")
+        if not result:
+            return
+
+        newBinFile = os.path.join(self.decryptFile.directory, self.decryptFile.filename + ".BIN")
+        w = open(newBinFile, "wb")
+        w.write(newByteArr)
+        w.close()
+        mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I114"])
+        self.reloadFunc()
+
+    def lsSave(self, wb, tabList, newByteArr):
         try:
-            if self.decryptFile.game == "LS":
-                readFlag = False
-                # ver
-                ws = wb[tabList[0]]
-                ver = ws.cell(1, 1).value
-                if ver == "DEND_MAP_VER0101":
-                    readFlag = True
-                bVer = ver.encode("shift-jis")
-                newByteArr.extend(bVer)
+            readFlag = False
+            # ver
+            ws = wb[tabList[0]]
+            ver = ws.cell(1, 1).value
+            if ver is None:
+                self.error = textSetting.textList["errorList"]["E99"]
+                return False
+            if ver == "DEND_MAP_VER0101":
+                readFlag = True
+            bVer = ver.encode("shift-jis")
+            newByteArr.extend(bVer)
 
-                # smf情報
-                smfNameList = []
+            # smf情報
+            smfNameList = []
 
-                ws = wb[tabList[2]]
-                row = self.findLabel("MdlCnt", ws["A"])
+            ws = wb[tabList[2]]
+            row = self.findLabel("MdlCnt", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[2], "MdlCnt")
+                return False
+
+            try:
                 smfCnt = ws.cell(row, 2).value
                 newByteArr.append(smfCnt)
                 row += 1
+
                 for i in range(smfCnt):
                     smfName = ws.cell(row, 2).value
                     smfNameList.append(smfName)
@@ -649,10 +743,19 @@ class ExcelWidget:
                             tempH = struct.pack("<h", ws.cell(row, 7).value)
                             newByteArr.extend(tempH)
                             row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[2], row)
+                return False
 
-                # BGM
-                ws = wb[tabList[0]]
-                row = self.findLabel("BGM", ws["A"]) + 1
+            # BGM
+            ws = wb[tabList[0]]
+            row = self.findLabel("BGM", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[0], "BGM")
+                return False
+
+            try:
+                row += 1
                 musicFile = ws.cell(row, 1).value
                 bMusicFile = musicFile.encode("shift-jis")
                 newByteArr.append(len(bMusicFile))
@@ -667,31 +770,64 @@ class ExcelWidget:
                 newByteArr.extend(struct.pack("<f", start))
                 loopStart = ws.cell(row, 4).value
                 newByteArr.extend(struct.pack("<f", loopStart))
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[0], row)
+                return False
 
-                # レール名
-                row = self.findLabel("railName", ws["A"])
+            # レール名
+            row = self.findLabel("railName", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[0], "railName")
+                return False
+
+            try:
                 railStationName = ws.cell(row, 2).value
                 bRailStationName = railStationName.encode("shift-jis")
                 newByteArr.append(len(bRailStationName))
                 newByteArr.extend(bRailStationName)
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[0], row)
+                return False
 
-                # SCENE 3D OBJ(bin ANIME)
-                ws = wb[tabList[1]]
-                row = self.findLabel("binAnime", ws["A"]) + 1
+            # SCENE 3D OBJ(bin ANIME)
+            ws = wb[tabList[1]]
+            row = self.findLabel("binAnime", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[1], "binAnime")
+                return False
+
+            try:
+                row += 1
                 for i in range(3):
                     newByteArr.append(ws.cell(row, 1 + i).value)
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[1], row)
+                return False
 
-                row = self.findLabel("else1", ws["A"])
+            row = self.findLabel("else1", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[1], "else1")
+                return False
+
+            try:
                 cnt = ws.cell(row, 2).value
                 newByteArr.append(cnt)
                 row += 1
                 for i in range(cnt):
                     tempF = struct.pack("<f", ws.cell(row, 1 + i).value)
                     newByteArr.extend(tempF)
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[1], row)
+                return False
 
-                # 車両の初期レール位置
-                ws = wb[tabList[0]]
-                row = self.findLabel("RailPos", ws["A"])
+            # 車両の初期レール位置
+            ws = wb[tabList[0]]
+            row = self.findLabel("RailPos", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[0], "RailPos")
+                return False
+
+            try:
                 trainCnt = ws.cell(row, 2).value
                 newByteArr.append(trainCnt)
                 row += 1
@@ -707,12 +843,20 @@ class ExcelWidget:
                     tempF = struct.pack("<f", f1)
                     newByteArr.extend(tempF)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[0], row)
+                return False
 
-                else4Dict = {}
-                # else4情報
-                if readFlag:
-                    ws = wb[tabList[9]]
-                    row = self.findLabel("else4", ws["A"])
+            else4Dict = {}
+            # else4情報
+            if readFlag:
+                ws = wb[tabList[9]]
+                row = self.findLabel("else4", ws["A"])
+                if row == -1:
+                    self.error = textSetting.textList["errorList"]["E100"].format(tabList[9], "else4")
+                    return False
+
+                try:
                     else4Cnt = ws.cell(row, 2).value
                     row += 1
                     for i in range(else4Cnt):
@@ -722,10 +866,18 @@ class ExcelWidget:
                             for j in range(7):
                                 else4Dict[railNo].append(ws.cell(row, 3 + j).value)
                         row += 1
+                except Exception:
+                    self.error = textSetting.textList["errorList"]["E101"].format(tabList[9], row)
+                    return False
 
-                # AMB情報
-                ws = wb[tabList[10]]
-                row = self.findLabel("AmbCnt", ws["A"])
+            # AMB情報
+            ws = wb[tabList[10]]
+            row = self.findLabel("AmbCnt", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[10], "AmbCnt")
+                return False
+
+            try:
                 ambCnt = ws.cell(row, 2).value
                 row += 1
                 ambDict = {}
@@ -738,16 +890,29 @@ class ExcelWidget:
                         ambInfo.append(ws.cell(row, 3 + j).value)
                     ambDict[railNo].append(ambInfo)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[10], row)
+                return False
 
-                # レール情報
-                dupNum = -1
-                dupName = None
-                ws = wb[tabList[7]]
-                row = self.findLabel("RailCnt", ws["A"])
+            # レール情報
+            dupNum = -1
+            dupName = None
+            ws = wb[tabList[7]]
+            row = self.findLabel("RailCnt", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[7], "RailCnt")
+                return False
+
+            try:
                 railCnt = ws.cell(row, 2).value
                 hRailCnt = struct.pack("<h", railCnt)
                 newByteArr.extend(hRailCnt)
-                row = self.findLabel("index", ws["A"]) + 1
+                row = self.findLabel("index", ws["A"])
+                if row == -1:
+                    self.error = textSetting.textList["errorList"]["E100"].format(tabList[7], "index")
+                    return False
+
+                row += 1
                 for i in range(railCnt):
                     if readFlag:
                         if i in else4Dict:
@@ -877,20 +1042,28 @@ class ExcelWidget:
                     else:
                         newByteArr.append(0)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[7], row)
+                return False
 
-                if dupNum != -1:
-                    warnMsg = textSetting.textList["infoList"]["I115"].format(dupNum, dupName)
-                    result = mb.askokcancel(title=textSetting.textList["warning"], message=warnMsg, icon="warning")
-                    if not result:
-                        return
+            if dupNum != -1:
+                warnMsg = textSetting.textList["infoList"]["I115"].format(dupNum, dupName)
+                result = mb.askokcancel(title=textSetting.textList["warning"], message=warnMsg, icon="warning")
+                if not result:
+                    self.error = textSetting.textList["errorList"]["E102"]
+                    return False
 
-                # 駅名位置情報
-                ws = wb[tabList[3]]
-                row = self.findLabel("STCnt", ws["A"])
+            # 駅名位置情報
+            ws = wb[tabList[3]]
+            row = self.findLabel("STCnt", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[3], "STCnt")
+                return False
+
+            try:
                 stCnt = ws.cell(row, 2).value
                 newByteArr.append(stCnt)
                 row += 1
-
                 for i in range(stCnt):
                     stName = ws.cell(row, 2).value
                     bStName = stName.encode("shift-jis")
@@ -906,10 +1079,18 @@ class ExcelWidget:
                         tempF = struct.pack("<f", ws.cell(row, 5 + j).value)
                         newByteArr.extend(tempF)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[3], row)
+                return False
 
-                # Cam
-                ws = wb[tabList[8]]
-                row = self.findLabel("else3", ws["A"])
+            # Cam
+            ws = wb[tabList[8]]
+            row = self.findLabel("else3", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[8], "else3")
+                return False
+
+            try:
                 else3Cnt = ws.cell(row, 2).value
                 newByteArr.append(else3Cnt)
                 row += 1
@@ -929,10 +1110,18 @@ class ExcelWidget:
                         row += 1
                     if cnt == 0:
                         row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[8], row)
+                return False
 
-                # CPU情報
-                ws = wb[tabList[5]]
-                row = self.findLabel("CPU", ws["A"])
+            # CPU情報
+            ws = wb[tabList[5]]
+            row = self.findLabel("CPU", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[5], "CPU")
+                return False
+
+            try:
                 cpuCnt = ws.cell(row, 2).value
                 newByteArr.append(cpuCnt)
                 row += 1
@@ -961,10 +1150,18 @@ class ExcelWidget:
                         tempF = struct.pack("<f", ws.cell(row, 3 + j).value)
                         newByteArr.extend(tempF)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[5], row)
+                return False
 
-                # Comic Script
-                ws = wb[tabList[6]]
-                row = self.findLabel("ComicScript", ws["A"])
+            # Comic Script
+            ws = wb[tabList[6]]
+            row = self.findLabel("ComicScript", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[6], "ComicScript")
+                return False
+
+            try:
                 comicbinCnt = ws.cell(row, 2).value
                 newByteArr.append(comicbinCnt)
                 row += 1
@@ -985,22 +1182,50 @@ class ExcelWidget:
                         tempF = struct.pack("<f", ws.cell(row, 2 + j).value)
                         newByteArr.extend(tempF)
                     row += 1
-            elif self.decryptFile.game == "BS":
-                # ver
-                ws = wb[tabList[0]]
-                ver = ws.cell(1, 1).value
-                bVer = ver.encode("shift-jis")
-                newByteArr.extend(bVer)
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[6], row)
+                return False
+            return True
+        except Exception:
+            w = codecs.open("error.log", "w", "utf-8", "strict")
+            w.write(traceback.format_exc())
+            w.close()
+            self.error = textSetting.textList["errorList"]["E14"]
+            return False
 
-                # レール名
-                row = self.findLabel("railName", ws["A"])
+    def bsSave(self, wb, tabList, newByteArr):
+        try:
+            # ver
+            ws = wb[tabList[0]]
+            ver = ws.cell(1, 1).value
+            if ver is None:
+                self.error = textSetting.textList["errorList"]["E99"]
+                return False
+            bVer = ver.encode("shift-jis")
+            newByteArr.extend(bVer)
+
+            # レール名
+            row = self.findLabel("railName", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[0], "railName")
+                return False
+
+            try:
                 railStationName = ws.cell(row, 2).value
                 bRailStationName = railStationName.encode("shift-jis")
                 newByteArr.append(len(bRailStationName))
                 newByteArr.extend(bRailStationName)
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[0], row)
+                return False
 
-                # BGM
-                row = self.findLabel("BGM", ws["A"])
+            # BGM
+            row = self.findLabel("BGM", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[0], "BGM")
+                return False
+
+            try:
                 musicCnt = ws.cell(row, 2).value
                 newByteArr.append(musicCnt)
                 row += 1
@@ -1020,9 +1245,17 @@ class ExcelWidget:
                     loopStart = ws.cell(row, 4).value
                     newByteArr.extend(struct.pack("<f", loopStart))
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[0], row)
+                return False
 
-                # 車両の初期レール位置
-                row = self.findLabel("RailPos", ws["A"])
+            # 車両の初期レール位置
+            row = self.findLabel("RailPos", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[0], "RailPos")
+                return False
+
+            try:
                 trainCnt = ws.cell(row, 2).value
                 newByteArr.append(trainCnt)
                 row += 1
@@ -1038,9 +1271,18 @@ class ExcelWidget:
                     tempF = struct.pack("<f", f1)
                     newByteArr.extend(tempF)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[0], row)
+                return False
 
-                # ダミー位置？
-                row = self.findLabel("RailPos2", ws["A"]) + 1
+            # ダミー位置？
+            row = self.findLabel("RailPos2", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[0], "RailPos2")
+                return False
+
+            try:
+                row += 1
                 railNo = ws.cell(row, 1).value
                 hRailNo = struct.pack("<h", railNo)
                 newByteArr.extend(hRailNo)
@@ -1051,9 +1293,18 @@ class ExcelWidget:
                 f1 = ws.cell(row, 4).value
                 tempF = struct.pack("<f", f1)
                 newByteArr.extend(tempF)
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[0], row)
+                return False
 
-                # 試運転、二人バトルの初期レール位置
-                row = self.findLabel("FreeRunOrVSPos", ws["A"]) + 1
+            # 試運転、二人バトルの初期レール位置
+            row = self.findLabel("FreeRunOrVSPos", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[0], "FreeRunOrVSPos")
+                return False
+
+            try:
+                row += 1
                 for i in range(2):
                     railNo = ws.cell(row, 1).value
                     hRailNo = struct.pack("<h", railNo)
@@ -1066,12 +1317,29 @@ class ExcelWidget:
                     tempF = struct.pack("<f", f1)
                     newByteArr.extend(tempF)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[0], row)
+                return False
 
-                # 駅表示を始める番号
-                row = self.findLabel("stationNo", ws["A"])
+            # 駅表示を始める番号
+            row = self.findLabel("stationNo", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[0], "stationNo")
+                return False
+
+            try:
                 newByteArr.append(ws.cell(row, 2).value)
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[0], row)
+                return False
 
-                row = self.findLabel("RailPos4", ws["A"]) + 1
+            row = self.findLabel("RailPos4", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[0], "RailPos4")
+                return False
+
+            try:
+                row += 1
                 railNo = ws.cell(row, 1).value
                 hRailNo = struct.pack("<h", railNo)
                 newByteArr.extend(hRailNo)
@@ -1082,17 +1350,41 @@ class ExcelWidget:
                 f1 = ws.cell(row, 4).value
                 tempF = struct.pack("<f", f1)
                 newByteArr.extend(tempF)
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[0], row)
+                return False
 
-                row = self.findLabel("stationNo2", ws["A"])
+            row = self.findLabel("stationNo2", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[0], "stationNo2")
+                return False
+
+            try:
                 newByteArr.append(ws.cell(row, 2).value)
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[0], row)
+                return False
 
-                # 要素１
-                ws = wb[tabList[1]]
-                row = self.findLabel("else1-1", ws["A"])
+            # 要素１
+            ws = wb[tabList[1]]
+            row = self.findLabel("else1-1", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[1], "else1-1")
+                return False
+
+            try:
                 tempF = struct.pack("<f", ws.cell(row, 2).value)
                 newByteArr.extend(tempF)
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[1], row)
+                return False
 
-                row = self.findLabel("else1-2", ws["A"])
+            row = self.findLabel("else1-2", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[1], "else1-2")
+                return False
+
+            try:
                 cnt = ws.cell(row, 2).value
                 newByteArr.append(cnt)
                 row += 1
@@ -1103,8 +1395,16 @@ class ExcelWidget:
                     for j in range(3):
                         newByteArr.append(ws.cell(row, 3 + j).value)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[1], row)
+                return False
 
-                row = self.findLabel("light", ws["A"])
+            row = self.findLabel("light", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[1], "light")
+                return False
+
+            try:
                 lightCnt = ws.cell(row, 2).value
                 newByteArr.append(lightCnt)
                 row += 1
@@ -1114,8 +1414,16 @@ class ExcelWidget:
                     newByteArr.append(len(bLightFile))
                     newByteArr.extend(bLightFile)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[1], row)
+                return False
 
-                row = self.findLabel("baseBin", ws["A"])
+            row = self.findLabel("baseBin", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[1], "baseBin")
+                return False
+
+            try:
                 baseBinCnt = ws.cell(row, 2).value
                 newByteArr.append(baseBinCnt)
                 row += 1
@@ -1125,8 +1433,16 @@ class ExcelWidget:
                     newByteArr.append(len(bBaseBinFile))
                     newByteArr.extend(bBaseBinFile)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[1], row)
+                return False
 
-                row = self.findLabel("binAnime", ws["A"])
+            row = self.findLabel("binAnime", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[1], "binAnime")
+                return False
+
+            try:
                 binAnimeCnt = ws.cell(row, 2).value
                 newByteArr.append(binAnimeCnt)
                 row += 1
@@ -1140,12 +1456,20 @@ class ExcelWidget:
                     hBinAnime2 = struct.pack("<h", binAnime2)
                     newByteArr.extend(hBinAnime2)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[1], row)
+                return False
 
-                # smf情報
-                smfNameList = []
+            # smf情報
+            smfNameList = []
 
-                ws = wb[tabList[2]]
-                row = self.findLabel("MdlCnt", ws["A"])
+            ws = wb[tabList[2]]
+            row = self.findLabel("MdlCnt", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[2], "MdlCnt")
+                return False
+
+            try:
                 smfCnt = ws.cell(row, 2).value
                 newByteArr.append(smfCnt)
                 row += 1
@@ -1173,14 +1497,21 @@ class ExcelWidget:
                             tempH = struct.pack("<h", ws.cell(row, 9).value)
                             newByteArr.extend(tempH)
                             row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[2], row)
+                return False
 
-                # 駅名位置情報
-                ws = wb[tabList[3]]
-                row = self.findLabel("STCnt", ws["A"])
+            # 駅名位置情報
+            ws = wb[tabList[3]]
+            row = self.findLabel("STCnt", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[3], "STCnt")
+                return False
+
+            try:
                 stCnt = ws.cell(row, 2).value
                 newByteArr.append(stCnt)
                 row += 1
-
                 for i in range(stCnt):
                     stName = ws.cell(row, 2).value
                     bStName = stName.encode("shift-jis")
@@ -1193,10 +1524,18 @@ class ExcelWidget:
                     hRailNo = struct.pack("<h", railNo)
                     newByteArr.extend(hRailNo)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[3], row)
+                return False
 
-                # 要素２
-                ws = wb[tabList[4]]
-                row = self.findLabel("else2", ws["A"])
+            # 要素２
+            ws = wb[tabList[4]]
+            row = self.findLabel("else2", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[4], "else2")
+                return False
+
+            try:
                 else2Cnt = ws.cell(row, 2).value
                 newByteArr.append(else2Cnt)
                 row += 1
@@ -1209,10 +1548,18 @@ class ExcelWidget:
                         newByteArr.extend(tempF)
                     newByteArr.append(ws.cell(row, 6).value)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[4], row)
+                return False
 
-                # CPU情報
-                ws = wb[tabList[5]]
-                row = self.findLabel("CPU", ws["A"])
+            # CPU情報
+            ws = wb[tabList[5]]
+            row = self.findLabel("CPU", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[5], "CPU")
+                return False
+
+            try:
                 cpuCnt = ws.cell(row, 2).value
                 newByteArr.append(cpuCnt)
                 row += 1
@@ -1230,10 +1577,18 @@ class ExcelWidget:
                         tempF = struct.pack("<f", ws.cell(row, 5 + j).value)
                         newByteArr.extend(tempF)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[5], row)
+                return False
 
-                # Comic Script
-                ws = wb[tabList[6]]
-                row = self.findLabel("ComicScript", ws["A"])
+            # Comic Script
+            ws = wb[tabList[6]]
+            row = self.findLabel("ComicScript", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[6], "ComicScript")
+                return False
+
+            try:
                 comicbinCnt = ws.cell(row, 2).value
                 newByteArr.append(comicbinCnt)
                 row += 1
@@ -1249,11 +1604,19 @@ class ExcelWidget:
                     hRailNo = struct.pack("<h", railNo)
                     newByteArr.extend(hRailNo)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[6], row)
+                return False
 
-                # 要素４
-                else4Dict = {}
-                ws = wb[tabList[9]]
-                row = self.findLabel("else4", ws["A"])
+            # 要素４
+            else4Dict = {}
+            ws = wb[tabList[9]]
+            row = self.findLabel("else4", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[9], "else4")
+                return False
+
+            try:
                 else4Cnt = ws.cell(row, 2).value
                 row += 1
                 for i in range(else4Cnt):
@@ -1263,11 +1626,23 @@ class ExcelWidget:
                         for j in range(7):
                             else4Dict[railNo].append(ws.cell(row, 3 + j).value)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[9], row)
+                return False
 
-                # AMB情報
-                ws = wb[tabList[10]]
-                row = self.findLabel("AmbCnt", ws["A"])
+            # AMB情報
+            ws = wb[tabList[10]]
+            row = self.findLabel("AmbCnt", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[10], "AmbCnt")
+                return False
+
+            try:
                 ambCnt = ws.cell(row, 2).value
+                row = self.findLabel("index", ws["A"])
+                if row == -1:
+                    self.error = textSetting.textList["errorList"]["E100"].format(tabList[10], "index")
+                    return False
                 row += 1
                 ambDict = {}
                 for i in range(ambCnt):
@@ -1276,14 +1651,25 @@ class ExcelWidget:
                         ambDict[railNo] = []
                     ambInfo = []
                     for j in range(11):
-                        ambInfo.append(ws.cell(row, 3 + j).value)
+                        amb = ws.cell(row, 3 + j).value
+                        if j == 2:
+                            amb = self.getSmfModelIndex(i, amb, smfNameList)
+                        ambInfo.append(amb)
                     ambDict[railNo].append(ambInfo)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[10], row)
+                return False
 
-                # 要素３
-                else3Dict = {}
-                ws = wb[tabList[8]]
-                row = self.findLabel("else3", ws["A"])
+            # 要素３
+            else3Dict = {}
+            ws = wb[tabList[8]]
+            row = self.findLabel("else3", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[8], "else3")
+                return False
+
+            try:
                 else3Cnt = ws.cell(row, 2).value
                 row += 1
                 for i in range(else3Cnt):
@@ -1298,16 +1684,28 @@ class ExcelWidget:
                             else3Info.append(ws.cell(row, 4 + k).value)
                         else3Dict[railNo].append(else3Info)
                         row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[8], row)
+                return False
 
-                # レール情報
-                dupNum = -1
-                dupName = None
-                ws = wb[tabList[7]]
-                row = self.findLabel("RailCnt", ws["A"])
+            # レール情報
+            dupNum = -1
+            dupName = None
+            ws = wb[tabList[7]]
+            row = self.findLabel("RailCnt", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[7], "RailCnt")
+                return False
+
+            try:
                 railCnt = ws.cell(row, 2).value
                 hRailCnt = struct.pack("<h", railCnt)
                 newByteArr.extend(hRailCnt)
-                row = self.findLabel("index", ws["A"]) + 1
+                row = self.findLabel("index", ws["A"])
+                if row == -1:
+                    self.error = textSetting.textList["errorList"]["E100"].format(tabList[7], "index")
+                    return False
+                row += 1
                 for i in range(railCnt):
                     isDisableFlg = int(ws.cell(row, 14).value, 16) & 128 > 0
                     # prevRail
@@ -1431,29 +1829,58 @@ class ExcelWidget:
                     else:
                         newByteArr.append(0)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[7], row)
+                return False
 
-                if dupNum != -1:
-                    warnMsg = textSetting.textList["infoList"]["I115"].format(dupNum, dupName)
-                    result = mb.askokcancel(title=textSetting.textList["warning"], message=warnMsg, icon="warning")
-                    if not result:
-                        return
-            elif self.decryptFile.game == "CS":
-                # ver
-                ws = wb[tabList[0]]
-                ver = ws.cell(1, 1).value
-                bVer = ver.encode("shift-jis")
-                newByteArr.extend(bVer)
+            if dupNum != -1:
+                warnMsg = textSetting.textList["infoList"]["I115"].format(dupNum, dupName)
+                result = mb.askokcancel(title=textSetting.textList["warning"], message=warnMsg, icon="warning")
+                if not result:
+                    self.error = textSetting.textList["errorList"]["E102"]
+                    return False
+            return True
+        except Exception:
+            w = codecs.open("error.log", "w", "utf-8", "strict")
+            w.write(traceback.format_exc())
+            w.close()
+            self.error = textSetting.textList["errorList"]["E14"]
+            return False
 
-                # BGM
-                row = self.findLabel("BGM", ws["A"])
+    def csSave(self, wb, tabList, newByteArr):
+        try:
+            # ver
+            ws = wb[tabList[0]]
+            ver = ws.cell(1, 1).value
+            if ver is None:
+                self.error = textSetting.textList["errorList"]["E99"]
+                return False
+            bVer = ver.encode("shift-jis")
+            newByteArr.extend(bVer)
+
+            # BGM
+            row = self.findLabel("BGM", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[0], "BGM")
+                return False
+
+            try:
                 musicCnt = ws.cell(row, 2).value
                 newByteArr.append(musicCnt)
                 row += 1
                 for i in range(musicCnt):
-                    newByteArr.append(i)
+                    newByteArr.append(ws.cell(row, 1 + i).value)
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[0], row)
+                return False
 
-                # 車両の初期レール位置
-                row = self.findLabel("RailPos", ws["A"])
+            # 車両の初期レール位置
+            row = self.findLabel("RailPos", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[0], "RailPos")
+                return False
+
+            try:
                 trainCnt = ws.cell(row, 2).value
                 newByteArr.append(trainCnt)
                 row += 1
@@ -1469,9 +1896,18 @@ class ExcelWidget:
                     tempF = struct.pack("<f", f1)
                     newByteArr.extend(tempF)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[0], row)
+                return False
 
-                # ダミー位置？
-                row = self.findLabel("RailPos2", ws["A"]) + 1
+            # ダミー位置？
+            row = self.findLabel("RailPos2", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[0], "RailPos2")
+                return False
+
+            try:
+                row += 1
                 railNo = ws.cell(row, 1).value
                 hRailNo = struct.pack("<h", railNo)
                 newByteArr.extend(hRailNo)
@@ -1482,9 +1918,18 @@ class ExcelWidget:
                 f1 = ws.cell(row, 4).value
                 tempF = struct.pack("<f", f1)
                 newByteArr.extend(tempF)
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[0], row)
+                return False
 
-                # 試運転、二人バトルの初期レール位置
-                row = self.findLabel("FreeRunOrVSPos", ws["A"]) + 1
+            # 試運転、二人バトルの初期レール位置
+            row = self.findLabel("FreeRunOrVSPos", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[0], "FreeRunOrVSPos")
+                return False
+
+            try:
+                row += 1
                 for i in range(2):
                     railNo = ws.cell(row, 1).value
                     hRailNo = struct.pack("<h", railNo)
@@ -1497,18 +1942,42 @@ class ExcelWidget:
                     tempF = struct.pack("<f", f1)
                     newByteArr.extend(tempF)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[0], row)
+                return False
 
-                # 駅表示を始める番号
-                row = self.findLabel("stationNo", ws["A"])
+            # 駅表示を始める番号
+            row = self.findLabel("stationNo", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[0], "stationNo")
+                return False
+
+            try:
                 newByteArr.append(ws.cell(row, 2).value)
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[0], row)
+                return False
 
-                # 要素１
-                ws = wb[tabList[1]]
-                row = self.findLabel("else1-1", ws["A"])
+            # 要素１
+            ws = wb[tabList[1]]
+            row = self.findLabel("else1-1", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[1], "else1-1")
+                return False
+
+            try:
                 tempF = struct.pack("<f", ws.cell(row, 2).value)
                 newByteArr.extend(tempF)
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[1], row)
+                return False
 
-                row = self.findLabel("else1-2", ws["A"])
+            row = self.findLabel("else1-2", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[1], "else1-2")
+                return False
+
+            try:
                 cnt = ws.cell(row, 2).value
                 newByteArr.append(cnt)
                 row += 1
@@ -1519,8 +1988,16 @@ class ExcelWidget:
                     for j in range(3):
                         newByteArr.append(ws.cell(row, 3 + j).value)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[1], row)
+                return False
 
-                row = self.findLabel("light", ws["A"])
+            row = self.findLabel("light", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[1], "light")
+                return False
+
+            try:
                 lightCnt = ws.cell(row, 2).value
                 newByteArr.append(lightCnt)
                 row += 1
@@ -1530,8 +2007,16 @@ class ExcelWidget:
                     newByteArr.append(len(bLightFile))
                     newByteArr.extend(bLightFile)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[1], row)
+                return False
 
-                row = self.findLabel("StageRes", ws["A"])
+            row = self.findLabel("StageRes", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[1], "StageRes")
+                return False
+
+            try:
                 stageResCnt = ws.cell(row, 2).value
                 hStageResCnt = struct.pack("<h", stageResCnt)
                 newByteArr.extend(hStageResCnt)
@@ -1542,8 +2027,16 @@ class ExcelWidget:
                     newByteArr.append(len(bStageFile))
                     newByteArr.extend(bStageFile)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[1], row)
+                return False
 
-                row = self.findLabel("SetTexInfo", ws["A"])
+            row = self.findLabel("SetTexInfo", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[1], "SetTexInfo")
+                return False
+
+            try:
                 stageTexCnt = ws.cell(row, 2).value
                 hStageTexCnt = struct.pack("<h", stageTexCnt)
                 newByteArr.extend(hStageTexCnt)
@@ -1554,8 +2047,16 @@ class ExcelWidget:
                         tempH = struct.pack("<h", ws.cell(row, 2 + j).value)
                         newByteArr.extend(tempH)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[1], row)
+                return False
 
-                row = self.findLabel("baseBin", ws["A"])
+            row = self.findLabel("baseBin", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[1], "baseBin")
+                return False
+
+            try:
                 baseBinCnt = ws.cell(row, 2).value
                 newByteArr.append(baseBinCnt)
                 row += 1
@@ -1565,8 +2066,16 @@ class ExcelWidget:
                     newByteArr.append(len(bBaseBinFile))
                     newByteArr.extend(bBaseBinFile)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[1], row)
+                return False
 
-                row = self.findLabel("binAnime", ws["A"])
+            row = self.findLabel("binAnime", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[1], "binAnime")
+                return False
+
+            try:
                 binAnimeCnt = ws.cell(row, 2).value
                 newByteArr.append(binAnimeCnt)
                 row += 1
@@ -1580,12 +2089,20 @@ class ExcelWidget:
                     hBinAnime2 = struct.pack("<h", binAnime2)
                     newByteArr.extend(hBinAnime2)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[1], row)
+                return False
 
-                # smf情報
-                smfNameList = []
+            # smf情報
+            smfNameList = []
 
-                ws = wb[tabList[2]]
-                row = self.findLabel("MdlCnt", ws["A"])
+            ws = wb[tabList[2]]
+            row = self.findLabel("MdlCnt", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[2], "MdlCnt")
+                return False
+
+            try:
                 smfCnt = ws.cell(row, 2).value
                 newByteArr.append(smfCnt)
                 row += 1
@@ -1609,10 +2126,18 @@ class ExcelWidget:
                     hKasen = struct.pack("<h", kasen)
                     newByteArr.extend(hKasen)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[2], row)
+                return False
 
-                # 駅名位置情報
-                ws = wb[tabList[3]]
-                row = self.findLabel("STCnt", ws["A"])
+            # 駅名位置情報
+            ws = wb[tabList[3]]
+            row = self.findLabel("STCnt", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[3], "STCnt")
+                return False
+
+            try:
                 stCnt = ws.cell(row, 2).value
                 newByteArr.append(stCnt)
                 row += 1
@@ -1641,10 +2166,18 @@ class ExcelWidget:
                     tempH = struct.pack("<h", ws.cell(row, 11).value)
                     newByteArr.extend(tempH)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[3], row)
+                return False
 
-                # 要素２
-                ws = wb[tabList[4]]
-                row = self.findLabel("else2", ws["A"])
+            # 要素２
+            ws = wb[tabList[4]]
+            row = self.findLabel("else2", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[4], "else2")
+                return False
+
+            try:
                 else2Cnt = ws.cell(row, 2).value
                 newByteArr.append(else2Cnt)
                 row += 1
@@ -1657,10 +2190,18 @@ class ExcelWidget:
                         newByteArr.extend(tempF)
                     newByteArr.append(ws.cell(row, 6).value)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[4], row)
+                return False
 
-                # CPU情報
-                ws = wb[tabList[5]]
-                row = self.findLabel("CPU", ws["A"])
+            # CPU情報
+            ws = wb[tabList[5]]
+            row = self.findLabel("CPU", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[5], "CPU")
+                return False
+
+            try:
                 cpuCnt = ws.cell(row, 2).value
                 newByteArr.append(cpuCnt)
                 row += 1
@@ -1678,10 +2219,18 @@ class ExcelWidget:
                         tempF = struct.pack("<f", ws.cell(row, 5 + j).value)
                         newByteArr.extend(tempF)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[5], row)
+                return False
 
-                # Comic Script
-                ws = wb[tabList[6]]
-                row = self.findLabel("ComicScript", ws["A"])
+            # Comic Script
+            ws = wb[tabList[6]]
+            row = self.findLabel("ComicScript", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[6], "ComicScript")
+                return False
+
+            try:
                 comicbinCnt = ws.cell(row, 2).value
                 newByteArr.append(comicbinCnt)
                 row += 1
@@ -1697,9 +2246,17 @@ class ExcelWidget:
                     hRailNo = struct.pack("<h", railNo)
                     newByteArr.extend(hRailNo)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[6], row)
+                return False
 
-                # 土讃線情報データ
-                row = self.findLabel("DosanInfo", ws["A"])
+            # 土讃線情報データ
+            row = self.findLabel("DosanInfo", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[6], "DosanInfo")
+                return False
+
+            try:
                 dosansenCnt = ws.cell(row, 2).value
                 newByteArr.append(dosansenCnt)
                 row += 1
@@ -1719,11 +2276,19 @@ class ExcelWidget:
                     tempF = struct.pack("<f", ws.cell(row, 8).value)
                     newByteArr.extend(tempF)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[6], row)
+                return False
 
-                # 要素３
-                else3Dict = {}
-                ws = wb[tabList[8]]
-                row = self.findLabel("else3", ws["A"])
+            # 要素３
+            else3Dict = {}
+            ws = wb[tabList[8]]
+            row = self.findLabel("else3", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[8], "else3")
+                return False
+
+            try:
                 else3Cnt = ws.cell(row, 2).value
                 row += 1
                 for i in range(else3Cnt):
@@ -1738,11 +2303,19 @@ class ExcelWidget:
                             else3Info.append(ws.cell(row, 4 + k).value)
                         else3Dict[railNo].append(else3Info)
                         row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[8], row)
+                return False
 
-                # 要素４
-                else4Dict = {}
-                ws = wb[tabList[9]]
-                row = self.findLabel("else4", ws["A"])
+            # 要素４
+            else4Dict = {}
+            ws = wb[tabList[9]]
+            row = self.findLabel("else4", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[9], "else4")
+                return False
+
+            try:
                 else4Cnt = ws.cell(row, 2).value
                 row += 1
                 for i in range(else4Cnt):
@@ -1752,16 +2325,28 @@ class ExcelWidget:
                         for j in range(7):
                             else4Dict[railNo].append(ws.cell(row, 3 + j).value)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[9], row)
+                return False
 
-                # レール情報
-                dupNum = -1
-                dupName = None
-                ws = wb[tabList[7]]
-                row = self.findLabel("RailCnt", ws["A"])
+            # レール情報
+            dupNum = -1
+            dupName = None
+            ws = wb[tabList[7]]
+            row = self.findLabel("RailCnt", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[7], "RailCnt")
+                return False
+
+            try:
                 railCnt = ws.cell(row, 2).value
                 hRailCnt = struct.pack("<h", railCnt)
                 newByteArr.extend(hRailCnt)
-                row = self.findLabel("index", ws["A"]) + 1
+                row = self.findLabel("index", ws["A"])
+                if row == -1:
+                    self.error = textSetting.textList["errorList"]["E100"].format(tabList[7], "index")
+                    return False
+                row += 1
                 for i in range(railCnt):
                     isDisableFlg = int(ws.cell(row, 14).value, 16) & 128 > 0
                     readFlag = False
@@ -1872,25 +2457,38 @@ class ExcelWidget:
                                 tempF = struct.pack("<f", else4)
                                 newByteArr.extend(tempF)
                         else:
-                            mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E97"].format(i))
-                            return
+                            self.error = textSetting.textList["errorList"]["E97"].format(i)
+                            return False
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[7], row)
+                return False
 
-                if dupNum != -1:
-                    warnMsg = textSetting.textList["infoList"]["I115"].format(dupNum, dupName)
-                    result = mb.askokcancel(title=textSetting.textList["warning"], message=warnMsg, icon="warning")
-                    if not result:
-                        return
+            if dupNum != -1:
+                warnMsg = textSetting.textList["infoList"]["I115"].format(dupNum, dupName)
+                result = mb.askokcancel(title=textSetting.textList["warning"], message=warnMsg, icon="warning")
+                if not result:
+                    self.error = textSetting.textList["errorList"]["E102"]
+                    return False
 
-                # AMB情報
-                dupNum = -1
-                dupName = None
-                ws = wb[tabList[10]]
-                row = self.findLabel("AmbCnt", ws["A"])
+            # AMB情報
+            dupNum = -1
+            dupName = None
+            ws = wb[tabList[10]]
+            row = self.findLabel("AmbCnt", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[10], "AmbCnt")
+                return False
+
+            try:
                 ambCnt = ws.cell(row, 2).value
                 hAmbCnt = struct.pack("<h", ambCnt)
                 newByteArr.extend(hAmbCnt)
-                row = self.findLabel("index", ws["A"]) + 1
+                row = self.findLabel("index", ws["A"])
+                if row == -1:
+                    self.error = textSetting.textList["errorList"]["E100"].format(tabList[10], "index")
+                    return False
+                row += 1
                 for i in range(ambCnt):
                     newByteArr.append(ws.cell(row, 2).value)
                     fLength = struct.pack("<f", ws.cell(row, 3).value)
@@ -1948,33 +2546,61 @@ class ExcelWidget:
                         row += 1
                     if childCount == 0:
                         row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[10], row)
+                return False
 
-                if dupNum != -1:
-                    warnMsg = textSetting.textList["infoList"]["I116"].format(dupNum, dupName)
-                    result = mb.askokcancel(title=textSetting.textList["warning"], message=warnMsg, icon="warning")
-                    if not result:
-                        return
+            if dupNum != -1:
+                warnMsg = textSetting.textList["infoList"]["I116"].format(dupNum, dupName)
+                result = mb.askokcancel(title=textSetting.textList["warning"], message=warnMsg, icon="warning")
+                if not result:
+                    self.error = textSetting.textList["errorList"]["E102"]
+                    return False
+            return True
+        except Exception:
+            w = codecs.open("error.log", "w", "utf-8", "strict")
+            w.write(traceback.format_exc())
+            w.close()
+            self.error = textSetting.textList["errorList"]["E14"]
+            return False
 
-            elif self.decryptFile.game == "RS":
-                readFlag = False
-                # ver
-                ws = wb[tabList[0]]
-                ver = ws.cell(1, 1).value
-                if ver == "DEND_MAP_VER0400":
-                    readFlag = True
-                bVer = ver.encode("shift-jis")
-                newByteArr.extend(bVer)
+    def rsSave(self, wb, tabList, newByteArr):
+        try:
+            readFlag = False
+            # ver
+            ws = wb[tabList[0]]
+            ver = ws.cell(1, 1).value
+            if ver is None:
+                self.error = textSetting.textList["errorList"]["E99"]
+                return False
+            if ver == "DEND_MAP_VER0400":
+                readFlag = True
+            bVer = ver.encode("shift-jis")
+            newByteArr.extend(bVer)
 
-                # BGM
-                row = self.findLabel("BGM", ws["A"])
+            # BGM
+            row = self.findLabel("BGM", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[0], "BGM")
+                return False
+
+            try:
                 musicCnt = ws.cell(row, 2).value
                 newByteArr.append(musicCnt)
                 row += 1
                 for i in range(musicCnt):
                     newByteArr.append(i)
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[0], row)
+                return False
 
-                # 車両の初期レール位置
-                row = self.findLabel("RailPos", ws["A"])
+            # 車両の初期レール位置
+            row = self.findLabel("RailPos", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[0], "RailPos")
+                return False
+
+            try:
                 trainCnt = ws.cell(row, 2).value
                 newByteArr.append(trainCnt)
                 row += 1
@@ -1990,9 +2616,18 @@ class ExcelWidget:
                     tempF = struct.pack("<f", f1)
                     newByteArr.extend(tempF)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[0], row)
+                return False
 
-                # ダミー位置？
-                row = self.findLabel("RailPos2", ws["A"]) + 1
+            # ダミー位置？
+            row = self.findLabel("RailPos2", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[0], "RailPos2")
+                return False
+
+            try:
+                row += 1
                 railNo = ws.cell(row, 1).value
                 hRailNo = struct.pack("<h", railNo)
                 newByteArr.extend(hRailNo)
@@ -2003,9 +2638,18 @@ class ExcelWidget:
                 f1 = ws.cell(row, 4).value
                 tempF = struct.pack("<f", f1)
                 newByteArr.extend(tempF)
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[0], row)
+                return False
 
-                # 試運転、二人バトルの初期レール位置
-                row = self.findLabel("FreeRunOrVSPos", ws["A"]) + 1
+            # 試運転、二人バトルの初期レール位置
+            row = self.findLabel("FreeRunOrVSPos", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[0], "FreeRunOrVSPos")
+                return False
+
+            try:
+                row += 1
                 for i in range(2):
                     railNo = ws.cell(row, 1).value
                     hRailNo = struct.pack("<h", railNo)
@@ -2018,18 +2662,42 @@ class ExcelWidget:
                     tempF = struct.pack("<f", f1)
                     newByteArr.extend(tempF)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[0], row)
+                return False
 
-                # 駅表示を始める番号
-                row = self.findLabel("stationNo", ws["A"])
+            # 駅表示を始める番号
+            row = self.findLabel("stationNo", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[0], "stationNo")
+                return False
+
+            try:
                 newByteArr.append(ws.cell(row, 2).value)
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[0], row)
+                return False
 
-                # 要素１
-                ws = wb[tabList[1]]
-                row = self.findLabel("else1-1", ws["A"])
+            # 要素１
+            ws = wb[tabList[1]]
+            row = self.findLabel("else1-1", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[1], "else1-1")
+                return False
+
+            try:
                 tempF = struct.pack("<f", ws.cell(row, 2).value)
                 newByteArr.extend(tempF)
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[1], row)
+                return False
 
-                row = self.findLabel("else1-2", ws["A"])
+            row = self.findLabel("else1-2", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[1], "else1-2")
+                return False
+
+            try:
                 cnt = ws.cell(row, 2).value
                 newByteArr.append(cnt)
                 row += 1
@@ -2040,8 +2708,16 @@ class ExcelWidget:
                     for j in range(3):
                         newByteArr.append(ws.cell(row, 3 + j).value)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[1], row)
+                return False
 
-                row = self.findLabel("light", ws["A"])
+            row = self.findLabel("light", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[1], "light")
+                return False
+
+            try:
                 lightCnt = ws.cell(row, 2).value
                 newByteArr.append(lightCnt)
                 row += 1
@@ -2051,8 +2727,16 @@ class ExcelWidget:
                     newByteArr.append(len(bLightFile))
                     newByteArr.extend(bLightFile)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[1], row)
+                return False
 
-                row = self.findLabel("StageRes", ws["A"])
+            row = self.findLabel("StageRes", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[1], "StageRes")
+                return False
+
+            try:
                 stageResCnt = ws.cell(row, 2).value
                 hStageResCnt = struct.pack("<h", stageResCnt)
                 newByteArr.extend(hStageResCnt)
@@ -2063,8 +2747,16 @@ class ExcelWidget:
                     newByteArr.append(len(bStageFile))
                     newByteArr.extend(bStageFile)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[1], row)
+                return False
 
-                row = self.findLabel("SetTexInfo", ws["A"])
+            row = self.findLabel("SetTexInfo", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[1], "SetTexInfo")
+                return False
+
+            try:
                 stageTexCnt = ws.cell(row, 2).value
                 hStageTexCnt = struct.pack("<h", stageTexCnt)
                 newByteArr.extend(hStageTexCnt)
@@ -2075,8 +2767,16 @@ class ExcelWidget:
                         tempH = struct.pack("<h", ws.cell(row, 2 + j).value)
                         newByteArr.extend(tempH)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[1], row)
+                return False
 
-                row = self.findLabel("baseBin", ws["A"])
+            row = self.findLabel("baseBin", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[1], "baseBin")
+                return False
+
+            try:
                 baseBinCnt = ws.cell(row, 2).value
                 newByteArr.append(baseBinCnt)
                 row += 1
@@ -2086,8 +2786,16 @@ class ExcelWidget:
                     newByteArr.append(len(bBaseBinFile))
                     newByteArr.extend(bBaseBinFile)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[1], row)
+                return False
 
-                row = self.findLabel("binAnime", ws["A"])
+            row = self.findLabel("binAnime", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[1], "binAnime")
+                return False
+
+            try:
                 binAnimeCnt = ws.cell(row, 2).value
                 newByteArr.append(binAnimeCnt)
                 row += 1
@@ -2101,12 +2809,20 @@ class ExcelWidget:
                     hBinAnime2 = struct.pack("<h", binAnime2)
                     newByteArr.extend(hBinAnime2)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[1], row)
+                return False
 
-                # smf情報
-                smfNameList = []
+            # smf情報
+            smfNameList = []
 
-                ws = wb[tabList[2]]
-                row = self.findLabel("MdlCnt", ws["A"])
+            ws = wb[tabList[2]]
+            row = self.findLabel("MdlCnt", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[2], "MdlCnt")
+                return False
+
+            try:
                 smfCnt = ws.cell(row, 2).value
                 newByteArr.append(smfCnt)
                 row += 1
@@ -2130,10 +2846,18 @@ class ExcelWidget:
                     hKasen = struct.pack("<h", kasen)
                     newByteArr.extend(hKasen)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[2], row)
+                return False
 
-                # 駅名位置情報
-                ws = wb[tabList[3]]
-                row = self.findLabel("STCnt", ws["A"])
+            # 駅名位置情報
+            ws = wb[tabList[3]]
+            row = self.findLabel("STCnt", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[3], "STCnt")
+                return False
+
+            try:
                 stCnt = ws.cell(row, 2).value
                 newByteArr.append(stCnt)
                 row += 1
@@ -2162,10 +2886,18 @@ class ExcelWidget:
                     tempH = struct.pack("<h", ws.cell(row, 11).value)
                     newByteArr.extend(tempH)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[3], row)
+                return False
 
-                # 要素２
-                ws = wb[tabList[4]]
-                row = self.findLabel("else2", ws["A"])
+            # 要素２
+            ws = wb[tabList[4]]
+            row = self.findLabel("else2", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[4], "else2")
+                return False
+
+            try:
                 else2Cnt = ws.cell(row, 2).value
                 newByteArr.append(else2Cnt)
                 row += 1
@@ -2178,10 +2910,18 @@ class ExcelWidget:
                         newByteArr.extend(tempF)
                     newByteArr.append(ws.cell(row, 6).value)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[4], row)
+                return False
 
-                # CPU情報
-                ws = wb[tabList[5]]
-                row = self.findLabel("CPU", ws["A"])
+            # CPU情報
+            ws = wb[tabList[5]]
+            row = self.findLabel("CPU", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[5], "CPU")
+                return False
+
+            try:
                 cpuCnt = ws.cell(row, 2).value
                 newByteArr.append(cpuCnt)
                 row += 1
@@ -2199,10 +2939,18 @@ class ExcelWidget:
                         tempF = struct.pack("<f", ws.cell(row, 5 + j).value)
                         newByteArr.extend(tempF)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[5], row)
+                return False
 
-                # Comic Script
-                ws = wb[tabList[6]]
-                row = self.findLabel("ComicScript", ws["A"])
+            # Comic Script
+            ws = wb[tabList[6]]
+            row = self.findLabel("ComicScript", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[6], "ComicScript")
+                return False
+
+            try:
                 comicbinCnt = ws.cell(row, 2).value
                 newByteArr.append(comicbinCnt)
                 row += 1
@@ -2218,9 +2966,17 @@ class ExcelWidget:
                     hRailNo = struct.pack("<h", railNo)
                     newByteArr.extend(hRailNo)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[6], row)
+                return False
 
-                # 土讃線情報データ
-                row = self.findLabel("DosanInfo", ws["A"])
+            # 土讃線情報データ
+            row = self.findLabel("DosanInfo", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[6], "DosanInfo")
+                return False
+
+            try:
                 dosansenCnt = ws.cell(row, 2).value
                 newByteArr.append(dosansenCnt)
                 row += 1
@@ -2240,11 +2996,19 @@ class ExcelWidget:
                     tempF = struct.pack("<f", ws.cell(row, 8).value)
                     newByteArr.extend(tempF)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[6], row)
+                return False
 
-                # 要素４情報
-                else4Dict = {}
-                ws = wb[tabList[9]]
-                row = self.findLabel("else4", ws["A"])
+            # 要素４情報
+            else4Dict = {}
+            ws = wb[tabList[9]]
+            row = self.findLabel("else4", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[9], "else4")
+                return False
+
+            try:
                 else4Cnt = ws.cell(row, 2).value
                 row += 1
                 for i in range(else4Cnt):
@@ -2254,16 +3018,29 @@ class ExcelWidget:
                         for j in range(7):
                             else4Dict[railNo].append(ws.cell(row, 3 + j).value)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[9], row)
+                return False
 
-                # レール情報
-                dupNum = -1
-                dupName = None
-                ws = wb[tabList[7]]
-                row = self.findLabel("RailCnt", ws["A"])
+            # レール情報
+            dupNum = -1
+            dupName = None
+            ws = wb[tabList[7]]
+            row = self.findLabel("RailCnt", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[7], "RailCnt")
+                return False
+
+            try:
                 railCnt = ws.cell(row, 2).value
                 hRailCnt = struct.pack("<h", railCnt)
                 newByteArr.extend(hRailCnt)
-                row = self.findLabel("index", ws["A"]) + 1
+                row = self.findLabel("index", ws["A"])
+                if row == -1:
+                    self.error = textSetting.textList["errorList"]["E100"].format(tabList[7], "index")
+                    return False
+
+                row += 1
                 for i in range(railCnt):
                     isDisableFlg = int(ws.cell(row, 14).value, 16) & 128 > 0
                     # prevRail
@@ -2273,8 +3050,8 @@ class ExcelWidget:
 
                     if prevRail == -1 and i != 0 and not isDisableFlg:
                         if i not in else4Dict:
-                            mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E97"].format(i))
-                            return
+                            self.error = textSetting.textList["errorList"]["E97"].format(i)
+                            return False
 
                     # block
                     newByteArr.append(ws.cell(row, 3).value)
@@ -2359,16 +3136,25 @@ class ExcelWidget:
                             hPrevRailPos = struct.pack("<h", prevRailPos)
                             newByteArr.extend(hPrevRailPos)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[7], row)
+                return False
 
-                if dupNum != -1:
-                    warnMsg = textSetting.textList["infoList"]["I115"].format(dupNum, dupName)
-                    result = mb.askokcancel(title=textSetting.textList["warning"], message=warnMsg, icon="warning")
-                    if not result:
-                        return
+            if dupNum != -1:
+                warnMsg = textSetting.textList["infoList"]["I115"].format(dupNum, dupName)
+                result = mb.askokcancel(title=textSetting.textList["warning"], message=warnMsg, icon="warning")
+                if not result:
+                    self.error = textSetting.textList["errorList"]["E102"]
+                    return False
 
-                # 要素３
-                ws = wb[tabList[8]]
-                row = self.findLabel("else3", ws["A"])
+            # 要素３
+            ws = wb[tabList[8]]
+            row = self.findLabel("else3", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[8], "else3")
+                return False
+
+            try:
                 else3Cnt = ws.cell(row, 2).value
                 hElse3Cnt = struct.pack("<h", else3Cnt)
                 newByteArr.extend(hElse3Cnt)
@@ -2396,10 +3182,18 @@ class ExcelWidget:
                         hAnime2 = struct.pack("<h", anime2)
                         newByteArr.extend(hAnime2)
                         row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[8], row)
+                return False
 
-                # 要素４
-                ws = wb[tabList[9]]
-                row = self.findLabel("else4", ws["A"])
+            # 要素４
+            ws = wb[tabList[9]]
+            row = self.findLabel("else4", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[9], "else4")
+                return False
+
+            try:
                 else4Cnt = ws.cell(row, 2).value
                 hElse4Cnt = struct.pack("<h", else4Cnt)
                 newByteArr.extend(hElse4Cnt)
@@ -2415,16 +3209,29 @@ class ExcelWidget:
                         tempF = struct.pack("<f", ws.cell(row, 4 + j).value)
                         newByteArr.extend(tempF)
                     row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[9], row)
+                return False
 
-                # AMB情報
-                dupNum = -1
-                dupName = None
-                ws = wb[tabList[10]]
-                row = self.findLabel("AmbCnt", ws["A"])
+            # AMB情報
+            dupNum = -1
+            dupName = None
+            ws = wb[tabList[10]]
+            row = self.findLabel("AmbCnt", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[10], "AmbCnt")
+                return False
+
+            try:
                 ambCnt = ws.cell(row, 2).value
                 hAmbCnt = struct.pack("<h", ambCnt)
                 newByteArr.extend(hAmbCnt)
-                row = self.findLabel("index", ws["A"]) + 1
+                row = self.findLabel("index", ws["A"])
+                if row == -1:
+                    self.error = textSetting.textList["errorList"]["E100"].format(tabList[10], "index")
+                    return False
+
+                row += 1
                 for i in range(ambCnt):
                     newByteArr.append(ws.cell(row, 2).value)
                     fLength = struct.pack("<f", ws.cell(row, 3).value)
@@ -2482,34 +3289,29 @@ class ExcelWidget:
                         row += 1
                     if childCount == 0:
                         row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[10], row)
+                return False
 
-                if dupNum != -1:
-                    warnMsg = textSetting.textList["infoList"]["I116"].format(dupNum, dupName)
-                    result = mb.askokcancel(title=textSetting.textList["warning"], message=warnMsg, icon="warning")
-                    if not result:
-                        return
-
-            warnMsg = textSetting.textList["infoList"]["I117"]
-            result = mb.askokcancel(title=textSetting.textList["warning"], message=warnMsg, icon="warning")
-            if not result:
-                return
-
-            newBinFile = os.path.join(self.decryptFile.directory, self.decryptFile.filename + ".BIN")
-            w = open(newBinFile, "wb")
-            w.write(newByteArr)
-            w.close()
-            mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I114"])
-            self.reloadFunc()
+            if dupNum != -1:
+                warnMsg = textSetting.textList["infoList"]["I116"].format(dupNum, dupName)
+                result = mb.askokcancel(title=textSetting.textList["warning"], message=warnMsg, icon="warning")
+                if not result:
+                    self.error = textSetting.textList["errorList"]["E102"]
+                    return False
+            return True
         except Exception:
             w = codecs.open("error.log", "w", "utf-8", "strict")
             w.write(traceback.format_exc())
             w.close()
-            mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
+            self.error = textSetting.textList["errorList"]["E14"]
+            return False
 
     def findLabel(self, label, columns):
         for column in columns:
             if column.value == label:
                 return column.row
+        return -1
 
     def isModelNameDup(self, modelName, smfNameList):
         if type(modelName) is str:

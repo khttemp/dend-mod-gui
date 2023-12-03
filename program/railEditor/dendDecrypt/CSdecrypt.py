@@ -13,6 +13,7 @@ class RailDecrypt:
         self.filename = os.path.splitext(os.path.basename(self.filePath))[0]
         self.byteArr = bytearray()
         self.musicCnt = 0
+        self.musicList = []
         self.trainCnt = 0
         self.trainList = []
         self.trainList2 = []
@@ -56,6 +57,7 @@ class RailDecrypt:
         self.game = "CS"
         self.ver = ""
         self.musicCnt = 0
+        self.musicList = []
         self.trainCnt = 0
         self.trainList = []
         self.trainList2 = []
@@ -91,6 +93,7 @@ class RailDecrypt:
         self.musicCnt = self.byteArr[index]
         index += 1
         for i in range(self.musicCnt):
+            self.musicList.append(self.byteArr[index])
             index += 1
 
         # 配置する車両カウント

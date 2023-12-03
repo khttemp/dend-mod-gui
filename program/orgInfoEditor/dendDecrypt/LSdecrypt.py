@@ -1241,15 +1241,15 @@ class LSdecrypt():
 
             tailList = []
             tailSmfNameList = []
-            arr = csvLines[cnt].strip().split(",")
             for i in range(tailCnt):
+                arr = csvLines[cnt].strip().split(",")
                 tailSmfNameList.append(arr[i])
             cnt += 1
             tailList.append(tailSmfNameList)
 
             tailElseList = []
-            arr = csvLines[cnt].strip().split(",")
             for i in range(tailCnt):
+                arr = csvLines[cnt].strip().split(",")
                 tailElseList.append(int(arr[i]))
             cnt += 1
             tailList.append(tailElseList)
