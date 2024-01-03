@@ -84,9 +84,46 @@ Issue に上げられたバグ情報が必ず修正されるものではない�
 
 ## ソースコード版の実行方法
 
+### GUIバージョン
+
 このソフトウェアは Python3 系で開発されているため、 Python3 系がインストールされた開発機であれば、
 ソースコードからソフトウェアの実行が可能である。
 
+### CUIバージョン
+
+旧作のレールデータ、SSのステージデータに限って、コマンドで上書きすることができる。
+
+/saveRail : エクセルファイルで、レールデータ・ステージデータを上書きする
+/quietSaveRail : 成功のメッセージボックスを表示せずに、/saveRailを実行する
+
+旧作の場合
+
+```
+main /saveRail [レールデータのエクセルファイル] [レールデータのbinファイル]
+```
+
+```
+例） main /saveRail RAIL300.xlsx RAIL300.bin
+```
+
+SSの場合
+
+```
+main /saveRail [ステージデータのエクセルファイル] [ステージデータのdenファイル]
+main /quietSaveRail [ステージデータのエクセルファイル] [ステージデータのdenファイル]
+```
+
+または
+
+```
+main /saveRail [ステージデータのテキストファイル] [ステージデータのdenファイル]
+main /quietSaveRail [ステージデータのテキストファイル] [ステージデータのdenファイル]
+```
+
+```
+例） main /quietSaveRail stagedata.xlsx tq5050.den
+例） main /saveRail stagedata.txt tq5050.den 
+```
 
 ### 依存ライブラリ
 

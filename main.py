@@ -24,6 +24,21 @@ import program.ssUnity.ssUnity as ssUnityProgram
 import program.rsRail.rsRail as rsRailProgram
 
 
+root = None
+config_ini_path = None
+v_frameCheck = None
+v_meshCheck = None
+v_XYZCheck = None
+v_mtrlCheck = None
+selectedProgram = None
+maxMenubarLen = None
+version = 0
+onlineUpdateVer = 0
+updateFlag = False
+menubar = None
+programFrame = None
+
+
 def resource_path(relative_path):
     bundle_dir = getattr(sys, "_MEIPASS", os.path.join(os.path.abspath(os.path.dirname(__file__))))
     return os.path.join(bundle_dir, relative_path)
@@ -36,6 +51,7 @@ def clearProgramFrame():
 
 
 def callProgram(programName):
+    global root
     global selectedProgram
 
     clearProgramFrame()
@@ -291,67 +307,223 @@ def confirmUpdate():
             pass
 
 
-config_ini_path = "config.ini"
-if platform.system() == "Windows":
-    config_ini_path = os.path.join(os.getenv("APPDATA"), "dend-mod-gui", "config.ini")
-v_frameCheck = None
-v_meshCheck = None
-v_XYZCheck = None
-v_mtrlCheck = None
-selectedProgram = None
+def guiMain():
+    global root
+    global config_ini_path
+    global v_frameCheck
+    global v_meshCheck
+    global v_XYZCheck
+    global v_mtrlCheck
+    global selectedProgram
+    global maxMenubarLen
+    global version
+    global onlineUpdateVer
+    global updateFlag
+    global menubar
+    global programFrame
 
-maxMenubarLen = None
-version = 0
-onlineUpdateVer = 0
-updateFlag = False
+    config_ini_path = "config.ini"
+    if platform.system() == "Windows":
+        config_ini_path = os.path.join(os.getenv("APPDATA"), "dend-mod-gui", "config.ini")
 
-getUpdateVer()
+    getUpdateVer()
 
-root = tkinter.Tk()
-root.title(textSetting.textList["app"]["title"].format(version))
-root.option_add("*font", textSetting.textList["defaultFont"])
-root.geometry("1024x768")
+    root = tkinter.Tk()
+    root.title(textSetting.textList["app"]["title"].format(version))
+    root.option_add("*font", textSetting.textList["defaultFont"])
+    root.geometry("1024x768")
 
-style = ttk.Style()
-style.configure(".", font=textSetting.textList["defaultFont"])
+    style = ttk.Style()
+    style.configure(".", font=textSetting.textList["defaultFont"])
 
-menubar = tkinter.Menu(root)
+    menubar = tkinter.Menu(root)
 
-v_prog = tkinter.IntVar()
+    v_prog = tkinter.IntVar()
 
-progmenu = tkinter.Menu(menubar, tearoff=False)
-progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["SSUnity"], value=-1, variable=v_prog, command=lambda: callProgram("SSUnity"))
-progmenu.add_separator()
-progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["orgInfoEditor"], value=1, variable=v_prog, command=lambda: callProgram("orgInfoEditor"))
-progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["mdlBin"], value=2, variable=v_prog, command=lambda: callProgram("mdlBin"))
-progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["mdlinfo"], value=3, variable=v_prog, command=lambda: callProgram("mdlinfo"))
-progmenu.add_separator()
-progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["comicscript"], value=4, variable=v_prog, command=lambda: callProgram("comicscript"))
-progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["musicEditor"], value=5, variable=v_prog, command=lambda: callProgram("musicEditor"))
-progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["fvtMaker"], value=6, variable=v_prog, command=lambda: callProgram("fvtMaker"))
-progmenu.add_separator()
-progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["railEditor"], value=7, variable=v_prog, command=lambda: callProgram("railEditor"))
-progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["rsRail"], value=8, variable=v_prog, command=lambda: callProgram("rsRail"))
-progmenu.add_separator()
-progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["smf"], value=9, variable=v_prog, command=lambda: callProgram("smf"))
-progmenu.add_separator()
-progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["exit"], value=-2, variable=v_prog, command=sys.exit)
+    progmenu = tkinter.Menu(menubar, tearoff=False)
+    progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["SSUnity"], value=-1, variable=v_prog, command=lambda: callProgram("SSUnity"))
+    progmenu.add_separator()
+    progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["orgInfoEditor"], value=1, variable=v_prog, command=lambda: callProgram("orgInfoEditor"))
+    progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["mdlBin"], value=2, variable=v_prog, command=lambda: callProgram("mdlBin"))
+    progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["mdlinfo"], value=3, variable=v_prog, command=lambda: callProgram("mdlinfo"))
+    progmenu.add_separator()
+    progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["comicscript"], value=4, variable=v_prog, command=lambda: callProgram("comicscript"))
+    progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["musicEditor"], value=5, variable=v_prog, command=lambda: callProgram("musicEditor"))
+    progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["fvtMaker"], value=6, variable=v_prog, command=lambda: callProgram("fvtMaker"))
+    progmenu.add_separator()
+    progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["railEditor"], value=7, variable=v_prog, command=lambda: callProgram("railEditor"))
+    progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["rsRail"], value=8, variable=v_prog, command=lambda: callProgram("rsRail"))
+    progmenu.add_separator()
+    progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["smf"], value=9, variable=v_prog, command=lambda: callProgram("smf"))
+    progmenu.add_separator()
+    progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["exit"], value=-2, variable=v_prog, command=sys.exit)
 
-filemenu = tkinter.Menu(menubar, tearoff=False)
-filemenu.add_command(label=textSetting.textList["menu"]["file"]["loadFile"], command=loadFile)
+    filemenu = tkinter.Menu(menubar, tearoff=False)
+    filemenu.add_command(label=textSetting.textList["menu"]["file"]["loadFile"], command=loadFile)
 
-menubar.add_cascade(label=textSetting.textList["menu"]["program"]["name"], menu=progmenu)
-menubar.add_cascade(label=textSetting.textList["menu"]["file"]["name"], menu=filemenu)
+    menubar.add_cascade(label=textSetting.textList["menu"]["program"]["name"], menu=progmenu)
+    menubar.add_cascade(label=textSetting.textList["menu"]["file"]["name"], menu=filemenu)
 
-root.config(menu=menubar)
+    root.config(menu=menubar)
 
-programFrame = ttk.Frame(root)
-programFrame.pack(fill=tkinter.BOTH, expand=True)
+    programFrame = ttk.Frame(root)
+    programFrame.pack(fill=tkinter.BOTH, expand=True)
 
-if not os.path.exists(config_ini_path):
-    writeDefaultConfig()
+    if not os.path.exists(config_ini_path):
+        writeDefaultConfig()
 
-maxMenubarLen = menubar.index(tkinter.END)
+    maxMenubarLen = menubar.index(tkinter.END)
 
-root.after(100, confirmUpdate)
-root.mainloop()
+    root.after(100, confirmUpdate)
+    root.mainloop()
+
+
+def execSaveRail(excelFile, railFile, quietFlag):
+    if os.path.splitext(railFile)[1].lower() == ".den":
+        return execSaveStageData(excelFile, railFile, quietFlag)
+
+    import openpyxl
+    import program.railEditor.dendDecrypt.RSdecrypt as dendRs
+    import program.railEditor.dendDecrypt.CSdecrypt as dendCs
+    import program.railEditor.dendDecrypt.BSdecrypt as dendBs
+    import program.railEditor.dendDecrypt.LSdecrypt as dendLs
+    from program.railEditor.importPy.excelWidget import ExcelWidget
+
+    try:
+        wb = openpyxl.load_workbook(excelFile, data_only=True)
+        tabList = textSetting.textList["railEditor"]["railComboValue"]
+        # ver
+        ws = wb[tabList[0]]
+        ver = ws.cell(1, 1).value
+
+        oldVersionList = [
+            "DEND_MAP_VER0100", "DEND_MAP_VER0101",
+            "DEND_MAP_VER0102",
+            "DEND_MAP_VER0110",
+            "DEND_MAP_VER0300", "DEND_MAP_VER0400"
+        ]
+
+        if ver in oldVersionList:
+            if ver == "DEND_MAP_VER0300" or ver == "DEND_MAP_VER0400":
+                decryptFile = dendRs.RailDecrypt(railFile)
+            elif ver == "DEND_MAP_VER0110":
+                decryptFile = dendCs.RailDecrypt(railFile)
+            elif ver == "DEND_MAP_VER0102":
+                decryptFile = dendBs.RailDecrypt(railFile)
+            elif ver == "DEND_MAP_VER0100" or ver == "DEND_MAP_VER0101":
+                decryptFile = dendLs.RailDecrypt(railFile)
+            excelWidget = ExcelWidget(decryptFile, None)
+
+            if decryptFile.game == "LS":
+                tabList = textSetting.textList["railEditor"]["railLsComboValue"]
+
+            for tabName in tabList:
+                if tabName not in wb.sheetnames:
+                    errMsg = textSetting.textList["errorList"]["E95"].format(tabName)
+                    mb.showerror(title=textSetting.textList["error"], message=errMsg)
+                    return -3
+
+            newByteArr = bytearray()
+
+            if decryptFile.game == "LS":
+                if not excelWidget.lsSave(wb, tabList, newByteArr):
+                    if excelWidget.error == "":
+                        errMsg = textSetting.textList["errorList"]["E14"]
+                    else:
+                        errMsg = excelWidget.error
+                    mb.showerror(title=textSetting.textList["error"], message=errMsg)
+                    return -4
+            elif decryptFile.game == "BS":
+                if not excelWidget.bsSave(wb, tabList, newByteArr):
+                    if excelWidget.error == "":
+                        errMsg = textSetting.textList["errorList"]["E14"]
+                    else:
+                        errMsg = excelWidget.error
+                    mb.showerror(title=textSetting.textList["error"], message=errMsg)
+                    return -4
+            elif decryptFile.game == "CS":
+                if not excelWidget.csSave(wb, tabList, newByteArr):
+                    if excelWidget.error == "":
+                        errMsg = textSetting.textList["errorList"]["E14"]
+                    else:
+                        errMsg = excelWidget.error
+                    mb.showerror(title=textSetting.textList["error"], message=errMsg)
+                    return -4
+            elif decryptFile.game == "RS":
+                if not excelWidget.rsSave(wb, tabList, newByteArr):
+                    if excelWidget.error == "":
+                        errMsg = textSetting.textList["errorList"]["E14"]
+                    else:
+                        errMsg = excelWidget.error
+                    mb.showerror(title=textSetting.textList["error"], message=errMsg)
+                    return -4
+            newBinFile = os.path.join(os.getcwd(), decryptFile.filename + ".BIN")
+            w = open(newBinFile, "wb")
+            w.write(newByteArr)
+            w.close()
+            if not quietFlag:
+                mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I114"])
+            return 0
+    except Exception:
+        mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
+        return -1
+
+
+def execSaveStageData(stageDataFile, denFile, quietFlag):
+    from program.ssUnity.SSDecrypt.denDecrypt import DenDecrypt
+    from program.ssUnity.ssUnity import loadExcelAndMerge
+    decryptFile = DenDecrypt(denFile)
+    if not decryptFile.open():
+        decryptFile.printError()
+        mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
+        return -1
+    if len(decryptFile.allList) == 1:
+        dataName = decryptFile.allList[0][0]
+        if dataName != "stagedata":
+            errMsg = textSetting.textList["errorList"]["E105"] + denFile
+            mb.showerror(title=textSetting.textList["error"], message=errMsg)
+            return -5
+        data = decryptFile.allList[0][-1]
+        if os.path.splitext(stageDataFile)[1] == ".txt":
+            with open(stageDataFile, "rb") as f:
+                data.script = f.read()
+        else:
+            errMsgObj = {}
+            if not loadExcelAndMerge(stageDataFile, data, errMsgObj):
+                mb.showerror(title=textSetting.textList["error"], message=errMsgObj["message"])
+                return -6
+        data.save()
+        with open(decryptFile.filePath, "wb") as w:
+            w.write(decryptFile.env.file.save())
+        if not quietFlag:
+            mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I51"])
+        return 0
+    else:
+        errMsg = textSetting.textList["errorList"]["E105"] + denFile
+        mb.showerror(title=textSetting.textList["error"], message=errMsg)
+        return -6
+
+
+if __name__ == "__main__":
+    if len(sys.argv) >= 4:
+        if sys.argv[1] == "/saveRail" or sys.argv[1] == "/quietSaveRail":
+            quietFlag = False
+            if sys.argv[1] == "/quietSaveRail":
+                quietFlag = True
+            excelFile = os.path.join(os.getcwd(), sys.argv[2])
+            if not os.path.exists(excelFile):
+                errMsg = textSetting.textList["errorList"]["E103"] + excelFile
+                mb.showerror(title=textSetting.textList["error"], message=errMsg)
+                sys.exit(-2)
+            railFile = os.path.join(os.getcwd(), sys.argv[3])
+            if os.path.splitext(railFile)[1].lower() == ".bin":
+                if not os.path.exists(railFile):
+                    w = open(railFile, "wb")
+                    w.close()
+            else:
+                if not os.path.exists(railFile):
+                    errMsg = textSetting.textList["errorList"]["E104"] + railFile
+                    mb.showerror(title=textSetting.textList["error"], message=errMsg)
+                    sys.exit(-2)
+            sys.exit(execSaveRail(excelFile, railFile, quietFlag))
+    guiMain()
