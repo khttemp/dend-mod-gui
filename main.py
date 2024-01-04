@@ -510,12 +510,12 @@ if __name__ == "__main__":
             quietFlag = False
             if sys.argv[1] == "/quietSaveRail":
                 quietFlag = True
-            excelFile = os.path.join(os.getcwd(), sys.argv[2])
+            excelFile = sys.argv[2]
             if not os.path.exists(excelFile):
                 errMsg = textSetting.textList["errorList"]["E103"] + excelFile
                 mb.showerror(title=textSetting.textList["error"], message=errMsg)
                 sys.exit(-2)
-            railFile = os.path.join(os.getcwd(), sys.argv[3])
+            railFile = sys.argv[3]
             if os.path.splitext(railFile)[1].lower() == ".bin":
                 if not os.path.exists(railFile):
                     w = open(railFile, "wb")

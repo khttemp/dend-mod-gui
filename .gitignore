@@ -5,6 +5,7 @@ dist
 *.spec
 *.bat
 !setup.bat
+!makeExe.bat
 *.exe
 *.ini
 *.smf

@@ -1,1 +1,1 @@
-pip install UnityPy
+pip install -r requirements.txt
