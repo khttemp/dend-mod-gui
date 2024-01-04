@@ -11,6 +11,7 @@ dist
 *.smf
 /*.txt
 !ver.txt
+!requirements.txt
 /*.bin
 /*.csv
 /*.fvt

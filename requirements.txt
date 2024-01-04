@@ -1,0 +1,5 @@
+requests
+UnityPy
+openpyxl
+pymem
+pyinstaller==5.9.0
