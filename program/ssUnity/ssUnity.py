@@ -33,9 +33,13 @@ decryptFile = None
 
 def deleteAllWidget():
     global contentsLf
+    global v_btnList
 
     for children in contentsLf.winfo_children():
         children.destroy()
+    
+    for btn in v_btnList:
+        btn["state"] = "disabled"
 
 
 def createWidget():
@@ -1048,16 +1052,18 @@ def loadAndSave():
         if fileType != "AudioClip":
             if excelFlag and os.path.splitext(file_path)[1].lower() == ".xlsx":
                 errMsgObj = {}
-                if not loadExcelAndMerge(file_path, data, errMsgObj):
-                    if "warning" in errMsgObj:
-                        result = mb.askquestion(title=textSetting.textList["confirm"], message=errMsgObj["warning"], icon="warning")
-                        if result == "no":
-                            return
+                newLinesObj = {}
+                if not loadExcelAndMerge(file_path, data, newLinesObj, errMsgObj):
                     mb.showerror(title=textSetting.textList["error"], message=errMsgObj["message"])
                     return
+                if "warning" in errMsgObj:
+                    result = mb.askquestion(title=textSetting.textList["confirm"], message=errMsgObj["warning"], icon="warning")
+                    if result == "no":
+                        return
                 result = mb.askquestion(title=textSetting.textList["confirm"], message=textSetting.textList["infoList"]["I50"], icon="warning")
                 if result == "no":
                     return
+                data.script = bytearray("\n".join(newLinesObj["data"]).encode("utf-8"))
             else:
                 with open(file_path, "rb") as f:
                     data.script = f.read()
@@ -1073,7 +1079,7 @@ def loadAndSave():
         mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
 
 
-def loadExcelAndMerge(file_path, data, errMsgObj):
+def loadExcelAndMerge(file_path, data, newLinesObj, errMsgObj):
     originData = data.script.tobytes().decode()
     newLines = copy.deepcopy(originData).split("\n")
     wb = openpyxl.load_workbook(file_path, data_only=True)
@@ -1110,8 +1116,7 @@ def loadExcelAndMerge(file_path, data, errMsgObj):
     ret &= findSearchAndSetCnt("NoDriftRail:", wb[tabList[10]], newLines, requiredFlag=False, optionalRead=1, otherSearchList=["BtlPri:", "RailPri:"], errMsgObj=errMsgObj)
     ret &= findSearchAndSetCnt("AmbCnt:", wb[tabList[11]], newLines, optionalRead=8, mdlList=newMdlList, errMsgObj=errMsgObj)
 
-    if ret:
-        data.script = bytearray("\n".join(newLines).encode("utf-8"))
+    newLinesObj["data"] = newLines
     return ret
 
 

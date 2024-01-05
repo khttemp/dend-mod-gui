@@ -8,6 +8,5 @@ class ScrollbarTreeviewSSUnity(ScrollbarTreeview):
 
     def treeSelect(self, event):
         super().treeSelect(event)
-
         for btn in self.btnList:
             btn["state"] = "normal"

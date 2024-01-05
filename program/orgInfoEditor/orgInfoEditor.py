@@ -48,6 +48,8 @@ def defaultDataRead(game):
         errorMsg = textSetting.textList["errorList"]["E4"]
         if not defaultDecryptFile.open():
             defaultDecryptFile.printError()
+            if defaultDecryptFile.error != "":
+                errorMsg = defaultDecryptFile.error
             mb.showerror(title=textSetting.textList["error"], message=errorMsg)
             return
         trainOrgInfoList = defaultDecryptFile.trainInfoList
@@ -173,6 +175,8 @@ def openFile():
     if file_path:
         if not decryptFile.open():
             decryptFile.printError()
+            if decryptFile.error != "":
+                errorMsg = decryptFile.error
             mb.showerror(title=textSetting.textList["error"], message=errorMsg)
             return
 
@@ -259,6 +263,8 @@ def reloadFile():
     errorMsg = textSetting.textList["errorList"]["E4"]
     if not decryptFile.open():
         decryptFile.printError()
+        if decryptFile.error != "":
+            errorMsg = decryptFile.error
         mb.showerror(title=textSetting.textList["error"], message=errorMsg)
         return
 

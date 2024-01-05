@@ -163,6 +163,9 @@ class SSdecrypt:
                     self.dataList[name] = data
                     self.allList[name] = data.script.tobytes().decode("utf-8").split("\n")
             for name in SSTrainName:
+                if name not in self.allList:
+                    self.error = textSetting.textList["errorList"]["E115"]
+                    return False
                 lines = self.allList[name]
                 resultList = self.decryptLines(lines)
                 self.trainInfoList.append(resultList)

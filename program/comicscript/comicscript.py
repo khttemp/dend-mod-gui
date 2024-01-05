@@ -116,6 +116,7 @@ def deleteWidget():
     v_btnList[0]["state"] = "disabled"
     v_btnList[1]["state"] = "disabled"
     v_btnList[2]["state"] = "disabled"
+    v_btnList[3]["state"] = "disabled"
 
 
 def editLine():
