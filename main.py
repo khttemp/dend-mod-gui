@@ -506,10 +506,13 @@ def execSaveStageData(stageDataFile, denFile, quietFlag):
 
 if __name__ == "__main__":
     if len(sys.argv) >= 4:
-        if sys.argv[1] == "/saveRail" or sys.argv[1] == "/quietSaveRail":
+        if sys.argv[1] in ["/saveRail", "/quietSaveRail", "/debugSaveRail"]:
             quietFlag = False
+            debugFlag = False
             if sys.argv[1] == "/quietSaveRail":
                 quietFlag = True
+            elif sys.argv[1] == "/debugSaveRail":
+                debugFlag = True
             excelFile = sys.argv[2]
             if not os.path.exists(excelFile):
                 errMsg = textSetting.textList["errorList"]["E103"] + excelFile
@@ -525,5 +528,13 @@ if __name__ == "__main__":
                     errMsg = textSetting.textList["errorList"]["E104"] + railFile
                     mb.showerror(title=textSetting.textList["error"], message=errMsg)
                     sys.exit(-2)
+            if debugFlag:
+                debugStr = "エクセルのパス\n{0}".format(os.path.abspath(excelFile))
+                debugStr += "\n"
+                debugStr += "ファイルのパス\n{0}".format(os.path.abspath(railFile))
+                debugStr += "\nで確認しました。このまま実行しますか？"
+                result = mb.askyesno(title=textSetting.textList["confirm"], message=debugStr)
+                if not result:
+                    sys.exit(0)
             sys.exit(execSaveRail(excelFile, railFile, quietFlag))
     guiMain()

@@ -97,6 +97,8 @@ Issue に上げられたバグ情報が必ず修正されるものではない�
 
 /quietSaveRail : 成功のメッセージボックスを表示せずに、/saveRailを実行する
 
+/debugSaveRail : プログラムが判断した、エクセルと、ファイルのフルパスを表示する
+
 旧作の場合
 
 ```
@@ -106,6 +108,7 @@ main /saveRail [レールデータのエクセルファイル] [レールデー�
 ```
 例） main /saveRail RAIL300.xlsx RAIL300.bin
 例） main /quietSaveRail RAIL300.xlsx RAIL300.bin
+例） main /debugSaveRail RAIL300.xlsx RAIL300.bin
 ```
 
 SSの場合
