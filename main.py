@@ -457,8 +457,7 @@ def execSaveRail(excelFile, railFile, quietFlag):
                         errMsg = excelWidget.error
                     mb.showerror(title=textSetting.textList["error"], message=errMsg)
                     return -4
-            newBinFile = os.path.join(os.getcwd(), decryptFile.filename + ".BIN")
-            w = open(newBinFile, "wb")
+            w = open(decryptFile.filePath, "wb")
             w.write(newByteArr)
             w.close()
             if not quietFlag:
