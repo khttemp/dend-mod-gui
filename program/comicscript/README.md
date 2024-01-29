@@ -1,5 +1,12 @@
 # コミックスクリプト
 
+## コミックスクリプトの仕組み
+
+スクリプトの仕組みについては、[【こちら】](/program/comicscript/script.md)のリンクを参照
+
+## コマンドリスト
+
+コマンドリストについては、[【こちら】](https://khttemp.github.io/dendData/comicscript/cmdList.html)のリンクを参照
 
 ## 実行方法
 
