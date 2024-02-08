@@ -1696,7 +1696,12 @@ def filterData():
             for i in range(len(decryptFile.trainNameList)):
                 frame.tree.reattach(i, "", tkinter.END)
         elif monoCombo.current() == 1:
-            for i in range(len(decryptFile.trainModelNameList)):
+            index = 0
+            for trainModelName in decryptFile.trainModelNameList:
+                changeMeshTexInfoList = decryptFile.changeMeshTexList[trainModelName]
+                for changeMeshTexInfo in changeMeshTexInfoList:
+                    index += 1
+            for i in range(index):
                 frame.tree.reattach(i, "", tkinter.END)
 
     search = v_search.get()
