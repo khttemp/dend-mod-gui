@@ -22,6 +22,8 @@ root = None
 v_radio = None
 v_fileName = None
 v_select = None
+v_search = None
+searchEt = None
 contentsLf = None
 frame = None
 monoCombo = None
@@ -42,14 +44,20 @@ def deleteAllWidget():
         btn["state"] = "disabled"
 
 
-def createWidget():
+def createWidget(reloadFlag = False):
     global v_radio
     global v_select
     global v_btnList
+    global v_search
+    global searchEt
     global contentsLf
     global decryptFile
     global frame
     global monoCombo
+
+    if not reloadFlag:
+        v_search.set("")
+        searchEt["state"] = "normal"
 
     frame = ScrollbarTreeviewSSUnity(contentsLf, v_select, v_btnList)
     col_tuple = (
@@ -143,6 +151,8 @@ def changeButton():
     global v_radio
     global v_fileName
     global v_select
+    global v_search
+    global searchEt
     global monoCombo
     global extractBtn
     global loadAndSaveBtn
@@ -150,6 +160,8 @@ def changeButton():
 
     v_select.set("")
     v_fileName.set("")
+    v_search.set("")
+    searchEt["state"] = "readonly"
     if v_radio.get() == 0:
         extractBtn["text"] = textSetting.textList["ssUnity"]["extractFile"]
         extractBtn["command"] = extract
@@ -1574,6 +1586,7 @@ def assetsSave():
 def reloadFile():
     global v_radio
     global v_select
+    global v_search
     global decryptFile
     global frame
 
@@ -1587,24 +1600,29 @@ def reloadFile():
 
             selectId = None
             if v_select.get() != "":
-                selectId = int(v_select.get()) - 1
+                selectId = int(v_select.get())
 
             deleteAllWidget()
-            createWidget()
+            createWidget(True)
+
+            if v_search.get() != "":
+                filterData()
 
             if selectId is not None:
-                if v_radio.get() == 0:
-                    maxLen = len(decryptFile.allList)
-                elif v_radio.get() == 1:
-                    maxLen = len(decryptFile.trainOrgInfoList)
+                findFlag = False
+                for idx, itemId in enumerate(frame.tree.get_children()):
+                    item = frame.tree.item(itemId)
+                    num = item["values"][0]
+                    if selectId == num:
+                        frame.tree.selection_set(itemId)
+                        findFlag = True
+                        break
 
-                if selectId >= maxLen:
-                    selectId = maxLen - 1
-                if selectId - 3 < 0:
-                    frame.tree.see(0)
-                else:
-                    frame.tree.see(selectId - 3)
-                frame.tree.selection_set(selectId)
+                if findFlag:
+                    if idx - 3 < 0:
+                        frame.tree.see(0)
+                    else:
+                        frame.tree.see(idx - 3)
 
         except Exception:
             w = codecs.open("error.log", "a", "utf-8", "strict")
@@ -1653,6 +1671,46 @@ def openFile():
             createWidget()
 
 
+def filterList(event):
+    global v_select
+    global frame
+
+    v_select.set("")
+    if len(frame.tree.selection()) > 0:
+        frame.tree.selection_remove(frame.tree.selection())
+    filterData()
+
+
+def filterData():
+    global v_radio
+    global v_search
+    global decryptFile
+    global frame
+    global monoCombo
+
+    if v_radio.get() == 0:
+        for i in range(len(decryptFile.allList)):
+            frame.tree.reattach(i, "", tkinter.END)
+    elif v_radio.get() == 1:
+        if monoCombo.current() == 0:
+            for i in range(len(decryptFile.trainNameList)):
+                frame.tree.reattach(i, "", tkinter.END)
+        elif monoCombo.current() == 1:
+            for i in range(len(decryptFile.trainModelNameList)):
+                frame.tree.reattach(i, "", tkinter.END)
+
+    search = v_search.get()
+    for i in frame.tree.get_children():
+        item = frame.tree.item(i)
+        name = item["values"][2]
+        if search.upper() not in name.upper():
+            if v_radio.get() == 1 and monoCombo.current() == 1:
+                name2 = item["values"][3]
+                if search.upper() in name2.upper():
+                    continue
+            frame.tree.detach(i)
+
+
 def call_ssUnity(rootTk, programFrame):
     global unityFlag
     global root
@@ -1660,10 +1718,12 @@ def call_ssUnity(rootTk, programFrame):
     global v_fileName
     global v_select
     global v_btnList
+    global v_search
     global monoCombo
     global extractBtn
     global loadAndSaveBtn
     global assetsSaveBtn
+    global searchEt
     global contentsLf
 
     if not unityFlag:
@@ -1692,9 +1752,9 @@ def call_ssUnity(rootTk, programFrame):
     monoCombo.place_forget()
 
     denRb = tkinter.Radiobutton(programFrame, text=textSetting.textList["ssUnity"]["editDenFile"], command=selectGame, variable=v_radio, value=0)
-    denRb.place(relx=0.55, rely=0.03)
+    denRb.place(relx=0.60, rely=0.03)
     resourcesRb = tkinter.Radiobutton(programFrame, text=textSetting.textList["ssUnity"]["editResourcesAssets"], command=selectGame, variable=v_radio, value=1)
-    resourcesRb.place(relx=0.70, rely=0.03)
+    resourcesRb.place(relx=0.78, rely=0.03)
 
     extractBtn = ttk.Button(programFrame, text=textSetting.textList["ssUnity"]["extractFileLabel"], width=25, state="disabled", command=extract)
     extractBtn.place(relx=0.42, rely=0.09)
@@ -1711,5 +1771,13 @@ def call_ssUnity(rootTk, programFrame):
         assetsSaveBtn
     ]
 
+    searchLb = ttk.Label(programFrame, text=textSetting.textList["ssUnity"]["searchText"], font=textSetting.textList["font2"])
+    searchLb.place(relx=0.05, rely=0.15)
+
+    v_search = tkinter.StringVar()
+    searchEt = ttk.Entry(programFrame, textvariable=v_search, font=textSetting.textList["font7"], width=23, state="readonly", justify="center")
+    searchEt.place(relx=0.10, rely=0.15)
+    searchEt.bind("<KeyRelease>", filterList)
+
     contentsLf = ttk.LabelFrame(programFrame, text=textSetting.textList["ssUnity"]["scriptLabel"])
-    contentsLf.place(relx=0.03, rely=0.15, relwidth=0.95, relheight=0.82)
+    contentsLf.place(relx=0.03, rely=0.20, relwidth=0.95, relheight=0.77)
