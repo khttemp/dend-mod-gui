@@ -20,8 +20,9 @@ class DosansenListWidget:
         self.dosansenListLf.pack(anchor=tkinter.NW, padx=10, expand=True, fill=tkinter.BOTH)
 
         scrollbarFrame = ScrollbarFrame(self.dosansenListLf)
+        scrollbarFrame.pack(expand=True, fill=tkinter.BOTH)
 
-        self.txtFrame = ttk.Frame(scrollbarFrame.frame)
+        self.txtFrame = ttk.Frame(scrollbarFrame.interior)
         self.txtFrame.pack(anchor=tkinter.NW)
 
         self.dosansenCntNameLb = tkinter.Label(self.txtFrame, text=textSetting.textList["railEditor"]["dosansenCntLabel"], font=textSetting.textList["font6"], width=12, borderwidth=1, relief="solid")
@@ -34,7 +35,7 @@ class DosansenListWidget:
         self.dosansenCntBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
 
         for i in range(len(self.dosansenList)):
-            self.txtFrame2 = ttk.Frame(scrollbarFrame.frame)
+            self.txtFrame2 = ttk.Frame(scrollbarFrame.interior)
             self.txtFrame2.pack(anchor=tkinter.NW, pady=5, fill=tkinter.BOTH)
 
             dosansenInfo = self.dosansenList[i]

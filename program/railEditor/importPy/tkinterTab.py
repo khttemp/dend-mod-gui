@@ -38,17 +38,18 @@ def tab1AllWidget(tabFrame, decryptFile, reloadFunc):
     tab_one_frame = ttk.Frame(tabFrame)
     tab_one_frame.pack(expand=True, fill=tkinter.BOTH)
     frame = ScrollbarFrame(tab_one_frame)
+    frame.pack(expand=True, fill=tkinter.BOTH)
 
-    musicExcelFrame = ttk.Frame(frame.frame)
+    musicExcelFrame = ttk.Frame(frame.interior)
     musicExcelFrame.pack(anchor=tkinter.NW)
 
     musicFrame = ttk.Frame(musicExcelFrame)
     musicFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT)
     MusicWidget(musicFrame, decryptFile, reloadFunc)
 
-    TrainCountWidget(frame.frame, decryptFile, reloadFunc)
+    TrainCountWidget(frame.interior, decryptFile, reloadFunc)
 
-    railPosFrame = ttk.Frame(frame.frame)
+    railPosFrame = ttk.Frame(frame.interior)
     railPosFrame.pack(anchor=tkinter.NW, padx=10, pady=5)
 
     railPos1Frame = ttk.Frame(railPosFrame)
@@ -70,10 +71,10 @@ def tab1AllWidget(tabFrame, decryptFile, reloadFunc):
         StationNoWidget(stationNoFrame, decryptFile, decryptFile.stationNo, 0, reloadFunc)
 
         if decryptFile.game == "BS":
-            separator = ttk.Separator(frame.frame, orient="horizontal")
+            separator = ttk.Separator(frame.interior, orient="horizontal")
             separator.pack(fill=tkinter.X)
 
-            railPosDummyFrame = ttk.Frame(frame.frame)
+            railPosDummyFrame = ttk.Frame(frame.interior)
             railPosDummyFrame.pack(anchor=tkinter.NW, padx=10, pady=5)
 
             railPos4Frame = ttk.Frame(railPosDummyFrame)
@@ -89,18 +90,19 @@ def tab2AllWidget(tabFrame, decryptFile, reloadFunc):
     tab_two_frame = ttk.Frame(tabFrame)
     tab_two_frame.pack(expand=True, fill=tkinter.BOTH)
     frame = ScrollbarFrame(tab_two_frame)
+    frame.pack(expand=True, fill=tkinter.BOTH)
 
-    Else1ListWidget(frame.frame, decryptFile, decryptFile.else1List, reloadFunc)
+    Else1ListWidget(frame.interior, decryptFile, decryptFile.else1List, reloadFunc)
 
     if decryptFile.game in ["BS", "CS", "RS"]:
-        simpleListFrame = ttk.Frame(frame.frame)
+        simpleListFrame = ttk.Frame(frame.interior)
         simpleListFrame.pack(anchor=tkinter.NW)
         SimpleListWidget(simpleListFrame, textSetting.textList["railEditor"]["lightInfo"], decryptFile, decryptFile.lightList, decryptFile.lightIdx, 1, reloadFunc)
         if decryptFile.game in ["CS", "RS"]:
             SimpleListWidget(simpleListFrame, textSetting.textList["railEditor"]["stationInfo"], decryptFile, decryptFile.pngList, decryptFile.pngIdx, 2, reloadFunc)
-            StationWidget(frame.frame, decryptFile, decryptFile.stationList, reloadFunc)
+            StationWidget(frame.interior, decryptFile, decryptFile.stationList, reloadFunc)
 
-    simpleListFrame2 = ttk.Frame(frame.frame)
+    simpleListFrame2 = ttk.Frame(frame.interior)
     simpleListFrame2.pack(anchor=tkinter.NW)
 
     if decryptFile.game in ["BS", "CS", "RS"]:
@@ -131,8 +133,9 @@ def tab7AllWidget(tabFrame, decryptFile, reloadFunc):
 
 
 def tab8AllWidget(tabFrame, decryptFile, reloadFunc):
-    frame = ScrollbarFrame(tabFrame, True, True)
-    RailListWidget(frame.frame, decryptFile, decryptFile.railList, reloadFunc)
+    frame = ScrollbarFrame(tabFrame, True)
+    frame.pack(expand=True, fill=tkinter.BOTH)
+    RailListWidget(frame.interior, decryptFile, decryptFile.railList, reloadFunc)
 
 
 def tab9AllWidget(tabFrame, decryptFile, reloadFunc, selectId):
@@ -145,4 +148,5 @@ def tab10AllWidget(tabFrame, decryptFile, reloadFunc):
 
 def tab11AllWidget(tabFrame, decryptFile, reloadFunc):
     frame = ScrollbarFrame(tabFrame)
-    AmbListWidget(frame.frame, decryptFile, decryptFile.ambList, reloadFunc)
+    frame.pack(expand=True, fill=tkinter.BOTH)
+    AmbListWidget(frame.interior, decryptFile, decryptFile.ambList, reloadFunc)

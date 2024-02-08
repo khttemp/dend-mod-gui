@@ -23,8 +23,9 @@ class TailListWidget:
         self.tailListLf.pack(anchor=tkinter.NW, padx=10, expand=True, fill=tkinter.BOTH)
 
         scrollbarFrame = ScrollbarFrame(self.tailListLf)
+        scrollbarFrame.pack(expand=True, fill=tkinter.BOTH)
 
-        self.txtFrame = ttk.Frame(scrollbarFrame.frame)
+        self.txtFrame = ttk.Frame(scrollbarFrame.interior)
         self.txtFrame.pack(anchor=tkinter.NW)
 
         self.tailCntNameLb = tkinter.Label(self.txtFrame, text=textSetting.textList["orgInfoEditor"]["tailCntLabel"], font=textSetting.textList["font6"], width=12, borderwidth=1, relief="solid")
@@ -36,7 +37,7 @@ class TailListWidget:
         self.tailCntBtn = tkinter.Button(self.txtFrame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], font=textSetting.textList["font7"], command=lambda: self.editTailCnt(self.varTailCnt.get()))
         self.tailCntBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
 
-        self.txtFrame1 = ttk.Frame(scrollbarFrame.frame)
+        self.txtFrame1 = ttk.Frame(scrollbarFrame.interior)
         self.txtFrame1.pack(anchor=tkinter.NW, pady=5)
 
         self.btnFrame = ttk.Frame(self.txtFrame1)
@@ -67,7 +68,7 @@ class TailListWidget:
             self.tempTextLb.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
 
         for i in range(len(self.lensList)):
-            self.txtFrame2 = ttk.Frame(scrollbarFrame.frame)
+            self.txtFrame2 = ttk.Frame(scrollbarFrame.interior)
             self.txtFrame2.pack(anchor=tkinter.NW, pady=5)
 
             self.btnFrame2 = ttk.Frame(self.txtFrame2)

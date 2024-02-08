@@ -176,7 +176,8 @@ def createWidget():
     ambContentsFrame.pack(anchor=tkinter.NW, padx=5, fill=tkinter.BOTH, expand=True)
 
     ambScroll = ScrollbarFrame(ambContentsFrame)
-    ambScrollFrame = ambScroll.frame
+    ambScroll.pack(expand=True, fill=tkinter.BOTH)
+    ambScrollFrame = ambScroll.interior
 
     ambParentInfoFrame = ttk.Frame(ambScrollFrame)
     ambParentInfoFrame.pack(anchor=tkinter.NW)

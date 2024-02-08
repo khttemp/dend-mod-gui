@@ -21,8 +21,9 @@ class LensListWidget:
         self.lensListLf.pack(anchor=tkinter.NW, padx=10, expand=True, fill=tkinter.BOTH)
 
         scrollbarFrame = ScrollbarFrame(self.lensListLf)
+        scrollbarFrame.pack(expand=True, fill=tkinter.BOTH)
 
-        self.txtFrame = ttk.Frame(scrollbarFrame.frame)
+        self.txtFrame = ttk.Frame(scrollbarFrame.interior)
         self.txtFrame.pack(anchor=tkinter.NW)
 
         self.lensCntNameLb = tkinter.Label(self.txtFrame, text=textSetting.textList["orgInfoEditor"]["lensCntLabel"], font=textSetting.textList["font6"], width=12, borderwidth=1, relief="solid")
@@ -35,7 +36,7 @@ class LensListWidget:
         self.lensCntBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
 
         for i in range(len(self.lensList)):
-            self.txtFrame2 = ttk.Frame(scrollbarFrame.frame)
+            self.txtFrame2 = ttk.Frame(scrollbarFrame.interior)
             self.txtFrame2.pack(anchor=tkinter.NW, pady=5)
 
             self.btnFrame = ttk.Frame(self.txtFrame2)

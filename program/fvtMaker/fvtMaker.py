@@ -62,10 +62,12 @@ def selectGame():
     deleteWidget()
 
     content = v_radio.get()
-    frame = ScrollbarFrame(csvLf, True, False)
-    CsvWidget(frame.frame, content)
-    frame2 = ScrollbarFrame(descLf, True, False)
-    DescWidget(frame2.frame, content)
+    frame = ScrollbarFrame(csvLf, True)
+    frame.pack(expand=True, fill=tkinter.BOTH)
+    CsvWidget(frame.interior, content)
+    frame2 = ScrollbarFrame(descLf, True)
+    frame2.pack(expand=True, fill=tkinter.BOTH)
+    DescWidget(frame2.interior, content)
 
 
 def deleteWidget():

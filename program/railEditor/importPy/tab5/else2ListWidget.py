@@ -20,8 +20,9 @@ class Else2ListWidget:
         self.eleLf.pack(anchor=tkinter.NW, padx=10, expand=True, fill=tkinter.BOTH)
 
         scrollbarFrame = ScrollbarFrame(self.eleLf)
+        scrollbarFrame.pack(expand=True, fill=tkinter.BOTH)
 
-        self.txtFrame = ttk.Frame(scrollbarFrame.frame)
+        self.txtFrame = ttk.Frame(scrollbarFrame.interior)
         self.txtFrame.pack(anchor=tkinter.NW)
 
         self.else2CntNameLb = tkinter.Label(self.txtFrame, text=textSetting.textList["railEditor"]["else2CntLabel"], font=textSetting.textList["font6"], width=7, borderwidth=1, relief="solid")
@@ -35,7 +36,7 @@ class Else2ListWidget:
             self.else2CntBtn = tkinter.Button(self.txtFrame, text=textSetting.textList["railEditor"]["modifyBtnLabel"], font=textSetting.textList["font7"], command=lambda: self.editElse2Cnt(self.varElse2Cnt.get()))
             self.else2CntBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
 
-        self.txtFrame2 = ttk.Frame(scrollbarFrame.frame)
+        self.txtFrame2 = ttk.Frame(scrollbarFrame.interior)
         self.txtFrame2.pack(anchor=tkinter.NW, pady=5)
 
         for i in range(len(self.else2List)):

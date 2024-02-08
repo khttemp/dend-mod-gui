@@ -76,23 +76,25 @@ def tab1AllWidget(tabFrame, decryptFile, trainIdx, game, varList, btnList, defau
     speedLf = ttk.LabelFrame(notchPerfFrame, text=textSetting.textList["orgInfoEditor"]["speedLfLabel"])
     speedLf.place(relx=0, rely=0, relwidth=0.4, relheight=0.98)
     speedScrollFrame = ScrollbarFrame(speedLf)
+    speedScrollFrame.pack(expand=True, fill=tkinter.BOTH)
 
     notchCnt = len(speed) // decryptFile.notchContentCnt
     for i in range(notchCnt):
-        NotchWidget(tabFrame, trainIdx, i, notchCnt, speedScrollFrame.frame, speed, decryptFile, decryptFile.notchContentCnt, varList, btnList, defaultData)
+        NotchWidget(tabFrame, trainIdx, i, notchCnt, speedScrollFrame.interior, speed, decryptFile, decryptFile.notchContentCnt, varList, btnList, defaultData)
 
     perfLf = ttk.LabelFrame(notchPerfFrame, text=textSetting.textList["orgInfoEditor"]["perfLfLabel"])
     perfLf.place(relx=0.43, rely=0, relwidth=0.56, relheight=0.98)
     perfScrollFrame = ScrollbarFrame(perfLf)
+    perfScrollFrame.pack(expand=True, fill=tkinter.BOTH)
 
     perfCnt = len(perf)
     for i in range(perfCnt):
-        PerfWidget(tabFrame, trainIdx, i, perfScrollFrame.frame, perf, decryptFile, varList, btnList, defaultData)
+        PerfWidget(tabFrame, trainIdx, i, perfScrollFrame.interior, perf, decryptFile, varList, btnList, defaultData)
 
     if game in [gameDefine.CS, gameDefine.RS]:
         huriko = trainInfo[2]
         for i in range(len(huriko)):
-            HurikoWidget(tabFrame, trainIdx, i, perfCnt, perfScrollFrame.frame, huriko, decryptFile, varList, btnList, defaultData)
+            HurikoWidget(tabFrame, trainIdx, i, perfCnt, perfScrollFrame.interior, huriko, decryptFile, varList, btnList, defaultData)
 
 
 def tab2AllWidget(tabFrame, decryptFile, trainIdx, game, defaultData, widgetList, reloadFunc):
@@ -117,7 +119,8 @@ def tab2AllWidget(tabFrame, decryptFile, trainIdx, game, defaultData, widgetList
         sep = ttk.Separator(countModelLf, orient="vertical")
         sep.pack(side=tkinter.LEFT, fill=tkinter.Y)
 
-        countModelScrollFrame = ScrollbarFrame(countModelLf, True, False)
+        countModelScrollFrame = ScrollbarFrame(countModelLf, True)
+        countModelScrollFrame.pack(expand=True, fill=tkinter.BOTH)
 
         innerButtonList = [
             countWidget.notchBtn,
@@ -127,11 +130,12 @@ def tab2AllWidget(tabFrame, decryptFile, trainIdx, game, defaultData, widgetList
             edit_model_button,
         ]
 
-        TrainModelWidget(tabFrame, trainIdx, game, countModelScrollFrame.frame, widgetList, innerButtonList, decryptFile, reloadFunc)
+        TrainModelWidget(tabFrame, trainIdx, game, countModelScrollFrame.interior, widgetList, innerButtonList, decryptFile, reloadFunc)
 
         if game == gameDefine.LS:
             elseScrollFrame = ScrollbarFrame(tabFrame)
-            elseFrame = elseScrollFrame.frame
+            elseScrollFrame.pack(expand=True, fill=tkinter.BOTH)
+            elseFrame = elseScrollFrame.interior
 
             elseFrame2 = elseFrame
         else:
@@ -158,7 +162,8 @@ def tab2AllWidget(tabFrame, decryptFile, trainIdx, game, defaultData, widgetList
         mainFrame = ttk.Frame(tabFrame)
         mainFrame.pack(fill=tkinter.BOTH, expand=True)
         scrollMainFrame = ScrollbarFrame(mainFrame)
-        scrollFrame = scrollMainFrame.frame
+        scrollMainFrame.pack(expand=True, fill=tkinter.BOTH)
+        scrollFrame = scrollMainFrame.interior
 
         countModelLf = ttk.LabelFrame(scrollFrame, text=textSetting.textList["orgInfoEditor"]["SSTrainLfLabel"])
         countModelLf.pack(anchor=tkinter.NW, padx=10, pady=3)
