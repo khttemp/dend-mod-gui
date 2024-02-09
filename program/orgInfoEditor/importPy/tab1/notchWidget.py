@@ -182,10 +182,12 @@ class EditNotchVarInfo(sd.Dialog):
         except Exception:
             inputTlk = float(self.value)
 
-        tabFrame = self.master.winfo_children()[0]
-        notchPerfFrame = tabFrame.winfo_children()[1]
+
+        programFrame = self.master.winfo_children()[0]
+        notchPerfFrame = programFrame.winfo_children()[1]
         perfLabelFrame = notchPerfFrame.winfo_children()[1]
-        perfCanvas = perfLabelFrame.winfo_children()[0]
+        perfAllFrame = perfLabelFrame.winfo_children()[0]
+        perfCanvas = perfAllFrame.winfo_children()[1]
         perfCanvasInFrame = perfCanvas.winfo_children()[0]
 
         weightIdx = -1
