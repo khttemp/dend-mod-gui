@@ -2,45 +2,45 @@
 
 モデルのリストは下記の通り。
 
-RailCntが０のモデルは、進められないモデルなので注意すること。
+1rail_tq_12_5は長さが４のモデルなので注意すること。
 
 | モデル名 | RailCnt | 備考 |
 | --- | --- | --- |
 | 1Rail_50_Only | 1 | 単線 | 
 | 1Rail_Den_100 | 1 | 単線 | 
-| 1Rail_Den_100_Konkuri | 0 | ー | 
+| 1Rail_Den_100_Konkuri | 1 | 単線 | 
 | 1Rail_Den_100_Under | 1 | 単線 | 
 | 1Rail_Den_100W | 1 | 単線 | 
 | 1Rail_Den_25 | 1 | 単線 | 
-| 1Rail_Den_25_Konkuri | 0 | ー | 
+| 1Rail_Den_25_Konkuri | 1 | 単線 | 
 | 1Rail_Den_25_Under | 1 | 単線 | 
 | 1Rail_Den_25W | 1 | 単線 | 
 | 1Rail_Den_50 | 1 | 単線 | 
-| 1Rail_Den_50_Konkuri | 0 | ー | 
+| 1Rail_Den_50_Konkuri | 1 | 単線 | 
 | 1Rail_Den_50_Under | 1 | 単線 | 
 | 1Rail_Den_50W | 1 | 単線 | 
-| 1Rail_HQ_50Only | 0 | ー | 
+| 1Rail_HQ_50Only | 1 | 単線 | 
 | 1Rail_HQ_Konkuri100 | 1 | 単線 | 
 | 1Rail_HQ_Konkuri25 | 1 | 単線 | 
 | 1Rail_HQ_Konkuri50 | 1 | 単線 | 
 | 1Rail_Kin_100 | 1 | 単線 | 
 | 1Rail_Kin_25 | 1 | 単線 | 
 | 1Rail_Kin_50 | 1 | 単線 | 
-| 1Rail_Konkuri100 | 0 | ー | 
+| 1Rail_Konkuri100 | 1 | 単線 | 
 | 1rail_mina_under_l | 1 | 単線 | 
 | 1rail_mina_under_r | 1 | 単線 | 
 | 1Rail_Takara100Only | 1 | 単線 | 
 | 1Rail_Takara25Only | 1 | 単線 | 
 | 1Rail_Takara50Only | 1 | 単線 | 
-| 1rail_tq_12_5 | 0 | ー | 
+| 1rail_tq_12_5 | 1 | 単線（長さ４） | 
 | 1Rail_TQ_Under | 1 | 単線 | 
-| 1Rail_TQ_Under_25 | 0 | ー | 
+| 1Rail_TQ_Under_25 | 1 | 単線 | 
 | 1Rail_TQ_Under2 | 1 | 単線 | 
 | 1Rail_TQ_Under3 | 1 | 単線 | 
-| 1Rail_TQ_Under4 | 0 | ー | 
-| 1Rail_TQ_Under4_50 | 0 | ー | 
-| 1Rail_TQ_Under5 | 0 | ー | 
-| 1Rail_TQ_Under5_50 | 0 | ー | 
+| 1Rail_TQ_Under4 | 1 | 単線 | 
+| 1Rail_TQ_Under4_50 | 1 | 単線 | 
+| 1Rail_TQ_Under5 | 1 | 単線 | 
+| 1Rail_TQ_Under5_50 | 1 | 単線 | 
 | 2Rail_Bridge50_Miman | 2 | 複線 | 
 | 2Rail_Den_100 | 2 | 複線 | 
 | 2Rail_Den_100_Konkuri | 2 | 複線 | 
