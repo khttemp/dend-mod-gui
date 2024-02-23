@@ -54,6 +54,8 @@ AMBのモデルを、モデルの中心から車両の位置までの距離が
 
 MdlCntで定義されている、AMBのモデル番号
 
+AMBに出来るモデルのリストは[【こちら】](/program/ssUnity/AMBLIST.md)のリンクを参照
+
 ## parentIndex
 
 ![parentIndex](/program/ssUnity/image/parentIndex.png)

@@ -126,9 +126,13 @@ blenderのような、このXYZではないので注意すること。
 
 MdlCntで定義されている、レールのモデル番号
 
+レールに出来るモデルのリストは[【こちら】](/program/ssUnity/RAILLIST.md)のリンクを参照
+
 ## mdl_kasenchu
 
 MdlCntで定義されている、レールの架線柱モデル番号
+
+架線柱に出来るモデルのリストは、同じく[【こちら】](/program/ssUnity/RAILLIST.md)のリンクを参照
 
 1. -1、または255の場合、MdlCntで定義している
 
