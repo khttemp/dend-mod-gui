@@ -2,6 +2,7 @@ import os
 import codecs
 import tkinter
 import openpyxl
+from openpyxl.styles import PatternFill
 import copy
 import traceback
 from tkinter import ttk
@@ -31,6 +32,9 @@ extractBtn = None
 loadAndSaveBtn = None
 assetsSaveBtn = None
 decryptFile = None
+
+errorColorFill = PatternFill(patternType="solid", fgColor=textSetting.textList["excel"]["errorColor"])
+warningColorFill = PatternFill(patternType="solid", fgColor=textSetting.textList["excel"]["warningColor"])
 
 
 def deleteAllWidget():
@@ -268,11 +272,13 @@ def extractExcel(data, file_path):
     # TabList
     tabList = textSetting.textList["ssUnity"]["ssStageDataTabList"]
 
+    errorLog = []
+    warningLog = []
     mdlList = []
     for index, tabName in enumerate(tabList):
         wb.create_sheet(index=index, title=tabName)
         try:
-            if not extractStageDataInfo(data, index, wb[tabName], mdlList):
+            if not extractStageDataInfo(data, index, wb[tabName], mdlList, errorLog, warningLog):
                 return
         except Exception:
             w = codecs.open("error.log", "w", "utf-8", "strict")
@@ -284,11 +290,26 @@ def extractExcel(data, file_path):
     try:
         wb.save(file_path)
         mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I113"])
+        if len(errorLog) > 0 or len(warningLog) > 0:
+            dirPath = os.path.dirname(file_path)
+            if len(errorLog) > 0:
+                errPath = os.path.join(dirPath, "stageError.log")
+                w = codecs.open(errPath, "w", "utf-8", "strict")
+                for err in errorLog:
+                    w.write(err + "\n")
+                w.close()
+            if len(warningLog) > 0:
+                warnPath = os.path.join(dirPath, "stageWarning.log")
+                w = codecs.open(warnPath, "w", "utf-8", "strict")
+                for warn in warningLog:
+                    w.write(warn + "\n")
+                w.close()
+            mb.showwarning(title=textSetting.textList["warning"], message=textSetting.textList["errorList"]["E118"])
     except PermissionError:
         mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E94"])
 
 
-def extractStageDataInfo(data, sheetIndex, ws, mdlList):
+def extractStageDataInfo(data, sheetIndex, ws, mdlList, errorLog, warningLog):
     row = 1
     originDataList = data.split("\n")
     # コメント行を消す
@@ -311,7 +332,12 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList):
             return failSearchError(search)
         searchDataList = getSplitAndRemoveEmptyData(dataList[index])
         ws.cell(row, 1).value = searchDataList[0]
-        ws.cell(row, 2).value = searchDataList[1]
+        if len(searchDataList) > 1:
+            ws.cell(row, 2).value = searchDataList[1]
+        # Storyデータなし
+        else:
+            ws.cell(row, 2).fill = errorColorFill
+            errorLog.append(noDataError(search))
         row += 2
 
         search = "Dir:"
@@ -319,7 +345,17 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList):
         if index != -1:
             searchDataList = getSplitAndRemoveEmptyData(dataList[index])
             ws.cell(row, 1).value = searchDataList[0]
-            ws.cell(row, 2).value = int(searchDataList[1])
+            if len(searchDataList) > 1:
+                try:
+                    ws.cell(row, 2).value = int(searchDataList[1])
+                except ValueError:
+                    ws.cell(row, 2).value = searchDataList[1]
+                    ws.cell(row, 2).fill = errorColorFill
+                    errorLog.append(cntDataReadError(search, searchDataList[1]))
+            # Dirデータなし
+            else:
+                ws.cell(row, 2).fill = errorColorFill
+                errorLog.append(noDataError(search))
             row += 2
 
         search = "Track:"
@@ -327,7 +363,17 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList):
         if index != -1:
             searchDataList = getSplitAndRemoveEmptyData(dataList[index])
             ws.cell(row, 1).value = searchDataList[0]
-            ws.cell(row, 2).value = int(searchDataList[1])
+            if len(searchDataList) > 1:
+                try:
+                    ws.cell(row, 2).value = int(searchDataList[1])
+                except ValueError:
+                    ws.cell(row, 2).value = searchDataList[1]
+                    ws.cell(row, 2).fill = errorColorFill
+                    errorLog.append(cntDataReadError(search, searchDataList[1]))
+            # Trackデータなし
+            else:
+                ws.cell(row, 2).fill = errorColorFill
+                errorLog.append(noDataError(search))
             row += 2
 
         search = "COMIC_DATA"
@@ -336,20 +382,31 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList):
             return failSearchError(search)
         searchDataList = getSplitAndRemoveEmptyData(dataList[index])
         ws.cell(row, 1).value = searchDataList[0]
-        cnt = int(searchDataList[1])
-        ws.cell(row, 2).value = cnt
+        if len(searchDataList) > 1:
+            try:
+                cnt = int(searchDataList[1])
+                ws.cell(row, 2).value = cnt
+            except ValueError:
+                cnt = 0
+                ws.cell(row, 2).value = searchDataList[1]
+                ws.cell(row, 2).fill = errorColorFill
+                errorLog.append(cntDataReadError(search, searchDataList[1]))
+        # COMIC_DATAの数なし
+        else:
+            cnt = 0
+            ws.cell(row, 2).fill = errorColorFill
+            errorLog.append(noDataError(search))
         row += 1
-        try:
-            for i in range(cnt):
-                try:
-                    searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
-                except IndexError:
-                    return outOfRangeError(search, cnt, i)
-                ws.cell(row, 1).value = searchDataList[0]
-                row += 1
+
+        for i in range(cnt):
+            searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
+            ws.cell(row, 1).value = searchDataList[0]
+            # 「comic_」形式ではない
+            if "comic_" not in searchDataList[0].lower():
+                ws.cell(row, 1).fill = errorColorFill
+                errorLog.append(dataReadError(search, i + 1, searchDataList[0]))
             row += 1
-        except Exception:
-            return dataReadError(search, i)
+        row += 1
 
         search = "COMIC_IMAGE"
         index = getSearchLine(dataList, search)
@@ -357,20 +414,31 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList):
             return failSearchError(search)
         searchDataList = getSplitAndRemoveEmptyData(dataList[index])
         ws.cell(row, 1).value = searchDataList[0]
-        cnt = int(searchDataList[1])
-        ws.cell(row, 2).value = cnt
+        if len(searchDataList) > 1:
+            try:
+                cnt = int(searchDataList[1])
+                ws.cell(row, 2).value = cnt
+            except ValueError:
+                cnt = 0
+                ws.cell(row, 2).value = searchDataList[1]
+                ws.cell(row, 2).fill = errorColorFill
+                errorLog.append(cntDataReadError(search, searchDataList[1]))
+        # COMIC_IMAGEの数なし
+        else:
+            cnt = 0
+            ws.cell(row, 2).fill = errorColorFill
+            errorLog.append(noDataError(search))
         row += 1
-        try:
-            for i in range(cnt):
-                try:
-                    searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
-                except IndexError:
-                    return outOfRangeError(search, cnt, i)
-                ws.cell(row, 1).value = searchDataList[0]
-                row += 1
+
+        for i in range(cnt):
+            searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
+            ws.cell(row, 1).value = searchDataList[0]
+            # 「comic_img_」形式ではない
+            if "comic_img_" not in searchDataList[0].lower():
+                ws.cell(row, 1).fill = errorColorFill
+                errorLog.append(dataReadError(search, i + 1, searchDataList[0]))
             row += 1
-        except Exception:
-            return dataReadError(search, i)
+        row += 1
 
         search = "COMIC_SE"
         index = getSearchLine(dataList, search)
@@ -378,20 +446,31 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList):
             return failSearchError(search)
         searchDataList = getSplitAndRemoveEmptyData(dataList[index])
         ws.cell(row, 1).value = searchDataList[0]
-        cnt = int(searchDataList[1])
-        ws.cell(row, 2).value = cnt
+        if len(searchDataList) > 1:
+            try:
+                cnt = int(searchDataList[1])
+                ws.cell(row, 2).value = cnt
+            except ValueError:
+                cnt = 0
+                ws.cell(row, 2).value = searchDataList[1]
+                ws.cell(row, 2).fill = errorColorFill
+                errorLog.append(cntDataReadError(search, searchDataList[1]))
+        # COMIC_SEの数なし
+        else:
+            cnt = 0
+            ws.cell(row, 2).fill = errorColorFill
+            errorLog.append(noDataError(search))
         row += 1
-        try:
-            for i in range(cnt):
-                try:
-                    searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
-                except IndexError:
-                    return outOfRangeError(search, cnt, i)
-                ws.cell(row, 1).value = searchDataList[0]
-                row += 1
+
+        for i in range(cnt):
+            searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
+            ws.cell(row, 1).value = searchDataList[0]
+            # 「comic_se_」形式ではない
+            if "comic_se_" not in searchDataList[0].lower():
+                ws.cell(row, 1).fill = errorColorFill
+                errorLog.append(dataReadError(search, i + 1, searchDataList[0]))
             row += 1
-        except Exception:
-            return dataReadError(search, i)
+        row += 1
 
         search = "RailPos:"
         index = getSearchLine(dataList, search)
@@ -399,22 +478,58 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList):
             return failSearchError(search)
         searchDataList = getSplitAndRemoveEmptyData(dataList[index])
         ws.cell(row, 1).value = searchDataList[0]
-        cnt = int(searchDataList[1])
-        ws.cell(row, 2).value = cnt
+        if len(searchDataList) > 1:
+            try:
+                cnt = int(searchDataList[1])
+                ws.cell(row, 2).value = cnt
+            except ValueError:
+                cnt = 0
+                ws.cell(row, 2).value = searchDataList[1]
+                ws.cell(row, 2).fill = errorColorFill
+                errorLog.append(cntDataReadError(search, searchDataList[1]))
+        # RailPosの数なし
+        else:
+            cnt = 0
+            ws.cell(row, 2).fill = errorColorFill
+            errorLog.append(noDataError(search))
         row += 1
-        try:
-            for i in range(cnt):
+
+        for i in range(cnt):
+            searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
+            realCnt = len(searchDataList)
+            idx = 0
+            colNum = idx + 1
+
+            # railPos(rail, bone)
+            for j in range(2):
+                if realCnt > idx:
+                    val = searchDataList[idx]
+                    try:
+                        ws.cell(row, colNum).value = int(val)
+                    except ValueError:
+                        ws.cell(row, colNum).value = val
+                        ws.cell(row, colNum).fill = errorColorFill
+                        errorLog.append(dataReadError(search, i + 1, val))
+                else:
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i + 1))
+                idx += 1
+                colNum += 1
+
+            # railPos p
+            if realCnt > idx:
+                val = searchDataList[idx]
                 try:
-                    searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
-                except IndexError:
-                    return outOfRangeError(search, cnt, i)
-                ws.cell(row, 1).value = int(searchDataList[0])
-                ws.cell(row, 2).value = int(searchDataList[1])
-                ws.cell(row, 3).value = int(searchDataList[2])
-                row += 1
+                    ws.cell(row, colNum).value = float(val)
+                except ValueError:
+                    ws.cell(row, colNum).value = val
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i + 1, val))
+            else:
+                ws.cell(row, colNum).fill = errorColorFill
+                errorLog.append(dataReadError(search, i + 1))
             row += 1
-        except Exception:
-            return dataReadError(search, i)
+        row += 1
 
         search = "FreeRun:"
         index = getSearchLine(dataList, search)
@@ -423,11 +538,43 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList):
         searchDataList = getSplitAndRemoveEmptyData(dataList[index])
         ws.cell(row, 1).value = searchDataList[0]
         row += 1
-        searchDataList = getSplitAndRemoveEmptyData(dataList[index + 1])
-        ws.cell(row, 1).value = int(searchDataList[0])
-        ws.cell(row, 2).value = int(searchDataList[1])
-        ws.cell(row, 3).value = int(searchDataList[2])
-        row += 2
+
+        for i in range(1):
+            searchDataList = getSplitAndRemoveEmptyData(dataList[index + 1])
+            realCnt = len(searchDataList)
+            idx = 0
+            colNum = idx + 1
+
+            # railPos(rail, bone)
+            for j in range(2):
+                if realCnt > idx:
+                    val = searchDataList[idx]
+                    try:
+                        ws.cell(row, colNum).value = int(val)
+                    except ValueError:
+                        ws.cell(row, colNum).value = val
+                        ws.cell(row, colNum).fill = errorColorFill
+                        errorLog.append(dataReadError(search, i + 1, val))
+                else:
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i + 1))
+                idx += 1
+                colNum += 1
+
+            # railPos p
+            if realCnt > idx:
+                val = searchDataList[idx]
+                try:
+                    ws.cell(row, colNum).value = float(val)
+                except ValueError:
+                    ws.cell(row, colNum).value = val
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i + 1, val))
+            else:
+                ws.cell(row, colNum).fill = errorColorFill
+                errorLog.append(dataReadError(search, i + 1))
+            row += 1
+        row += 1
 
         search = "VSPos:"
         index = getSearchLine(dataList, search)
@@ -435,22 +582,58 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList):
             return failSearchError(search)
         searchDataList = getSplitAndRemoveEmptyData(dataList[index])
         ws.cell(row, 1).value = searchDataList[0]
-        cnt = int(searchDataList[1])
-        ws.cell(row, 2).value = cnt
+        if len(searchDataList) > 1:
+            try:
+                cnt = int(searchDataList[1])
+                ws.cell(row, 2).value = cnt
+            except ValueError:
+                cnt = 0
+                ws.cell(row, 2).value = searchDataList[1]
+                ws.cell(row, 2).fill = errorColorFill
+                errorLog.append(cntDataReadError(search, searchDataList[1]))
+        # VSPosの数なし
+        else:
+            cnt = 0
+            ws.cell(row, 2).fill = errorColorFill
+            errorLog.append(noDataError(search))
         row += 1
-        try:
-            for i in range(cnt):
+
+        for i in range(cnt):
+            searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
+            realCnt = len(searchDataList)
+            idx = 0
+            colNum = idx + 1
+
+            # railPos(rail, bone)
+            for j in range(2):
+                if realCnt > idx:
+                    val = searchDataList[idx]
+                    try:
+                        ws.cell(row, colNum).value = int(val)
+                    except ValueError:
+                        ws.cell(row, colNum).value = val
+                        ws.cell(row, colNum).fill = errorColorFill
+                        errorLog.append(dataReadError(search, i + 1, val))
+                else:
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i + 1))
+                idx += 1
+                colNum += 1
+
+            # railPos p
+            if realCnt > idx:
+                val = searchDataList[idx]
                 try:
-                    searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
-                except IndexError:
-                    return outOfRangeError(search, cnt, i)
-                ws.cell(row, 1).value = int(searchDataList[0])
-                ws.cell(row, 2).value = int(searchDataList[1])
-                ws.cell(row, 3).value = int(searchDataList[2])
-                row += 1
+                    ws.cell(row, colNum).value = float(val)
+                except ValueError:
+                    ws.cell(row, colNum).value = val
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i + 1, val))
+            else:
+                ws.cell(row, colNum).fill = errorColorFill
+                errorLog.append(dataReadError(search, i + 1))
             row += 1
-        except Exception:
-            return dataReadError(search, i)
+        row += 1
 
         search = "FadeImage:"
         index = getSearchLine(dataList, search)
@@ -458,21 +641,41 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList):
             return failSearchError(search)
         searchDataList = getSplitAndRemoveEmptyData(dataList[index])
         ws.cell(row, 1).value = searchDataList[0]
-        cnt = int(searchDataList[1])
-        ws.cell(row, 2).value = cnt
-        row += 1
-        try:
-            for i in range(cnt):
-                try:
-                    searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
-                except IndexError:
-                    return outOfRangeError(search, cnt, i)
-                ws.cell(row, 1).value = searchDataList[0]
+        if len(searchDataList) > 1:
+            try:
+                cnt = int(searchDataList[1])
+                ws.cell(row, 2).value = cnt
+            except ValueError:
+                cnt = 0
                 ws.cell(row, 2).value = searchDataList[1]
-                row += 1
+                ws.cell(row, 2).fill = errorColorFill
+                errorLog.append(cntDataReadError(search, searchDataList[1]))
+        # FadeImageの数なし
+        else:
+            cnt = 0
+            ws.cell(row, 2).fill = errorColorFill
+            errorLog.append(noDataError(search))
+        row += 1
+
+        for i in range(cnt):
+            searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
+            realCnt = len(searchDataList)
+            idx = 0
+            colNum = idx + 1
+
+            # den, name
+            for j in range(2):
+                if realCnt > idx:
+                    val = searchDataList[idx]
+                    ws.cell(row, colNum).value = val
+                else:
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i + 1))
+                idx += 1
+                colNum += 1
             row += 1
-        except Exception:
-            return dataReadError(search, i)
+        row += 1
+
     # 路線別画像データ
     elif sheetIndex == 1:
         search = "StageRes:"
@@ -481,22 +684,51 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList):
             return failSearchError(search)
         searchDataList = getSplitAndRemoveEmptyData(dataList[index])
         ws.cell(row, 1).value = searchDataList[0]
-        cnt = int(searchDataList[1])
-        ws.cell(row, 2).value = cnt
-        row += 1
-        try:
-            for i in range(cnt):
-                try:
-                    searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
-                except IndexError:
-                    return outOfRangeError(search, cnt, i)
-                ws.cell(row, 1).value = i
+        if len(searchDataList) > 1:
+            try:
+                cnt = int(searchDataList[1])
+                ws.cell(row, 2).value = cnt
+            except ValueError:
+                cnt = 0
                 ws.cell(row, 2).value = searchDataList[1]
-                ws.cell(row, 3).value = searchDataList[2]
-                row += 1
+                ws.cell(row, 2).fill = errorColorFill
+                errorLog.append(cntDataReadError(search, searchDataList[1]))
+        # StageResの数なし
+        else:
+            cnt = 0
+            ws.cell(row, 2).fill = errorColorFill
+            errorLog.append(noDataError(search))
+        row += 1
+
+        for i in range(cnt):
+            searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
+            realCnt = len(searchDataList)
+            idx = 0
+            colNum = idx + 1
+
+            # index
+            if realCnt > idx:
+                val = i
+                ws.cell(row, colNum).value = val
+            else:
+                ws.cell(row, colNum).fill = errorColorFill
+                errorLog.append(dataReadError(search, i + 1))
+            idx += 1
+            colNum += 1
+
+            # den, name
+            for j in range(2):
+                if realCnt > idx:
+                    val = searchDataList[idx]
+                    ws.cell(row, colNum).value = val
+                else:
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i + 1))
+                idx += 1
+                colNum += 1
             row += 1
-        except Exception:
-            return dataReadError(search, i)
+        row += 1
+
     # 画像設定情報
     elif sheetIndex == 2:
         search = "SetTexInfo:"
@@ -505,30 +737,105 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList):
             return failSearchError(search)
         searchDataList = getSplitAndRemoveEmptyData(dataList[index])
         ws.cell(row, 1).value = searchDataList[0]
-        cnt = int(searchDataList[1])
-        ws.cell(row, 2).value = cnt
+        if len(searchDataList) > 1:
+            try:
+                cnt = int(searchDataList[1])
+                ws.cell(row, 2).value = cnt
+            except ValueError:
+                cnt = 0
+                ws.cell(row, 2).value = searchDataList[1]
+                ws.cell(row, 2).fill = errorColorFill
+                errorLog.append(cntDataReadError(search, searchDataList[1]))
+        # SetTexInfoの数なし
+        else:
+            cnt = 0
+            ws.cell(row, 2).fill = errorColorFill
+            errorLog.append(noDataError(search))
         row += 1
-        try:
-            for i in range(cnt):
+
+        for i in range(cnt):
+            searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
+            realCnt = len(searchDataList)
+            idx = 0
+            colNum = idx + 1
+
+            # index
+            if realCnt > idx:
+                val = i
+                ws.cell(row, colNum).value = val
+            else:
+                ws.cell(row, colNum).fill = errorColorFill
+                errorLog.append(dataReadError(search, i))
+            idx += 1
+            colNum += 1
+
+            # amb, amb_child, res_index
+            for j in range(3):
+                if realCnt > idx:
+                    val = searchDataList[idx]
+                    try:
+                        ws.cell(row, colNum).value = int(val)
+                    except ValueError:
+                        ws.cell(row, colNum).value = val
+                        ws.cell(row, colNum).fill = errorColorFill
+                        errorLog.append(dataReadError(search, i, val))
+                else:
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i))
+                idx += 1
+                colNum += 1
+
+            # tex_type
+            if realCnt > idx:
+                val = searchDataList[idx]
                 try:
-                    searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
-                except IndexError:
-                    return outOfRangeError(search, cnt, i)
-                ws.cell(row, 1).value = i
-                ws.cell(row, 2).value = int(searchDataList[1])
-                ws.cell(row, 3).value = int(searchDataList[2])
-                ws.cell(row, 4).value = int(searchDataList[3])
-                tex_type = int(searchDataList[4])
-                ws.cell(row, 5).value = tex_type
-                ws.cell(row, 6).value = int(searchDataList[5])
-                ws.cell(row, 7).value = int(searchDataList[6])
-                if tex_type == 31 and len(searchDataList) > 7:
-                    ws.cell(row, 8).value = float(searchDataList[7])
-                    ws.cell(row, 9).value = float(searchDataList[8])
-                row += 1
+                    tex_type = int(val)
+                    ws.cell(row, colNum).value = tex_type
+                except ValueError:
+                    tex_type = -1
+                    ws.cell(row, colNum).value = val
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i, val))
+            else:
+                tex_type = -1
+                ws.cell(row, colNum).fill = errorColorFill
+                errorLog.append(dataReadError(search, i))
+            idx += 1
+            colNum += 1
+
+            # tex_index, change_index
+            for j in range(2):
+                if realCnt > idx:
+                    val = searchDataList[idx]
+                    try:
+                        ws.cell(row, colNum).value = int(val)
+                    except ValueError:
+                        ws.cell(row, colNum).value = val
+                        ws.cell(row, colNum).fill = errorColorFill
+                        errorLog.append(dataReadError(search, i, val))
+                else:
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i))
+                idx += 1
+                colNum += 1
+
+            if tex_type == 31:
+                for j in range(2):
+                    if realCnt > idx:
+                        val = searchDataList[idx]
+                        try:
+                            ws.cell(row, colNum).value = float(val)
+                        except ValueError:
+                            ws.cell(row, colNum).value = val
+                            ws.cell(row, colNum).fill = errorColorFill
+                            errorLog.append(dataReadError(search, i, val))
+                    else:
+                        ws.cell(row, colNum).fill = errorColorFill
+                        errorLog.append(dataReadError(search, i))
+                    idx += 1
+                    colNum += 1
             row += 1
-        except Exception:
-            return dataReadError(search, i)
+        row += 1
     # 駅名
     elif sheetIndex == 3:
         search = "STCnt:"
@@ -537,29 +844,80 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList):
             return failSearchError(search)
         searchDataList = getSplitAndRemoveEmptyData(dataList[index])
         ws.cell(row, 1).value = searchDataList[0]
-        cnt = int(searchDataList[1])
-        ws.cell(row, 2).value = cnt
+        if len(searchDataList) > 1:
+            try:
+                cnt = int(searchDataList[1])
+                ws.cell(row, 2).value = cnt
+            except ValueError:
+                cnt = 0
+                ws.cell(row, 2).value = searchDataList[1]
+                ws.cell(row, 2).fill = errorColorFill
+                errorLog.append(cntDataReadError(search, searchDataList[1]))
+        # STCntの数なし
+        else:
+            cnt = 0
+            ws.cell(row, 2).fill = errorColorFill
+            errorLog.append(noDataError(search))
         row += 1
-        try:
-            for i in range(cnt):
+
+        for i in range(cnt):
+            searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
+            realCnt = len(searchDataList)
+            idx = 0
+            colNum = idx + 1
+
+            # index
+            if realCnt > idx:
+                val = i
+                ws.cell(row, colNum).value = val
+            else:
+                ws.cell(row, colNum).fill = errorColorFill
+                errorLog.append(dataReadError(search, i))
+            idx += 1
+            colNum += 1
+
+            # stIndex, rail
+            for j in range(2):
+                if realCnt > idx:
+                    val = searchDataList[idx]
+                    try:
+                        ws.cell(row, colNum).value = int(val)
+                    except ValueError:
+                        ws.cell(row, colNum).value = val
+                        ws.cell(row, colNum).fill = errorColorFill
+                        errorLog.append(dataReadError(search, i, val))
+                else:
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i))
+                idx += 1
+                colNum += 1
+
+            # offset
+            if realCnt > idx:
+                val = searchDataList[idx]
                 try:
-                    searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
-                except IndexError:
-                    return outOfRangeError(search, cnt, i)
-                ws.cell(row, 1).value = i
-                ws.cell(row, 2).value = int(searchDataList[1])
-                ws.cell(row, 3).value = int(searchDataList[2])
-                ws.cell(row, 4).value = int(searchDataList[3])
-                if len(searchDataList) > 4:
-                    ws.cell(row, 5).value = searchDataList[4]
-                if len(searchDataList) > 5:
-                    ws.cell(row, 6).value = searchDataList[5]
-                if len(searchDataList) > 6:
-                    ws.cell(row, 7).value = searchDataList[6]
-                row += 1
+                    ws.cell(row, colNum).value = float(val)
+                except ValueError:
+                    ws.cell(row, colNum).value = val
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i, val))
+            else:
+                ws.cell(row, colNum).fill = errorColorFill
+                errorLog.append(dataReadError(search, i))
+            idx += 1
+            colNum += 1
+
+            # name, jp, en
+            for j in range(3):
+                if realCnt > idx:
+                    val = searchDataList[idx]
+                    ws.cell(row, colNum).value = val
+                    idx += 1
+                    colNum += 1
+                else:
+                    break
             row += 1
-        except Exception:
-            return dataReadError(search, i)
+        row += 1
     # ＣＰＵ切り替え
     elif sheetIndex == 4:
         search = "CPU:"
@@ -568,29 +926,66 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList):
             return failSearchError(search)
         searchDataList = getSplitAndRemoveEmptyData(dataList[index])
         ws.cell(row, 1).value = searchDataList[0]
-        cnt = int(searchDataList[1])
-        ws.cell(row, 2).value = cnt
+        if len(searchDataList) > 1:
+            try:
+                cnt = int(searchDataList[1])
+                ws.cell(row, 2).value = cnt
+            except ValueError:
+                cnt = 0
+                ws.cell(row, 2).value = searchDataList[1]
+                ws.cell(row, 2).fill = errorColorFill
+                errorLog.append(cntDataReadError(search, searchDataList[1]))
+        # CPUの数なし
+        else:
+            cnt = 0
+            ws.cell(row, 2).fill = errorColorFill
+            errorLog.append(noDataError(search))
         row += 1
-        try:
-            for i in range(cnt):
+
+        for i in range(cnt):
+            searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
+            realCnt = len(searchDataList)
+            idx = 0
+            colNum = idx + 1
+
+            # index
+            if realCnt > idx:
+                val = i
+                ws.cell(row, colNum).value = val
+            else:
+                ws.cell(row, colNum).fill = errorColorFill
+                errorLog.append(dataReadError(search, i))
+            idx += 1
+            colNum += 1
+
+            # rail, train_no, run_type, min_len, max_len, max_speed, min_speed
+            for j in range(7):
+                if realCnt > idx:
+                    val = searchDataList[idx]
+                    try:
+                        ws.cell(row, colNum).value = int(val)
+                    except ValueError:
+                        ws.cell(row, colNum).value = val
+                        ws.cell(row, colNum).fill = errorColorFill
+                        errorLog.append(dataReadError(search, i, val))
+                else:
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i))
+                idx += 1
+                colNum += 1
+
+            # p1(break)
+            if realCnt > idx:
+                val = searchDataList[idx]
                 try:
-                    searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
-                except IndexError:
-                    return outOfRangeError(search, cnt, i)
-                ws.cell(row, 1).value = i
-                ws.cell(row, 2).value = int(searchDataList[1])
-                ws.cell(row, 3).value = int(searchDataList[2])
-                ws.cell(row, 4).value = int(searchDataList[3])
-                ws.cell(row, 5).value = int(searchDataList[4])
-                ws.cell(row, 6).value = int(searchDataList[5])
-                ws.cell(row, 7).value = int(searchDataList[6])
-                ws.cell(row, 8).value = int(searchDataList[7])
-                if len(searchDataList) > 8:
-                    ws.cell(row, 9).value = float(searchDataList[8])
-                row += 1
+                    ws.cell(row, colNum).value = float(val)
+                except ValueError:
+                    ws.cell(row, colNum).value = val
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i, val))
             row += 1
-        except Exception:
-            return dataReadError(search, i)
+        row += 1
+
     # コミックスクリプト
     elif sheetIndex == 5:
         search = "ComicScript:"
@@ -599,24 +994,68 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList):
             return failSearchError(search)
         searchDataList = getSplitAndRemoveEmptyData(dataList[index])
         ws.cell(row, 1).value = searchDataList[0]
-        cnt = int(searchDataList[1])
-        ws.cell(row, 2).value = cnt
+        if len(searchDataList) > 1:
+            try:
+                cnt = int(searchDataList[1])
+                ws.cell(row, 2).value = cnt
+            except ValueError:
+                cnt = 0
+                ws.cell(row, 2).value = searchDataList[1]
+                ws.cell(row, 2).fill = errorColorFill
+                errorLog.append(cntDataReadError(search, searchDataList[1]))
+        # ComicScriptの数なし
+        else:
+            cnt = 0
+            ws.cell(row, 2).fill = errorColorFill
+            errorLog.append(noDataError(search))
         row += 1
-        try:
-            for i in range(cnt):
+
+        for i in range(cnt):
+            searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
+            realCnt = len(searchDataList)
+            idx = 0
+            colNum = idx + 1
+
+            # index
+            if realCnt > idx:
+                val = i
+                ws.cell(row, colNum).value = val
+            else:
+                ws.cell(row, colNum).fill = errorColorFill
+                errorLog.append(dataReadError(search, i))
+            idx += 1
+            colNum += 1
+
+            # event_no, event_type, rail_no
+            for j in range(3):
+                if realCnt > idx:
+                    val = searchDataList[idx]
+                    try:
+                        ws.cell(row, colNum).value = int(val)
+                    except ValueError:
+                        ws.cell(row, colNum).value = val
+                        ws.cell(row, colNum).fill = errorColorFill
+                        errorLog.append(dataReadError(search, i, val))
+                else:
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i))
+                idx += 1
+                colNum += 1
+
+            # offset
+            if realCnt > idx:
+                val = searchDataList[idx]
                 try:
-                    searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
-                except IndexError:
-                    return outOfRangeError(search, cnt, i)
-                ws.cell(row, 1).value = i
-                ws.cell(row, 2).value = int(searchDataList[1])
-                ws.cell(row, 3).value = int(searchDataList[2])
-                ws.cell(row, 4).value = int(searchDataList[3])
-                ws.cell(row, 5).value = float(searchDataList[4])
-                row += 1
+                    ws.cell(row, colNum).value = float(val)
+                except ValueError:
+                    ws.cell(row, colNum).value = val
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i, val))
+            else:
+                ws.cell(row, colNum).fill = errorColorFill
+                errorLog.append(dataReadError(search, i))
             row += 1
-        except Exception:
-            return dataReadError(search, i)
+        row += 1
     # 雨イベント
     elif sheetIndex == 6:
         search = "RainChecker:"
@@ -625,30 +1064,84 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList):
             return failSearchError(search)
         searchDataList = getSplitAndRemoveEmptyData(dataList[index])
         ws.cell(row, 1).value = searchDataList[0]
-        cnt = int(searchDataList[1])
-        ws.cell(row, 2).value = cnt
+        if len(searchDataList) > 1:
+            try:
+                cnt = int(searchDataList[1])
+                ws.cell(row, 2).value = cnt
+            except ValueError:
+                cnt = 0
+                ws.cell(row, 2).value = searchDataList[1]
+                ws.cell(row, 2).fill = errorColorFill
+                errorLog.append(cntDataReadError(search, searchDataList[1]))
+        # RainCheckerの数なし
+        else:
+            cnt = 0
+            ws.cell(row, 2).fill = errorColorFill
+            errorLog.append(noDataError(search))
         row += 1
-        try:
-            for i in range(cnt):
+
+        for i in range(cnt):
+            searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
+            realCnt = len(searchDataList)
+            idx = 0
+            colNum = idx + 1
+
+            # index
+            if realCnt > idx:
+                val = i
+                ws.cell(row, colNum).value = val
+            else:
+                ws.cell(row, colNum).fill = errorColorFill
+                errorLog.append(dataReadError(search, i))
+            idx += 1
+            colNum += 1
+
+            # event_no, event_type, rail_no
+            for j in range(3):
+                if realCnt > idx:
+                    val = searchDataList[idx]
+                    try:
+                        ws.cell(row, colNum).value = int(val)
+                    except ValueError:
+                        ws.cell(row, colNum).value = val
+                        ws.cell(row, colNum).fill = errorColorFill
+                        errorLog.append(dataReadError(search, i, val))
+                else:
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i))
+                idx += 1
+                colNum += 1
+
+            # offset
+            if realCnt > idx:
+                val = searchDataList[idx]
                 try:
-                    searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
-                except IndexError:
-                    return outOfRangeError(search, cnt, i)
-                ws.cell(row, 1).value = i
-                ws.cell(row, 2).value = int(searchDataList[1])
-                ws.cell(row, 3).value = int(searchDataList[2])
-                ws.cell(row, 4).value = int(searchDataList[3])
-                ws.cell(row, 5).value = int(searchDataList[4])
-                if len(searchDataList) > 5:
-                    paramCnt = len(searchDataList) - 5
-                    for j in range(paramCnt):
-                        if searchDataList[5 + j].find("//") == 0:
-                            break
-                        ws.cell(row, 6 + j).value = float(searchDataList[5 + j])
-                row += 1
+                    ws.cell(row, colNum).value = float(val)
+                except ValueError:
+                    ws.cell(row, colNum).value = val
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i, val))
+            else:
+                ws.cell(row, colNum).fill = errorColorFill
+                errorLog.append(dataReadError(search, i))
+            idx += 1
+            colNum += 1
+
+            # param
+            if realCnt > idx:
+                paramCnt = len(searchDataList) - idx
+                for j in range(paramCnt):
+                    if searchDataList[idx + j].find("//") == 0:
+                        break
+                    val = searchDataList[idx + j]
+                    try:
+                        ws.cell(row, colNum + j).value = float(val)
+                    except ValueError:
+                        ws.cell(row, colNum + j).value = val
+                        ws.cell(row, colNum + j).fill = errorColorFill
+                        errorLog.append(dataReadError(search, i, val))
             row += 1
-        except Exception:
-            return dataReadError(search, i)
+        row += 1
     # 土讃線スペシャル
     elif sheetIndex == 7:
         search = "DosanInfo:"
@@ -657,30 +1150,82 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList):
             return failSearchError(search)
         searchDataList = getSplitAndRemoveEmptyData(dataList[index])
         ws.cell(row, 1).value = searchDataList[0]
-        cnt = int(searchDataList[1])
-        ws.cell(row, 2).value = cnt
+        if len(searchDataList) > 1:
+            try:
+                cnt = int(searchDataList[1])
+                ws.cell(row, 2).value = cnt
+            except ValueError:
+                cnt = 0
+                ws.cell(row, 2).value = searchDataList[1]
+                ws.cell(row, 2).fill = errorColorFill
+                errorLog.append(cntDataReadError(search, searchDataList[1]))
+        # DosanInfoの数なし
+        else:
+            cnt = 0
+            ws.cell(row, 2).fill = errorColorFill
+            errorLog.append(noDataError(search))
         row += 1
-        try:
-            for i in range(cnt):
+
+        for i in range(cnt):
+            searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
+            realCnt = len(searchDataList)
+            idx = 0
+            colNum = idx + 1
+
+            # index
+            if realCnt > idx:
+                val = i
+                ws.cell(row, colNum).value = val
+            else:
+                ws.cell(row, colNum).fill = errorColorFill
+                errorLog.append(dataReadError(search, i))
+            idx += 1
+            colNum += 1
+
+            # event_no, event_type, rail_no
+            for j in range(3):
+                if realCnt > idx:
+                    val = searchDataList[idx]
+                    try:
+                        ws.cell(row, colNum).value = int(val)
+                    except ValueError:
+                        ws.cell(row, colNum).value = val
+                        ws.cell(row, colNum).fill = errorColorFill
+                        errorLog.append(dataReadError(search, i, val))
+                else:
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i))
+                idx += 1
+                colNum += 1
+
+            # offset
+            if realCnt > idx:
+                val = searchDataList[idx]
                 try:
-                    searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
-                except IndexError:
-                    return outOfRangeError(search, cnt, i)
-                ws.cell(row, 1).value = i
-                ws.cell(row, 2).value = int(searchDataList[1])
-                ws.cell(row, 3).value = int(searchDataList[2])
-                ws.cell(row, 4).value = int(searchDataList[3])
-                ws.cell(row, 5).value = int(searchDataList[4])
-                if len(searchDataList) > 5:
-                    paramCnt = len(searchDataList) - 5
-                    for j in range(paramCnt):
-                        if searchDataList[5 + j].find("//") == 0:
-                            break
-                        ws.cell(row, 6 + j).value = float(searchDataList[5 + j])
-                row += 1
+                    ws.cell(row, colNum).value = float(val)
+                except ValueError:
+                    ws.cell(row, colNum).value = val
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i, val))
+            else:
+                ws.cell(row, colNum).fill = errorColorFill
+                errorLog.append(dataReadError(search, i))
+            idx += 1
+            colNum += 1
+
+            # param
+            if realCnt > idx:
+                paramCnt = len(searchDataList) - idx
+                for j in range(paramCnt):
+                    val = searchDataList[idx + j]
+                    try:
+                        ws.cell(row, colNum + j).value = float(val)
+                    except ValueError:
+                        ws.cell(row, colNum + j).value = val
+                        ws.cell(row, colNum + j).fill = errorColorFill
+                        errorLog.append(dataReadError(search, i, val))
             row += 1
-        except Exception:
-            return dataReadError(search, i)
+        row += 1
     # モデル情報
     elif sheetIndex == 8:
         search = "MdlCnt:"
@@ -689,25 +1234,66 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList):
             return failSearchError(search)
         searchDataList = getSplitAndRemoveEmptyData(dataList[index])
         ws.cell(row, 1).value = searchDataList[0]
-        cnt = int(searchDataList[1])
-        ws.cell(row, 2).value = cnt
-        row += 1
-        try:
-            for i in range(cnt):
-                try:
-                    searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
-                except IndexError:
-                    return outOfRangeError(search, cnt, i)
-                ws.cell(row, 1).value = i
+        if len(searchDataList) > 1:
+            try:
+                cnt = int(searchDataList[1])
+                ws.cell(row, 2).value = cnt
+            except ValueError:
+                cnt = 0
                 ws.cell(row, 2).value = searchDataList[1]
-                ws.cell(row, 3).value = int(searchDataList[2])
-                ws.cell(row, 4).value = int(searchDataList[3])
-                ws.cell(row, 5).value = int(searchDataList[4])
-                mdlList.append(searchDataList[1])
-                row += 1
+                ws.cell(row, 2).fill = errorColorFill
+                errorLog.append(cntDataReadError(search, searchDataList[1]))
+        # MdlCntの数なし
+        else:
+            cnt = 0
+            ws.cell(row, 2).fill = errorColorFill
+            errorLog.append(noDataError(search))
+        row += 1
+
+        for i in range(cnt):
+            searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
+            realCnt = len(searchDataList)
+            idx = 0
+            colNum = idx + 1
+
+            # index
+            if realCnt > idx:
+                val = i
+                ws.cell(row, colNum).value = val
+            else:
+                ws.cell(row, colNum).fill = errorColorFill
+                errorLog.append(dataReadError(search, i))
+            idx += 1
+            colNum += 1
+
+            # mdl_name
+            if realCnt > idx:
+                val = searchDataList[idx]
+                ws.cell(row, colNum).value = val
+                mdlList.append(val)
+            else:
+                ws.cell(row, colNum).fill = errorColorFill
+                errorLog.append(dataReadError(search, i))
+            idx += 1
+            colNum += 1
+
+            # flg, flg, kasenchu_mdl
+            for j in range(3):
+                if realCnt > idx:
+                    val = searchDataList[idx]
+                    try:
+                        ws.cell(row, colNum).value = int(val)
+                    except ValueError:
+                        ws.cell(row, colNum).value = val
+                        ws.cell(row, colNum).fill = errorColorFill
+                        errorLog.append(dataReadError(search, i, val))
+                else:
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i))
+                idx += 1
+                colNum += 1
             row += 1
-        except Exception:
-            return dataReadError(search, i)
+        row += 1
     # レール情報
     elif sheetIndex == 9:
         search = "RailCnt:"
@@ -716,8 +1302,20 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList):
             return failSearchError(search)
         searchDataList = getSplitAndRemoveEmptyData(dataList[index])
         ws.cell(row, 1).value = searchDataList[0]
-        cnt = int(searchDataList[1])
-        ws.cell(row, 2).value = cnt
+        if len(searchDataList) > 1:
+            try:
+                cnt = int(searchDataList[1])
+                ws.cell(row, 2).value = cnt
+            except ValueError:
+                cnt = 0
+                ws.cell(row, 2).value = searchDataList[1]
+                ws.cell(row, 2).fill = errorColorFill
+                errorLog.append(cntDataReadError(search, searchDataList[1]))
+        # RailCntの数なし
+        else:
+            cnt = 0
+            ws.cell(row, 2).fill = errorColorFill
+            errorLog.append(noDataError(search))
         row += 2
 
         titleList = [
@@ -749,45 +1347,155 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList):
             idx += 1
         row += 1
 
-        try:
-            for i in range(cnt):
+        for i in range(cnt):
+            searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
+            realCnt = len(searchDataList)
+            idx = 0
+            colNum = idx + 1
+
+            # index
+            if realCnt > idx:
+                val = i
+                ws.cell(row, colNum).value = val
+            else:
+                ws.cell(row, colNum).fill = errorColorFill
+                errorLog.append(dataReadError(search, i))
+            idx += 1
+            colNum += 1
+
+            # prev_rail, block
+            for j in range(2):
+                if realCnt > idx:
+                    val = searchDataList[idx]
+                    try:
+                        ws.cell(row, colNum).value = int(val)
+                    except ValueError:
+                        ws.cell(row, colNum).value = val
+                        ws.cell(row, colNum).fill = errorColorFill
+                        errorLog.append(dataReadError(search, i, val))
+                else:
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i))
+                idx += 1
+                colNum += 1
+
+            # pos, dir (xyz)
+            for j in range(6):
+                if realCnt > idx:
+                    val = searchDataList[idx]
+                    try:
+                        ws.cell(row, colNum).value = float(val)
+                    except ValueError:
+                        ws.cell(row, colNum).value = val
+                        ws.cell(row, colNum).fill = errorColorFill
+                        errorLog.append(dataReadError(search, i, val))
+                else:
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i))
+                idx += 1
+                colNum += 1
+
+            # mdl_no
+            if realCnt > idx:
+                val = searchDataList[idx]
                 try:
-                    searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
-                except IndexError:
-                    return outOfRangeError(search, cnt, i)
-                ws.cell(row, 1).value = i
-                ws.cell(row, 2).value = int(searchDataList[1])
-                ws.cell(row, 3).value = int(searchDataList[2])
+                    mdl_no = int(val)
+                    mdl_name = getModelName(mdl_no, mdlList)
+                    ws.cell(row, colNum).value = mdl_name
+                except ValueError:
+                    ws.cell(row, colNum).value = val
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i, val))
+            else:
+                ws.cell(row, colNum).fill = errorColorFill
+                errorLog.append(dataReadError(search, i))
+            idx += 1
+            colNum += 1
 
-                ws.cell(row, 4).value = float(searchDataList[3])
-                ws.cell(row, 5).value = float(searchDataList[4])
-                ws.cell(row, 6).value = float(searchDataList[5])
-                ws.cell(row, 7).value = float(searchDataList[6])
-                ws.cell(row, 8).value = float(searchDataList[7])
-                ws.cell(row, 9).value = float(searchDataList[8])
+            # mdl_kasenchu
+            if realCnt > idx:
+                val = searchDataList[idx]
+                try:
+                    mdl_kasenchu = int(val)
+                    mdl_name = getModelName(mdl_kasenchu, mdlList)
+                    ws.cell(row, colNum).value = mdl_name
+                except ValueError:
+                    ws.cell(row, colNum).value = val
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i, val))
+            else:
+                ws.cell(row, colNum).fill = errorColorFill
+                errorLog.append(dataReadError(search, i))
+            idx += 1
+            colNum += 1
 
-                mdl_no = int(searchDataList[9])
-                ws.cell(row, 10).value = getModelName(mdl_no, mdlList)
-                mdl_kasenchu = int(searchDataList[10])
-                ws.cell(row, 11).value = getModelName(mdl_kasenchu, mdlList)
-                ws.cell(row, 12).value = float(searchDataList[11])
+            # per
+            if realCnt > idx:
+                val = searchDataList[idx]
+                try:
+                    ws.cell(row, colNum).value = float(val)
+                except ValueError:
+                    ws.cell(row, colNum).value = val
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i, val))
+            else:
+                ws.cell(row, colNum).fill = errorColorFill
+                errorLog.append(dataReadError(search, i))
+            idx += 1
+            colNum += 1
 
-                ws.cell(row, 13).value = toHex(int(searchDataList[12]))
-                ws.cell(row, 14).value = toHex(int(searchDataList[13]))
-                ws.cell(row, 15).value = toHex(int(searchDataList[14]))
-                ws.cell(row, 16).value = toHex(int(searchDataList[15]))
+            # flg, flg, flg, flg
+            for j in range(4):
+                if realCnt > idx:
+                    val = searchDataList[idx]
+                    try:
+                        flg = int(val)
+                        ws.cell(row, colNum).value = toHex(flg)
+                    except ValueError:
+                        ws.cell(row, colNum).value = val
+                        ws.cell(row, colNum).fill = errorColorFill
+                        errorLog.append(dataReadError(search, i, val))
+                else:
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i))
+                idx += 1
+                colNum += 1
 
-                rail_data = int(searchDataList[16])
-                ws.cell(row, 17).value = rail_data
-                for j in range(rail_data):
-                    ws.cell(row, 18 + 4*j).value = int(searchDataList[17 + 4*j])
-                    ws.cell(row, 19 + 4*j).value = int(searchDataList[18 + 4*j])
-                    ws.cell(row, 20 + 4*j).value = int(searchDataList[19 + 4*j])
-                    ws.cell(row, 21 + 4*j).value = int(searchDataList[20 + 4*j])
-                row += 1
+            # rail_data
+            if realCnt > idx:
+                val = searchDataList[idx]
+                try:
+                    rail_data = int(val)
+                    ws.cell(row, colNum).value = rail_data
+                except ValueError:
+                    rail_data = 0
+                    ws.cell(row, colNum).value = val
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i, val))
+            else:
+                rail_data = 0
+                ws.cell(row, colNum).fill = errorColorFill
+                errorLog.append(dataReadError(search, i))
+            idx += 1
+            colNum += 1
+
+            for j in range(rail_data):
+                for k in range(4):
+                    if realCnt > idx:
+                        val = searchDataList[idx]
+                        try:
+                            ws.cell(row, colNum).value = int(val)
+                        except ValueError:
+                            ws.cell(row, colNum).value = val
+                            ws.cell(row, colNum).fill = errorColorFill
+                            errorLog.append(dataReadError(search, i, val))
+                    else:
+                        ws.cell(row, colNum).fill = errorColorFill
+                        errorLog.append(dataReadError(search, i))
+                    idx += 1
+                    colNum += 1
             row += 1
-        except Exception:
-            return dataReadError(search, i)
+        row += 1
     # Pri情報
     elif sheetIndex == 10:
         search = "RailPri:"
@@ -796,63 +1504,133 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList):
             return failSearchError(search)
         searchDataList = getSplitAndRemoveEmptyData(dataList[index])
         ws.cell(row, 1).value = searchDataList[0]
-        cnt = int(searchDataList[1])
-        ws.cell(row, 2).value = cnt
+        if len(searchDataList) > 1:
+            try:
+                cnt = int(searchDataList[1])
+                ws.cell(row, 2).value = cnt
+            except ValueError:
+                cnt = 0
+                ws.cell(row, 2).value = searchDataList[1]
+                ws.cell(row, 2).fill = errorColorFill
+                errorLog.append(cntDataReadError(search, searchDataList[1]))
+        # RailPriの数なし
+        else:
+            cnt = 0
+            ws.cell(row, 2).fill = errorColorFill
+            errorLog.append(noDataError(search))
         row += 1
-        try:
-            for i in range(cnt):
-                try:
-                    searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
-                except IndexError:
-                    return outOfRangeError(search, cnt, i)
-                ws.cell(row, 1).value = int(searchDataList[0])
-                ws.cell(row, 2).value = int(searchDataList[1])
-                row += 1
+
+        for i in range(cnt):
+            searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
+            realCnt = len(searchDataList)
+            idx = 0
+            colNum = idx + 1
+
+            for j in range(2):
+                if realCnt > idx:
+                    val = searchDataList[idx]
+                    try:
+                        ws.cell(row, colNum).value = int(val)
+                    except ValueError:
+                        ws.cell(row, colNum).value = val
+                        ws.cell(row, colNum).fill = errorColorFill
+                        errorLog.append(dataReadError(search, i + 1, val))
+                else:
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i + 1))
+                idx += 1
+                colNum += 1
             row += 1
-        except Exception:
-            return dataReadError(search, i)
+        row += 1
 
         search = "BtlPri:"
         index = getSearchLine(dataList, search)
         if index != -1:
             searchDataList = getSplitAndRemoveEmptyData(dataList[index])
             ws.cell(row, 1).value = searchDataList[0]
-            cnt = int(searchDataList[1])
-            ws.cell(row, 2).value = cnt
+            if len(searchDataList) > 1:
+                try:
+                    cnt = int(searchDataList[1])
+                    ws.cell(row, 2).value = cnt
+                except ValueError:
+                    cnt = 0
+                    ws.cell(row, 2).value = searchDataList[1]
+                    ws.cell(row, 2).fill = errorColorFill
+                    errorLog.append(cntDataReadError(search, searchDataList[1]))
+            # BtlPriの数なし
+            else:
+                cnt = 0
+                ws.cell(row, 2).fill = errorColorFill
+                errorLog.append(noDataError(search))
             row += 1
-            try:
-                for i in range(cnt):
-                    try:
-                        searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
-                    except IndexError:
-                        return outOfRangeError(search, cnt, i)
-                    ws.cell(row, 1).value = int(searchDataList[0])
-                    ws.cell(row, 2).value = int(searchDataList[1])
-                    row += 1
+
+            for i in range(cnt):
+                searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
+                realCnt = len(searchDataList)
+                idx = 0
+                colNum = idx + 1
+
+                for j in range(2):
+                    if realCnt > idx:
+                        val = searchDataList[idx]
+                        try:
+                            ws.cell(row, colNum).value = int(val)
+                        except ValueError:
+                            ws.cell(row, colNum).value = val
+                            ws.cell(row, colNum).fill = errorColorFill
+                            errorLog.append(dataReadError(search, i + 1, val))
+                    else:
+                        ws.cell(row, colNum).fill = errorColorFill
+                        errorLog.append(dataReadError(search, i + 1))
+                    idx += 1
+                    colNum += 1
                 row += 1
-            except Exception:
-                return dataReadError(search, i)
+            row += 1
 
         search = "NoDriftRail:"
         index = getSearchLine(dataList, search)
         if index != -1:
             searchDataList = getSplitAndRemoveEmptyData(dataList[index])
             ws.cell(row, 1).value = searchDataList[0]
-            cnt = int(searchDataList[1])
-            ws.cell(row, 2).value = cnt
+            if len(searchDataList) > 1:
+                try:
+                    cnt = int(searchDataList[1])
+                    ws.cell(row, 2).value = cnt
+                except ValueError:
+                    cnt = 0
+                    ws.cell(row, 2).value = searchDataList[1]
+                    ws.cell(row, 2).fill = errorColorFill
+                    errorLog.append(cntDataReadError(search, searchDataList[1]))
+            # NoDriftRailの数なし
+            else:
+                cnt = 0
+                ws.cell(row, 2).fill = errorColorFill
+                errorLog.append(noDataError(search))
             row += 1
-            try:
-                for i in range(cnt):
-                    try:
-                        searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
-                    except IndexError:
-                        return outOfRangeError(search, cnt, i)
-                    ws.cell(row, 1).value = int(searchDataList[0])
-                    ws.cell(row, 2).value = int(searchDataList[1])
-                    row += 1
+
+            for i in range(cnt):
+                searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
+                realCnt = len(searchDataList)
+                idx = 0
+                colNum = idx + 1
+
+                for j in range(2):
+                    if realCnt > idx:
+                        val = searchDataList[idx]
+                        try:
+                            ws.cell(row, colNum).value = int(val)
+                        except ValueError:
+                            ws.cell(row, colNum).value = val
+                            ws.cell(row, colNum).fill = errorColorFill
+                            errorLog.append(dataReadError(search, i + 1, val))
+                    else:
+                        ws.cell(row, colNum).fill = errorColorFill
+                        errorLog.append(dataReadError(search, i + 1))
+                    idx += 1
+                    colNum += 1
                 row += 1
-            except Exception:
-                return dataReadError(search, i)
+            row += 1
+
     # AMB情報
     elif sheetIndex == 11:
         search = "AmbCnt:"
@@ -861,10 +1639,32 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList):
             return failSearchError(search)
         searchDataList = getSplitAndRemoveEmptyData(dataList[index])
         ws.cell(row, 1).value = searchDataList[0]
-        cnt = int(searchDataList[1])
-        ws.cell(row, 2).value = cnt
-        sizeFlag = int(searchDataList[2])
-        ws.cell(row, 3).value = sizeFlag
+        if len(searchDataList) > 1:
+            try:
+                cnt = int(searchDataList[1])
+                ws.cell(row, 2).value = cnt
+            except ValueError:
+                cnt = 0
+                ws.cell(row, 2).value = searchDataList[1]
+                ws.cell(row, 2).fill = errorColorFill
+                errorLog.append(cntDataReadError(search, searchDataList[1]))
+        # AmbCntの数なし
+        else:
+            cnt = 0
+            ws.cell(row, 2).fill = errorColorFill
+            errorLog.append(noDataError(search))
+
+        if len(searchDataList) > 2:
+            try:
+                sizeFlag = int(searchDataList[2])
+                ws.cell(row, 3).value = sizeFlag
+            except ValueError:
+                sizeFlag = 0
+                ws.cell(row, 3).value = searchDataList[2]
+                ws.cell(row, 3).fill = errorColorFill
+                errorLog.append(cntDataReadError(search, searchDataList[2]))
+        else:
+            sizeFlag = 0
         row += 2
 
         titleList = [
@@ -892,48 +1692,247 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList):
             idx += 1
         row += 1
 
-        try:
-            for i in range(cnt):
+        for i in range(cnt):
+            searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
+            realCnt = len(searchDataList)
+            idx = 0
+            colNum = idx + 1
+
+            # index
+            if realCnt > idx:
+                val = i
+                ws.cell(row, colNum).value = val
+            else:
+                ws.cell(row, colNum).fill = errorColorFill
+                errorLog.append(dataReadError(search, i))
+            idx += 1
+            colNum += 1
+
+            # rail_no, length
+            for j in range(2):
+                if realCnt > idx:
+                    val = searchDataList[idx]
+                    try:
+                        ws.cell(row, colNum).value = int(val)
+                    except ValueError:
+                        ws.cell(row, colNum).value = val
+                        ws.cell(row, colNum).fill = errorColorFill
+                        errorLog.append(dataReadError(search, i, val))
+                else:
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i))
+                idx += 1
+                colNum += 1
+
+            # amb_data
+            if realCnt > idx:
+                val = searchDataList[idx]
                 try:
-                    searchDataList = getSplitAndRemoveEmptyData(dataList[index + i + 1])
-                except IndexError:
-                    return outOfRangeError(search, cnt, i)
-                ws.cell(row, 1).value = i
-                ws.cell(row, 2).value = int(searchDataList[1])
-                ws.cell(row, 3).value = int(searchDataList[2])
+                    ambData = int(val)
+                    ws.cell(row, colNum).value = ambData
+                except ValueError:
+                    ws.cell(row, colNum).value = val
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i, val))
+                    continue
+            else:
+                ambData = None
+            idx += 1
+            colNum += 1
 
-                ambData = int(searchDataList[3])
+            if ambData is None:
+                ws.cell(row, 1).fill = errorColorFill
+                ws.cell(row, 2).fill = errorColorFill
+                ws.cell(row, 3).fill = errorColorFill
+                ws.cell(row, 4).fill = errorColorFill
+                errorLog.append(dataReadError(search, i))
+                row += 1
+            else:
                 if ambData <= 0:
-                    mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E113"].format(i, ambData))
-                    return False
-                ws.cell(row, 4).value = ambData
-                for j in range(ambData):
-                    mdl_no = int(searchDataList[4 + 13*j])
-                    ws.cell(row, 5).value = getModelName(mdl_no, mdlList)
-                    ws.cell(row, 6).value = int(searchDataList[5 + 13*j])
-
-                    ws.cell(row, 7).value = float(searchDataList[6 + 13*j])
-                    ws.cell(row, 8).value = float(searchDataList[7 + 13*j])
-                    ws.cell(row, 9).value = float(searchDataList[8 + 13*j])
-                    ws.cell(row, 10).value = float(searchDataList[9 + 13*j])
-                    ws.cell(row, 11).value = float(searchDataList[10 + 13*j])
-                    ws.cell(row, 12).value = float(searchDataList[11 + 13*j])
-                    ws.cell(row, 13).value = float(searchDataList[12 + 13*j])
-                    ws.cell(row, 14).value = float(searchDataList[13 + 13*j])
-                    ws.cell(row, 15).value = float(searchDataList[14 + 13*j])
-
-                    ws.cell(row, 16).value = float(searchDataList[15 + 13*j])
-                    ws.cell(row, 17).value = float(searchDataList[16 + 13*j])
+                    ws.cell(row, 1).fill = warningColorFill
+                    ws.cell(row, 2).fill = warningColorFill
+                    ws.cell(row, 3).fill = warningColorFill
+                    ws.cell(row, 4).fill = warningColorFill
+                    warningLog.append(ambDataWarning(i))
+                    # ambDataは0個なのに、データがある
+                    if len(searchDataList) > idx:
+                        for j in range(idx, len(searchDataList)):
+                            try:
+                                ws.cell(row, j + 1).value = float(searchDataList[j])
+                                ws.cell(row, j + 1).fill = warningColorFill
+                            except ValueError:
+                                ws.cell(row, j + 1).value = searchDataList[j]
+                                ws.cell(row, j + 1).fill = errorColorFill
                     row += 1
-            row += 1
-        except Exception:
-            return dataReadError(search, i)
+                else:
+                    for j in range(ambData):
+                        colNum = 5
+                        # mdl_no
+                        if realCnt > idx:
+                            val = searchDataList[idx]
+                            try:
+                                mdl_no = int(val)
+                                mdl_name = getModelName(mdl_no, mdlList)
+                                ws.cell(row, colNum).value = mdl_name
+                            except ValueError:
+                                ws.cell(row, colNum).value = val
+                                ws.cell(row, colNum).fill = errorColorFill
+                                errorLog.append(dataReadError(search, i, val))
+                        else:
+                            ws.cell(row, colNum).fill = errorColorFill
+                            errorLog.append(dataReadError(search, i))
+                        idx += 1
+                        colNum += 1
+
+                        # parentindex
+                        if realCnt > idx:
+                            val = searchDataList[idx]
+                            try:
+                                ws.cell(row, colNum).value = int(val)
+                            except ValueError:
+                                ws.cell(row, colNum).value = val
+                                ws.cell(row, colNum).fill = errorColorFill
+                                errorLog.append(dataReadError(search, i, val))
+                        else:
+                            ws.cell(row, colNum).fill = errorColorFill
+                            errorLog.append(dataReadError(search, i))
+                        idx += 1
+                        colNum += 1
+
+                        # pos, dir, joint_dir (xyz)
+                        for j in range(9):
+                            if realCnt > idx:
+                                val = searchDataList[idx]
+                                try:
+                                    ws.cell(row, colNum).value = float(val)
+                                except ValueError:
+                                    ws.cell(row, colNum).value = val
+                                    ws.cell(row, colNum).fill = errorColorFill
+                                    errorLog.append(dataReadError(search, i, val))
+                            else:
+                                ws.cell(row, colNum).fill = errorColorFill
+                                errorLog.append(dataReadError(search, i))
+                            idx += 1
+                            colNum += 1
+
+                        # per
+                        if realCnt > idx:
+                            val = searchDataList[idx]
+                            try:
+                                ws.cell(row, colNum).value = float(val)
+                            except ValueError:
+                                ws.cell(row, colNum).value = val
+                                ws.cell(row, colNum).fill = errorColorFill
+                                errorLog.append(dataReadError(search, i, val))
+                        else:
+                            ws.cell(row, colNum).fill = errorColorFill
+                            errorLog.append(dataReadError(search, i))
+                        idx += 1
+                        colNum += 1
+
+                        # size_per
+                        if sizeFlag >= 1:
+                            if realCnt > idx:
+                                val = searchDataList[idx]
+                                try:
+                                    ws.cell(row, colNum).value = float(val)
+                                except ValueError:
+                                    ws.cell(row, colNum).value = val
+                                    ws.cell(row, colNum).fill = errorColorFill
+                                    errorLog.append(dataReadError(search, i, val))
+                            else:
+                                ws.cell(row, colNum).fill = errorColorFill
+                                errorLog.append(dataReadError(search, i))
+                            idx += 1
+                            colNum += 1
+                        row += 1
+                    moreFlag = False
+                    # データがもっとある
+                    while realCnt > idx + 12:
+                        moreFlag = True
+                        # mdl_no
+                        val = searchDataList[idx]
+                        try:
+                            mdl_no = int(val)
+                            mdl_name = getModelName(mdl_no, mdlList)
+                            ws.cell(row - 1, colNum).value = mdl_name
+                            ws.cell(row - 1, colNum).fill = warningColorFill
+                        except ValueError:
+                            ws.cell(row - 1, colNum).value = val
+                            ws.cell(row - 1, colNum).fill = errorColorFill
+                        idx += 1
+                        colNum += 1
+
+                        # parentindex
+                        val = searchDataList[idx]
+                        try:
+                            ws.cell(row - 1, colNum).value = int(val)
+                            ws.cell(row - 1, colNum).fill = warningColorFill
+                        except ValueError:
+                            ws.cell(row - 1, colNum).value = val
+                            ws.cell(row - 1, colNum).fill = errorColorFill
+                        idx += 1
+                        colNum += 1
+
+                        # pos, dir, joint_dir (xyz)
+                        for j in range(9):
+                            val = searchDataList[idx]
+                            try:
+                                ws.cell(row - 1, colNum).value = float(val)
+                                ws.cell(row - 1, colNum).fill = warningColorFill
+                            except ValueError:
+                                ws.cell(row - 1, colNum).value = val
+                                ws.cell(row - 1, colNum).fill = errorColorFill
+                            idx += 1
+                            colNum += 1
+
+                        # per
+                        val = searchDataList[idx]
+                        try:
+                            ws.cell(row - 1, colNum).value = float(val)
+                            ws.cell(row - 1, colNum).fill = warningColorFill
+                        except ValueError:
+                            ws.cell(row - 1, colNum).value = val
+                            ws.cell(row - 1, colNum).fill = errorColorFill
+                        idx += 1
+                        colNum += 1
+
+                        # size_per
+                        if sizeFlag >= 1:
+                            if realCnt > idx:
+                                val = searchDataList[idx]
+                                try:
+                                    ws.cell(row - 1, colNum).value = float(val)
+                                    ws.cell(row - 1, colNum).fill = warningColorFill
+                                except ValueError:
+                                    ws.cell(row - 1, colNum).value = val
+                                    ws.cell(row - 1, colNum).fill = errorColorFill
+                                idx += 1
+                                colNum += 1
+                    if moreFlag:
+                        warningLog.append(notUsedAmbData(i))
+        row += 1
     return True
 
 
-def dataReadError(search, i):
-    mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E114"].format(search, i))
-    return False
+def noCntDataError(search):
+    return textSetting.textList["errorList"]["E116"].format(search)
+
+
+def cntDataReadError(search, data):
+    return textSetting.textList["errorList"]["E117"].format(search, data)
+
+
+def dataReadError(search, i, data="（データなし）"):
+    return textSetting.textList["errorList"]["E114"].format(search, i, data)
+
+
+def ambDataWarning(i):
+    return textSetting.textList["errorList"]["E113"].format(i)
+
+
+def notUsedAmbData(i):
+    return textSetting.textList["errorList"]["E119"].format(i)
 
 
 def outOfRangeError(search, cnt, i):
@@ -951,10 +1950,10 @@ def failExcelSearchError(search, errMsgObj={}):
     return False
 
 
-def failExcelValueError(search, row=None, errMsgObj={}):
+def failExcelValueError(search, coord=None, errMsgObj={}):
     errMsgObj["message"] = textSetting.textList["errorList"]["E108"].format(search)
-    if row is not None:
-        errMsgObj["message"] = textSetting.textList["errorList"]["E111"].format(row, search)
+    if coord is not None:
+        errMsgObj["message"] = textSetting.textList["errorList"]["E111"].format(search, coord)
     return False
 
 
@@ -1215,24 +2214,37 @@ def findSearchAndSetCnt(search, ws, newLines, headerDataFlag=True, dataFlag=True
     # データ数通り、読み込む
     if dataFlag:
         newDataList = []
-        # AMBデータの場合
-        if optionalRead == 8:
-            row = eIndex + 3
+
+        startIndex = eIndex + 1
+        if newCnt > 0:
+            while True:
+                val = ws.cell(startIndex, 1).value
+                if val is not None and str(val).find("//") != 0:
+                    break
+                startIndex += 1
+
+            # レールデータやAMB
+            if optionalRead == 7 or optionalRead == 8:
+                val = ws.cell(startIndex, 1).value
+                if "index" in str(val):
+                    startIndex += 1
 
         for i in range(newCnt):
             # デフォルト読み
             if optionalRead == -1:
-                val = ws.cell(eIndex + i + 1, 1).value
+                val = ws.cell(startIndex + i, 1).value
                 if val is None:
-                    return failExcelValueError(search, eIndex + i + 1, errMsgObj)
+                    coordinate = ws.cell(startIndex + i, 1).coordinate
+                    return failExcelValueError(search, coordinate, errMsgObj=errMsgObj)
                 newDataList.append("{0}\r".format(val))
             # データ３つよみ
             elif optionalRead == 0:
                 columnList = []
                 for j in range(3):
-                    val = ws.cell(eIndex + i + 1, 1 + j).value
+                    val = ws.cell(startIndex + i, 1 + j).value
                     if val is None:
-                        return failExcelValueError(search, eIndex + i + 1, errMsgObj)
+                        coordinate = ws.cell(startIndex + i, 1 + j).coordinate
+                        return failExcelValueError(search, coordinate, errMsgObj=errMsgObj)
                     columnList.append("{0}".format(val))
                 columnLine = "\t".join(columnList)
                 newDataList.append("{0}\r".format(columnLine))
@@ -1240,9 +2252,10 @@ def findSearchAndSetCnt(search, ws, newLines, headerDataFlag=True, dataFlag=True
             elif optionalRead == 1:
                 columnList = []
                 for j in range(2):
-                    val = ws.cell(eIndex + i + 1, 1 + j).value
+                    val = ws.cell(startIndex + i, 1 + j).value
                     if val is None:
-                        return failExcelValueError(search, eIndex + i + 1, errMsgObj)
+                        coordinate = ws.cell(startIndex + i, 1 + j).coordinate
+                        return failExcelValueError(search, coordinate, errMsgObj=errMsgObj)
                     columnList.append("{0}".format(val))
                 columnLine = "\t".join(columnList)
                 newDataList.append("{0}\r".format(columnLine))
@@ -1251,14 +2264,15 @@ def findSearchAndSetCnt(search, ws, newLines, headerDataFlag=True, dataFlag=True
                 columnList = []
                 tex_type = -1
                 for j in range(7):
-                    val = ws.cell(eIndex + i + 1, 1 + j).value
+                    val = ws.cell(startIndex + i, 1 + j).value
                     if val is None:
-                        return failExcelValueError(search, eIndex + i + 1, errMsgObj)
+                        coordinate = ws.cell(startIndex + i, 1 + j).coordinate
+                        return failExcelValueError(search, coordinate, errMsgObj=errMsgObj)
                     columnList.append("{0}".format(val))
                     if j == 4:
                         tex_type = int(val)
-                val8 = ws.cell(eIndex + i + 1, 8).value
-                val9 = ws.cell(eIndex + i + 1, 9).value
+                val8 = ws.cell(startIndex + i, 8).value
+                val9 = ws.cell(startIndex + i, 9).value
                 if tex_type == 31 and val8 is not None and val9 is not None:
                     columnList.append("{0}".format(val8))
                     columnList.append("{0}".format(val9))
@@ -1268,13 +2282,14 @@ def findSearchAndSetCnt(search, ws, newLines, headerDataFlag=True, dataFlag=True
             elif optionalRead == 3:
                 columnList = []
                 for j in range(4):
-                    val = ws.cell(eIndex + i + 1, 1 + j).value
+                    val = ws.cell(startIndex + i, 1 + j).value
                     if val is None:
-                        return failExcelValueError(search, eIndex + i + 1, errMsgObj)
+                        coordinate = ws.cell(startIndex + i, 1 + j).coordinate
+                        return failExcelValueError(search, coordinate, errMsgObj=errMsgObj)
                     columnList.append("{0}".format(val))
-                val5 = ws.cell(eIndex + i + 1, 5).value
-                val6 = ws.cell(eIndex + i + 1, 6).value
-                val7 = ws.cell(eIndex + i + 1, 7).value
+                val5 = ws.cell(startIndex + i, 5).value
+                val6 = ws.cell(startIndex + i, 6).value
+                val7 = ws.cell(startIndex + i, 7).value
                 if val5 is not None:
                     columnList.append("{0}".format(val5))
                 if val6 is not None:
@@ -1287,11 +2302,12 @@ def findSearchAndSetCnt(search, ws, newLines, headerDataFlag=True, dataFlag=True
             elif optionalRead == 4:
                 columnList = []
                 for j in range(8):
-                    val = ws.cell(eIndex + i + 1, 1 + j).value
+                    val = ws.cell(startIndex + i, 1 + j).value
                     if val is None:
-                        return failExcelValueError(search, eIndex + i + 1, errMsgObj)
+                        coordinate = ws.cell(startIndex + i, 1 + j).coordinate
+                        return failExcelValueError(search, coordinate, errMsgObj=errMsgObj)
                     columnList.append("{0}".format(val))
-                val9 = ws.cell(eIndex + i + 1, 9).value
+                val9 = ws.cell(startIndex + i, 9).value
                 if val9 is not None:
                     columnList.append("{0}".format(val9))
                 columnLine = "\t".join(columnList)
@@ -1300,9 +2316,10 @@ def findSearchAndSetCnt(search, ws, newLines, headerDataFlag=True, dataFlag=True
             elif optionalRead == 5:
                 columnList = []
                 for j in range(5):
-                    val = ws.cell(eIndex + i + 1, 1 + j).value
+                    val = ws.cell(startIndex + i, 1 + j).value
                     if val is None:
-                        return failExcelValueError(search, eIndex + i + 1, errMsgObj)
+                        coordinate = ws.cell(startIndex + i, 1 + j).coordinate
+                        return failExcelValueError(search, coordinate, errMsgObj=errMsgObj)
                     columnList.append("{0}".format(val))
                     if j == 1 and search == "MdlCnt:":
                         mdlList.append(val)
@@ -1312,13 +2329,14 @@ def findSearchAndSetCnt(search, ws, newLines, headerDataFlag=True, dataFlag=True
             elif optionalRead == 6:
                 columnList = []
                 for j in range(5):
-                    val = ws.cell(eIndex + i + 1, 1 + j).value
+                    val = ws.cell(startIndex + i, 1 + j).value
                     if val is None:
-                        return failExcelValueError(search, eIndex + i + 1, errMsgObj)
+                        coordinate = ws.cell(startIndex + i, 1 + j).coordinate
+                        return failExcelValueError(search, coordinate, errMsgObj=errMsgObj)
                     columnList.append("{0}".format(val))
                 colIdx = 6
                 while True:
-                    val = ws.cell(eIndex + i + 1, colIdx).value
+                    val = ws.cell(startIndex + i, colIdx).value
                     if val is None:
                         break
                     columnList.append("{0}".format(val))
@@ -1329,33 +2347,36 @@ def findSearchAndSetCnt(search, ws, newLines, headerDataFlag=True, dataFlag=True
             elif optionalRead == 7:
                 columnList = []
                 for j in range(16):
-                    val = ws.cell(eIndex + i + 3, 1 + j).value
+                    val = ws.cell(startIndex + i, 1 + j).value
                     if val is None:
-                        return failExcelValueError(search, eIndex + i + 3, errMsgObj)
+                        coordinate = ws.cell(startIndex + i, 1 + j).coordinate
+                        return failExcelValueError(search, coordinate, errMsgObj=errMsgObj)
                     # mdl_no
                     if j == 9:
-                        val = getModelIndex(val, eIndex + i + 3, mdlList, errMsgObj, search)
+                        val = getModelIndex(val, startIndex + i, mdlList, errMsgObj, search)
                         if val is None:
                             return False
                     # mdl_kasenchu
                     elif j == 10:
-                        val = getModelIndex(val, eIndex + i + 3, mdlList, errMsgObj, search)
+                        val = getModelIndex(val, startIndex + i, mdlList, errMsgObj, search)
                         if val is None:
                             return False
                     # flg
                     elif j >= 12 and j <= 15:
                         val = int(val, 16)
                     columnList.append("{0}".format(val))
-                rail_data = ws.cell(eIndex + i + 3, 17).value
+                rail_data = ws.cell(startIndex + i, 17).value
                 if rail_data is None:
-                    return failExcelValueError(search, eIndex + i + 3, errMsgObj)
+                    coordinate = ws.cell(startIndex + i, 17).coordinate
+                    return failExcelValueError(search, coordinate, errMsgObj=errMsgObj)
                 columnList.append("{0}".format(rail_data))
 
                 for j in range(rail_data):
                     for k in range(4):
-                        val = ws.cell(eIndex + i + 3, 18 + 4*j + k).value
+                        val = ws.cell(startIndex + i, 18 + 4*j + k).value
                         if val is None:
-                            return failExcelValueError(search, eIndex + i + 3, errMsgObj)
+                            coordinate = ws.cell(startIndex + i, 18 + 4*j + k).coordinate
+                            return failExcelValueError(search, coordinate, errMsgObj=errMsgObj)
                         columnList.append("{0}".format(val))
                 columnLine = "\t".join(columnList)
                 newDataList.append("{0}\r".format(columnLine))
@@ -1363,26 +2384,30 @@ def findSearchAndSetCnt(search, ws, newLines, headerDataFlag=True, dataFlag=True
             elif optionalRead == 8:
                 columnList = []
                 for j in range(3):
-                    val = ws.cell(row, 1 + j).value
+                    val = ws.cell(startIndex, 1 + j).value
                     if val is None:
-                        print(i, newCnt, row, 1 + j, val)
-                        return failExcelValueError(search, row, errMsgObj)
+                        coordinate = ws.cell(startIndex, 1 + j).coordinate
+                        return failExcelValueError(search, coordinate, errMsgObj=errMsgObj)
                     columnList.append("{0}".format(val))
-                amb_data = ws.cell(row, 4).value
+                amb_data = ws.cell(startIndex, 4).value
                 columnList.append("{0}".format(amb_data))
 
-                for j in range(amb_data):
-                    for k in range(13):
-                        val = ws.cell(row, 5 + k).value
-                        if val is None:
-                            return failExcelValueError(search, row, errMsgObj)
-                        # mdl_no
-                        if k == 0:
-                            val = getModelIndex(val, row, mdlList, errMsgObj, search)
+                if amb_data <= 0:
+                    startIndex += 1
+                else:
+                    for j in range(amb_data):
+                        for k in range(13):
+                            val = ws.cell(startIndex, 5 + k).value
                             if val is None:
-                                return False
-                        columnList.append("{0}".format(val))
-                    row += 1
+                                coordinate = ws.cell(startIndex, 5 + k).coordinate
+                                return failExcelValueError(search, coordinate, errMsgObj=errMsgObj)
+                            # mdl_no
+                            if k == 0:
+                                val = getModelIndex(val, startIndex, mdlList, errMsgObj, search)
+                                if val is None:
+                                    return False
+                            columnList.append("{0}".format(val))
+                        startIndex += 1
                 columnLine = "\t".join(columnList)
                 newDataList.append("{0}\r".format(columnLine))
 
