@@ -30,6 +30,9 @@ v_frameCheck = None
 v_meshCheck = None
 v_XYZCheck = None
 v_mtrlCheck = None
+v_modelNameMode = None
+v_flagHexMode = None
+v_ambReadMode = None
 selectedProgram = None
 maxMenubarLen = None
 version = 0
@@ -53,6 +56,7 @@ def clearProgramFrame():
 def callProgram(programName):
     global root
     global selectedProgram
+    global config_ini_path
 
     clearProgramFrame()
     selectedProgram = programName
@@ -73,13 +77,15 @@ def callProgram(programName):
     elif selectedProgram == "smf":
         smfProgram.call_smf(root, programFrame)
     elif selectedProgram == "SSUnity":
-        ssUnityProgram.call_ssUnity(root, programFrame)
+        ssUnityProgram.call_ssUnity(root, programFrame, config_ini_path)
     elif selectedProgram == "rsRail":
         rsRailProgram.call_rsRail(root, programFrame)
 
     delete_OptionMenu()
     if selectedProgram == "smf":
         add_smfWriteOptionMenu()
+    elif selectedProgram == "SSUnity":
+        add_xlsxWriteOptionMenu()
 
 
 def loadFile():
@@ -122,6 +128,7 @@ def configCheckOption(section, options):
     if not configRead.has_option(section, options):
         if not configRead.has_section(section):
             configRead.add_section(section)
+            configRead.set(section, options, "0")
 
         if section == "UPDATE":
             configRead.set(section, options, "2000/01/01")
@@ -165,12 +172,7 @@ def add_smfWriteOptionMenu():
         readErrorFlag = True
 
     if readErrorFlag:
-        try:
-            f = codecs.open(config_ini_path, "w", "utf-8", "strict")
-            configRead.write(f)
-            f.close()
-        except PermissionError:
-            pass
+        configRead.read(config_ini_path, encoding="utf-8")
 
     if menubar.entryconfig(tkinter.END) == menubar.entryconfig(maxMenubarLen):
         v_frameCheck = tkinter.IntVar()
@@ -187,6 +189,50 @@ def add_smfWriteOptionMenu():
         smfWriteOptionMenu.add_checkbutton(label=textSetting.textList["menu"]["smf"]["write"]["opt3"], variable=v_XYZCheck, command=writeSmfConfig)
         smfWriteOptionMenu.add_checkbutton(label=textSetting.textList["menu"]["smf"]["write"]["opt4"], variable=v_mtrlCheck, command=writeSmfConfig)
         menubar.add_cascade(label=textSetting.textList["menu"]["smf"]["name"], menu=smfWriteOptionMenu)
+
+
+def add_xlsxWriteOptionMenu():
+    global config_ini_path
+    global v_modelNameMode
+    global v_flagHexMode
+    global v_ambReadMode
+    global menubar
+    global maxMenubarLen
+
+    if not os.path.exists(config_ini_path):
+        writeDefaultConfig()
+
+    configRead = configparser.ConfigParser()
+    configRead.read(config_ini_path, encoding="utf-8")
+
+    readErrorFlag = False
+    if configCheckOption("MODEL_NAME_MODE", "mode"):
+        readErrorFlag = True
+    if configCheckOption("FLAG_MODE", "mode"):
+        readErrorFlag = True
+    if configCheckOption("AMB_READ_MODE", "mode"):
+        readErrorFlag = True
+
+    if readErrorFlag:
+        configRead.read(config_ini_path, encoding="utf-8")
+
+    if menubar.entryconfig(tkinter.END) == menubar.entryconfig(maxMenubarLen):
+        v_modelNameMode = tkinter.IntVar()
+        v_modelNameMode.set(int(configRead.get("MODEL_NAME_MODE", "mode")))
+        v_flagHexMode = tkinter.IntVar()
+        v_flagHexMode.set(int(configRead.get("FLAG_MODE", "mode")))
+        v_ambReadMode = tkinter.IntVar()
+        v_ambReadMode.set(int(configRead.get("AMB_READ_MODE", "mode")))
+        xlsxWriteOptionMenu = tkinter.Menu(menubar, tearoff=False)
+        xlsxWriteOptionMenu.add_radiobutton(label=textSetting.textList["menu"]["SSUnity"]["write"]["model1"], variable=v_modelNameMode, value=0, command=writeXlsxConfig)
+        xlsxWriteOptionMenu.add_radiobutton(label=textSetting.textList["menu"]["SSUnity"]["write"]["model2"], variable=v_modelNameMode, value=1, command=writeXlsxConfig)
+        xlsxWriteOptionMenu.add_separator()
+        xlsxWriteOptionMenu.add_radiobutton(label=textSetting.textList["menu"]["SSUnity"]["write"]["flag1"], variable=v_flagHexMode, value=0, command=writeXlsxConfig)
+        xlsxWriteOptionMenu.add_radiobutton(label=textSetting.textList["menu"]["SSUnity"]["write"]["flag2"], variable=v_flagHexMode, value=1, command=writeXlsxConfig)
+        xlsxWriteOptionMenu.add_separator()
+        xlsxWriteOptionMenu.add_radiobutton(label=textSetting.textList["menu"]["SSUnity"]["write"]["ambRead1"], variable=v_ambReadMode, value=0, command=writeXlsxConfig)
+        xlsxWriteOptionMenu.add_radiobutton(label=textSetting.textList["menu"]["SSUnity"]["write"]["ambRead2"], variable=v_ambReadMode, value=1, command=writeXlsxConfig)
+        menubar.add_cascade(label=textSetting.textList["menu"]["SSUnity"]["name"], menu=xlsxWriteOptionMenu)
 
 
 def delete_OptionMenu():
@@ -217,6 +263,13 @@ def writeDefaultConfig():
             config.add_section("SMF_MTRL")
             config.set("SMF_MTRL", "mode", 0)
 
+            config.add_section("MODEL_NAME_MODE")
+            config.set("MODEL_NAME_MODE", "mode", 0)
+            config.add_section("FLAG_MODE")
+            config.set("FLAG_MODE", "mode", 0)
+            config.add_section("AMB_READ_MODE")
+            config.set("AMB_READ_MODE", "mode", 0)
+
             config.add_section("UPDATE")
             config.set("UPDATE", "time", "2000/01/01")
 
@@ -241,6 +294,27 @@ def writeSmfConfig():
     configRead.set("SMF_MESH", "mode", str(v_meshCheck.get()))
     configRead.set("SMF_XYZ", "mode", str(v_XYZCheck.get()))
     configRead.set("SMF_MTRL", "mode", str(v_mtrlCheck.get()))
+
+    try:
+        f = codecs.open(config_ini_path, "w", "utf-8", "strict")
+        configRead.write(f)
+        f.close()
+    except PermissionError:
+        pass
+
+
+def writeXlsxConfig():
+    global v_modelNameMode
+    global v_flagHexMode
+    global v_ambReadMode
+    global config_ini_path
+
+    configRead = configparser.ConfigParser()
+    configRead.read(config_ini_path, encoding="utf-8")
+
+    configRead.set("MODEL_NAME_MODE", "mode", str(v_modelNameMode.get()))
+    configRead.set("FLAG_MODE", "mode", str(v_flagHexMode.get()))
+    configRead.set("AMB_READ_MODE", "mode", str(v_ambReadMode.get()))
 
     try:
         f = codecs.open(config_ini_path, "w", "utf-8", "strict")

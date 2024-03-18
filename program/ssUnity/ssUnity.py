@@ -4,6 +4,9 @@ import tkinter
 import openpyxl
 from openpyxl.styles import PatternFill
 import copy
+import json
+import sys
+import configparser
 import traceback
 from tkinter import ttk
 from tkinter import filedialog as fd
@@ -32,9 +35,36 @@ extractBtn = None
 loadAndSaveBtn = None
 assetsSaveBtn = None
 decryptFile = None
+configPath = None
+railModelInfo = None
+ambModelInfo = None
 
 errorColorFill = PatternFill(patternType="solid", fgColor=textSetting.textList["excel"]["errorColor"])
 warningColorFill = PatternFill(patternType="solid", fgColor=textSetting.textList["excel"]["warningColor"])
+MODEL_NAME = 0
+HEX_FLAG = 1
+AMB_NEWLINE = 0
+
+def resource_path(relative_path):
+    bundle_dir = getattr(sys, "_MEIPASS", os.path.join(os.path.abspath(os.path.dirname(__file__)), "importPy"))
+    return os.path.join(bundle_dir, relative_path)
+
+
+def readModelInfo(jsonPath):
+    global railModelInfo
+    global ambModelInfo
+
+    f = codecs.open(jsonPath, "r", "utf-8", "strict")
+    modelDict = json.load(f)
+    f.close()
+
+    railModelInfo = {}
+    for model in list(modelDict["railModelInfo"].keys()):
+        railModelInfo[model.lower()] = modelDict["railModelInfo"][model]
+
+    ambModelInfo = []
+    for model in modelDict["ambModelInfo"]:
+        ambModelInfo.append(model.lower())
 
 
 def deleteAllWidget():
@@ -310,6 +340,16 @@ def extractExcel(data, file_path):
 
 
 def extractStageDataInfo(data, sheetIndex, ws, mdlList, errorLog, warningLog):
+    global configPath
+    global railModelInfo
+    global ambModelInfo
+
+    configRead = configparser.ConfigParser()
+    configRead.read(configPath, encoding="utf-8")
+    modelNameMode = int(configRead.get("MODEL_NAME_MODE", "mode"))
+    flagHexMode = int(configRead.get("FLAG_MODE", "mode"))
+    ambReadMode = int(configRead.get("AMB_READ_MODE", "mode"))
+
     row = 1
     originDataList = data.split("\n")
     # コメント行を消す
@@ -1277,12 +1317,15 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList, errorLog, warningLog):
             idx += 1
             colNum += 1
 
-            # flg, flg, kasenchu_mdl
-            for j in range(3):
+            # flg, flg
+            for j in range(2):
                 if realCnt > idx:
                     val = searchDataList[idx]
                     try:
-                        ws.cell(row, colNum).value = int(val)
+                        flg = int(val)
+                        if flagHexMode == HEX_FLAG:
+                            flg = toHex(flg)
+                        ws.cell(row, colNum).value = flg
                     except ValueError:
                         ws.cell(row, colNum).value = val
                         ws.cell(row, colNum).fill = errorColorFill
@@ -1292,6 +1335,19 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList, errorLog, warningLog):
                     errorLog.append(dataReadError(search, i))
                 idx += 1
                 colNum += 1
+
+            # kasenchu_mdl
+            if realCnt > idx:
+                val = searchDataList[idx]
+                try:
+                    ws.cell(row, colNum).value = int(val)
+                except ValueError:
+                    ws.cell(row, colNum).value = val
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i, val))
+            else:
+                ws.cell(row, colNum).fill = errorColorFill
+                errorLog.append(dataReadError(search, i))
             row += 1
         row += 1
     # レール情報
@@ -1353,6 +1409,8 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList, errorLog, warningLog):
             idx = 0
             colNum = idx + 1
 
+            real_mdl_name = None
+
             # index
             if realCnt > idx:
                 val = i
@@ -1400,7 +1458,18 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList, errorLog, warningLog):
                 val = searchDataList[idx]
                 try:
                     mdl_no = int(val)
-                    mdl_name = getModelName(mdl_no, mdlList)
+                    if modelNameMode == MODEL_NAME:
+                        mdl_name = getModelName(mdl_no, mdlList)
+                        real_mdl_name = getModelName(mdl_no, mdlList, False)
+                        if not str(real_mdl_name).isdigit():
+                            if real_mdl_name.lower() not in list(railModelInfo.keys()):
+                                ws.cell(row, colNum).fill = errorColorFill
+                                errorLog.append(notAvailableRail(i, real_mdl_name))
+                                real_mdl_name = None
+                        else:
+                            real_mdl_name = None
+                    else:
+                        mdl_name = mdl_no
                     ws.cell(row, colNum).value = mdl_name
                 except ValueError:
                     ws.cell(row, colNum).value = val
@@ -1417,7 +1486,10 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList, errorLog, warningLog):
                 val = searchDataList[idx]
                 try:
                     mdl_kasenchu = int(val)
-                    mdl_name = getModelName(mdl_kasenchu, mdlList)
+                    if modelNameMode == MODEL_NAME:
+                        mdl_name = getModelName(mdl_kasenchu, mdlList)
+                    else:
+                        mdl_name = mdl_kasenchu
                     ws.cell(row, colNum).value = mdl_name
                 except ValueError:
                     ws.cell(row, colNum).value = val
@@ -1450,7 +1522,9 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList, errorLog, warningLog):
                     val = searchDataList[idx]
                     try:
                         flg = int(val)
-                        ws.cell(row, colNum).value = toHex(flg)
+                        if flagHexMode == HEX_FLAG:
+                            flg = toHex(flg)
+                        ws.cell(row, colNum).value = flg
                     except ValueError:
                         ws.cell(row, colNum).value = val
                         ws.cell(row, colNum).fill = errorColorFill
@@ -1466,6 +1540,11 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList, errorLog, warningLog):
                 val = searchDataList[idx]
                 try:
                     rail_data = int(val)
+                    if real_mdl_name is not None:
+                        real_rail_data = railModelInfo[real_mdl_name.lower()]
+                        if rail_data != real_rail_data:
+                            ws.cell(row, colNum).fill = warningColorFill
+                            warningLog.append(diffRailDataError(i, real_mdl_name, real_rail_data, rail_data))
                     ws.cell(row, colNum).value = rail_data
                 except ValueError:
                     rail_data = 0
@@ -1766,13 +1845,22 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList, errorLog, warningLog):
                     row += 1
                 else:
                     for j in range(ambData):
-                        colNum = 5
+                        if ambReadMode == AMB_NEWLINE:
+                            colNum = 5
                         # mdl_no
                         if realCnt > idx:
                             val = searchDataList[idx]
                             try:
                                 mdl_no = int(val)
-                                mdl_name = getModelName(mdl_no, mdlList)
+                                if modelNameMode == MODEL_NAME:
+                                    mdl_name = getModelName(mdl_no, mdlList)
+                                    real_mdl_name = getModelName(mdl_no, mdlList, False)
+                                    if not str(real_mdl_name).isdigit():
+                                        if real_mdl_name.lower() not in ambModelInfo:
+                                            ws.cell(row, colNum).fill = warningColorFill
+                                            warningLog.append(notAvailableAmb(i, real_mdl_name))
+                                else:
+                                    mdl_name = mdl_no
                                 ws.cell(row, colNum).value = mdl_name
                             except ValueError:
                                 ws.cell(row, colNum).value = val
@@ -1845,8 +1933,13 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList, errorLog, warningLog):
                                 errorLog.append(dataReadError(search, i))
                             idx += 1
                             colNum += 1
-                        row += 1
+                        if ambReadMode == AMB_NEWLINE:
+                            row += 1
                     moreFlag = False
+                    if ambReadMode == AMB_NEWLINE:
+                        moreRow = row - 1
+                    else:
+                        moreRow = row
                     # データがもっとある
                     while realCnt > idx + 12:
                         moreFlag = True
@@ -1854,23 +1947,31 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList, errorLog, warningLog):
                         val = searchDataList[idx]
                         try:
                             mdl_no = int(val)
-                            mdl_name = getModelName(mdl_no, mdlList)
-                            ws.cell(row - 1, colNum).value = mdl_name
-                            ws.cell(row - 1, colNum).fill = warningColorFill
+                            if modelNameMode == MODEL_NAME:
+                                mdl_name = getModelName(mdl_no, mdlList)
+                                real_mdl_name = getModelName(mdl_no, mdlList, False)
+                                if not str(real_mdl_name).isdigit():
+                                    if real_mdl_name.lower() not in ambModelInfo:
+                                        ws.cell(row, colNum).fill = warningColorFill
+                                        warningLog.append(notAvailableAmb(i, real_mdl_name))
+                            else:
+                                mdl_name = mdl_no
+                            ws.cell(moreRow, colNum).value = mdl_name
+                            ws.cell(moreRow, colNum).fill = warningColorFill
                         except ValueError:
-                            ws.cell(row - 1, colNum).value = val
-                            ws.cell(row - 1, colNum).fill = errorColorFill
+                            ws.cell(moreRow, colNum).value = val
+                            ws.cell(moreRow, colNum).fill = errorColorFill
                         idx += 1
                         colNum += 1
 
                         # parentindex
                         val = searchDataList[idx]
                         try:
-                            ws.cell(row - 1, colNum).value = int(val)
-                            ws.cell(row - 1, colNum).fill = warningColorFill
+                            ws.cell(moreRow, colNum).value = int(val)
+                            ws.cell(moreRow, colNum).fill = warningColorFill
                         except ValueError:
-                            ws.cell(row - 1, colNum).value = val
-                            ws.cell(row - 1, colNum).fill = errorColorFill
+                            ws.cell(moreRow, colNum).value = val
+                            ws.cell(moreRow, colNum).fill = errorColorFill
                         idx += 1
                         colNum += 1
 
@@ -1878,22 +1979,22 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList, errorLog, warningLog):
                         for j in range(9):
                             val = searchDataList[idx]
                             try:
-                                ws.cell(row - 1, colNum).value = float(val)
-                                ws.cell(row - 1, colNum).fill = warningColorFill
+                                ws.cell(moreRow, colNum).value = float(val)
+                                ws.cell(moreRow, colNum).fill = warningColorFill
                             except ValueError:
-                                ws.cell(row - 1, colNum).value = val
-                                ws.cell(row - 1, colNum).fill = errorColorFill
+                                ws.cell(moreRow, colNum).value = val
+                                ws.cell(moreRow, colNum).fill = errorColorFill
                             idx += 1
                             colNum += 1
 
                         # per
                         val = searchDataList[idx]
                         try:
-                            ws.cell(row - 1, colNum).value = float(val)
-                            ws.cell(row - 1, colNum).fill = warningColorFill
+                            ws.cell(moreRow, colNum).value = float(val)
+                            ws.cell(moreRow, colNum).fill = warningColorFill
                         except ValueError:
-                            ws.cell(row - 1, colNum).value = val
-                            ws.cell(row - 1, colNum).fill = errorColorFill
+                            ws.cell(moreRow, colNum).value = val
+                            ws.cell(moreRow, colNum).fill = errorColorFill
                         idx += 1
                         colNum += 1
 
@@ -1902,13 +2003,15 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList, errorLog, warningLog):
                             if realCnt > idx:
                                 val = searchDataList[idx]
                                 try:
-                                    ws.cell(row - 1, colNum).value = float(val)
-                                    ws.cell(row - 1, colNum).fill = warningColorFill
+                                    ws.cell(moreRow, colNum).value = float(val)
+                                    ws.cell(moreRow, colNum).fill = warningColorFill
                                 except ValueError:
-                                    ws.cell(row - 1, colNum).value = val
-                                    ws.cell(row - 1, colNum).fill = errorColorFill
+                                    ws.cell(moreRow, colNum).value = val
+                                    ws.cell(moreRow, colNum).fill = errorColorFill
                                 idx += 1
                                 colNum += 1
+                    if ambReadMode != AMB_NEWLINE:
+                        row += 1
                     if moreFlag:
                         warningLog.append(notUsedAmbData(i))
         row += 1
@@ -1933,6 +2036,27 @@ def ambDataWarning(i):
 
 def notUsedAmbData(i):
     return textSetting.textList["errorList"]["E119"].format(i)
+
+
+def notAvailableRail(i, model_name):
+    return textSetting.textList["errorList"]["E121"].format(i, model_name)
+
+
+def diffRailDataError(i, model_name, realCnt, cnt):
+    if realCnt == 1:
+        realRail = "単線"
+    else:
+        realRail = "複線"
+
+    if cnt == 1:
+        curRail = "単線"
+    else:
+        curRail = "複線"
+    return textSetting.textList["errorList"]["E122"].format(i, model_name, realRail, curRail)
+
+
+def notAvailableAmb(i, model_name):
+    return textSetting.textList["errorList"]["E120"].format(i, model_name)
 
 
 def outOfRangeError(search, cnt, i):
@@ -1989,13 +2113,16 @@ def getSplitAndRemoveEmptyData(data):
     return sList
 
 
-def getModelName(mdl_no, mdlList):
+def getModelName(mdl_no, mdlList, dupFlag=True):
     if mdl_no < 0 or mdl_no >= len(mdlList):
         return mdl_no
     mdlName = mdlList[mdl_no]
-    dupList = [x for x in mdlList if x == mdlName]
-    if len(dupList) > 1:
-        return mdl_no
+    if dupFlag:
+        dupList = [x for x in mdlList if x == mdlName]
+        if len(dupList) > 1:
+            return mdl_no
+        else:
+            return mdlName
     else:
         return mdlName
 
@@ -2103,29 +2230,96 @@ def loadExcelAndMerge(file_path, data, newLinesObj, errMsgObj):
 
     ret = True
     ret &= findSearchAndSetCnt("Story:", wb[tabList[0]], newLines, dataFlag=False, errMsgObj=errMsgObj)
+    if not ret:
+        return ret
+
     ret &= findSearchAndSetCnt("Dir:", wb[tabList[0]], newLines, dataFlag=False, requiredFlag=False, errMsgObj=errMsgObj)
+    if not ret:
+        return ret
     ret &= findSearchAndSetCnt("Track:", wb[tabList[0]], newLines, dataFlag=False, requiredFlag=False, otherSearchList=["Dir:", "Story:"], errMsgObj=errMsgObj)
+    if not ret:
+        return ret
+
     ret &= findSearchAndSetCnt("COMIC_DATA", wb[tabList[0]], newLines, errMsgObj=errMsgObj)
+    if not ret:
+        return ret
+
     ret &= findSearchAndSetCnt("COMIC_IMAGE", wb[tabList[0]], newLines, errMsgObj=errMsgObj)
+    if not ret:
+        return ret
+
     ret &= findSearchAndSetCnt("COMIC_SE", wb[tabList[0]], newLines, errMsgObj=errMsgObj)
+    if not ret:
+        return ret
+
     ret &= findSearchAndSetCnt("RailPos:", wb[tabList[0]], newLines, optionalRead=0, errMsgObj=errMsgObj)
+    if not ret:
+        return ret
+
     ret &= findSearchAndSetCnt("FreeRun:", wb[tabList[0]], newLines, headerDataFlag=False, optionalRead=0, errMsgObj=errMsgObj)
+    if not ret:
+        return ret
+
     ret &= findSearchAndSetCnt("VSPos:", wb[tabList[0]], newLines, optionalRead=0, errMsgObj=errMsgObj)
+    if not ret:
+        return ret
+
     ret &= findSearchAndSetCnt("FadeImage:", wb[tabList[0]], newLines, optionalRead=1, errMsgObj=errMsgObj)
+    if not ret:
+        return ret
+
     ret &= findSearchAndSetCnt("StageRes:", wb[tabList[1]], newLines, optionalRead=0, errMsgObj=errMsgObj)
+    if not ret:
+        return ret
+
     ret &= findSearchAndSetCnt("SetTexInfo:", wb[tabList[2]], newLines, optionalRead=2, errMsgObj=errMsgObj)
+    if not ret:
+        return ret
+
     ret &= findSearchAndSetCnt("STCnt:", wb[tabList[3]], newLines, optionalRead=3, errMsgObj=errMsgObj)
+    if not ret:
+        return ret
+
     ret &= findSearchAndSetCnt("CPU:", wb[tabList[4]], newLines, optionalRead=4, errMsgObj=errMsgObj)
+    if not ret:
+        return ret
+
     ret &= findSearchAndSetCnt("ComicScript:", wb[tabList[5]], newLines, optionalRead=5, errMsgObj=errMsgObj)
+    if not ret:
+        return ret
+
     ret &= findSearchAndSetCnt("RainChecker:", wb[tabList[6]], newLines, optionalRead=6, errMsgObj=errMsgObj)
+    if not ret:
+        return ret
+
     ret &= findSearchAndSetCnt("DosanInfo:", wb[tabList[7]], newLines, optionalRead=6, errMsgObj=errMsgObj)
+    if not ret:
+        return ret
+
     newMdlList = []
-    ret &= findSearchAndSetCnt("MdlCnt:", wb[tabList[8]], newLines, optionalRead=5, mdlList=newMdlList, errMsgObj=errMsgObj)
-    ret &= findSearchAndSetCnt("RailCnt:", wb[tabList[9]], newLines, optionalRead=7, mdlList=newMdlList, errMsgObj=errMsgObj)
+    ret &= findSearchAndSetCnt("MdlCnt:", wb[tabList[8]], newLines, optionalRead=7, mdlList=newMdlList, errMsgObj=errMsgObj)
+    if not ret:
+        return ret
+
+    ret &= findSearchAndSetCnt("RailCnt:", wb[tabList[9]], newLines, optionalRead=8, mdlList=newMdlList, errMsgObj=errMsgObj)
+    if not ret:
+        return ret
+
     ret &= findSearchAndSetCnt("RailPri:", wb[tabList[10]], newLines, optionalRead=1, errMsgObj=errMsgObj)
+    if not ret:
+        return ret
+
     ret &= findSearchAndSetCnt("BtlPri:", wb[tabList[10]], newLines, requiredFlag=False, optionalRead=1, otherSearchList=["RailPri:"], errMsgObj=errMsgObj)
+    if not ret:
+        return ret
+
     ret &= findSearchAndSetCnt("NoDriftRail:", wb[tabList[10]], newLines, requiredFlag=False, optionalRead=1, otherSearchList=["BtlPri:", "RailPri:"], errMsgObj=errMsgObj)
-    ret &= findSearchAndSetCnt("AmbCnt:", wb[tabList[11]], newLines, optionalRead=8, mdlList=newMdlList, errMsgObj=errMsgObj)
+    if not ret:
+        return ret
+
+    ret &= findSearchAndSetCnt("AmbCnt:", wb[tabList[11]], newLines, optionalRead=9, mdlList=newMdlList, errMsgObj=errMsgObj)
+    if not ret:
+        return ret
 
     newLinesObj["data"] = newLines
     return ret
@@ -2139,6 +2333,13 @@ def findLabel(search, columns):
 
 
 def findSearchAndSetCnt(search, ws, newLines, headerDataFlag=True, dataFlag=True, requiredFlag=True, optionalRead=-1, otherSearchList=["Story:"], mdlList=[], errMsgObj={}):
+    global configPath
+
+    configRead = configparser.ConfigParser()
+    configRead.read(configPath, encoding="utf-8")
+    flagHexMode = int(configRead.get("FLAG_MODE", "mode"))
+    ambReadMode = int(configRead.get("AMB_READ_MODE", "mode"))
+
     eIndex = findLabel(search, ws["A"])
     # エクセルで見つけられない
     if eIndex == -1:
@@ -2224,7 +2425,7 @@ def findSearchAndSetCnt(search, ws, newLines, headerDataFlag=True, dataFlag=True
                 startIndex += 1
 
             # レールデータやAMB
-            if optionalRead == 7 or optionalRead == 8:
+            if optionalRead == 8 or optionalRead == 9:
                 val = ws.cell(startIndex, 1).value
                 if "index" in str(val):
                     startIndex += 1
@@ -2321,8 +2522,6 @@ def findSearchAndSetCnt(search, ws, newLines, headerDataFlag=True, dataFlag=True
                         coordinate = ws.cell(startIndex + i, 1 + j).coordinate
                         return failExcelValueError(search, coordinate, errMsgObj=errMsgObj)
                     columnList.append("{0}".format(val))
-                    if j == 1 and search == "MdlCnt:":
-                        mdlList.append(val)
                 columnLine = "\t".join(columnList)
                 newDataList.append("{0}\r".format(columnLine))
             # イベントの読み
@@ -2343,8 +2542,23 @@ def findSearchAndSetCnt(search, ws, newLines, headerDataFlag=True, dataFlag=True
                     colIdx += 1
                 columnLine = "\t".join(columnList)
                 newDataList.append("{0}\r".format(columnLine))
-            # レールデータの読み
+            # モデルの読み
             elif optionalRead == 7:
+                columnList = []
+                for j in range(5):
+                    val = ws.cell(startIndex + i, 1 + j).value
+                    if val is None:
+                        coordinate = ws.cell(startIndex + i, 1 + j).coordinate
+                        return failExcelValueError(search, coordinate, errMsgObj=errMsgObj)
+                    if j == 1:
+                        mdlList.append(val)
+                    if flagHexMode == HEX_FLAG and j in [2, 3]:
+                        val = int(val, 16)
+                    columnList.append("{0}".format(val))
+                columnLine = "\t".join(columnList)
+                newDataList.append("{0}\r".format(columnLine))
+            # レールデータの読み
+            elif optionalRead == 8:
                 columnList = []
                 for j in range(16):
                     val = ws.cell(startIndex + i, 1 + j).value
@@ -2363,7 +2577,8 @@ def findSearchAndSetCnt(search, ws, newLines, headerDataFlag=True, dataFlag=True
                             return False
                     # flg
                     elif j >= 12 and j <= 15:
-                        val = int(val, 16)
+                        if flagHexMode == HEX_FLAG:
+                            val = int(val, 16)
                     columnList.append("{0}".format(val))
                 rail_data = ws.cell(startIndex + i, 17).value
                 if rail_data is None:
@@ -2381,7 +2596,7 @@ def findSearchAndSetCnt(search, ws, newLines, headerDataFlag=True, dataFlag=True
                 columnLine = "\t".join(columnList)
                 newDataList.append("{0}\r".format(columnLine))
             # AMBデータの読み
-            elif optionalRead == 8:
+            elif optionalRead == 9:
                 columnList = []
                 for j in range(3):
                     val = ws.cell(startIndex, 1 + j).value
@@ -2396,10 +2611,14 @@ def findSearchAndSetCnt(search, ws, newLines, headerDataFlag=True, dataFlag=True
                     startIndex += 1
                 else:
                     for j in range(amb_data):
+                        if ambReadMode == AMB_NEWLINE:
+                            columnStart = 5
+                        else:
+                            columnStart = 5 + 13*j
                         for k in range(13):
-                            val = ws.cell(startIndex, 5 + k).value
+                            val = ws.cell(startIndex, columnStart + k).value
                             if val is None:
-                                coordinate = ws.cell(startIndex, 5 + k).coordinate
+                                coordinate = ws.cell(startIndex, columnStart + k).coordinate
                                 return failExcelValueError(search, coordinate, errMsgObj=errMsgObj)
                             # mdl_no
                             if k == 0:
@@ -2407,6 +2626,9 @@ def findSearchAndSetCnt(search, ws, newLines, headerDataFlag=True, dataFlag=True
                                 if val is None:
                                     return False
                             columnList.append("{0}".format(val))
+                        if ambReadMode == AMB_NEWLINE:
+                            startIndex += 1
+                    if ambReadMode != AMB_NEWLINE:
                         startIndex += 1
                 columnLine = "\t".join(columnList)
                 newDataList.append("{0}\r".format(columnLine))
@@ -2741,7 +2963,7 @@ def filterData():
             frame.tree.detach(i)
 
 
-def call_ssUnity(rootTk, programFrame):
+def call_ssUnity(rootTk, programFrame, config_ini_path):
     global unityFlag
     global root
     global v_radio
@@ -2755,6 +2977,12 @@ def call_ssUnity(rootTk, programFrame):
     global assetsSaveBtn
     global searchEt
     global contentsLf
+    global configPath
+
+    configPath = config_ini_path
+
+    path = resource_path("model.json")
+    readModelInfo(path)
 
     if not unityFlag:
         msg = textSetting.textList["errorList"]["E91"]
