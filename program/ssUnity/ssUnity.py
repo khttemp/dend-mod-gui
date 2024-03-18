@@ -41,6 +41,7 @@ ambModelInfo = None
 
 errorColorFill = PatternFill(patternType="solid", fgColor=textSetting.textList["excel"]["errorColor"])
 warningColorFill = PatternFill(patternType="solid", fgColor=textSetting.textList["excel"]["warningColor"])
+disableColorFill = PatternFill(patternType="solid", fgColor=textSetting.textList["excel"]["disableColor"])
 MODEL_NAME = 0
 HEX_FLAG = 1
 AMB_NEWLINE = 0
@@ -1410,14 +1411,25 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList, errorLog, warningLog):
             colNum = idx + 1
 
             real_mdl_name = None
+            disableFlag = False
+            if realCnt > 15:
+                try:
+                    railFlg = int(searchDataList[15])
+                    if railFlg & 0x80 != 0:
+                        disableFlag = True
+                except ValueError:
+                    disableFlag = False
 
             # index
             if realCnt > idx:
                 val = i
                 ws.cell(row, colNum).value = val
             else:
-                ws.cell(row, colNum).fill = errorColorFill
-                errorLog.append(dataReadError(search, i))
+                if not disableFlag:
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i))
+            if disableFlag:
+                ws.cell(row, colNum).fill = disableColorFill
             idx += 1
             colNum += 1
 
@@ -1429,11 +1441,15 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList, errorLog, warningLog):
                         ws.cell(row, colNum).value = int(val)
                     except ValueError:
                         ws.cell(row, colNum).value = val
-                        ws.cell(row, colNum).fill = errorColorFill
-                        errorLog.append(dataReadError(search, i, val))
+                        if not disableFlag:
+                            ws.cell(row, colNum).fill = errorColorFill
+                            errorLog.append(dataReadError(search, i, val))
                 else:
-                    ws.cell(row, colNum).fill = errorColorFill
-                    errorLog.append(dataReadError(search, i))
+                    if not disableFlag:
+                        ws.cell(row, colNum).fill = errorColorFill
+                        errorLog.append(dataReadError(search, i))
+                if disableFlag:
+                    ws.cell(row, colNum).fill = disableColorFill
                 idx += 1
                 colNum += 1
 
@@ -1445,11 +1461,15 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList, errorLog, warningLog):
                         ws.cell(row, colNum).value = float(val)
                     except ValueError:
                         ws.cell(row, colNum).value = val
-                        ws.cell(row, colNum).fill = errorColorFill
-                        errorLog.append(dataReadError(search, i, val))
+                        if not disableFlag:
+                            ws.cell(row, colNum).fill = errorColorFill
+                            errorLog.append(dataReadError(search, i, val))
                 else:
-                    ws.cell(row, colNum).fill = errorColorFill
-                    errorLog.append(dataReadError(search, i))
+                    if not disableFlag:
+                        ws.cell(row, colNum).fill = errorColorFill
+                        errorLog.append(dataReadError(search, i))
+                if disableFlag:
+                    ws.cell(row, colNum).fill = disableColorFill
                 idx += 1
                 colNum += 1
 
@@ -1463,8 +1483,9 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList, errorLog, warningLog):
                         real_mdl_name = getModelName(mdl_no, mdlList, False)
                         if not str(real_mdl_name).isdigit():
                             if real_mdl_name.lower() not in list(railModelInfo.keys()):
-                                ws.cell(row, colNum).fill = errorColorFill
-                                errorLog.append(notAvailableRail(i, real_mdl_name))
+                                if not disableFlag:
+                                    ws.cell(row, colNum).fill = errorColorFill
+                                    errorLog.append(notAvailableRail(i, real_mdl_name))
                                 real_mdl_name = None
                         else:
                             real_mdl_name = None
@@ -1473,11 +1494,15 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList, errorLog, warningLog):
                     ws.cell(row, colNum).value = mdl_name
                 except ValueError:
                     ws.cell(row, colNum).value = val
-                    ws.cell(row, colNum).fill = errorColorFill
-                    errorLog.append(dataReadError(search, i, val))
+                    if not disableFlag:
+                        ws.cell(row, colNum).fill = errorColorFill
+                        errorLog.append(dataReadError(search, i, val))
             else:
-                ws.cell(row, colNum).fill = errorColorFill
-                errorLog.append(dataReadError(search, i))
+                if not disableFlag:
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i))
+            if disableFlag:
+                ws.cell(row, colNum).fill = disableColorFill
             idx += 1
             colNum += 1
 
@@ -1493,11 +1518,15 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList, errorLog, warningLog):
                     ws.cell(row, colNum).value = mdl_name
                 except ValueError:
                     ws.cell(row, colNum).value = val
-                    ws.cell(row, colNum).fill = errorColorFill
-                    errorLog.append(dataReadError(search, i, val))
+                    if not disableFlag:
+                        ws.cell(row, colNum).fill = errorColorFill
+                        errorLog.append(dataReadError(search, i, val))
             else:
-                ws.cell(row, colNum).fill = errorColorFill
-                errorLog.append(dataReadError(search, i))
+                if not disableFlag:
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i))
+            if disableFlag:
+                ws.cell(row, colNum).fill = disableColorFill
             idx += 1
             colNum += 1
 
@@ -1508,11 +1537,15 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList, errorLog, warningLog):
                     ws.cell(row, colNum).value = float(val)
                 except ValueError:
                     ws.cell(row, colNum).value = val
-                    ws.cell(row, colNum).fill = errorColorFill
-                    errorLog.append(dataReadError(search, i, val))
+                    if not disableFlag:
+                        ws.cell(row, colNum).fill = errorColorFill
+                        errorLog.append(dataReadError(search, i, val))
             else:
-                ws.cell(row, colNum).fill = errorColorFill
-                errorLog.append(dataReadError(search, i))
+                if not disableFlag:
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i))
+            if disableFlag:
+                ws.cell(row, colNum).fill = disableColorFill
             idx += 1
             colNum += 1
 
@@ -1527,11 +1560,15 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList, errorLog, warningLog):
                         ws.cell(row, colNum).value = flg
                     except ValueError:
                         ws.cell(row, colNum).value = val
-                        ws.cell(row, colNum).fill = errorColorFill
-                        errorLog.append(dataReadError(search, i, val))
+                        if not disableFlag:
+                            ws.cell(row, colNum).fill = errorColorFill
+                            errorLog.append(dataReadError(search, i, val))
                 else:
-                    ws.cell(row, colNum).fill = errorColorFill
-                    errorLog.append(dataReadError(search, i))
+                    if not disableFlag:
+                        ws.cell(row, colNum).fill = errorColorFill
+                        errorLog.append(dataReadError(search, i))
+                if disableFlag:
+                    ws.cell(row, colNum).fill = disableColorFill
                 idx += 1
                 colNum += 1
 
@@ -1543,18 +1580,23 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList, errorLog, warningLog):
                     if real_mdl_name is not None:
                         real_rail_data = railModelInfo[real_mdl_name.lower()]
                         if rail_data != real_rail_data:
-                            ws.cell(row, colNum).fill = warningColorFill
-                            warningLog.append(diffRailDataError(i, real_mdl_name, real_rail_data, rail_data))
+                            if not disableFlag:
+                                ws.cell(row, colNum).fill = warningColorFill
+                                warningLog.append(diffRailDataError(i, real_mdl_name, real_rail_data, rail_data))
                     ws.cell(row, colNum).value = rail_data
                 except ValueError:
                     rail_data = 0
                     ws.cell(row, colNum).value = val
-                    ws.cell(row, colNum).fill = errorColorFill
-                    errorLog.append(dataReadError(search, i, val))
+                    if not disableFlag:
+                        ws.cell(row, colNum).fill = errorColorFill
+                        errorLog.append(dataReadError(search, i, val))
             else:
                 rail_data = 0
-                ws.cell(row, colNum).fill = errorColorFill
-                errorLog.append(dataReadError(search, i))
+                if not disableFlag:
+                    ws.cell(row, colNum).fill = errorColorFill
+                    errorLog.append(dataReadError(search, i))
+            if disableFlag:
+                ws.cell(row, colNum).fill = disableColorFill
             idx += 1
             colNum += 1
 
@@ -1566,11 +1608,15 @@ def extractStageDataInfo(data, sheetIndex, ws, mdlList, errorLog, warningLog):
                             ws.cell(row, colNum).value = int(val)
                         except ValueError:
                             ws.cell(row, colNum).value = val
-                            ws.cell(row, colNum).fill = errorColorFill
-                            errorLog.append(dataReadError(search, i, val))
+                            if not disableFlag:
+                                ws.cell(row, colNum).fill = errorColorFill
+                                errorLog.append(dataReadError(search, i, val))
                     else:
-                        ws.cell(row, colNum).fill = errorColorFill
-                        errorLog.append(dataReadError(search, i))
+                        if not disableFlag:
+                            ws.cell(row, colNum).fill = errorColorFill
+                            errorLog.append(dataReadError(search, i))
+                    if disableFlag:
+                        ws.cell(row, colNum).fill = disableColorFill
                     idx += 1
                     colNum += 1
             row += 1

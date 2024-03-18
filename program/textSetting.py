@@ -1104,7 +1104,8 @@ textList = {
     },
     "excel": {
         "errorColor": "FF0000",
-        "warningColor": "FFFF00"
+        "warningColor": "FFFF00",
+        "disableColor": "CCCCCC"
     },
     "menu": {
         "program": {
