@@ -73,7 +73,7 @@ def callProgram(programName):
     elif selectedProgram == "fvtMaker":
         fvtMakerProgram.call_fvtMaker(root, programFrame)
     elif selectedProgram == "railEditor":
-        railEditorProgram.call_railEditor(root, programFrame)
+        railEditorProgram.call_railEditor(root, programFrame, config_ini_path)
     elif selectedProgram == "smf":
         smfProgram.call_smf(root, programFrame)
     elif selectedProgram == "SSUnity":
@@ -84,7 +84,7 @@ def callProgram(programName):
     delete_OptionMenu()
     if selectedProgram == "smf":
         add_smfWriteOptionMenu()
-    elif selectedProgram == "SSUnity":
+    elif selectedProgram == "SSUnity" or selectedProgram == "railEditor":
         add_xlsxWriteOptionMenu()
 
 

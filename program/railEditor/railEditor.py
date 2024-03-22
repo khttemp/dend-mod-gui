@@ -25,6 +25,7 @@ decryptFile = None
 excelWidget = None
 excelExtractBtn = None
 excelSaveBtn = None
+configPath = None
 info = textSetting.textList["railEditor"]["railComboValue"]
 lsInfo = textSetting.textList["railEditor"]["railLsComboValue"]
 
@@ -39,6 +40,7 @@ def openFile():
     global excelWidget
     global excelExtractBtn
     global excelSaveBtn
+    global configPath
 
     errorMsg = textSetting.textList["errorList"]["E21"]
     file_path = fd.askopenfilename(filetypes=[(textSetting.textList["railEditor"]["fileType"], "*.BIN")])
@@ -73,7 +75,7 @@ def openFile():
             cb["values"] = info
         cb.current(0)
         cb["state"] = "readonly"
-        excelWidget = ExcelWidget(decryptFile, reloadWidget)
+        excelWidget = ExcelWidget(decryptFile, reloadWidget, configPath)
         excelExtractBtn["command"] = excelWidget.extract
         excelSaveBtn["command"] = excelWidget.save
         excelExtractBtn["state"] = "normal"
@@ -144,7 +146,7 @@ def selectGame():
     deleteAllWidget()
 
 
-def call_railEditor(rootTk, programFrame):
+def call_railEditor(rootTk, programFrame, config_ini_path):
     global root
     global info
     global v_radio
@@ -153,6 +155,9 @@ def call_railEditor(rootTk, programFrame):
     global tabFrame
     global excelExtractBtn
     global excelSaveBtn
+    global configPath
+
+    configPath = config_ini_path
 
     root = rootTk
     v_radio = tkinter.IntVar()

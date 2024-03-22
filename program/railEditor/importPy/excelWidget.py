@@ -3,6 +3,7 @@ import struct
 import codecs
 import traceback
 import openpyxl
+import configparser
 from tkinter import filedialog as fd
 from tkinter import messagebox as mb
 
@@ -10,9 +11,16 @@ import program.textSetting as textSetting
 
 
 class ExcelWidget:
-    def __init__(self, decryptFile, reloadFunc):
+    def __init__(self, decryptFile, reloadFunc, configPath):
         self.decryptFile = decryptFile
         self.reloadFunc = reloadFunc
+        self.configPath = configPath
+        self.modelNameMode = 0
+        self.flagHexMode = 0
+        self.ambReadMode = 0
+        self.MODEL_NAME = 0
+        self.HEX_FLAG = 1
+        self.AMB_NEWLINE = 0
         self.error = ""
 
     def extract(self):
@@ -21,6 +29,12 @@ class ExcelWidget:
         if not file_path:
             return
         self.error = ""
+        configRead = configparser.ConfigParser()
+        configRead.read(self.configPath, encoding="utf-8")
+        self.modelNameMode = int(configRead.get("MODEL_NAME_MODE", "mode"))
+        self.flagHexMode = int(configRead.get("FLAG_MODE", "mode"))
+        self.ambReadMode = int(configRead.get("AMB_READ_MODE", "mode"))
+
         wb = openpyxl.Workbook()
 
         # シート初期化
@@ -37,6 +51,9 @@ class ExcelWidget:
             try:
                 self.extractRailDataInfo(index, wb[tabName])
             except Exception:
+                w = codecs.open("error.log", "w", "utf-8", "strict")
+                w.write(traceback.format_exc())
+                w.close()
                 mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
                 return
 
@@ -211,7 +228,8 @@ class ExcelWidget:
                 if self.decryptFile.game in ["CS", "RS"]:
                     for idx, smf in enumerate(smfInfo):
                         if idx in [1, 2]:
-                            smf = self.toHex(smf)
+                            if self.flagHexMode == self.HEX_FLAG:
+                                smf = self.toHex(smf)
                         ws.cell(row, 2 + idx).value = smf
                     row += 1
                 else:
@@ -385,7 +403,8 @@ class ExcelWidget:
                             idx += 1
                         # mdl_no
                         elif railIdx == 7 + offset:
-                            rail = self.getSmfModelName(rail, mdlList)
+                            if self.modelNameMode == self.MODEL_NAME:
+                                rail = self.getSmfModelName(rail, mdlList)
                             ws.cell(row, 2 + idx).value = rail
                             idx += 1
                         # prevRail
@@ -399,23 +418,28 @@ class ExcelWidget:
                             idx += 1
                         # kasenchu
                         elif (railIdx == 12 + offset and prevRail == -1) or (railIdx == 9 + offset and prevRail != -1):
-                            rail = self.getSmfModelName(rail, mdlList)
+                            if self.modelNameMode == self.MODEL_NAME:
+                                rail = self.getSmfModelName(rail, mdlList)
                             ws.cell(row, 11).value = rail
                             idx += 1
                         # kasen
                         elif (railIdx == 13 + offset and prevRail == -1) or (railIdx == 10 + offset and prevRail != -1):
-                            rail = self.getSmfModelName(rail, mdlList)
+                            if self.modelNameMode == self.MODEL_NAME:
+                                rail = self.getSmfModelName(rail, mdlList)
                             ws.cell(row, 10).value = rail
                             if prevRail != -1:
                                 idx += 3
                         # fix_amb_mdl
                         elif (railIdx == 14 + offset and prevRail == -1) or (railIdx == 11 + offset and prevRail != -1):
-                            rail = self.getSmfModelName(rail, mdlList)
+                            if self.modelNameMode == self.MODEL_NAME:
+                                rail = self.getSmfModelName(rail, mdlList)
                             ws.cell(row, 2 + idx).value = rail
                             idx += 1
                         # flg
                         elif (railIdx >= 16 + offset and railIdx <= 19 + offset and prevRail == -1) or (railIdx >= 13 + offset and railIdx <= 16 + offset and prevRail != -1):
-                            ws.cell(row, 2 + idx).value = self.toHex(rail)
+                            if self.flagHexMode == self.HEX_FLAG:
+                                rail = self.toHex(rail)
+                            ws.cell(row, 2 + idx).value = rail
                             idx += 1
                         else:
                             ws.cell(row, 2 + idx).value = rail
@@ -433,10 +457,12 @@ class ExcelWidget:
                     for railIdx, rail in enumerate(railInfo[:-3]):
                         # mdl_no, kasen, kasenchu
                         if railIdx >= 6 and railIdx <= 8:
-                            rail = self.getSmfModelName(rail, mdlList)
+                            if self.modelNameMode == self.MODEL_NAME:
+                                rail = self.getSmfModelName(rail, mdlList)
                         # flg
                         if railIdx >= 10 and railIdx <= 13:
-                            rail = self.toHex(rail)
+                            if self.flagHexMode == self.HEX_FLAG:
+                                rail = self.toHex(rail)
                         ws.cell(row, 1 + idx).value = rail
                         idx += 1
                     row += 1
@@ -452,10 +478,12 @@ class ExcelWidget:
                     for railIdx, rail in enumerate(railInfo[:-2]):
                         # mdl_no, kasen, kasenchu
                         if railIdx >= 6 and railIdx <= 8:
-                            rail = self.getSmfModelName(rail, mdlList)
+                            if self.modelNameMode == self.MODEL_NAME:
+                                rail = self.getSmfModelName(rail, mdlList)
                         # flg
                         if railIdx >= 10 and railIdx <= 13:
-                            rail = self.toHex(rail)
+                            if self.flagHexMode == self.HEX_FLAG:
+                                rail = self.toHex(rail)
                         ws.cell(row, 1 + idx).value = rail
                         idx += 1
                     row += 1
@@ -471,10 +499,12 @@ class ExcelWidget:
                     for railIdx, rail in enumerate(railInfo):
                         # mdl_no, kasen, kasenchu
                         if railIdx >= 6 and railIdx <= 8:
-                            rail = self.getSmfModelName(rail, mdlList)
+                            if self.modelNameMode == self.MODEL_NAME:
+                                rail = self.getSmfModelName(rail, mdlList)
                         # flg
                         if railIdx >= 10 and railIdx <= 13:
-                            rail = self.toHex(rail)
+                            if self.flagHexMode == self.HEX_FLAG:
+                                rail = self.toHex(rail)
                         ws.cell(row, 1 + idx).value = rail
                         idx += 1
                     row += 1
@@ -558,39 +588,69 @@ class ExcelWidget:
                     for idx, amb in enumerate(ambInfo):
                         # mdl_no
                         if idx == 3:
-                            amb = self.getSmfModelName(amb, mdlList)
+                            if self.modelNameMode == self.MODEL_NAME:
+                                amb = self.getSmfModelName(amb, mdlList)
                         ws.cell(row, 2 + idx).value = amb
                         idx += 1
                     row += 1
                 row += 1
             elif self.decryptFile.game in ["CS", "RS"]:
                 row += 1
-                titleList = [
-                    "index",
-                    "type",
-                    "length",
-                    "rail_no",
-                    "rail_pos",
-                    "base_pos_x",
-                    "base_pos_y",
-                    "base_pos_z",
-                    "base_dir_x",
-                    "base_dir_y",
-                    "base_dir_z",
-                    "priority",
-                    "fog|child count",
-                    "mdl_no",
-                    "pos_x",
-                    "pos_y",
-                    "pos_z",
-                    "dir_x",
-                    "dir_y",
-                    "dir_z",
-                    "dir_x2",
-                    "dir_y2",
-                    "dir_z2",
-                    "per"
-                ]
+                if self.ambReadMode == self.AMB_NEWLINE:
+                    titleList = [
+                        "index",
+                        "type",
+                        "length",
+                        "rail_no",
+                        "rail_pos",
+                        "base_pos_x",
+                        "base_pos_y",
+                        "base_pos_z",
+                        "base_dir_x",
+                        "base_dir_y",
+                        "base_dir_z",
+                        "priority",
+                        "fog|child count",
+                        "mdl_no",
+                        "pos_x",
+                        "pos_y",
+                        "pos_z",
+                        "dir_x",
+                        "dir_y",
+                        "dir_z",
+                        "dir_x2",
+                        "dir_y2",
+                        "dir_z2",
+                        "per"
+                    ]
+                else:
+                    titleList = [
+                        "index",
+                        "type",
+                        "length",
+                        "rail_no",
+                        "rail_pos",
+                        "base_pos_x",
+                        "base_pos_y",
+                        "base_pos_z",
+                        "base_dir_x",
+                        "base_dir_y",
+                        "base_dir_z",
+                        "priority",
+                        "fog",
+                        "mdl_no",
+                        "pos_x",
+                        "pos_y",
+                        "pos_z",
+                        "dir_x",
+                        "dir_y",
+                        "dir_z",
+                        "dir_x2",
+                        "dir_y2",
+                        "dir_z2",
+                        "per",
+                        "child count"
+                    ]
 
                 idx = 0
                 for title in titleList:
@@ -605,22 +665,34 @@ class ExcelWidget:
                         if not childFlag:
                             # mdl_no
                             if idx == 12:
-                                amb = self.getSmfModelName(amb, mdlList)
+                                if self.modelNameMode == self.MODEL_NAME:
+                                    amb = self.getSmfModelName(amb, mdlList)
                             # child count
                             elif idx == 23:
-                                row += 1
-                                ws.cell(row, 13).value = amb
-                                childFlag = True
-                                idx = 12
+                                if self.ambReadMode == self.AMB_NEWLINE:
+                                    row += 1
+                                    ws.cell(row, 13).value = amb
+                                    childFlag = True
+                                    idx = 12
+                                else:
+                                    ws.cell(row, 2 + idx).value = amb
+                                    childFlag = True
+                                    idx += 1
                                 continue
 
                         if childFlag:
-                            if idx == 23:
-                                row += 1
-                                idx = 12
+                            if self.ambReadMode == self.AMB_NEWLINE:
+                                if idx == 23:
+                                    row += 1
+                                    idx = 12
 
-                            if idx == 12:
-                                amb = self.getSmfModelName(amb, mdlList)
+                                if idx == 12:
+                                    if self.modelNameMode == self.MODEL_NAME:
+                                        amb = self.getSmfModelName(amb, mdlList)
+                            else:
+                                if idx % 11 == 2:
+                                    if self.modelNameMode == self.MODEL_NAME:
+                                        amb = self.getSmfModelName(amb, mdlList)
                         ws.cell(row, 2 + idx).value = amb
                         idx += 1
                     row += 1
@@ -634,6 +706,12 @@ class ExcelWidget:
         file_path = fd.askopenfilename(initialfile=filename, defaultextension="xlsx", filetypes=[("railData", "*.xlsx")])
         if not file_path:
             return
+
+        configRead = configparser.ConfigParser()
+        configRead.read(self.configPath, encoding="utf-8")
+        self.modelNameMode = int(configRead.get("MODEL_NAME_MODE", "mode"))
+        self.flagHexMode = int(configRead.get("FLAG_MODE", "mode"))
+        self.ambReadMode = int(configRead.get("AMB_READ_MODE", "mode"))
 
         self.error = ""
         wb = openpyxl.load_workbook(file_path, data_only=True)
@@ -1001,7 +1079,8 @@ class ExcelWidget:
                     # flg
                     for j in range(4):
                         flg = ws.cell(row, 17 + j).value
-                        flg = int(flg, 16)
+                        if self.flagHexMode == self.HEX_FLAG:
+                            flg = int(flg, 16)
                         newByteArr.append(flg)
 
                     # raildata
@@ -1707,7 +1786,6 @@ class ExcelWidget:
                     return False
                 row += 1
                 for i in range(railCnt):
-                    isDisableFlg = int(ws.cell(row, 14).value, 16) & 128 > 0
                     # prevRail
                     prevRail = ws.cell(row, 2).value
                     hPrevRail = struct.pack("<h", prevRail)
@@ -1773,7 +1851,8 @@ class ExcelWidget:
                     # flg
                     for j in range(4):
                         flg = ws.cell(row, 11 + j).value
-                        flg = int(flg, 16)
+                        if self.flagHexMode == self.HEX_FLAG:
+                            flg = int(flg, 16)
                         newByteArr.append(flg)
 
                     # raildata
@@ -2115,7 +2194,10 @@ class ExcelWidget:
                     newByteArr.extend(bSmfName)
 
                     for j in range(2):
-                        newByteArr.append(int(ws.cell(row, 3 + j).value, 16))
+                        flg = ws.cell(row, 3 + j).value
+                        if self.flagHexMode == self.HEX_FLAG:
+                            flg = int(flg, 16)
+                        newByteArr.append(flg)
                     newByteArr.append(ws.cell(row, 5).value)
                     newByteArr.append(ws.cell(row, 6).value)
                     newByteArr.append(ws.cell(row, 7).value)
@@ -2348,7 +2430,6 @@ class ExcelWidget:
                     return False
                 row += 1
                 for i in range(railCnt):
-                    isDisableFlg = int(ws.cell(row, 14).value, 16) & 128 > 0
                     readFlag = False
                     # prevRail
                     prevRail = ws.cell(row, 2).value
@@ -2406,7 +2487,8 @@ class ExcelWidget:
                     # flg
                     for j in range(4):
                         flg = ws.cell(row, 11 + j).value
-                        flg = int(flg, 16)
+                        if self.flagHexMode == self.HEX_FLAG:
+                            flg = int(flg, 16)
                         newByteArr.append(flg)
 
                     # raildata
@@ -2522,29 +2604,55 @@ class ExcelWidget:
 
                     perF = struct.pack("<f", ws.cell(row, 24).value)
                     newByteArr.extend(perF)
-                    row += 1
-
-                    childCount = ws.cell(row, 13).value
-                    newByteArr.append(childCount)
-                    for j in range(childCount):
-                        # mdl_no
-                        mdl_no = ws.cell(row, 14).value
-                        if self.isModelNameDup(mdl_no, smfNameList) and dupNum == -1:
-                            dupNum = i
-                            dupName = ws.cell(row, 14).value
-                        mdl_no = self.getSmfModelIndex(i, mdl_no, smfNameList)
-                        hMdlNo = struct.pack("<h", mdl_no)
-                        newByteArr.extend(hMdlNo)
-
-                        # pos xyz, dir xyz dir2 xyz
-                        for k in range(9):
-                            tempF = struct.pack("<f", ws.cell(row, 15 + k).value)
-                            newByteArr.extend(tempF)
-
-                        perF = struct.pack("<f", ws.cell(row, 24).value)
-                        newByteArr.extend(perF)
+                    if self.ambReadMode == self.AMB_NEWLINE:
                         row += 1
-                    if childCount == 0:
+
+                        childCount = ws.cell(row, 13).value
+                        newByteArr.append(childCount)
+                        for j in range(childCount):
+                            # mdl_no
+                            mdl_no = ws.cell(row, 14).value
+                            if self.isModelNameDup(mdl_no, smfNameList) and dupNum == -1:
+                                dupNum = i
+                                dupName = ws.cell(row, 14).value
+                            mdl_no = self.getSmfModelIndex(i, mdl_no, smfNameList)
+                            hMdlNo = struct.pack("<h", mdl_no)
+                            newByteArr.extend(hMdlNo)
+
+                            # pos xyz, dir xyz dir2 xyz
+                            for k in range(9):
+                                tempF = struct.pack("<f", ws.cell(row, 15 + k).value)
+                                newByteArr.extend(tempF)
+
+                            perF = struct.pack("<f", ws.cell(row, 24).value)
+                            newByteArr.extend(perF)
+                            row += 1
+                        if childCount == 0:
+                            row += 1
+                    else:
+                        childCount = ws.cell(row, 25).value
+                        newByteArr.append(childCount)
+                        ambChildIdx = 26
+                        for j in range(childCount):
+                            # mdl_no
+                            mdl_no = ws.cell(row, ambChildIdx).value
+                            if self.isModelNameDup(mdl_no, smfNameList) and dupNum == -1:
+                                dupNum = i
+                                dupName = ws.cell(row, 14).value
+                            mdl_no = self.getSmfModelIndex(i, mdl_no, smfNameList)
+                            hMdlNo = struct.pack("<h", mdl_no)
+                            newByteArr.extend(hMdlNo)
+                            ambChildIdx += 1
+
+                            # pos xyz, dir xyz dir2 xyz
+                            for k in range(9):
+                                tempF = struct.pack("<f", ws.cell(row, ambChildIdx).value)
+                                newByteArr.extend(tempF)
+                                ambChildIdx += 1
+
+                            perF = struct.pack("<f", ws.cell(row, ambChildIdx).value)
+                            newByteArr.extend(perF)
+                            ambChildIdx += 1
                         row += 1
             except Exception:
                 self.error = textSetting.textList["errorList"]["E101"].format(tabList[10], row)
@@ -2835,7 +2943,10 @@ class ExcelWidget:
                     newByteArr.extend(bSmfName)
 
                     for j in range(2):
-                        newByteArr.append(int(ws.cell(row, 3 + j).value, 16))
+                        flg = ws.cell(row, 3 + j).value
+                        if self.flagHexMode == self.HEX_FLAG:
+                            flg = int(flg, 16)
+                        newByteArr.append(flg)
                     newByteArr.append(ws.cell(row, 5).value)
                     newByteArr.append(ws.cell(row, 6).value)
                     newByteArr.append(ws.cell(row, 7).value)
@@ -3042,7 +3153,10 @@ class ExcelWidget:
 
                 row += 1
                 for i in range(railCnt):
-                    isDisableFlg = int(ws.cell(row, 14).value, 16) & 128 > 0
+                    if self.flagHexMode == self.HEX_FLAG:
+                        isDisableFlg = int(ws.cell(row, 14).value, 16) & 128 > 0
+                    else:
+                        isDisableFlg = int(ws.cell(row, 14).value) & 128 > 0
                     # prevRail
                     prevRail = ws.cell(row, 2).value
                     hPrevRail = struct.pack("<h", prevRail)
@@ -3101,7 +3215,8 @@ class ExcelWidget:
                     # flg
                     for j in range(4):
                         flg = ws.cell(row, 11 + j).value
-                        flg = int(flg, 16)
+                        if self.flagHexMode == self.HEX_FLAG:
+                            flg = int(flg, 16)
                         newByteArr.append(flg)
 
                     # raildata
@@ -3265,29 +3380,55 @@ class ExcelWidget:
 
                     perF = struct.pack("<f", ws.cell(row, 24).value)
                     newByteArr.extend(perF)
-                    row += 1
-
-                    childCount = ws.cell(row, 13).value
-                    newByteArr.append(childCount)
-                    for j in range(childCount):
-                        # mdl_no
-                        mdl_no = ws.cell(row, 14).value
-                        if self.isModelNameDup(mdl_no, smfNameList) and dupNum == -1:
-                            dupNum = i
-                            dupName = ws.cell(row, 14).value
-                        mdl_no = self.getSmfModelIndex(i, mdl_no, smfNameList)
-                        hMdlNo = struct.pack("<h", mdl_no)
-                        newByteArr.extend(hMdlNo)
-
-                        # pos xyz, dir xyz dir2 xyz
-                        for k in range(9):
-                            tempF = struct.pack("<f", ws.cell(row, 15 + k).value)
-                            newByteArr.extend(tempF)
-
-                        perF = struct.pack("<f", ws.cell(row, 24).value)
-                        newByteArr.extend(perF)
+                    if self.ambReadMode == self.AMB_NEWLINE:
                         row += 1
-                    if childCount == 0:
+
+                        childCount = ws.cell(row, 13).value
+                        newByteArr.append(childCount)
+                        for j in range(childCount):
+                            # mdl_no
+                            mdl_no = ws.cell(row, 14).value
+                            if self.isModelNameDup(mdl_no, smfNameList) and dupNum == -1:
+                                dupNum = i
+                                dupName = ws.cell(row, 14).value
+                            mdl_no = self.getSmfModelIndex(i, mdl_no, smfNameList)
+                            hMdlNo = struct.pack("<h", mdl_no)
+                            newByteArr.extend(hMdlNo)
+
+                            # pos xyz, dir xyz dir2 xyz
+                            for k in range(9):
+                                tempF = struct.pack("<f", ws.cell(row, 15 + k).value)
+                                newByteArr.extend(tempF)
+
+                            perF = struct.pack("<f", ws.cell(row, 24).value)
+                            newByteArr.extend(perF)
+                            row += 1
+                        if childCount == 0:
+                            row += 1
+                    else:
+                        childCount = ws.cell(row, 25).value
+                        newByteArr.append(childCount)
+                        ambChildIdx = 26
+                        for j in range(childCount):
+                            # mdl_no
+                            mdl_no = ws.cell(row, ambChildIdx).value
+                            if self.isModelNameDup(mdl_no, smfNameList) and dupNum == -1:
+                                dupNum = i
+                                dupName = ws.cell(row, 14).value
+                            mdl_no = self.getSmfModelIndex(i, mdl_no, smfNameList)
+                            hMdlNo = struct.pack("<h", mdl_no)
+                            newByteArr.extend(hMdlNo)
+                            ambChildIdx += 1
+
+                            # pos xyz, dir xyz dir2 xyz
+                            for k in range(9):
+                                tempF = struct.pack("<f", ws.cell(row, ambChildIdx).value)
+                                newByteArr.extend(tempF)
+                                ambChildIdx += 1
+
+                            perF = struct.pack("<f", ws.cell(row, ambChildIdx).value)
+                            newByteArr.extend(perF)
+                            ambChildIdx += 1
                         row += 1
             except Exception:
                 self.error = textSetting.textList["errorList"]["E101"].format(tabList[10], row)
