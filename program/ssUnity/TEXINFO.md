@@ -38,6 +38,22 @@ AMBモデルに、「mTqLEDBord」がある場合適用される。
 
 change_indexで設定したLEDボードのテクスチャーを取得し、内部ソースで変更する。
 
+mTqLEDBordがあるAMBは、下記の通りである。
+
+| モデル名 | index個数 |
+| --- | --- |
+| AMB_Ichigao | 2 |
+| AMB_TQ_TimeBord | 1 |
+| Aobadai | 4 |
+| sibuya_hashira | 1 |
+| ST_IronHashira | 2 |
+| takatu_st | 1 |
+| tq_hutako | 2 |
+| tq_hutako2 | 2 |
+| TQ_Yane_Big | 1 |
+| TQ_Yane00 | 1 |
+| Yane_W | 1 |
+
 
 ![HQLEDBord](/program/ssUnity/image/HQLEDBord.png)
 
@@ -46,6 +62,15 @@ change_indexで設定したLEDボードのテクスチャーを取得し、内�
 AMBモデルに、「mHqLEDBord」がある場合適用される。
 
 change_indexで設定したLEDボードのテクスチャーを取得し、内部ソースで変更する。
+
+mHqLEDBordがあるAMBは、下記の通りである。
+
+| モデル名 | index個数 |
+| --- | --- |
+| AMB_HQ_YANE0 | 1 |
+| AMB_HQ_YANE1 | 1 |
+| AMB_HQ_YANE2 | 2 |
+| AMB_HQ_YANE3 | 2 |
 
 
 ### AMBの部分的なモデルの適用
@@ -68,6 +93,41 @@ change_index, mat_indexで設定した駅表のテクスチャーを取得し、
 
 ローカルY軸反転の意味は、180度裏返すようにする。
 
+mEkihyoがあるAMBは、下記の通りである。
+
+| モデル名 | index個数 |
+| --- | --- |
+| AMB_DenWall | 1 |
+| AMB_Ekihyo | 1 |
+| AMB_Ekihyo_Reg | 1 |
+| AMB_Ekihyo_Tate | 1 |
+| AMB_HQ_YANE0 | 2 |
+| AMB_HQ_YANE1 | 2 |
+| AMB_HQ_YANE2 | 2 |
+| AMB_HQ_YANE3 | 2 |
+| AMB_MINA_ST_WALL | 1 |
+| AMB_Mina_Wall | 1 |
+| AMB_MM_Ekihyo | 1 |
+| AMB_ShibuyaWall | 1 |
+| AMB_ST_WALL | 1 |
+| AMB_TQLight | 6 |
+| Aobadai | 2 |
+| basha_wall | 1 |
+| HQ_Ekihyo | 2 |
+| ST_IronHashira | 2 |
+| ST_IronHashira2 | 2 |
+| takatu_st | 1 |
+| takatu_st_none | 1 |
+| tq_hutako | 2 |
+| tq_hutako2 | 2 |
+| TQ_Obj1 | 2 |
+| tq_st_wall2 | 1 |
+| TQ_Yane_Big | 1 |
+| TQ_Yane00 | 1 |
+| Yane_W | 2 |
+| Yane_W2 | 2 |
+
+
 <br><br>
 
 【20】：ホーム
@@ -77,6 +137,26 @@ change_index, mat_indexで設定した駅表のテクスチャーを取得し、
 AMBモデルに、「mHomeNo」がある場合適用される。
 
 change_index, mat_indexで設定した駅表のテクスチャーを取得し、内部ソースで変更する。
+
+mHomeNoがあるAMBは、下記の通りである。
+
+| モデル名 | index個数 |
+| --- | --- |
+| AMB_HQ_YANE0 | 1 |
+| AMB_HQ_YANE1 | 1 |
+| AMB_HQ_YANE2 | 2 |
+| AMB_HQ_YANE3 | 2 |
+| AMB_Ichigao | 2 |
+| AMB_TQ_HomeNo | 1 |
+| AMB_TQLight | 3 |
+| Aobadai | 4 |
+| HQ_LEDBORD | 1 |
+| takatu_st | 1 |
+| tq_hutako | 2 |
+| tq_hutako2 | 2 |
+| TQ_Yane_Big | 1 |
+| TQ_Yane00 | 1 |
+| Yane_W | 2 |
 
 <br><br>
 
@@ -88,7 +168,7 @@ change_index, mat_indexで設定した駅表のテクスチャーを取得し、
 
 【32】：メッシュの表示切替
 
-AMBモデルに、「mHomeNo」がある場合適用される。
+AMBモデルに、「mTexUV」がある場合適用される。
 
 change_index, mat_indexで設定した駅表のテクスチャーを取得し、内部ソースで変更する。
 
@@ -103,3 +183,11 @@ change_index, mat_indexで設定した駅表のテクスチャーを取得し、
     路線別画像データ番号が0より大きい場合、表示し
 
     それ以外の場合、非表示する。
+
+mTexUVがあるAMBは、下記の通りである。
+
+| モデル名 | index個数 |
+| --- | --- |
+| AMB_SHIBU_YANE | 2 |
+| sibuya_hashira | 4 |
+| sibuya_hashira_only | 4 |
