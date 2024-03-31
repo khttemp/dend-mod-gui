@@ -44,7 +44,7 @@ change_indexで設定したLEDモデルを取得し、
 
 mTqLEDBordがあるAMBは、下記の通りである。
 
-| モデル名 | index個数 |
+| モデル名 | change_index個数 |
 | --- | --- |
 | AMB_Ichigao | 2 |
 | AMB_TQ_TimeBord | 1 |
@@ -73,7 +73,7 @@ change_indexで設定したLEDモデルを取得し、
 
 mHqLEDBordがあるAMBは、下記の通りである。
 
-| モデル名 | index個数 |
+| モデル名 | change_index個数 |
 | --- | --- |
 | AMB_HQ_YANE0 | 1 |
 | AMB_HQ_YANE1 | 1 |
@@ -111,7 +111,7 @@ mat_indexで設定したマテリアルを取得し、
 
 mEkihyoがあるAMBは、下記の通りである。
 
-| モデル名 | index個数 |
+| モデル名 | change_index個数 |
 | --- | --- |
 | AMB_DenWall | 1 |
 | AMB_Ekihyo | 1 |
@@ -164,7 +164,7 @@ mat_indexで設定したマテリアルを取得し、
 
 mHomeNoがあるAMBは、下記の通りである。
 
-| モデル名 | index個数 |
+| モデル名 | change_index個数 |
 | --- | --- |
 | AMB_HQ_YANE0 | 1 |
 | AMB_HQ_YANE1 | 1 |
@@ -217,7 +217,7 @@ mat_indexで設定したマテリアルを取得する。
 
 mTexUVがあるAMBは、下記の通りである。
 
-| モデル名 | index個数 |
+| モデル名 | change_index個数 |
 | --- | --- |
 | AMB_SHIBU_YANE | 2 |
 | sibuya_hashira | 4 |
