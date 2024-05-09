@@ -184,6 +184,8 @@ AMBで設定したモデルの画像を設定するためのもの。
 
 勝手に発動しないように、レール位置を-1にする。
 
+もっと詳しい仕様は[【こちら】](/program/ssUnity/COMICSCRIPT.md)のリンクを参照
+
 ## RainChecker:
 
 ![RainChecker](/program/ssUnity/image/RainChecker.png)
