@@ -70,8 +70,8 @@ class RootFrameAppearance:
                 configRead.set("COMBOBOX", "fg_color", self.comboboxFgColor)
                 configRead.set("COMBOBOX", "sel_bg_color", self.comboboxSelBgColor)
                 configRead.set("COMBOBOX", "sel_fg_color", self.comboboxSelFgColor)
-                configRead.set("COMBOBOX", "indicator_color", self.indicatorColor)
-                configRead.set("COMBOBOX", "sel_indicator_color", self.indicatorSelColor)
+                configRead.set("RADIO", "indicator_color", self.indicatorColor)
+                configRead.set("RADIO", "sel_indicator_color", self.indicatorSelColor)
 
                 f = codecs.open(self.iniPath, "w", "utf-8", "strict")
                 configRead.write(f)
