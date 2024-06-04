@@ -1,62 +1,69 @@
 from functools import partial
 
 import tkinter
-from tkinter import ttk
 from tkinter import messagebox as mb
-from tkinter import simpledialog as sd
 import program.textSetting as textSetting
+import program.appearance.ttkCustomWidget as ttkCustomWidget
+from program.appearance.customSimpleDialog import CustomSimpleDialog
 
 from program.tkinterScrollbarFrameClass import ScrollbarFrame
 
 
 class Else2ListWidget:
-    def __init__(self, frame, decryptFile, else2List, reloadFunc):
+    def __init__(self, root, frame, decryptFile, else2List, rootFrameAppearance, reloadFunc):
+        self.root = root
         self.frame = frame
         self.decryptFile = decryptFile
         self.else2List = else2List
+        self.rootFrameAppearance = rootFrameAppearance
         self.reloadFunc = reloadFunc
+        self.varList = []
+        self.varCnt = 0
 
-        self.eleLf = ttk.LabelFrame(self.frame, text=textSetting.textList["railEditor"]["else2InfoLabel"])
-        self.eleLf.pack(anchor=tkinter.NW, padx=10, expand=True, fill=tkinter.BOTH)
+        eleLf = ttkCustomWidget.CustomTtkLabelFrame(self.frame, text=textSetting.textList["railEditor"]["else2InfoLabel"])
+        eleLf.pack(anchor=tkinter.NW, padx=10, expand=True, fill=tkinter.BOTH)
 
-        scrollbarFrame = ScrollbarFrame(self.eleLf)
+        scrollbarFrame = ScrollbarFrame(eleLf, bgColor=rootFrameAppearance.bgColor)
         scrollbarFrame.pack(expand=True, fill=tkinter.BOTH)
 
-        self.txtFrame = ttk.Frame(scrollbarFrame.interior)
-        self.txtFrame.pack(anchor=tkinter.NW)
+        txtFrame = ttkCustomWidget.CustomTtkFrame(scrollbarFrame.interior)
+        txtFrame.pack(anchor=tkinter.NW, padx=5, pady=5)
 
-        self.else2CntNameLb = tkinter.Label(self.txtFrame, text=textSetting.textList["railEditor"]["else2CntLabel"], font=textSetting.textList["font6"], width=7, borderwidth=1, relief="solid")
-        self.else2CntNameLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
+        else2CntNameLb = ttkCustomWidget.CustomTtkLabel(txtFrame, text=textSetting.textList["railEditor"]["else2CntLabel"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
+        else2CntNameLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
         self.varElse2Cnt = tkinter.IntVar()
         self.varElse2Cnt.set(len(self.else2List))
-        self.else2CntTextLb = tkinter.Label(self.txtFrame, textvariable=self.varElse2Cnt, font=textSetting.textList["font6"], width=7, borderwidth=1, relief="solid")
-        self.else2CntTextLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
+        else2CntTextLb = ttkCustomWidget.CustomTtkLabel(txtFrame, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
+        else2CntTextLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
 
         if self.decryptFile.game in ["BS", "CS", "RS"]:
-            self.else2CntBtn = tkinter.Button(self.txtFrame, text=textSetting.textList["railEditor"]["modifyBtnLabel"], font=textSetting.textList["font7"], command=lambda: self.editElse2Cnt(self.varElse2Cnt.get()))
-            self.else2CntBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
+            else2CntTextLb.config(textvariable=self.varElse2Cnt)
+            else2CntBtn = ttkCustomWidget.CustomTtkButton(txtFrame, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=lambda: self.editElse2Cnt(self.varElse2Cnt.get()))
+            else2CntBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
+        else:
+            else2CntTextLb.config(text=self.varElse2Cnt.get())
 
-        self.txtFrame2 = ttk.Frame(scrollbarFrame.interior)
-        self.txtFrame2.pack(anchor=tkinter.NW, pady=5)
+        txtFrame2 = ttkCustomWidget.CustomTtkFrame(scrollbarFrame.interior)
+        txtFrame2.pack(anchor=tkinter.NW, padx=5, pady=5)
 
         for i in range(len(self.else2List)):
             else2Info = self.else2List[i]
             for j in range(len(else2Info)):
                 if j in [2, 3, 4]:
-                    self.varTempF = tkinter.DoubleVar()
-                    self.varTempF.set(round(float(else2Info[j]), 3))
-                    self.tempfTextLb = tkinter.Label(self.txtFrame2, textvariable=self.varTempF, font=textSetting.textList["font6"], width=7, borderwidth=1, relief="solid")
-                    self.tempfTextLb.grid(row=i, column=j, sticky=tkinter.W + tkinter.E)
+                    self.varList.append(tkinter.DoubleVar(value=round(float(else2Info[j]), 3)))
+                    tempfTextLb = ttkCustomWidget.CustomTtkLabel(txtFrame2, textvariable=self.varList[self.varCnt], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
+                    tempfTextLb.grid(row=i, column=j, sticky=tkinter.W + tkinter.E)
+                    self.varCnt += 1
                 else:
-                    self.varTempH = tkinter.IntVar()
-                    self.varTempH.set(int(else2Info[j]))
-                    self.tempfTextLb = tkinter.Label(self.txtFrame2, textvariable=self.varTempH, font=textSetting.textList["font6"], width=7, borderwidth=1, relief="solid")
-                    self.tempfTextLb.grid(row=i, column=j, sticky=tkinter.W + tkinter.E)
-            self.tempBtn = tkinter.Button(self.txtFrame2, text=textSetting.textList["railEditor"]["modifyBtnLabel"], font=textSetting.textList["font7"], command=partial(self.editElse2List, i, else2Info))
-            self.tempBtn.grid(row=i, column=len(else2Info), sticky=tkinter.W + tkinter.E)
+                    self.varList.append(tkinter.IntVar(value=int(else2Info[j])))
+                    tempfTextLb = ttkCustomWidget.CustomTtkLabel(txtFrame2, textvariable=self.varList[self.varCnt], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
+                    tempfTextLb.grid(row=i, column=j, sticky=tkinter.W + tkinter.E)
+                    self.varCnt += 1
+            tempBtn = ttkCustomWidget.CustomTtkButton(txtFrame2, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=partial(self.editElse2List, i, else2Info))
+            tempBtn.grid(row=i, column=len(else2Info), sticky=tkinter.W + tkinter.E)
 
     def editElse2Cnt(self, val):
-        result = EditElse2CntWidget(self.frame, textSetting.textList["railEditor"]["modifyElse2CntLabel"], self.decryptFile, val)
+        result = EditElse2CntWidget(self.root, textSetting.textList["railEditor"]["modifyElse2CntLabel"], self.decryptFile, val, self.rootFrameAppearance)
         if result.reloadFlag:
             if not self.decryptFile.saveElse2Cnt(result.resultValue):
                 self.decryptFile.printError()
@@ -66,7 +73,7 @@ class Else2ListWidget:
             self.reloadFunc()
 
     def editElse2List(self, i, valList):
-        result = EditElse2ListWidget(self.frame, textSetting.textList["railEditor"]["modifyElse2InfoLabel"], self.decryptFile, valList)
+        result = EditElse2ListWidget(self.frame, textSetting.textList["railEditor"]["modifyElse2InfoLabel"], self.decryptFile, valList, self.rootFrameAppearance)
         if result.reloadFlag:
             self.else2List[i] = result.resultValueList
             if not self.decryptFile.saveElse2List(self.else2List):
@@ -78,24 +85,25 @@ class Else2ListWidget:
             self.reloadFunc()
 
 
-class EditElse2CntWidget(sd.Dialog):
-    def __init__(self, master, title, decryptFile, val):
+class EditElse2CntWidget(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, val, rootFrameAppearance):
         self.decryptFile = decryptFile
         self.val = val
         self.resultValue = 0
         self.reloadFlag = False
-        super(EditElse2CntWidget, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(False, False)
 
-        self.valLb = ttk.Label(master, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
-        self.valLb.pack()
+        valLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
+        valLb.pack()
 
         self.varElse2Cnt = tkinter.IntVar()
         self.varElse2Cnt.set(self.val)
-        self.valEt = ttk.Entry(master, textvariable=self.varElse2Cnt, font=textSetting.textList["font2"], width=16)
-        self.valEt.pack()
+        valEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varElse2Cnt, font=textSetting.textList["font2"], width=16)
+        valEt.pack()
+        super().body(master)
 
     def validate(self):
         result = mb.askokcancel(title=textSetting.textList["confirm"], message=textSetting.textList["infoList"]["I21"], parent=self)
@@ -130,31 +138,32 @@ class EditElse2CntWidget(sd.Dialog):
         self.reloadFlag = True
 
 
-class EditElse2ListWidget(sd.Dialog):
-    def __init__(self, master, title, decryptFile, else2Info):
+class EditElse2ListWidget(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, else2Info, rootFrameAppearance):
         self.decryptFile = decryptFile
         self.else2Info = else2Info
         self.varList = []
         self.resultValueList = []
         self.reloadFlag = False
-        super(EditElse2ListWidget, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(False, False)
 
         else2InfoLbList = textSetting.textList["railEditor"]["editElse2LabelList"]
         for i in range(len(self.else2Info)):
-            self.else2Lb = ttk.Label(master, text=else2InfoLbList[i], font=textSetting.textList["font2"])
-            self.else2Lb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
+            else2Lb = ttkCustomWidget.CustomTtkLabel(master, text=else2InfoLbList[i], font=textSetting.textList["font2"])
+            else2Lb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
             if i in [2, 3, 4]:
-                self.varElse2 = tkinter.DoubleVar()
-                self.varElse2.set(round(float(self.else2Info[i]), 3))
+                varElse2 = tkinter.DoubleVar()
+                varElse2.set(round(float(self.else2Info[i]), 3))
             else:
-                self.varElse2 = tkinter.IntVar()
-                self.varElse2.set(self.else2Info[i])
-            self.varList.append(self.varElse2)
-            self.else2Et = ttk.Entry(master, textvariable=self.varElse2, font=textSetting.textList["font2"])
-            self.else2Et.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                varElse2 = tkinter.IntVar()
+                varElse2.set(self.else2Info[i])
+            self.varList.append(varElse2)
+            else2Et = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
+            else2Et.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+        super().body(master)
 
     def validate(self):
         self.resultValueList = []

@@ -1,58 +1,68 @@
 import copy
 import tkinter
-from tkinter import ttk
 from tkinter import messagebox as mb
-from tkinter import simpledialog as sd
 import program.textSetting as textSetting
+import program.appearance.ttkCustomWidget as ttkCustomWidget
+from program.appearance.customSimpleDialog import CustomSimpleDialog
 
 from program.railEditor.importPy.tkinterScrollbarTreeviewRailEditor import ScrollbarTreeviewRailEditor
 
 
 class SmfListWidget:
-    def __init__(self, frame, decryptFile, smfList, reloadFunc, selectId):
+    def __init__(self, root, frame, decryptFile, smfList, rootFrameAppearance, reloadFunc, selectId):
+        self.root = root
         self.frame = frame
         self.decryptFile = decryptFile
         self.smfList = smfList
+        self.rootFrameAppearance = rootFrameAppearance
         self.reloadFunc = reloadFunc
         self.copySmfInfo = []
 
-        self.swfListLf = ttk.LabelFrame(self.frame, text=textSetting.textList["railEditor"]["smfInfoLabel"])
-        self.swfListLf.pack(anchor=tkinter.NW, padx=10, pady=5, fill=tkinter.BOTH, expand=True)
+        swfListLf = ttkCustomWidget.CustomTtkLabelFrame(self.frame, text=textSetting.textList["railEditor"]["smfInfoLabel"])
+        swfListLf.pack(anchor=tkinter.NW, padx=10, pady=5, fill=tkinter.BOTH, expand=True)
 
-        self.headerFrame = ttk.Frame(self.swfListLf)
-        self.headerFrame.pack()
+        headerFrame = ttkCustomWidget.CustomTtkFrame(swfListLf)
+        headerFrame.pack()
 
-        self.selectLbFrame = ttk.Frame(self.headerFrame)
-        self.selectLbFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT)
+        selectLbFrame = ttkCustomWidget.CustomTtkFrame(headerFrame)
+        selectLbFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT, pady=10)
 
-        selectLb = ttk.Label(self.selectLbFrame, text=textSetting.textList["railEditor"]["selectNum"], font=textSetting.textList["font2"])
-        selectLb.pack(side=tkinter.LEFT, padx=15, pady=15)
+        selectLb = ttkCustomWidget.CustomTtkLabel(selectLbFrame, text=textSetting.textList["railEditor"]["selectNum"], font=textSetting.textList["font2"])
+        selectLb.grid(columnspan=2, row=0, column=0)
 
         self.v_select = tkinter.StringVar()
-        selectEt = ttk.Entry(self.selectLbFrame, textvariable=self.v_select, font=textSetting.textList["font2"], width=5, state="readonly", justify="center")
-        selectEt.pack(side=tkinter.LEFT, padx=5, pady=15)
+        selectEt = ttkCustomWidget.CustomTtkEntry(selectLbFrame, textvariable=self.v_select, font=textSetting.textList["font2"], width=5, state="readonly", justify="center")
+        selectEt.grid(row=0, column=2, pady=5)
 
-        self.btnFrame = ttk.Frame(self.headerFrame)
-        self.btnFrame.pack(anchor=tkinter.NE, padx=15)
+        self.v_railLb = tkinter.StringVar(value="")
+        usedRailLb = ttkCustomWidget.CustomTtkEntry(selectLbFrame, textvariable=self.v_railLb, font=textSetting.textList["font2"], width=5, state="readonly", justify="center")
+        usedRailLb.grid(row=1, column=1, pady=(15, 0))
 
-        editLineBtn = ttk.Button(self.btnFrame, text=textSetting.textList["railEditor"]["commonEditLineLabel"], width=25, state="disabled", command=self.editLine)
+        self.v_ambLb = tkinter.StringVar(value="")
+        usedAmbLb = ttkCustomWidget.CustomTtkEntry(selectLbFrame, textvariable=self.v_ambLb, font=textSetting.textList["font2"], width=5, state="readonly", justify="center")
+        usedAmbLb.grid(row=1, column=2, pady=(15, 0))
+
+        btnFrame = ttkCustomWidget.CustomTtkFrame(headerFrame)
+        btnFrame.pack(anchor=tkinter.NE, padx=15)
+
+        editLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["railEditor"]["commonEditLineLabel"], width=25, state="disabled", command=self.editLine)
         editLineBtn.grid(row=0, column=0, padx=10, pady=15)
 
-        insertLineBtn = ttk.Button(self.btnFrame, text=textSetting.textList["railEditor"]["commonInsertLineLabel"], width=25, state="disabled", command=self.insertLine)
+        insertLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["railEditor"]["commonInsertLineLabel"], width=25, state="disabled", command=self.insertLine)
         insertLineBtn.grid(row=0, column=1, padx=10, pady=15)
 
-        deleteLineBtn = ttk.Button(self.btnFrame, text=textSetting.textList["railEditor"]["commonDeleteLineLabel"], width=25, state="disabled", command=self.deleteLine)
+        deleteLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["railEditor"]["commonDeleteLineLabel"], width=25, state="disabled", command=self.deleteLine)
         deleteLineBtn.grid(row=0, column=2, padx=10, pady=15)
 
-        copyLineBtn = ttk.Button(self.btnFrame, text=textSetting.textList["railEditor"]["commonCopyLineLabel"], width=25, state="disabled", command=self.copyLine)
+        copyLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["railEditor"]["commonCopyLineLabel"], width=25, state="disabled", command=self.copyLine)
         copyLineBtn.grid(row=1, column=0, padx=10, pady=15)
 
-        self.pasteLineBtn = ttk.Button(self.btnFrame, text=textSetting.textList["railEditor"]["commonPasteLineLabel"], width=25, state="disabled", command=self.pasteLine)
+        self.pasteLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["railEditor"]["commonPasteLineLabel"], width=25, state="disabled", command=self.pasteLine)
         self.pasteLineBtn.grid(row=1, column=1, padx=10, pady=15)
 
         if self.decryptFile.game in ["LS", "BS"]:
-            self.listModifyBtn = ttk.Button(self.btnFrame, text=textSetting.textList["railEditor"]["editSmfElementListLabel"], width=25, state="disabled", command=self.listModify)
-            self.listModifyBtn.grid(row=1, column=2, padx=10, pady=15)
+            listModifyBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["railEditor"]["editSmfElementListLabel"], width=25, state="disabled", command=self.listModify)
+            listModifyBtn.grid(row=1, column=2, padx=10, pady=15)
 
         btnList = [
             editLineBtn,
@@ -61,17 +71,14 @@ class SmfListWidget:
             copyLineBtn
         ]
         if self.decryptFile.game in ["LS", "BS"]:
-            btnList.append(self.listModifyBtn)
+            btnList.append(listModifyBtn)
 
         useModelListObj = self.getUseModelList()
 
-        self.treeviewFrame = ScrollbarTreeviewRailEditor(self.swfListLf, self.v_select, btnList)
+        self.treeviewFrame = ScrollbarTreeviewRailEditor(swfListLf, self.v_select, btnList, self.customSelectFunc)
 
         if len(self.smfList) == 0:
             insertLineBtn["state"] = "normal"
-
-        style = ttk.Style()
-        style.map("Treeview", foreground=self.fixed_map(style, "foreground"), background=self.fixed_map(style, "background"))
 
         if self.decryptFile.game in ["CS", "RS"]:
             col_tuple = (
@@ -214,9 +221,9 @@ class SmfListWidget:
                 self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data, tags=tags)
                 index += 1
 
-        self.treeviewFrame.tree.tag_configure("notUse", background="#CCCCCC")
-        self.treeviewFrame.tree.tag_configure("rail", background="#FFC8C8")
-        self.treeviewFrame.tree.tag_configure("amb", background="#C8FFFF")
+        self.treeviewFrame.tree.tag_configure("notUse", background="#CCCCCC", foreground="black")
+        self.treeviewFrame.tree.tag_configure("rail", background="#FFC8C8", foreground="black")
+        self.treeviewFrame.tree.tag_configure("amb", background="#C8FFFF", foreground="black")
 
         if selectId is not None:
             if selectId >= len(self.smfList):
@@ -227,11 +234,26 @@ class SmfListWidget:
                 self.treeviewFrame.tree.see(selectId - 3)
             self.treeviewFrame.tree.selection_set(selectId)
 
+    def customSelectFunc(self):
+        if len(self.treeviewFrame.tree.selection()) > 0:
+            selectId = self.treeviewFrame.tree.selection()[0]
+            selectItem = self.treeviewFrame.tree.item(selectId)
+            tagName = selectItem["tags"][0]
+            if tagName == "notUse":
+                self.v_railLb.set("")
+                self.v_ambLb.set("")
+            elif tagName == "allUse":
+                self.v_railLb.set(textSetting.textList["railEditor"]["usedRail"])
+                self.v_ambLb.set(textSetting.textList["railEditor"]["usedAmb"])
+            elif tagName == "rail":
+                self.v_railLb.set(textSetting.textList["railEditor"]["usedRail"])
+                self.v_ambLb.set("")
+            elif tagName == "amb":
+                self.v_railLb.set("")
+                self.v_ambLb.set(textSetting.textList["railEditor"]["usedAmb"])
+
     def toHex(self, num):
         return "0x{0:02x}".format(num)
-
-    def fixed_map(self, style, option):
-        return [elm for elm in style.map("Treeview", query_opt=option) if elm[:2] != ("!disabled", "!selected")]
 
     def getUseModelList(self):
         mdlInfoObj = {}
@@ -364,7 +386,7 @@ class SmfListWidget:
         selectId = self.treeviewFrame.tree.selection()[0]
         selectItem = self.treeviewFrame.tree.set(selectId)
         num = int(selectItem["treeNum"])
-        result = EditSmfListWidget(self.frame, textSetting.textList["railEditor"]["modifySmfInfo"], self.decryptFile, "modify", num, selectItem)
+        result = EditSmfListWidget(self.root, textSetting.textList["railEditor"]["modifySmfInfo"], self.decryptFile, "modify", num, selectItem, self.rootFrameAppearance)
         if result.reloadFlag:
             if not self.decryptFile.saveSmfInfo(num, "modify", result.resultValueList):
                 self.decryptFile.printError()
@@ -387,7 +409,7 @@ class SmfListWidget:
             selectId = self.treeviewFrame.tree.selection()[0]
             selectItem = self.treeviewFrame.tree.set(selectId)
             num = int(selectItem["treeNum"])
-        result = EditSmfListWidget(self.frame, textSetting.textList["railEditor"]["insertSmfInfo"], self.decryptFile, "insert", num, selectItem)
+        result = EditSmfListWidget(self.root, textSetting.textList["railEditor"]["insertSmfInfo"], self.decryptFile, "insert", num, selectItem, self.rootFrameAppearance)
         if result.reloadFlag:
             if not noSmfInfoFlag:
                 if result.insert == 0:
@@ -459,14 +481,14 @@ class SmfListWidget:
     def pasteLine(self):
         selectId = self.treeviewFrame.tree.selection()[0]
         selectItem = self.treeviewFrame.tree.set(selectId)
-        result = PasteSmfListDialog(self.frame, textSetting.textList["railEditor"]["pasteSmfInfo"], self.decryptFile, int(selectItem["treeNum"]), self.copySmfInfo)
+        result = PasteSmfListDialog(self.root, textSetting.textList["railEditor"]["pasteSmfInfo"], self.decryptFile, int(selectItem["treeNum"]), self.copySmfInfo, self.rootFrameAppearance)
         if result.reloadFlag:
             self.reloadFunc(selectId)
 
     def listModify(self):
         selectId = self.treeviewFrame.tree.selection()[0]
         originTempList = self.decryptFile.smfList[int(selectId)][-1]
-        result = EditListElement(self.frame, textSetting.textList["railEditor"]["editSmfElementList"], self.decryptFile, originTempList)
+        result = EditListElement(self.root, textSetting.textList["railEditor"]["editSmfElementList"], self.decryptFile, originTempList, self.rootFrameAppearance)
         if result.reloadFlag:
             if not self.decryptFile.saveSmfListElement(int(selectId), result.tempList):
                 self.decryptFile.printError()
@@ -476,17 +498,18 @@ class SmfListWidget:
             self.reloadFunc(selectId)
 
 
-class EditSmfListWidget(sd.Dialog):
-    def __init__(self, master, title, decryptFile, mode, num, smfInfo):
+class EditSmfListWidget(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, mode, num, smfInfo, rootFrameAppearance):
         self.decryptFile = decryptFile
         self.mode = mode
         self.num = num
         self.smfInfo = smfInfo
+        self.rootFrameAppearance = rootFrameAppearance
         self.varList = []
         self.reloadFlag = False
         self.insert = 0
         self.resultValueList = []
-        super(EditSmfListWidget, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(False, False)
@@ -496,19 +519,18 @@ class EditSmfListWidget(sd.Dialog):
         if self.decryptFile.game in ["CS", "RS"]:
             modelFlagList = textSetting.textList["railEditor"]["modelFlagList"]
             for i in range(len(smfInfoKeyList)):
-                self.smfInfoLb = ttk.Label(master, text=textSetting.textList["railEditor"][smfInfoKeyList[i]], font=textSetting.textList["font2"])
-                self.smfInfoLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
+                smfInfoLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["railEditor"][smfInfoKeyList[i]], font=textSetting.textList["font2"])
+                smfInfoLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
                 if i == 0:
-                    self.varSmfInfo = tkinter.StringVar()
-                    self.varList.append(self.varSmfInfo)
-                    self.smfInfoEt = ttk.Entry(master, textvariable=self.varSmfInfo, font=textSetting.textList["font2"])
-                    self.smfInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                    self.varList.append(tkinter.StringVar())
+                    smfInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
+                    smfInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
 
                     if self.mode == "modify":
-                        self.varSmfInfo.set(self.smfInfo[smfInfoKeyList[i]])
+                        self.varList[i].set(self.smfInfo[smfInfoKeyList[i]])
                 elif i in [1, 2]:
-                    mb = ttk.Menubutton(master, text=textSetting.textList["railEditor"]["setSmfSwitch"])
-                    menu = tkinter.Menu(mb, tearoff=0)
+                    mb = ttkCustomWidget.CustomTtkMenubutton(master, text=textSetting.textList["railEditor"]["setSmfSwitch"])
+                    menu = tkinter.Menu(mb, tearoff=0, bg=self.rootFrameAppearance.bgColor, fg=self.rootFrameAppearance.fgColor)
                     mb["menu"] = menu
 
                     Flg0 = tkinter.BooleanVar()
@@ -539,82 +561,78 @@ class EditSmfListWidget(sd.Dialog):
 
                     mb.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
                 else:
-                    self.varSmfInfo = tkinter.IntVar()
-                    self.varList.append(self.varSmfInfo)
-                    self.smfInfoEt = ttk.Entry(master, textvariable=self.varSmfInfo, font=textSetting.textList["font2"])
-                    self.smfInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                    self.varList.append(tkinter.IntVar())
+                    smfInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
+                    smfInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
                     if self.mode == "modify":
-                        self.varSmfInfo.set(self.smfInfo[smfInfoKeyList[i]])
+                        self.varList[i].set(self.smfInfo[smfInfoKeyList[i]])
                     elif self.mode == "insert":
                         if i == 3:
                             default = 8
                         else:
                             default = 255
-                        self.varSmfInfo.set(default)
+                        self.varList[i].set(default)
         elif self.decryptFile.game == "BS":
             smfInfoKeyList.pop()
             for i in range(len(smfInfoKeyList)):
-                self.smfInfoLb = ttk.Label(master, text=smfInfoKeyList[i], font=textSetting.textList["font2"])
-                self.smfInfoLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
+                smfInfoLb = ttkCustomWidget.CustomTtkLabel(master, text=smfInfoKeyList[i], font=textSetting.textList["font2"])
+                smfInfoLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
                 if i == 0:
-                    self.varSmfInfo = tkinter.StringVar()
-                    self.varList.append(self.varSmfInfo)
-                    self.smfInfoEt = ttk.Entry(master, textvariable=self.varSmfInfo, font=textSetting.textList["font2"])
-                    self.smfInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                    self.varList.append(tkinter.StringVar())
+                    smfInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
+                    smfInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
 
                     if self.mode == "modify":
-                        self.varSmfInfo.set(self.smfInfo[smfInfoKeyList[i]])
+                        self.varList[i].set(self.smfInfo[smfInfoKeyList[i]])
                 else:
-                    self.varSmfInfo = tkinter.IntVar()
-                    self.varList.append(self.varSmfInfo)
-                    self.smfInfoEt = ttk.Entry(master, textvariable=self.varSmfInfo, font=textSetting.textList["font2"])
-                    self.smfInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                    self.varList.append(tkinter.IntVar())
+                    smfInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
+                    smfInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
                     if self.mode == "modify":
-                        self.varSmfInfo.set(self.smfInfo[smfInfoKeyList[i]])
+                        self.varList[i].set(self.smfInfo[smfInfoKeyList[i]])
                     elif self.mode == "insert":
                         if i == 1:
                             default = 8
                         else:
                             default = 255
-                        self.varSmfInfo.set(default)
+                        self.varList[i].set(default)
         else:
             smfInfoKeyList.pop()
             for i in range(len(smfInfoKeyList)):
-                self.smfInfoLb = ttk.Label(master, text=smfInfoKeyList[i], font=textSetting.textList["font2"])
-                self.smfInfoLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
+                smfInfoLb = ttkCustomWidget.CustomTtkLabel(master, text=smfInfoKeyList[i], font=textSetting.textList["font2"])
+                smfInfoLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
                 if i == 0:
-                    self.varSmfInfo = tkinter.StringVar()
-                    self.varList.append(self.varSmfInfo)
-                    self.smfInfoEt = ttk.Entry(master, textvariable=self.varSmfInfo, font=textSetting.textList["font2"])
-                    self.smfInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                    self.varList.append(tkinter.StringVar())
+                    smfInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
+                    smfInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
 
                     if self.mode == "modify":
-                        self.varSmfInfo.set(self.smfInfo[smfInfoKeyList[i]])
+                        self.varList[i].set(self.smfInfo[smfInfoKeyList[i]])
                 else:
-                    self.varSmfInfo = tkinter.IntVar()
-                    self.varList.append(self.varSmfInfo)
-                    self.smfInfoEt = ttk.Entry(master, textvariable=self.varSmfInfo, font=textSetting.textList["font2"])
-                    self.smfInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                    self.varList.append(tkinter.IntVar())
+                    smfInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
+                    smfInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
                     if self.mode == "modify":
-                        self.varSmfInfo.set(self.smfInfo[smfInfoKeyList[i]])
+                        self.varList[i].set(self.smfInfo[smfInfoKeyList[i]])
                     elif self.mode == "insert":
                         if i == 1:
                             default = 8
                         else:
                             default = 255
-                        self.varSmfInfo.set(default)
+                        self.varList[i].set(default)
 
         if self.mode == "insert":
             self.setInsertWidget(master, len(smfInfoKeyList))
+        super().body(master)
 
     def setInsertWidget(self, master, index):
-        self.xLine = ttk.Separator(master, orient=tkinter.HORIZONTAL)
-        self.xLine.grid(row=index, column=0, columnspan=2, sticky=tkinter.W + tkinter.E, pady=10)
+        xLine = ttkCustomWidget.CustomTtkSeparator(master, orient=tkinter.HORIZONTAL)
+        xLine.grid(row=index, column=0, columnspan=2, sticky=tkinter.W + tkinter.E, pady=10)
 
-        self.insertLb = ttk.Label(master, text=textSetting.textList["railEditor"]["posLabel"], font=textSetting.textList["font2"])
-        self.insertLb.grid(row=index + 1, column=0, sticky=tkinter.W + tkinter.E)
+        insertLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["railEditor"]["posLabel"], font=textSetting.textList["font2"])
+        insertLb.grid(row=index + 1, column=0, sticky=tkinter.W + tkinter.E)
         self.v_insert = tkinter.StringVar()
-        self.insertCb = ttk.Combobox(master, state="readonly", font=textSetting.textList["font2"], textvariable=self.v_insert, values=textSetting.textList["railEditor"]["posValue"])
+        self.insertCb = ttkCustomWidget.CustomTtkCombobox(master, state="readonly", font=textSetting.textList["font2"], textvariable=self.v_insert, values=textSetting.textList["railEditor"]["posValue"])
         self.insertCb.grid(row=index + 1, column=1, sticky=tkinter.W + tkinter.E)
         self.insertCb.current(0)
 
@@ -697,28 +715,31 @@ class EditSmfListWidget(sd.Dialog):
         self.reloadFlag = True
 
 
-class PasteSmfListDialog(sd.Dialog):
-    def __init__(self, master, title, decryptFile, num, copySmfInfo):
+class PasteSmfListDialog(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, num, copySmfInfo, rootFrameAppearance):
         self.decryptFile = decryptFile
         self.num = num
         self.copySmfInfo = copySmfInfo
         self.reloadFlag = False
-        super(PasteSmfListDialog, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(False, False)
-        self.posLb = ttk.Label(master, text=textSetting.textList["infoList"]["I4"], font=textSetting.textList["font2"])
-        self.posLb.pack(padx=10, pady=10)
+        posLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["infoList"]["I4"], font=textSetting.textList["font2"])
+        posLb.pack(padx=10, pady=10)
+        super().body(master)
 
     def buttonbox(self):
-        box = tkinter.Frame(self, padx=5, pady=5)
-        self.frontBtn = tkinter.Button(box, text=textSetting.textList["railEditor"]["pasteFront"], font=textSetting.textList["font2"], width=10, command=self.frontInsert)
-        self.frontBtn.grid(row=0, column=0, padx=5)
-        self.backBtn = tkinter.Button(box, text=textSetting.textList["railEditor"]["pasteBack"], font=textSetting.textList["font2"], width=10, command=self.backInsert)
-        self.backBtn.grid(row=0, column=1, padx=5)
-        self.cancelBtn = tkinter.Button(box, text=textSetting.textList["railEditor"]["pasteCancel"], font=textSetting.textList["font2"], width=10, command=self.cancel)
-        self.cancelBtn.grid(row=0, column=2, padx=5)
-        box.pack()
+        super().buttonbox()
+        for idx, child in enumerate(self.buttonList):
+            child.destroy()
+        self.box.config(padx=5, pady=5)
+        self.frontBtn = ttkCustomWidget.CustomTtkButton(self.box, text=textSetting.textList["railEditor"]["pasteFront"], style="custom.paste.TButton", command=self.frontInsert)
+        self.frontBtn.pack(side=tkinter.LEFT, padx=5, pady=5)
+        self.backBtn = ttkCustomWidget.CustomTtkButton(self.box, text=textSetting.textList["railEditor"]["pasteBack"], style="custom.paste.TButton", command=self.backInsert)
+        self.backBtn.pack(side=tkinter.LEFT, padx=5, pady=5)
+        self.cancelBtn = ttkCustomWidget.CustomTtkButton(self.box, text=textSetting.textList["railEditor"]["pasteCancel"], style="custom.paste.TButton", command=self.cancel)
+        self.cancelBtn.pack(side=tkinter.LEFT, padx=5, pady=5)
 
     def frontInsert(self):
         self.ok()
@@ -739,37 +760,39 @@ class PasteSmfListDialog(sd.Dialog):
         self.reloadFlag = True
 
 
-class EditListElement(sd.Dialog):
-    def __init__(self, master, title, decryptFile, tempList):
+class EditListElement(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, tempList, rootFrameAppearance):
         self.decryptFile = decryptFile
         self.tempList = copy.deepcopy(tempList)
         self.dirtyFlag = False
         self.reloadFlag = False
         self.resultList = []
-        super(EditListElement, self).__init__(parent=master, title=title)
+        self.rootFrameAppearance = rootFrameAppearance
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.frame = master
         self.resizable(False, False)
 
-        self.btnFrame = ttk.Frame(self.frame)
-        self.btnFrame.pack()
+        btnFrame = ttkCustomWidget.CustomTtkFrame(master)
+        btnFrame.pack()
 
-        self.modifyBtn = tkinter.Button(self.btnFrame, font=textSetting.textList["font2"], text=textSetting.textList["modify"], state="disabled", command=self.modify)
+        self.modifyBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["modify"], style="custom.listbox.TButton", state="disabled", command=self.modify)
         self.modifyBtn.grid(padx=10, row=0, column=0, sticky=tkinter.W + tkinter.E)
-        self.insertBtn = tkinter.Button(self.btnFrame, font=textSetting.textList["font2"], text=textSetting.textList["insert"], state="disabled", command=self.insert)
+        self.insertBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["insert"], style="custom.listbox.TButton", state="disabled", command=self.insert)
         self.insertBtn.grid(padx=10, row=0, column=1, sticky=tkinter.W + tkinter.E)
-        self.deleteBtn = tkinter.Button(self.btnFrame, font=textSetting.textList["font2"], text=textSetting.textList["delete"], state="disabled", command=self.delete)
+        self.deleteBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["delete"], style="custom.listbox.TButton", state="disabled", command=self.delete)
         self.deleteBtn.grid(padx=10, row=0, column=2, sticky=tkinter.W + tkinter.E)
 
-        self.listFrame = ttk.Frame(self.frame)
-        self.listFrame.pack()
+        listFrame = ttkCustomWidget.CustomTtkFrame(master)
+        listFrame.pack()
 
         copyTempList = self.setListboxInfo(self.tempList)
         self.v_tempList = tkinter.StringVar(value=copyTempList)
-        self.tempListListbox = tkinter.Listbox(self.listFrame, selectmode="single", font=textSetting.textList["font2"], width=25, listvariable=self.v_tempList)
-        self.tempListListbox.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
-        self.tempListListbox.bind("<<ListboxSelect>>", lambda e: self.buttonActive(self.tempListListbox, self.tempListListbox.curselection()))
+        tempListListbox = tkinter.Listbox(listFrame, selectmode="single", font=textSetting.textList["font2"], width=25, height=6, listvariable=self.v_tempList, bg=self.rootFrameAppearance.bgColor, fg=self.rootFrameAppearance.fgColor)
+        tempListListbox.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
+        tempListListbox.bind("<<ListboxSelect>>", lambda e: self.buttonActive(tempListListbox, tempListListbox.curselection()))
+        super().body(master)
 
     def buttonActive(self, listbox, value):
         if len(value) == 0:
@@ -799,7 +822,7 @@ class EditListElement(sd.Dialog):
         return copyTempList
 
     def modify(self):
-        result = EditListElementWidget(self.frame, textSetting.textList["railEditor"]["modifySmfElementListLabel"], self.decryptFile, "modify", self.selectIndexNum, self.tempList)
+        result = EditListElementWidget(self.frame, textSetting.textList["railEditor"]["modifySmfElementListLabel"], self.decryptFile, "modify", self.selectIndexNum, self.tempList, self.rootFrameAppearance)
         if result.dirtyFlag:
             self.dirtyFlag = True
             self.tempList[self.selectIndexNum] = result.resultValueList
@@ -807,7 +830,7 @@ class EditListElement(sd.Dialog):
             self.v_tempList.set(copyTempList)
 
     def insert(self):
-        result = EditListElementWidget(self.frame, textSetting.textList["railEditor"]["insertSmfElementListLabel"], self.decryptFile, "insert", self.selectIndexNum, self.tempList)
+        result = EditListElementWidget(self.frame, textSetting.textList["railEditor"]["insertSmfElementListLabel"], self.decryptFile, "insert", self.selectIndexNum, self.tempList, self.rootFrameAppearance)
         if result.dirtyFlag:
             self.dirtyFlag = True
             self.tempList.insert(self.selectIndexNum + result.insertPos, result.resultValueList)
@@ -836,8 +859,8 @@ class EditListElement(sd.Dialog):
             return True
 
 
-class EditListElementWidget(sd.Dialog):
-    def __init__(self, master, title, decryptFile, mode, index, tempList):
+class EditListElementWidget(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, mode, index, tempList, rootFrameAppearance):
         self.decryptFile = decryptFile
         self.mode = mode
         self.index = index
@@ -846,7 +869,7 @@ class EditListElementWidget(sd.Dialog):
         self.resultValueList = []
         self.insertPos = -1
         self.dirtyFlag = False
-        super(EditListElementWidget, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(False, False)
@@ -856,27 +879,28 @@ class EditListElementWidget(sd.Dialog):
         else:
             tempInfoLb = textSetting.textList["railEditor"]["smfElementListLabel2"]
         for i in range(len(tempInfoLb)):
-            self.tempLb = ttk.Label(master, text=tempInfoLb[i], font=textSetting.textList["font2"])
-            self.tempLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
-            self.varTemp = tkinter.IntVar()
+            tempLb = ttkCustomWidget.CustomTtkLabel(master, text=tempInfoLb[i], font=textSetting.textList["font2"])
+            tempLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
+            varTemp = tkinter.IntVar()
             if self.mode == "modify":
                 tempInfo = self.tempList[self.index]
-                self.varTemp.set(tempInfo[i])
-            self.varList.append(self.varTemp)
-            self.tempEt = ttk.Entry(master, textvariable=self.varTemp, font=textSetting.textList["font2"])
-            self.tempEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                varTemp.set(tempInfo[i])
+            self.varList.append(varTemp)
+            tempEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
+            tempEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
 
         if self.mode == "insert":
             self.setInsertWidget(master, len(tempInfoLb))
+        super().body(master)
 
     def setInsertWidget(self, master, index):
-        self.xLine = ttk.Separator(master, orient=tkinter.HORIZONTAL)
-        self.xLine.grid(row=index, column=0, columnspan=2, sticky=tkinter.W + tkinter.E, pady=10)
+        xLine = ttkCustomWidget.CustomTtkSeparator(master, orient=tkinter.HORIZONTAL)
+        xLine.grid(row=index, column=0, columnspan=2, sticky=tkinter.W + tkinter.E, pady=10)
 
-        self.insertLb = ttk.Label(master, text=textSetting.textList["railEditor"]["posLabel"], font=textSetting.textList["font2"])
-        self.insertLb.grid(row=index + 1, column=0, sticky=tkinter.W + tkinter.E)
+        insertLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["railEditor"]["posLabel"], font=textSetting.textList["font2"])
+        insertLb.grid(row=index + 1, column=0, sticky=tkinter.W + tkinter.E)
         self.v_insert = tkinter.StringVar()
-        self.insertCb = ttk.Combobox(master, state="readonly", font=textSetting.textList["font2"], textvariable=self.v_insert, values=textSetting.textList["railEditor"]["posValue"])
+        self.insertCb = ttkCustomWidget.CustomTtkCombobox(master, state="readonly", font=textSetting.textList["font2"], textvariable=self.v_insert, values=textSetting.textList["railEditor"]["posValue"])
         self.insertCb.grid(row=index + 1, column=1, sticky=tkinter.W + tkinter.E)
         self.insertCb.current(0)
 

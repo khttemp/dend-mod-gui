@@ -2,14 +2,14 @@ import os
 import copy
 
 import tkinter
-from tkinter import ttk
 from tkinter import messagebox as mb
 from tkinter import filedialog as fd
 import program.textSetting as textSetting
+import program.appearance.ttkCustomWidget as ttkCustomWidget
 
 
 class RailListWidget:
-    def __init__(self, frame, decryptFile, railList, reloadFunc):
+    def __init__(self, frame, decryptFile, railList, rootFrameAppearance, reloadFunc):
         self.frame = frame
         self.decryptFile = decryptFile
         self.smfList = [smfInfo[0] for smfInfo in decryptFile.smfList]
@@ -23,207 +23,200 @@ class RailListWidget:
         elif self.decryptFile.game in ["LS", "BS"]:
             self.smfList.extend(textSetting.textList["railEditor"]["smfListAddList2"])
 
-        self.railNoFrame = ttk.Frame(self.frame)
-        self.railNoFrame.pack(anchor=tkinter.NW, padx=30, pady=30, fill=tkinter.X)
-        self.railNoLb = ttk.Label(self.railNoFrame, text=textSetting.textList["railEditor"]["railRailNo"], font=textSetting.textList["font2"])
-        self.railNoLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
+        railNoFrame = ttkCustomWidget.CustomTtkFrame(self.frame)
+        railNoFrame.pack(anchor=tkinter.NW, padx=30, pady=30, fill=tkinter.X)
+        railNoLb = ttkCustomWidget.CustomTtkLabel(railNoFrame, text=textSetting.textList["railEditor"]["railRailNo"], font=textSetting.textList["font2"])
+        railNoLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
         self.v_railNo = tkinter.IntVar()
-        self.railNoEt = ttk.Entry(self.railNoFrame, textvariable=self.v_railNo, font=textSetting.textList["font2"], width=7, justify="center")
-        self.railNoEt.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10)
-        self.searchBtn = ttk.Button(self.railNoFrame, text=textSetting.textList["railEditor"]["railSearchBtnLabel"], command=lambda: self.searchRail(self.v_railNo.get()))
-        self.searchBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E, padx=30)
+        railNoEt = ttkCustomWidget.CustomTtkEntry(railNoFrame, textvariable=self.v_railNo, font=textSetting.textList["font2"], width=7, justify="center")
+        railNoEt.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10)
+        searchBtn = ttkCustomWidget.CustomTtkButton(railNoFrame, text=textSetting.textList["railEditor"]["railSearchBtnLabel"], command=lambda: self.searchRail(self.v_railNo.get()))
+        searchBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E, padx=30)
 
-        self.csvExtractBtn = ttk.Button(self.railNoFrame, width=25, text=textSetting.textList["railEditor"]["railCsvExtractLabel"], command=self.extractCsv)
-        self.csvExtractBtn.grid(row=0, column=3, sticky=tkinter.W + tkinter.E, padx=5)
-        self.csvSaveBtn = ttk.Button(self.railNoFrame, width=25, text=textSetting.textList["railEditor"]["railCsvSaveLabel"], command=self.saveCsv)
-        self.csvSaveBtn.grid(row=0, column=4, sticky=tkinter.W + tkinter.E, padx=5)
+        csvExtractBtn = ttkCustomWidget.CustomTtkButton(railNoFrame, width=25, text=textSetting.textList["railEditor"]["railCsvExtractLabel"], command=self.extractCsv)
+        csvExtractBtn.grid(row=0, column=3, sticky=tkinter.W + tkinter.E, padx=5)
+        csvSaveBtn = ttkCustomWidget.CustomTtkButton(railNoFrame, width=25, text=textSetting.textList["railEditor"]["railCsvSaveLabel"], command=self.saveCsv)
+        csvSaveBtn.grid(row=0, column=4, sticky=tkinter.W + tkinter.E, padx=5)
 
         if self.decryptFile.game == "CS":
-            self.csToRsBtn = ttk.Button(self.railNoFrame, text=textSetting.textList["railEditor"]["railCsToRs"], command=self.csToRs)
-            self.csToRsBtn.grid(row=0, column=5, sticky=tkinter.W + tkinter.E, padx=10)
+            csToRsBtn = ttkCustomWidget.CustomTtkButton(railNoFrame, text=textSetting.textList["railEditor"]["railCsToRs"], command=self.csToRs)
+            csToRsBtn.grid(row=0, column=5, sticky=tkinter.W + tkinter.E, padx=10)
 
         ###
-        self.sidePackFrame = ttk.Frame(self.frame)
-        self.sidePackFrame.pack(anchor=tkinter.NW, padx=20)
+        sidePackFrame = ttkCustomWidget.CustomTtkFrame(self.frame)
+        sidePackFrame.pack(anchor=tkinter.NW, padx=20)
 
         if self.decryptFile.game in ["BS", "CS", "RS"]:
             #
-            self.blockFrameLf = ttk.LabelFrame(self.sidePackFrame, text=textSetting.textList["railEditor"]["railBlockInfo"])
-            self.blockFrameLf.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=5, pady=15)
-            self.prevRailLb = ttk.Label(self.blockFrameLf, text=textSetting.textList["railEditor"]["railPrevRailNo"], font=textSetting.textList["font2"])
-            self.prevRailLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            blockFrameLf = ttkCustomWidget.CustomTtkLabelFrame(sidePackFrame, text=textSetting.textList["railEditor"]["railBlockInfo"])
+            blockFrameLf.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=5, pady=15)
+            prevRailLb = ttkCustomWidget.CustomTtkLabel(blockFrameLf, text=textSetting.textList["railEditor"]["railPrevRailNo"], font=textSetting.textList["font2"])
+            prevRailLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             self.v_prevRail = tkinter.IntVar()
-            self.prevRailEt = ttk.Entry(self.blockFrameLf, textvariable=self.v_prevRail, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
-            self.prevRailEt.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            prevRailEt = ttkCustomWidget.CustomTtkEntry(blockFrameLf, textvariable=self.v_prevRail, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+            prevRailEt.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            self.blockLb = ttk.Label(self.blockFrameLf, text=textSetting.textList["railEditor"]["railBlockNo"], font=textSetting.textList["font2"])
-            self.blockLb.grid(row=1, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            blockLb = ttkCustomWidget.CustomTtkLabel(blockFrameLf, text=textSetting.textList["railEditor"]["railBlockNo"], font=textSetting.textList["font2"])
+            blockLb.grid(row=1, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             self.v_block = tkinter.IntVar()
-            self.blockEt = ttk.Entry(self.blockFrameLf, textvariable=self.v_block, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
-            self.blockEt.grid(row=1, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            blockEt = ttkCustomWidget.CustomTtkEntry(blockFrameLf, textvariable=self.v_block, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+            blockEt.grid(row=1, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
             #
-            self.xyzFrame = ttk.LabelFrame(self.sidePackFrame, text=textSetting.textList["railEditor"]["railXyzInfo"])
-            self.xyzFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=5, pady=15)
-            self.xLb = ttk.Label(self.xyzFrame, text=textSetting.textList["railEditor"]["railDirX"], font=textSetting.textList["font2"])
-            self.xLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            xyzFrame = ttkCustomWidget.CustomTtkLabelFrame(sidePackFrame, text=textSetting.textList["railEditor"]["railXyzInfo"])
+            xyzFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=5, pady=15)
+            xLb = ttkCustomWidget.CustomTtkLabel(xyzFrame, text=textSetting.textList["railEditor"]["railDirX"], font=textSetting.textList["font2"])
+            xLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             self.v_x = tkinter.DoubleVar()
-            self.xEt = ttk.Entry(self.xyzFrame, textvariable=self.v_x, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
-            self.xEt.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            xEt = ttkCustomWidget.CustomTtkEntry(xyzFrame, textvariable=self.v_x, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+            xEt.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            self.yLb = ttk.Label(self.xyzFrame, text=textSetting.textList["railEditor"]["railDirY"], font=textSetting.textList["font2"])
-            self.yLb.grid(row=1, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            yLb = ttkCustomWidget.CustomTtkLabel(xyzFrame, text=textSetting.textList["railEditor"]["railDirY"], font=textSetting.textList["font2"])
+            yLb.grid(row=1, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             self.v_y = tkinter.DoubleVar()
-            self.yEt = ttk.Entry(self.xyzFrame, textvariable=self.v_y, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
-            self.yEt.grid(row=1, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            yEt = ttkCustomWidget.CustomTtkEntry(xyzFrame, textvariable=self.v_y, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+            yEt.grid(row=1, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            self.zLb = ttk.Label(self.xyzFrame, text=textSetting.textList["railEditor"]["railDirZ"], font=textSetting.textList["font2"])
-            self.zLb.grid(row=2, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            zLb = ttkCustomWidget.CustomTtkLabel(xyzFrame, text=textSetting.textList["railEditor"]["railDirZ"], font=textSetting.textList["font2"])
+            zLb.grid(row=2, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             self.v_z = tkinter.DoubleVar()
-            self.zEt = ttk.Entry(self.xyzFrame, textvariable=self.v_z, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
-            self.zEt.grid(row=2, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            zEt = ttkCustomWidget.CustomTtkEntry(xyzFrame, textvariable=self.v_z, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+            zEt.grid(row=2, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            self.kasenFrame = ttk.LabelFrame(self.sidePackFrame, text=textSetting.textList["railEditor"]["railModelKasenInfo"])
-            self.kasenFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=5, pady=15)
-            self.mdlNoLb = ttk.Label(self.kasenFrame, text=textSetting.textList["railEditor"]["railModelLabel"], font=textSetting.textList["font2"])
-            self.mdlNoLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
-            self.mdlNoCb = ttk.Combobox(self.kasenFrame, width=30, font=textSetting.textList["font2"], values=self.smfList, state="disabled")
+            kasenFrame = ttkCustomWidget.CustomTtkLabelFrame(sidePackFrame, text=textSetting.textList["railEditor"]["railModelKasenInfo"])
+            kasenFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=5, pady=15)
+            mdlNoLb = ttkCustomWidget.CustomTtkLabel(kasenFrame, text=textSetting.textList["railEditor"]["railModelLabel"], font=textSetting.textList["font2"])
+            mdlNoLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            self.mdlNoCb = ttkCustomWidget.CustomTtkCombobox(kasenFrame, width=25, font=textSetting.textList["font2"], values=self.smfList, state="disabled")
             self.mdlNoCb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            if self.decryptFile.game in ["CS", "RS"]:
-                self.mdlKasenLb = ttk.Label(self.kasenFrame, text=textSetting.textList["railEditor"]["railKasenNoLabel"], font=textSetting.textList["font2"])
-                self.mdlKasenLb.grid(row=1, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
-                self.v_mdlKasen = tkinter.IntVar()
-                self.mdlKasenEt = ttk.Entry(self.kasenFrame, textvariable=self.v_mdlKasen, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
-                self.mdlKasenEt.grid(row=1, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
-            elif self.decryptFile.game == "BS":
-                self.mdlKasenLb = ttk.Label(self.kasenFrame, text=textSetting.textList["railEditor"]["railKasenLabel"], font=textSetting.textList["font2"])
-                self.mdlKasenLb.grid(row=1, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
-                self.mdlKasenCb = ttk.Combobox(self.kasenFrame, width=30, font=textSetting.textList["font2"], values=self.smfList, state="disabled")
-                self.mdlKasenCb.grid(row=1, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            mdlKasenLb = ttkCustomWidget.CustomTtkLabel(kasenFrame, text=textSetting.textList["railEditor"]["railKasenLabel"], font=textSetting.textList["font2"])
+            mdlKasenLb.grid(row=1, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            self.mdlKasenCb = ttkCustomWidget.CustomTtkCombobox(kasenFrame, width=25, font=textSetting.textList["font2"], values=self.smfList, state="disabled")
+            self.mdlKasenCb.grid(row=1, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            self.mdlKasenchuLb = ttk.Label(self.kasenFrame, text=textSetting.textList["railEditor"]["railKasenchuLabel"], font=textSetting.textList["font2"])
-            self.mdlKasenchuLb.grid(row=2, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
-            self.mdlKasenchuCb = ttk.Combobox(self.kasenFrame, width=30, font=textSetting.textList["font2"], values=self.smfList, state="disabled")
+            mdlKasenchuLb = ttkCustomWidget.CustomTtkLabel(kasenFrame, text=textSetting.textList["railEditor"]["railKasenchuLabel"], font=textSetting.textList["font2"])
+            mdlKasenchuLb.grid(row=2, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            self.mdlKasenchuCb = ttkCustomWidget.CustomTtkCombobox(kasenFrame, width=25, font=textSetting.textList["font2"], values=self.smfList, state="disabled")
             self.mdlKasenchuCb.grid(row=2, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            self.perLb = ttk.Label(self.kasenFrame, text=textSetting.textList["railEditor"]["railPer"], font=textSetting.textList["font2"])
-            self.perLb.grid(row=3, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            perLb = ttkCustomWidget.CustomTtkLabel(kasenFrame, text=textSetting.textList["railEditor"]["railPer"], font=textSetting.textList["font2"])
+            perLb.grid(row=3, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             self.v_per = tkinter.DoubleVar()
-            self.perEt = ttk.Entry(self.kasenFrame, textvariable=self.v_per, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
-            self.perEt.grid(row=3, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            perEt = ttkCustomWidget.CustomTtkEntry(kasenFrame, textvariable=self.v_per, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+            perEt.grid(row=3, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
         elif self.decryptFile.game == "LS":
             if self.decryptFile.ver == "DEND_MAP_VER0101":
-                self.verLf = ttk.LabelFrame(self.sidePackFrame, text=textSetting.textList["railEditor"]["railLsVer0101"])
-                self.verLf.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=5, pady=15)
-                self.prevRailLb = ttk.Label(self.verLf, text=textSetting.textList["railEditor"]["railPrevRail2No"], font=textSetting.textList["font2"])
-                self.prevRailLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+                verLf = ttkCustomWidget.CustomTtkLabelFrame(sidePackFrame, text=textSetting.textList["railEditor"]["railLsVer0101"])
+                verLf.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=5, pady=15)
+                prevRailLb = ttkCustomWidget.CustomTtkLabel(verLf, text=textSetting.textList["railEditor"]["railPrevRail2No"], font=textSetting.textList["font2"])
+                prevRailLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
                 self.v_prevRail2 = tkinter.IntVar()
-                self.prevRailEt = ttk.Entry(self.verLf, textvariable=self.v_prevRail2, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
-                self.prevRailEt.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+                prevRailEt = ttkCustomWidget.CustomTtkEntry(verLf, textvariable=self.v_prevRail2, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+                prevRailEt.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
             #
-            self.xyzFrame = ttk.LabelFrame(self.sidePackFrame, text=textSetting.textList["railEditor"]["railPosXyzInfo"])
-            self.xyzFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=5, pady=15)
-            self.xLb = ttk.Label(self.xyzFrame, text=textSetting.textList["railEditor"]["railPosX"], font=textSetting.textList["font2"])
-            self.xLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            xyzFrame = ttkCustomWidget.CustomTtkLabelFrame(sidePackFrame, text=textSetting.textList["railEditor"]["railPosXyzInfo"])
+            xyzFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=5, pady=15)
+            xLb = ttkCustomWidget.CustomTtkLabel(xyzFrame, text=textSetting.textList["railEditor"]["railPosX"], font=textSetting.textList["font2"])
+            xLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             self.v_x_pos = tkinter.DoubleVar()
-            self.x_posEt = ttk.Entry(self.xyzFrame, textvariable=self.v_x_pos, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
-            self.x_posEt.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            x_posEt = ttkCustomWidget.CustomTtkEntry(xyzFrame, textvariable=self.v_x_pos, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+            x_posEt.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            self.yLb = ttk.Label(self.xyzFrame, text=textSetting.textList["railEditor"]["railPosY"], font=textSetting.textList["font2"])
-            self.yLb.grid(row=1, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            yLb = ttkCustomWidget.CustomTtkLabel(xyzFrame, text=textSetting.textList["railEditor"]["railPosY"], font=textSetting.textList["font2"])
+            yLb.grid(row=1, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             self.v_y_pos = tkinter.DoubleVar()
-            self.y_posEt = ttk.Entry(self.xyzFrame, textvariable=self.v_y_pos, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
-            self.y_posEt.grid(row=1, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            y_posEt = ttkCustomWidget.CustomTtkEntry(xyzFrame, textvariable=self.v_y_pos, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+            y_posEt.grid(row=1, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            self.zLb = ttk.Label(self.xyzFrame, text=textSetting.textList["railEditor"]["railPosZ"], font=textSetting.textList["font2"])
-            self.zLb.grid(row=2, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            zLb = ttkCustomWidget.CustomTtkLabel(xyzFrame, text=textSetting.textList["railEditor"]["railPosZ"], font=textSetting.textList["font2"])
+            zLb.grid(row=2, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             self.v_z_pos = tkinter.DoubleVar()
-            self.z_posEt = ttk.Entry(self.xyzFrame, textvariable=self.v_z_pos, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
-            self.z_posEt.grid(row=2, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            z_posEt = ttkCustomWidget.CustomTtkEntry(xyzFrame, textvariable=self.v_z_pos, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+            z_posEt.grid(row=2, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
             #
-            self.xLb = ttk.Label(self.xyzFrame, text=textSetting.textList["railEditor"]["railDirX"], font=textSetting.textList["font2"])
-            self.xLb.grid(row=0, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            xLb = ttkCustomWidget.CustomTtkLabel(xyzFrame, text=textSetting.textList["railEditor"]["railDirX"], font=textSetting.textList["font2"])
+            xLb.grid(row=0, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             self.v_x_dir = tkinter.DoubleVar()
-            self.x_dirEt = ttk.Entry(self.xyzFrame, textvariable=self.v_x_dir, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
-            self.x_dirEt.grid(row=0, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            x_dirEt = ttkCustomWidget.CustomTtkEntry(xyzFrame, textvariable=self.v_x_dir, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+            x_dirEt.grid(row=0, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            self.yLb = ttk.Label(self.xyzFrame, text=textSetting.textList["railEditor"]["railDirY"], font=textSetting.textList["font2"])
-            self.yLb.grid(row=1, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            yLb = ttkCustomWidget.CustomTtkLabel(xyzFrame, text=textSetting.textList["railEditor"]["railDirY"], font=textSetting.textList["font2"])
+            yLb.grid(row=1, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             self.v_y_dir = tkinter.DoubleVar()
-            self.y_dirEt = ttk.Entry(self.xyzFrame, textvariable=self.v_y_dir, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
-            self.y_dirEt.grid(row=1, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            y_dirEt = ttkCustomWidget.CustomTtkEntry(xyzFrame, textvariable=self.v_y_dir, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+            y_dirEt.grid(row=1, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            self.zLb = ttk.Label(self.xyzFrame, text=textSetting.textList["railEditor"]["railDirZ"], font=textSetting.textList["font2"])
-            self.zLb.grid(row=2, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            zLb = ttkCustomWidget.CustomTtkLabel(xyzFrame, text=textSetting.textList["railEditor"]["railDirZ"], font=textSetting.textList["font2"])
+            zLb.grid(row=2, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             self.v_z_dir = tkinter.DoubleVar()
-            self.z_dirEt = ttk.Entry(self.xyzFrame, textvariable=self.v_z_dir, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
-            self.z_dirEt.grid(row=2, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            z_dirEt = ttkCustomWidget.CustomTtkEntry(xyzFrame, textvariable=self.v_z_dir, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+            z_dirEt.grid(row=2, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
             #
-            self.xyzRotFrame = ttk.LabelFrame(self.sidePackFrame, text=textSetting.textList["railEditor"]["railRotXyzInfo"])
+            self.xyzRotFrame = ttkCustomWidget.CustomTtkLabelFrame(sidePackFrame, text=textSetting.textList["railEditor"]["railRotXyzInfo"])
             self.xyzRotFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=5, pady=15)
-            self.xLb = ttk.Label(self.xyzRotFrame, text=textSetting.textList["railEditor"]["railRotX"], font=textSetting.textList["font2"])
-            self.xLb.grid(row=0, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            xLb = ttkCustomWidget.CustomTtkLabel(self.xyzRotFrame, text=textSetting.textList["railEditor"]["railRotX"], font=textSetting.textList["font2"])
+            xLb.grid(row=0, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             self.v_x_rot = tkinter.StringVar()
-            self.x_dirEt = ttk.Entry(self.xyzRotFrame, textvariable=self.v_x_rot, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
-            self.x_dirEt.grid(row=0, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            x_dirEt = ttkCustomWidget.CustomTtkEntry(self.xyzRotFrame, textvariable=self.v_x_rot, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+            x_dirEt.grid(row=0, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            self.yLb = ttk.Label(self.xyzRotFrame, text=textSetting.textList["railEditor"]["railRotY"], font=textSetting.textList["font2"])
-            self.yLb.grid(row=1, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            yLb = ttkCustomWidget.CustomTtkLabel(self.xyzRotFrame, text=textSetting.textList["railEditor"]["railRotY"], font=textSetting.textList["font2"])
+            yLb.grid(row=1, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             self.v_y_rot = tkinter.StringVar()
-            self.y_dirEt = ttk.Entry(self.xyzRotFrame, textvariable=self.v_y_rot, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
-            self.y_dirEt.grid(row=1, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            y_dirEt = ttkCustomWidget.CustomTtkEntry(self.xyzRotFrame, textvariable=self.v_y_rot, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+            y_dirEt.grid(row=1, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            self.zLb = ttk.Label(self.xyzRotFrame, text=textSetting.textList["railEditor"]["railRotZ"], font=textSetting.textList["font2"])
-            self.zLb.grid(row=2, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            zLb = ttkCustomWidget.CustomTtkLabel(self.xyzRotFrame, text=textSetting.textList["railEditor"]["railRotZ"], font=textSetting.textList["font2"])
+            zLb.grid(row=2, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             self.v_z_rot = tkinter.StringVar()
-            self.z_dirEt = ttk.Entry(self.xyzRotFrame, textvariable=self.v_z_rot, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
-            self.z_dirEt.grid(row=2, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            z_dirEt = ttkCustomWidget.CustomTtkEntry(self.xyzRotFrame, textvariable=self.v_z_rot, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+            z_dirEt.grid(row=2, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
             ###
-            self.sidePackFrame2 = ttk.Frame(self.frame)
-            self.sidePackFrame2.pack(anchor=tkinter.NW, padx=20)
+            sidePackFrame2 = ttkCustomWidget.CustomTtkFrame(self.frame)
+            sidePackFrame2.pack(anchor=tkinter.NW, padx=20)
 
-            self.kasenFrame = ttk.LabelFrame(self.sidePackFrame2, text=textSetting.textList["railEditor"]["railModelKasenInfo"])
-            self.kasenFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=5, pady=15)
-            self.mdlNoLb = ttk.Label(self.kasenFrame, text=textSetting.textList["railEditor"]["railModelLabel"], font=textSetting.textList["font2"])
-            self.mdlNoLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
-            self.mdlNoCb = ttk.Combobox(self.kasenFrame, width=30, font=textSetting.textList["font2"], values=self.smfList, state="disabled")
+            kasenFrame = ttkCustomWidget.CustomTtkLabelFrame(sidePackFrame2, text=textSetting.textList["railEditor"]["railModelKasenInfo"])
+            kasenFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=5, pady=15)
+            mdlNoLb = ttkCustomWidget.CustomTtkLabel(kasenFrame, text=textSetting.textList["railEditor"]["railModelLabel"], font=textSetting.textList["font2"])
+            mdlNoLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            self.mdlNoCb = ttkCustomWidget.CustomTtkCombobox(kasenFrame, width=25, font=textSetting.textList["font2"], values=self.smfList, state="disabled")
             self.mdlNoCb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            self.prevRailLb = ttk.Label(self.kasenFrame, text=textSetting.textList["railEditor"]["railPrevRailNo"], font=textSetting.textList["font2"])
-            self.prevRailLb.grid(row=0, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            prevRailLb = ttkCustomWidget.CustomTtkLabel(kasenFrame, text=textSetting.textList["railEditor"]["railPrevRailNo"], font=textSetting.textList["font2"])
+            prevRailLb.grid(row=0, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             self.v_prevRail = tkinter.IntVar()
-            self.prevRailEt = ttk.Entry(self.kasenFrame, textvariable=self.v_prevRail, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
-            self.prevRailEt.grid(row=0, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            prevRailEt = ttkCustomWidget.CustomTtkEntry(kasenFrame, textvariable=self.v_prevRail, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+            prevRailEt.grid(row=0, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            self.mdlKasenchuLb = ttk.Label(self.kasenFrame, text=textSetting.textList["railEditor"]["railKasenchuLabel"], font=textSetting.textList["font2"])
-            self.mdlKasenchuLb.grid(row=1, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
-            self.mdlKasenchuCb = ttk.Combobox(self.kasenFrame, width=30, font=textSetting.textList["font2"], values=self.smfList, state="disabled")
+            mdlKasenchuLb = ttkCustomWidget.CustomTtkLabel(kasenFrame, text=textSetting.textList["railEditor"]["railKasenchuLabel"], font=textSetting.textList["font2"])
+            mdlKasenchuLb.grid(row=1, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            self.mdlKasenchuCb = ttkCustomWidget.CustomTtkCombobox(kasenFrame, width=25, font=textSetting.textList["font2"], values=self.smfList, state="disabled")
             self.mdlKasenchuCb.grid(row=1, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            self.mdlKasenLb = ttk.Label(self.kasenFrame, text=textSetting.textList["railEditor"]["railKasenLabel"], font=textSetting.textList["font2"])
-            self.mdlKasenLb.grid(row=1, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
-            self.mdlKasenCb = ttk.Combobox(self.kasenFrame, width=30, font=textSetting.textList["font2"], values=self.smfList, state="disabled")
+            mdlKasenLb = ttkCustomWidget.CustomTtkLabel(kasenFrame, text=textSetting.textList["railEditor"]["railKasenLabel"], font=textSetting.textList["font2"])
+            mdlKasenLb.grid(row=1, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            self.mdlKasenCb = ttkCustomWidget.CustomTtkCombobox(kasenFrame, width=25, font=textSetting.textList["font2"], values=self.smfList, state="disabled")
             self.mdlKasenCb.grid(row=1, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            self.fixAmbLb = ttk.Label(self.kasenFrame, text=textSetting.textList["railEditor"]["railFixAmbLabel"], font=textSetting.textList["font2"])
-            self.fixAmbLb.grid(row=2, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
-            self.fixAmbCb = ttk.Combobox(self.kasenFrame, width=30, font=textSetting.textList["font2"], values=self.smfList, state="disabled")
+            fixAmbLb = ttkCustomWidget.CustomTtkLabel(kasenFrame, text=textSetting.textList["railEditor"]["railFixAmbLabel"], font=textSetting.textList["font2"])
+            fixAmbLb.grid(row=2, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            self.fixAmbCb = ttkCustomWidget.CustomTtkCombobox(kasenFrame, width=25, font=textSetting.textList["font2"], values=self.smfList, state="disabled")
             self.fixAmbCb.grid(row=2, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-            self.perLb = ttk.Label(self.kasenFrame, text=textSetting.textList["railEditor"]["railPer"], font=textSetting.textList["font2"])
-            self.perLb.grid(row=2, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            perLb = ttkCustomWidget.CustomTtkLabel(kasenFrame, text=textSetting.textList["railEditor"]["railPer"], font=textSetting.textList["font2"])
+            perLb.grid(row=2, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
             self.v_per = tkinter.DoubleVar()
-            self.perEt = ttk.Entry(self.kasenFrame, textvariable=self.v_per, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
-            self.perEt.grid(row=2, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            perEt = ttkCustomWidget.CustomTtkEntry(kasenFrame, textvariable=self.v_per, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+            perEt.grid(row=2, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
         ###
-        self.flagFrameLf = ttk.LabelFrame(self.frame, text=textSetting.textList["railEditor"]["railFlagInfo"])
-        self.flagFrameLf.pack(padx=30, pady=15, fill=tkinter.X)
+        flagFrameLf = ttkCustomWidget.CustomTtkLabelFrame(self.frame, text=textSetting.textList["railEditor"]["railFlagInfo"])
+        flagFrameLf.pack(padx=25, pady=15, fill=tkinter.X)
 
         flagInfoList = copy.deepcopy(textSetting.textList["railEditor"]["railFlagInfoList"])
 
@@ -240,44 +233,44 @@ class RailListWidget:
         for i in range(len(flagInfoList)):
             v_flagInfo = []
             chkInfo = []
-            self.flagFrame = tkinter.Frame(self.flagFrameLf)
-            self.flagFrame.pack(anchor=tkinter.NW, pady=3)
+            flagFrame = ttkCustomWidget.CustomTtkFrame(flagFrameLf)
+            flagFrame.pack(anchor=tkinter.NW, pady=3)
 
             self.v_flagHex = tkinter.StringVar()
             self.v_flagHex.set("0x00")
             self.v_flagHexList.append(self.v_flagHex)
-            self.flagHexLb = ttk.Label(self.flagFrame, textvariable=self.v_flagHex, font=textSetting.textList["font2"])
-            self.flagHexLb.grid(row=0, column=0, columnspan=8, sticky=tkinter.W + tkinter.E, padx=3, pady=3)
+            flagHexLb = ttkCustomWidget.CustomTtkLabel(flagFrame, textvariable=self.v_flagHex, font=textSetting.textList["font2"])
+            flagHexLb.grid(row=0, column=0, columnspan=8, sticky=tkinter.W + tkinter.E, padx=3, pady=3)
             for j in range(len(flagInfoList[i])):
                 self.v_flag = tkinter.IntVar()
                 self.v_flag.set(0)
                 v_flagInfo.append(self.v_flag)
-                self.flagChk = tkinter.Checkbutton(self.flagFrame, text=flagInfoList[i][j], width=10, variable=self.v_flag, command=self.changeFlag)
-                self.flagChk.grid(row=1, column=j, sticky=tkinter.W + tkinter.E, padx=6, ipadx=6, pady=3)
-                chkInfo.append(self.flagChk)
+                flagChk = ttkCustomWidget.CustomTtkCheckbutton(flagFrame, text=flagInfoList[i][j], style="custom.railFlag.TCheckbutton", width=12, variable=self.v_flag, command=self.changeFlag)
+                flagChk.grid(row=1, column=j, sticky=tkinter.W + tkinter.E, padx=6, ipadx=6, pady=3)
+                chkInfo.append(flagChk)
             self.v_flagInfoList.append(v_flagInfo)
             self.chkInfoList.append(chkInfo)
 
         ###
-        self.railFrameLf = ttk.LabelFrame(self.frame, text=textSetting.textList["railEditor"]["railRailInfo"])
-        self.railFrameLf.pack(anchor=tkinter.NW, padx=30, pady=15)
+        railFrameLf = ttkCustomWidget.CustomTtkLabelFrame(self.frame, text=textSetting.textList["railEditor"]["railRailInfo"])
+        railFrameLf.pack(anchor=tkinter.NW, padx=25, pady=15)
 
-        self.railFrameCntFrame = ttk.Frame(self.railFrameLf)
-        self.railFrameCntFrame.pack(anchor=tkinter.NW, padx=10, pady=10)
-        self.railDataCntLb = ttk.Label(self.railFrameCntFrame, text=textSetting.textList["railEditor"]["railRailDataCnt"], font=textSetting.textList["font2"])
-        self.railDataCntLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+        railFrameCntFrame = ttkCustomWidget.CustomTtkFrame(railFrameLf)
+        railFrameCntFrame.pack(anchor=tkinter.NW, padx=10, pady=10)
+        railDataCntLb = ttkCustomWidget.CustomTtkLabel(railFrameCntFrame, text=textSetting.textList["railEditor"]["railRailDataCnt"], font=textSetting.textList["font2"])
+        railDataCntLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
         self.v_railDataCnt = tkinter.IntVar()
-        self.railDataCntEt = ttk.Entry(self.railFrameCntFrame, textvariable=self.v_railDataCnt, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
-        self.railDataCntEt.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+        railDataCntEt = ttkCustomWidget.CustomTtkEntry(railFrameCntFrame, textvariable=self.v_railDataCnt, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+        railDataCntEt.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
         if self.decryptFile.ver == "DEND_MAP_VER0300":
-            self.csvRevRailSaveBtn = ttk.Button(self.railFrameCntFrame, text=textSetting.textList["railEditor"]["railCreateRevRail"], command=self.saveRevRailCsv)
-            self.csvRevRailSaveBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E, padx=30)
+            csvRevRailSaveBtn = ttkCustomWidget.CustomTtkButton(railFrameCntFrame, text=textSetting.textList["railEditor"]["railCreateRevRail"], command=self.saveRevRailCsv)
+            csvRevRailSaveBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E, padx=30)
 
-        self.railFrame = ttk.Frame(self.railFrameLf)
+        self.railFrame = ttkCustomWidget.CustomTtkFrame(railFrameLf)
         self.railFrame.pack(anchor=tkinter.NW, padx=10, pady=10)
 
-        self.revRailFrame = ttk.Frame(self.railFrameLf)
+        self.revRailFrame = ttkCustomWidget.CustomTtkFrame(railFrameLf)
         self.revRailFrame.pack(anchor=tkinter.NW, padx=10, pady=10)
 
         self.searchRail(self.v_railNo.get())
@@ -294,61 +287,63 @@ class RailListWidget:
 
     def setRailInfo(self, cnt):
         self.varRailList = []
+        self.varRailCnt = 0
         children = self.railFrame.winfo_children()
         for child in children:
             child.destroy()
 
         for i in range(cnt):
-            self.nextRailLb = ttk.Label(self.railFrame, text=textSetting.textList["railEditor"]["railNextRail"], width=11, font=textSetting.textList["font2"])
-            self.nextRailLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=5)
-            self.v_nextRailNo = tkinter.IntVar()
-            self.varRailList.append(self.v_nextRailNo)
-            self.nextRailNoEt = ttk.Entry(self.railFrame, textvariable=self.v_nextRailNo, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
-            self.nextRailNoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E, pady=5)
-            self.v_nextRailPos = tkinter.IntVar()
-            self.varRailList.append(self.v_nextRailPos)
-            self.nextRailPosEt = ttk.Entry(self.railFrame, textvariable=self.v_nextRailPos, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
-            self.nextRailPosEt.grid(row=i, column=2, sticky=tkinter.W + tkinter.E, pady=5)
+            nextRailLb = ttkCustomWidget.CustomTtkLabel(self.railFrame, text=textSetting.textList["railEditor"]["railNextRail"], width=10, font=textSetting.textList["font2"])
+            nextRailLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=5)
+            self.varRailList.append(tkinter.IntVar())
+            nextRailNoEt = ttkCustomWidget.CustomTtkEntry(self.railFrame, textvariable=self.varRailList[self.varRailCnt], font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+            nextRailNoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E, pady=5)
+            self.varRailCnt += 1
+            self.varRailList.append(tkinter.IntVar())
+            nextRailPosEt = ttkCustomWidget.CustomTtkEntry(self.railFrame, textvariable=self.varRailList[self.varRailCnt], font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+            nextRailPosEt.grid(row=i, column=2, sticky=tkinter.W + tkinter.E, pady=5)
+            self.varRailCnt += 1
 
-            self.prevRailLb = ttk.Label(self.railFrame, text=textSetting.textList["railEditor"]["railPrevRail"], width=11, font=textSetting.textList["font2"])
-            self.prevRailLb.grid(row=i, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=5)
-            self.v_prevRailNo = tkinter.IntVar()
-            self.varRailList.append(self.v_prevRailNo)
-            self.prevRailNoEt = ttk.Entry(self.railFrame, textvariable=self.v_prevRailNo, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
-            self.prevRailNoEt.grid(row=i, column=4, sticky=tkinter.W + tkinter.E, pady=5)
-            self.v_prevRailPos = tkinter.IntVar()
-            self.varRailList.append(self.v_prevRailPos)
-            self.prevRailPosEt = ttk.Entry(self.railFrame, textvariable=self.v_prevRailPos, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
-            self.prevRailPosEt.grid(row=i, column=5, sticky=tkinter.W + tkinter.E, pady=5)
+            prevRailLb = ttkCustomWidget.CustomTtkLabel(self.railFrame, text=textSetting.textList["railEditor"]["railPrevRail"], width=10, font=textSetting.textList["font2"])
+            prevRailLb.grid(row=i, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=5)
+            self.varRailList.append(tkinter.IntVar())
+            prevRailNoEt = ttkCustomWidget.CustomTtkEntry(self.railFrame, textvariable=self.varRailList[self.varRailCnt], font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+            prevRailNoEt.grid(row=i, column=4, sticky=tkinter.W + tkinter.E, pady=5)
+            self.varRailCnt += 1
+            self.varRailList.append(tkinter.IntVar())
+            prevRailPosEt = ttkCustomWidget.CustomTtkEntry(self.railFrame, textvariable=self.varRailList[self.varRailCnt], font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+            prevRailPosEt.grid(row=i, column=5, sticky=tkinter.W + tkinter.E, pady=5)
+            self.varRailCnt += 1
 
     def setRevRailInfo(self, cnt):
         self.varRevRailList = []
+        self.varRevRailCnt = 0
         children = self.revRailFrame.winfo_children()
         for child in children:
             child.destroy()
 
         for i in range(cnt):
-            self.revNextRailLb = ttk.Label(self.revRailFrame, text=textSetting.textList["railEditor"]["railRevNextRail"], font=textSetting.textList["font2"])
-            self.revNextRailLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=5)
-            self.v_revNextRailNo = tkinter.IntVar()
-            self.varRevRailList.append(self.v_revNextRailNo)
-            self.revNextRailNoEt = ttk.Entry(self.revRailFrame, textvariable=self.v_revNextRailNo, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
-            self.revNextRailNoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E, pady=5)
-            self.v_revNextRailPos = tkinter.IntVar()
-            self.varRevRailList.append(self.v_revNextRailPos)
-            self.revNextRailPosEt = ttk.Entry(self.revRailFrame, textvariable=self.v_revNextRailPos, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
-            self.revNextRailPosEt.grid(row=i, column=2, sticky=tkinter.W + tkinter.E, pady=5)
+            revNextRailLb = ttkCustomWidget.CustomTtkLabel(self.revRailFrame, text=textSetting.textList["railEditor"]["railRevNextRail"], font=textSetting.textList["font2"])
+            revNextRailLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=5)
+            self.varRevRailList.append(tkinter.IntVar())
+            revNextRailNoEt = ttkCustomWidget.CustomTtkEntry(self.revRailFrame, textvariable=self.varRevRailList[self.varRevRailCnt], font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+            revNextRailNoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E, pady=5)
+            self.varRevRailCnt += 1
+            self.varRevRailList.append(tkinter.IntVar())
+            revNextRailPosEt = ttkCustomWidget.CustomTtkEntry(self.revRailFrame, textvariable=self.varRevRailList[self.varRevRailCnt], font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+            revNextRailPosEt.grid(row=i, column=2, sticky=tkinter.W + tkinter.E, pady=5)
+            self.varRevRailCnt += 1
 
-            self.revPrevRailLb = ttk.Label(self.revRailFrame, text=textSetting.textList["railEditor"]["railRevPrevRail"], font=textSetting.textList["font2"])
-            self.revPrevRailLb.grid(row=i, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=5)
-            self.v_revPrevRailNo = tkinter.IntVar()
-            self.varRevRailList.append(self.v_revPrevRailNo)
-            self.revPrevRailNoEt = ttk.Entry(self.revRailFrame, textvariable=self.v_revPrevRailNo, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
-            self.revPrevRailNoEt.grid(row=i, column=4, sticky=tkinter.W + tkinter.E, pady=5)
-            self.v_revPrevRailPos = tkinter.IntVar()
-            self.varRevRailList.append(self.v_revPrevRailPos)
-            self.revPrevRailPosEt = ttk.Entry(self.revRailFrame, textvariable=self.v_revPrevRailPos, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
-            self.revPrevRailPosEt.grid(row=i, column=5, sticky=tkinter.W + tkinter.E, pady=5)
+            revPrevRailLb = ttkCustomWidget.CustomTtkLabel(self.revRailFrame, text=textSetting.textList["railEditor"]["railRevPrevRail"], font=textSetting.textList["font2"])
+            revPrevRailLb.grid(row=i, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=5)
+            self.varRevRailList.append(tkinter.IntVar())
+            revPrevRailNoEt = ttkCustomWidget.CustomTtkEntry(self.revRailFrame, textvariable=self.varRevRailList[self.varRevRailCnt], font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+            revPrevRailNoEt.grid(row=i, column=4, sticky=tkinter.W + tkinter.E, pady=5)
+            self.varRevRailCnt += 1
+            self.varRevRailList.append(tkinter.IntVar())
+            revPrevRailPosEt = ttkCustomWidget.CustomTtkEntry(self.revRailFrame, textvariable=self.varRevRailList[self.varRevRailCnt], font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+            revPrevRailPosEt.grid(row=i, column=5, sticky=tkinter.W + tkinter.E, pady=5)
+            self.varRevRailCnt += 1
 
     def searchRail(self, railNo):
         if railNo < 0 or railNo >= len(self.railList):
@@ -363,13 +358,10 @@ class RailListWidget:
             self.v_y.set(railInfo[4])
             self.v_z.set(railInfo[5])
             self.mdlNoCb.current(railInfo[6])
-            if self.decryptFile.game in ["CS", "RS"]:
-                self.v_mdlKasen.set(railInfo[7])
-            elif self.decryptFile.game == "BS":
-                kasenNo = railInfo[7]
-                if kasenNo == -1:
-                    kasenNo = len(self.smfList) + kasenNo
-                self.mdlKasenCb.current(kasenNo)
+            kasenNo = railInfo[7]
+            if kasenNo == -1:
+                kasenNo = len(self.smfList) + kasenNo
+            self.mdlKasenCb.current(kasenNo)
 
             kasenchuNo = railInfo[8]
             if kasenchuNo == -1 or kasenchuNo == -2:

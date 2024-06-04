@@ -1,73 +1,75 @@
 import tkinter
-from tkinter import ttk
 from tkinter import filedialog as fd
 from tkinter import messagebox as mb
-from tkinter import simpledialog as sd
 import program.textSetting as textSetting
+import program.appearance.ttkCustomWidget as ttkCustomWidget
+from program.appearance.customSimpleDialog import CustomSimpleDialog
 
 from program.railEditor.importPy.tkinterScrollbarTreeviewRailEditor import ScrollbarTreeviewRailEditor
 
 
 class Else3ListWidget:
-    def __init__(self, frame, decryptFile, else3List, reloadFunc, selectId):
+    def __init__(self, root, frame, decryptFile, else3List, rootFrameAppearance, reloadFunc, selectId):
         self.text = textSetting.textList["railEditor"]["else3Label"]
+        self.root = root
         self.frame = frame
         self.decryptFile = decryptFile
         self.else3List = else3List
         self.copyElse3Info = []
+        self.rootFrameAppearance = rootFrameAppearance
         self.reloadFunc = reloadFunc
 
         if self.decryptFile.game == "LS":
             self.text = textSetting.textList["railEditor"]["camLabel"]
-        self.elseLf = ttk.LabelFrame(self.frame, text=self.text)
-        self.elseLf.pack(anchor=tkinter.NW, padx=10, expand=True, fill=tkinter.BOTH)
+        elseLf = ttkCustomWidget.CustomTtkLabelFrame(self.frame, text=self.text)
+        elseLf.pack(anchor=tkinter.NW, padx=10, expand=True, fill=tkinter.BOTH)
 
-        self.headerFrame = ttk.Frame(self.elseLf)
-        self.headerFrame.pack()
+        headerFrame = ttkCustomWidget.CustomTtkFrame(elseLf)
+        headerFrame.pack()
 
-        self.selectLbFrame = ttk.Frame(self.headerFrame)
-        self.selectLbFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT)
+        selectLbFrame = ttkCustomWidget.CustomTtkFrame(headerFrame)
+        selectLbFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT)
 
-        self.numLabelCsvBtnFrame = ttk.Frame(self.selectLbFrame)
-        self.numLabelCsvBtnFrame.pack()
-        self.numLabelFrame = ttk.Frame(self.numLabelCsvBtnFrame)
-        self.numLabelFrame.pack()
+        numLabelCsvBtnFrame = ttkCustomWidget.CustomTtkFrame(selectLbFrame)
+        numLabelCsvBtnFrame.pack()
+        numLabelFrame = ttkCustomWidget.CustomTtkFrame(numLabelCsvBtnFrame)
+        numLabelFrame.pack()
 
-        selectLb = ttk.Label(self.numLabelFrame, text=textSetting.textList["railEditor"]["selectNum"], font=textSetting.textList["font2"])
+        selectLb = ttkCustomWidget.CustomTtkLabel(numLabelFrame, text=textSetting.textList["railEditor"]["selectNum"], font=textSetting.textList["font2"])
         selectLb.pack(side=tkinter.LEFT, padx=15, pady=15)
 
         self.v_select = tkinter.StringVar()
-        selectEt = ttk.Entry(self.numLabelFrame, textvariable=self.v_select, font=textSetting.textList["font2"], width=5, state="readonly", justify="center")
+        selectEt = ttkCustomWidget.CustomTtkEntry(numLabelFrame, textvariable=self.v_select, font=textSetting.textList["font2"], width=5, state="readonly", justify="center")
         selectEt.pack(side=tkinter.LEFT, padx=5, pady=15)
 
         if self.decryptFile.game in ["BS", "CS", "RS"]:
-            self.csvBtnFrame = ttk.Frame(self.numLabelCsvBtnFrame)
-            self.csvBtnFrame.pack(side=tkinter.LEFT, padx=5, pady=10)
+            csvBtnFrame = ttkCustomWidget.CustomTtkFrame(numLabelCsvBtnFrame)
+            csvBtnFrame.pack(side=tkinter.LEFT, padx=5, pady=10)
 
-            self.else3ExtractCsvBtn = ttk.Button(self.csvBtnFrame, text=textSetting.textList["railEditor"]["else3ExtractCsvLabel"], width=20, command=lambda: self.else3ExtractCsv())
-            self.else3ExtractCsvBtn.grid(row=0, column=0, padx=15)
-            self.else3LoadAndSaveCsvBtn = ttk.Button(self.csvBtnFrame, text=textSetting.textList["railEditor"]["else3LoadAndSaveCsvLabel"], width=20, command=lambda: self.else3LoadAndSaveCsv())
-            self.else3LoadAndSaveCsvBtn.grid(row=0, column=1, padx=15)
+            else3ExtractCsvBtn = ttkCustomWidget.CustomTtkButton(csvBtnFrame, text=textSetting.textList["railEditor"]["else3ExtractCsvLabel"], width=20, command=lambda: self.else3ExtractCsv())
+            else3ExtractCsvBtn.grid(row=0, column=0, padx=15)
+            else3LoadAndSaveCsvBtn = ttkCustomWidget.CustomTtkButton(csvBtnFrame, text=textSetting.textList["railEditor"]["else3LoadAndSaveCsvLabel"], width=20, command=lambda: self.else3LoadAndSaveCsv())
+            else3LoadAndSaveCsvBtn.grid(row=0, column=1, padx=15)
 
-        self.btnFrame = ttk.Frame(self.headerFrame)
-        self.btnFrame.pack(anchor=tkinter.NE, padx=15)
+        btnFrame = ttkCustomWidget.CustomTtkFrame(headerFrame)
+        btnFrame.pack(anchor=tkinter.NE, padx=15)
 
-        editLineBtn = ttk.Button(self.btnFrame, text=textSetting.textList["railEditor"]["commonEditLineLabel"], width=25, state="disabled", command=self.editLine)
+        editLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["railEditor"]["commonEditLineLabel"], width=25, state="disabled", command=self.editLine)
         editLineBtn.grid(row=0, column=0, padx=10, pady=15)
 
-        insertLineBtn = ttk.Button(self.btnFrame, text=textSetting.textList["railEditor"]["commonInsertLineLabel"], width=25, state="disabled", command=self.insertLine)
+        insertLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["railEditor"]["commonInsertLineLabel"], width=25, state="disabled", command=self.insertLine)
         insertLineBtn.grid(row=0, column=1, padx=10, pady=15)
 
-        deleteLineBtn = ttk.Button(self.btnFrame, text=textSetting.textList["railEditor"]["commonDeleteLineLabel"], width=25, state="disabled", command=self.deleteLine)
+        deleteLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["railEditor"]["commonDeleteLineLabel"], width=25, state="disabled", command=self.deleteLine)
         deleteLineBtn.grid(row=0, column=2, padx=10, pady=15)
 
-        copyLineBtn = ttk.Button(self.btnFrame, text=textSetting.textList["railEditor"]["commonCopyLineLabel"], width=25, state="disabled", command=self.copyLine)
+        copyLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["railEditor"]["commonCopyLineLabel"], width=25, state="disabled", command=self.copyLine)
         copyLineBtn.grid(row=1, column=0, padx=10, pady=15)
 
-        self.pasteLineBtn = ttk.Button(self.btnFrame, text=textSetting.textList["railEditor"]["commonPasteLineLabel"], width=25, state="disabled", command=self.pasteLine)
+        self.pasteLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["railEditor"]["commonPasteLineLabel"], width=25, state="disabled", command=self.pasteLine)
         self.pasteLineBtn.grid(row=1, column=1, padx=10, pady=15)
 
-        listModifyBtn = ttk.Button(self.btnFrame, text=textSetting.textList["railEditor"]["editElse3InfoListLabel"], width=25, state="disabled", command=self.listModify)
+        listModifyBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["railEditor"]["editElse3InfoListLabel"], width=25, state="disabled", command=self.listModify)
         listModifyBtn.grid(row=1, column=2, padx=10, pady=15)
 
         btnList = [
@@ -78,7 +80,7 @@ class Else3ListWidget:
             listModifyBtn
         ]
 
-        self.treeviewFrame = ScrollbarTreeviewRailEditor(self.elseLf, self.v_select, btnList)
+        self.treeviewFrame = ScrollbarTreeviewRailEditor(elseLf, self.v_select, btnList)
 
         if len(self.else3List) == 0:
             insertLineBtn["state"] = "normal"
@@ -156,7 +158,7 @@ class Else3ListWidget:
         selectId = self.treeviewFrame.tree.selection()[0]
         selectItem = self.treeviewFrame.tree.set(selectId)
         num = int(selectItem["treeNum"])
-        result = EditElse3ListCntWidget(self.frame, textSetting.textList["railEditor"]["editElse3Label"].format(self.text), "modify", self.decryptFile, selectItem)
+        result = EditElse3ListCntWidget(self.root, textSetting.textList["railEditor"]["editElse3Label"].format(self.text), "modify", self.decryptFile, selectItem, self.rootFrameAppearance)
         if result.reloadFlag:
             if self.decryptFile.game in ["BS", "CS", "RS"]:
                 self.else3List[num][0] = result.resultValueList[0]
@@ -188,7 +190,7 @@ class Else3ListWidget:
         selectId = self.treeviewFrame.tree.selection()[0]
         selectItem = self.treeviewFrame.tree.set(selectId)
         num = int(selectItem["treeNum"])
-        result = EditElse3ListCntWidget(self.frame, textSetting.textList["railEditor"]["insertElse3Label"].format(self.text), "insert", self.decryptFile, selectItem)
+        result = EditElse3ListCntWidget(self.root, textSetting.textList["railEditor"]["insertElse3Label"].format(self.text), "insert", self.decryptFile, selectItem, self.rootFrameAppearance)
         if result.reloadFlag:
             if not noElse3InfoFlag:
                 if result.insert == 0:
@@ -236,9 +238,17 @@ class Else3ListWidget:
         smfInfoKeyList.pop(0)
         copyList = []
 
-        key = smfInfoKeyList[0]
-        copyList.append(int(selectItem[key]))
-        copyList.append(self.else3List[num][-1])
+        if self.decryptFile.game in ["BS", "CS", "RS"]:
+            key = smfInfoKeyList[0]
+            copyList.append(int(selectItem[key]))
+            copyList.append(self.else3List[num][-1])
+        else:
+            for i in range(len(smfInfoKeyList)):
+                key = smfInfoKeyList[i]
+                if i < len(smfInfoKeyList)-1:
+                    copyList.append(float(selectItem[key]))
+                else:
+                    copyList.append(self.else3List[num][-1])
 
         self.copyElse3Info = copyList
         mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I12"])
@@ -249,7 +259,7 @@ class Else3ListWidget:
         selectItem = self.treeviewFrame.tree.set(selectId)
         num = int(selectItem["treeNum"])
 
-        result = PasteElse3ListDialog(self.frame, textSetting.textList["railEditor"]["pasteElse3InfoLabel"].format(self.text), self.decryptFile)
+        result = PasteElse3ListDialog(self.root, textSetting.textList["railEditor"]["pasteElse3InfoLabel"].format(self.text), self.decryptFile, self.rootFrameAppearance)
         if result.reloadFlag:
             if result.insert == 0:
                 num += 1
@@ -266,7 +276,7 @@ class Else3ListWidget:
         selectItem = self.treeviewFrame.tree.set(selectId)
         num = int(selectItem["treeNum"])
 
-        result = Else3ElementListWidget(self.frame, textSetting.textList["railEditor"]["editElse3ElementLabel"].format(self.text), self.text, num, self.decryptFile, self.else3List)
+        result = Else3ElementListWidget(self.root, textSetting.textList["railEditor"]["editElse3ElementLabel"].format(self.text), self.text, num, self.decryptFile, self.else3List, self.rootFrameAppearance)
         if result.reloadFlag:
             self.reloadFunc(selectId)
 
@@ -359,8 +369,8 @@ class Else3ListWidget:
             return
 
 
-class EditElse3ListCntWidget(sd.Dialog):
-    def __init__(self, master, title, mode, decryptFile, selectItem):
+class EditElse3ListCntWidget(CustomSimpleDialog):
+    def __init__(self, master, title, mode, decryptFile, selectItem, rootFrameAppearance):
         self.mode = mode
         self.decryptFile = decryptFile
         self.selectItem = selectItem
@@ -368,7 +378,7 @@ class EditElse3ListCntWidget(sd.Dialog):
         self.resultValueList = []
         self.insert = 0
         self.reloadFlag = False
-        super(EditElse3ListCntWidget, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(False, False)
@@ -378,47 +388,48 @@ class EditElse3ListCntWidget(sd.Dialog):
         if self.decryptFile.game in ["BS", "CS", "RS"]:
             else3InfoLbList = textSetting.textList["railEditor"]["editElse3LabelList"]
             for i in range(len(else3InfoKeyList)):
-                self.else3Lb = ttk.Label(master, text=else3InfoLbList[i], font=textSetting.textList["font2"])
-                self.else3Lb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
+                else3Lb = ttkCustomWidget.CustomTtkLabel(master, text=else3InfoLbList[i], font=textSetting.textList["font2"])
+                else3Lb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
                 key = else3InfoKeyList[i]
-                self.varElse3 = tkinter.IntVar()
+                varElse3 = tkinter.IntVar()
                 if self.mode == "modify":
-                    self.varElse3.set(self.selectItem[key])
-                self.varList.append(self.varElse3)
-                self.else3Et = ttk.Entry(master, textvariable=self.varElse3, font=textSetting.textList["font2"])
-                self.else3Et.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                    varElse3.set(self.selectItem[key])
+                self.varList.append(varElse3)
+                else3Et = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
+                else3Et.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
                 if i == 1:
-                    self.else3Et["state"] = "disabled"
-                    self.varElse3.set(1)
+                    else3Et["state"] = "disabled"
+                    varElse3.set(1)
         elif self.decryptFile.game == "LS":
             else3InfoLbList = textSetting.textList["railEditor"]["editElse3LsLabelList"]
             for i in range(len(else3InfoKeyList)):
-                self.else3Lb = ttk.Label(master, text=else3InfoLbList[i], font=textSetting.textList["font2"])
-                self.else3Lb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
+                else3Lb = ttkCustomWidget.CustomTtkLabel(master, text=else3InfoLbList[i], font=textSetting.textList["font2"])
+                else3Lb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
                 key = else3InfoKeyList[i]
                 if i == 3:
-                    self.varElse3 = tkinter.IntVar()
+                    varElse3 = tkinter.IntVar()
                 else:
-                    self.varElse3 = tkinter.DoubleVar()
+                    varElse3 = tkinter.DoubleVar()
                 if self.mode == "modify":
-                    self.varElse3.set(self.selectItem[key])
-                self.varList.append(self.varElse3)
-                self.else3Et = ttk.Entry(master, textvariable=self.varElse3, font=textSetting.textList["font2"])
-                self.else3Et.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                    varElse3.set(self.selectItem[key])
+                self.varList.append(varElse3)
+                else3Et = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
+                else3Et.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
                 if i == 3:
-                    self.else3Et["state"] = "disabled"
+                    else3Et["state"] = "disabled"
 
         if self.mode == "insert":
             self.setInsertWidget(master, len(else3InfoKeyList))
+        super().body(master)
 
     def setInsertWidget(self, master, index):
-        self.xLine = ttk.Separator(master, orient=tkinter.HORIZONTAL)
-        self.xLine.grid(row=index, column=0, columnspan=2, sticky=tkinter.W + tkinter.E, pady=10)
+        xLine = ttkCustomWidget.CustomTtkSeparator(master, orient=tkinter.HORIZONTAL)
+        xLine.grid(row=index, column=0, columnspan=2, sticky=tkinter.W + tkinter.E, pady=10)
 
-        self.insertLb = ttk.Label(master, text=textSetting.textList["railEditor"]["posLabel"], font=textSetting.textList["font2"])
-        self.insertLb.grid(row=index + 1, column=0, sticky=tkinter.W + tkinter.E)
+        insertLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["railEditor"]["posLabel"], font=textSetting.textList["font2"])
+        insertLb.grid(row=index + 1, column=0, sticky=tkinter.W + tkinter.E)
         self.v_insert = tkinter.StringVar()
-        self.insertCb = ttk.Combobox(master, state="readonly", font=textSetting.textList["font2"], textvariable=self.v_insert, values=textSetting.textList["railEditor"]["posValue"])
+        self.insertCb = ttkCustomWidget.CustomTtkCombobox(master, state="readonly", font=textSetting.textList["font2"], textvariable=self.v_insert, values=textSetting.textList["railEditor"]["posValue"])
         self.insertCb.grid(row=index + 1, column=1, sticky=tkinter.W + tkinter.E)
         self.insertCb.current(0)
 
@@ -468,8 +479,8 @@ class EditElse3ListCntWidget(sd.Dialog):
         self.reloadFlag = True
 
 
-class Else3ElementListWidget(sd.Dialog):
-    def __init__(self, master, title, text, else3Num, decryptFile, else3List):
+class Else3ElementListWidget(CustomSimpleDialog):
+    def __init__(self, master, title, text, else3Num, decryptFile, else3List, rootFrameAppearance):
         self.master = master
         self.text = text
         self.else3Num = else3Num
@@ -480,46 +491,47 @@ class Else3ElementListWidget(sd.Dialog):
         self.btnList = []
         self.varList = []
         self.resultValueList = []
+        self.rootFrameAppearance = rootFrameAppearance
         self.reloadFlag = False
-        super(Else3ElementListWidget, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(False, False)
-        self.mainFrame = ttk.Frame(master, width=720, height=360)
-        self.mainFrame.pack()
+        mainFrame = ttkCustomWidget.CustomTtkFrame(master, width=720, height=360)
+        mainFrame.pack()
 
-        selectLbBtnFrame = ttk.Frame(self.mainFrame)
+        selectLbBtnFrame = ttkCustomWidget.CustomTtkFrame(mainFrame)
         selectLbBtnFrame.pack()
 
-        selectLbFrame = ttk.Frame(selectLbBtnFrame)
+        selectLbFrame = ttkCustomWidget.CustomTtkFrame(selectLbBtnFrame)
         selectLbFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT)
 
-        selectLb = ttk.Label(selectLbFrame, text=textSetting.textList["railEditor"]["selectNum"], font=textSetting.textList["font2"])
+        selectLb = ttkCustomWidget.CustomTtkLabel(selectLbFrame, text=textSetting.textList["railEditor"]["selectNum"], font=textSetting.textList["font2"])
         selectLb.pack(side=tkinter.LEFT, padx=15, pady=15)
 
         self.v_select = tkinter.StringVar()
-        selectEt = ttk.Entry(selectLbFrame, textvariable=self.v_select, font=textSetting.textList["font2"], width=5, state="readonly", justify="center")
+        selectEt = ttkCustomWidget.CustomTtkEntry(selectLbFrame, textvariable=self.v_select, font=textSetting.textList["font2"], width=5, state="readonly", justify="center")
         selectEt.pack(side=tkinter.LEFT, padx=5, pady=15)
 
-        self.btnFrame = ttk.Frame(selectLbBtnFrame)
-        self.btnFrame.pack(padx=15)
+        btnFrame = ttkCustomWidget.CustomTtkFrame(selectLbBtnFrame)
+        btnFrame.pack(padx=15)
 
-        editLineBtn = ttk.Button(self.btnFrame, text=textSetting.textList["railEditor"]["commonEditLineLabel"], width=25, state="disabled", command=self.editLine)
+        editLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["railEditor"]["commonEditLineLabel"], width=25, state="disabled", command=self.editLine)
         editLineBtn.grid(row=0, column=0, padx=10, pady=10)
 
-        insertLineBtn = ttk.Button(self.btnFrame, text=textSetting.textList["railEditor"]["commonInsertLineLabel"], width=25, state="disabled", command=self.insertLine)
+        insertLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["railEditor"]["commonInsertLineLabel"], width=25, state="disabled", command=self.insertLine)
         insertLineBtn.grid(row=0, column=1, padx=10, pady=10)
 
-        deleteLineBtn = ttk.Button(self.btnFrame, text=textSetting.textList["railEditor"]["commonDeleteLineLabel"], width=25, state="disabled", command=self.deleteLine)
+        deleteLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["railEditor"]["commonDeleteLineLabel"], width=25, state="disabled", command=self.deleteLine)
         deleteLineBtn.grid(row=0, column=2, padx=10, pady=10)
 
-        copyLineBtn = ttk.Button(self.btnFrame, text=textSetting.textList["railEditor"]["commonCopyLineLabel"], width=25, state="disabled", command=self.copyLine)
+        copyLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["railEditor"]["commonCopyLineLabel"], width=25, state="disabled", command=self.copyLine)
         copyLineBtn.grid(row=1, column=0, padx=10, pady=10)
 
-        self.pasteLineBtn = ttk.Button(self.btnFrame, text=textSetting.textList["railEditor"]["commonPasteLineLabel"], width=25, state="disabled", command=self.pasteLine)
+        self.pasteLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["railEditor"]["commonPasteLineLabel"], width=25, state="disabled", command=self.pasteLine)
         self.pasteLineBtn.grid(row=1, column=1, padx=10, pady=10)
 
-        self.treeFrame = ttk.Frame(self.mainFrame)
+        self.treeFrame = ttkCustomWidget.CustomTtkFrame(mainFrame)
         self.treeFrame.pack(expand=True, fill=tkinter.BOTH)
 
         self.btnList = [
@@ -530,6 +542,7 @@ class Else3ElementListWidget(sd.Dialog):
         ]
 
         self.setViewData()
+        super().body(master)
 
     def setViewData(self):
         self.treeviewFrame = ScrollbarTreeviewRailEditor(self.treeFrame, self.v_select, self.btnList)
@@ -607,7 +620,7 @@ class Else3ElementListWidget(sd.Dialog):
         selectId = self.treeviewFrame.tree.selection()[0]
         selectItem = self.treeviewFrame.tree.set(selectId)
         num = int(selectItem["treeNum"])
-        result = EditElse3ListWidget(self.master, textSetting.textList["railEditor"]["editElse3ElementModifyLabel"].format(self.text), "modify", self.decryptFile, selectItem)
+        result = EditElse3ListWidget(self.master, textSetting.textList["railEditor"]["editElse3ElementModifyLabel"].format(self.text), "modify", self.decryptFile, selectItem, self.rootFrameAppearance)
         if result.reloadFlag:
             self.else3List[self.else3Num][-1][num] = result.resultValueList
 
@@ -632,7 +645,7 @@ class Else3ElementListWidget(sd.Dialog):
             selectId = self.treeviewFrame.tree.selection()[0]
             selectItem = self.treeviewFrame.tree.set(selectId)
             num = int(selectItem["treeNum"])
-        result = EditElse3ListWidget(self.master, textSetting.textList["railEditor"]["editElse3ElementInsertLabel"].format(self.text), "insert", self.decryptFile, selectItem)
+        result = EditElse3ListWidget(self.master, textSetting.textList["railEditor"]["editElse3ElementInsertLabel"].format(self.text), "insert", self.decryptFile, selectItem, self.rootFrameAppearance)
         if result.reloadFlag:
             if not noElse3ListInfoFlag:
                 if result.insert == 0:
@@ -688,7 +701,7 @@ class Else3ElementListWidget(sd.Dialog):
         selectItem = self.treeviewFrame.tree.set(selectId)
         num = int(selectItem["treeNum"])
 
-        result = PasteElse3ListDialog(self.master, textSetting.textList["railEditor"]["pasteElse3InfoLabel"].format(self.text), self.decryptFile)
+        result = PasteElse3ListDialog(self.master, textSetting.textList["railEditor"]["pasteElse3InfoLabel"].format(self.text), self.decryptFile, self.rootFrameAppearance)
         if result.reloadFlag:
             if result.insert == 0:
                 num += 1
@@ -725,8 +738,8 @@ class Else3ElementListWidget(sd.Dialog):
             self.btnList[1]["state"] = "normal"
 
 
-class EditElse3ListWidget(sd.Dialog):
-    def __init__(self, master, title, mode, decryptFile, selectItem):
+class EditElse3ListWidget(CustomSimpleDialog):
+    def __init__(self, master, title, mode, decryptFile, selectItem, rootFrameAppearance):
         self.mode = mode
         self.decryptFile = decryptFile
         self.selectItem = selectItem
@@ -734,7 +747,7 @@ class EditElse3ListWidget(sd.Dialog):
         self.resultValueList = []
         self.insert = 0
         self.reloadFlag = False
-        super(EditElse3ListWidget, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(False, False)
@@ -745,41 +758,42 @@ class EditElse3ListWidget(sd.Dialog):
             else3InfoLbList = textSetting.textList["railEditor"]["editElse3ElementLabelList"]
             for i in range(len(else3InfoLbList)):
                 key = else3ElementListInfoKeyList[i]
-                self.else3Lb = ttk.Label(master, text=else3InfoLbList[i], font=textSetting.textList["font2"])
-                self.else3Lb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
-                self.varElse3 = tkinter.IntVar()
-                self.varList.append(self.varElse3)
+                else3Lb = ttkCustomWidget.CustomTtkLabel(master, text=else3InfoLbList[i], font=textSetting.textList["font2"])
+                else3Lb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
+                varElse3 = tkinter.IntVar()
+                self.varList.append(varElse3)
                 if self.mode == "modify":
-                    self.varElse3.set(self.selectItem[key])
-                self.else3Et = ttk.Entry(master, textvariable=self.varElse3, font=textSetting.textList["font2"])
-                self.else3Et.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                    varElse3.set(self.selectItem[key])
+                else3Et = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
+                else3Et.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
         elif self.decryptFile.game == "LS":
             else3LsInfoLbList = textSetting.textList["railEditor"]["editElse3LsElementLabelList"]
             for i in range(len(else3LsInfoLbList)):
                 key = else3ElementListInfoKeyList[i]
-                self.else3Lb = ttk.Label(master, text=else3LsInfoLbList[i], font=textSetting.textList["font2"])
-                self.else3Lb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
+                else3Lb = ttkCustomWidget.CustomTtkLabel(master, text=else3LsInfoLbList[i], font=textSetting.textList["font2"])
+                else3Lb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
                 if i == 4:
-                    self.varElse3 = tkinter.IntVar()
+                    varElse3 = tkinter.IntVar()
                 else:
-                    self.varElse3 = tkinter.DoubleVar()
-                self.varList.append(self.varElse3)
+                    varElse3 = tkinter.DoubleVar()
+                self.varList.append(varElse3)
                 if self.mode == "modify":
-                    self.varElse3.set(self.selectItem[key])
-                self.else3Et = ttk.Entry(master, textvariable=self.varElse3, font=textSetting.textList["font2"])
-                self.else3Et.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                    varElse3.set(self.selectItem[key])
+                else3Et = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
+                else3Et.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
 
         if self.mode == "insert":
             self.setInsertWidget(master, len(else3ElementListInfoKeyList))
+        super().body(master)
 
     def setInsertWidget(self, master, index):
-        self.xLine = ttk.Separator(master, orient=tkinter.HORIZONTAL)
-        self.xLine.grid(row=index, column=0, columnspan=2, sticky=tkinter.W + tkinter.E, pady=10)
+        xLine = ttkCustomWidget.CustomTtkSeparator(master, orient=tkinter.HORIZONTAL)
+        xLine.grid(row=index, column=0, columnspan=2, sticky=tkinter.W + tkinter.E, pady=10)
 
-        self.insertLb = ttk.Label(master, text=textSetting.textList["railEditor"]["posLabel"], font=textSetting.textList["font2"])
-        self.insertLb.grid(row=index + 1, column=0, sticky=tkinter.W + tkinter.E)
+        insertLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["railEditor"]["posLabel"], font=textSetting.textList["font2"])
+        insertLb.grid(row=index + 1, column=0, sticky=tkinter.W + tkinter.E)
         self.v_insert = tkinter.StringVar()
-        self.insertCb = ttk.Combobox(master, state="readonly", font=textSetting.textList["font2"], textvariable=self.v_insert, values=textSetting.textList["railEditor"]["posValue"])
+        self.insertCb = ttkCustomWidget.CustomTtkCombobox(master, state="readonly", font=textSetting.textList["font2"], textvariable=self.v_insert, values=textSetting.textList["railEditor"]["posValue"])
         self.insertCb.grid(row=index + 1, column=1, sticky=tkinter.W + tkinter.E)
         self.insertCb.current(0)
 
@@ -823,27 +837,30 @@ class EditElse3ListWidget(sd.Dialog):
         self.reloadFlag = True
 
 
-class PasteElse3ListDialog(sd.Dialog):
-    def __init__(self, master, title, decryptFile):
+class PasteElse3ListDialog(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, rootFrameAppearance):
         self.decryptFile = decryptFile
         self.insert = 0
         self.reloadFlag = False
-        super(PasteElse3ListDialog, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(False, False)
-        self.posLb = ttk.Label(master, text=textSetting.textList["infoList"]["I4"], font=textSetting.textList["font2"])
-        self.posLb.pack(padx=10, pady=10)
+        posLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["infoList"]["I4"], font=textSetting.textList["font2"])
+        posLb.pack(padx=10, pady=10)
+        super().body(master)
 
     def buttonbox(self):
-        box = tkinter.Frame(self, padx=5, pady=5)
-        self.frontBtn = tkinter.Button(box, text=textSetting.textList["railEditor"]["pasteFront"], font=textSetting.textList["font2"], width=10, command=self.frontInsert)
+        super().buttonbox()
+        for idx, child in enumerate(self.buttonList):
+            child.destroy()
+        self.box.config(padx=5, pady=5)
+        self.frontBtn = ttkCustomWidget.CustomTtkButton(self.box, text=textSetting.textList["railEditor"]["pasteFront"], style="custom.paste.TButton", width=10, command=self.frontInsert)
         self.frontBtn.grid(row=0, column=0, padx=5)
-        self.backBtn = tkinter.Button(box, text=textSetting.textList["railEditor"]["pasteBack"], font=textSetting.textList["font2"], width=10, command=self.backInsert)
+        self.backBtn = ttkCustomWidget.CustomTtkButton(self.box, text=textSetting.textList["railEditor"]["pasteBack"], style="custom.paste.TButton", width=10, command=self.backInsert)
         self.backBtn.grid(row=0, column=1, padx=5)
-        self.cancelBtn = tkinter.Button(box, text=textSetting.textList["railEditor"]["pasteCancel"], font=textSetting.textList["font2"], width=10, command=self.cancel)
+        self.cancelBtn = ttkCustomWidget.CustomTtkButton(self.box, text=textSetting.textList["railEditor"]["pasteCancel"], style="custom.paste.TButton", width=10, command=self.cancel)
         self.cancelBtn.grid(row=0, column=2, padx=5)
-        box.pack()
 
     def frontInsert(self):
         self.ok()

@@ -1,12 +1,12 @@
 import tkinter
-from tkinter import ttk
-from tkinter import simpledialog as sd
 from tkinter import messagebox as mb
 import program.textSetting as textSetting
+import program.appearance.ttkCustomWidget as ttkCustomWidget
+from program.appearance.customSimpleDialog import CustomSimpleDialog
 
 
-class SwapDialog(sd.Dialog):
-    def __init__(self, master, title, decryptFile, selectId):
+class SwapDialog(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, rootFrameAppearance, selectId):
         self.decryptFile = decryptFile
         self.selectId = selectId
         self.itemList = []
@@ -16,13 +16,13 @@ class SwapDialog(sd.Dialog):
         self.reloadFlag = False
         self.infoMsg = textSetting.textList["infoList"]["I102"]
 
-        super(SwapDialog, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(False, False)
 
-        self.swapLb = ttk.Label(master, text=textSetting.textList["smf"]["locationParentFrame"], font=textSetting.textList["font2"])
-        self.swapLb.grid(row=0, column=0, sticky=tkinter.N + tkinter.S)
+        swapLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["smf"]["locationParentFrame"], font=textSetting.textList["font2"])
+        swapLb.grid(row=0, column=0, sticky=tkinter.N + tkinter.S)
 
         frameIdx = int(self.selectId[4:])
         self.swapFrameList = []
@@ -35,9 +35,10 @@ class SwapDialog(sd.Dialog):
 
         self.v_swap = tkinter.StringVar()
         self.v_swap.set(swapFrameCbList[0])
-        self.swapCb = ttk.Combobox(master, textvariable=self.v_swap, width=20, state="readonly", font=textSetting.textList["font2"], value=swapFrameCbList)
+        self.swapCb = ttkCustomWidget.CustomTtkCombobox(master, textvariable=self.v_swap, width=20, state="readonly", font=textSetting.textList["font2"], value=swapFrameCbList)
         self.swapCb.grid(row=1, column=0, sticky=tkinter.N + tkinter.S, pady=10)
         self.swapCb.set(swapFrameCbList[0])
+        super().body(master)
 
     def validate(self):
         swapCbIdx = self.swapCb.current()

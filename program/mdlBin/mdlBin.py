@@ -8,6 +8,7 @@ from tkinter import ttk
 from tkinter import filedialog as fd
 from tkinter import messagebox as mb
 import program.textSetting as textSetting
+import program.appearance.ttkCustomWidget as ttkCustomWidget
 
 from program.cmdList import cmdList
 
@@ -16,6 +17,7 @@ from program.mdlBin.importPy.tkinterEditClass import InputDialog, PasteDialog, H
 from program.mdlBin.importPy.decrypt import MdlBinDecrypt
 
 root = None
+rootFrameAppearance = None
 v_fileName = None
 v_select = None
 editLineBtn = None
@@ -182,22 +184,24 @@ def createWidget():
 
 def editLine():
     global root
+    global rootFrameAppearance
     global decryptFile
     global frame
     selectId = frame.tree.selection()[0]
     selectItem = frame.tree.set(selectId)
-    result = InputDialog(root, textSetting.textList["mdlBin"]["cmdModify"], decryptFile, cmdList, int(selectItem["treeNum"]), selectItem["treeSection"], selectItem)
+    result = InputDialog(root, textSetting.textList["mdlBin"]["cmdModify"], decryptFile, rootFrameAppearance, cmdList, int(selectItem["treeNum"]), selectItem["treeSection"], selectItem)
     if result.reloadFlag:
         reloadFile()
 
 
 def insertLine():
     global root
+    global rootFrameAppearance
     global decryptFile
     global frame
     selectId = frame.tree.selection()[0]
     selectItem = frame.tree.set(selectId)
-    result = InputDialog(root, textSetting.textList["mdlBin"]["cmdInsert"], decryptFile, cmdList, int(selectItem["treeNum"]), selectItem["treeSection"])
+    result = InputDialog(root, textSetting.textList["mdlBin"]["cmdInsert"], decryptFile, rootFrameAppearance, cmdList, int(selectItem["treeNum"]), selectItem["treeSection"])
     if result.reloadFlag:
         reloadFile()
 
@@ -249,22 +253,24 @@ def copyLine():
 
 def pasteLine():
     global root
+    global rootFrameAppearance
     global decryptFile
     global frame
     global copyScriptData
     selectId = frame.tree.selection()[0]
     selectItem = frame.tree.set(selectId)
     num = int(selectItem["treeNum"])
-    result = PasteDialog(root, textSetting.textList["mdlBin"]["cmdPaste"], decryptFile, cmdList, num, selectItem["treeSection"], copyScriptData)
+    result = PasteDialog(root, textSetting.textList["mdlBin"]["cmdPaste"], decryptFile, rootFrameAppearance, cmdList, num, selectItem["treeSection"], copyScriptData)
     if result.reloadFlag:
         reloadFile()
 
 
 def headerFileEdit():
     global root
+    global rootFrameAppearance
     global decryptFile
     global frame
-    result = HeaderDialog(root, textSetting.textList["mdlBin"]["headerInfo"], decryptFile)
+    result = HeaderDialog(root, textSetting.textList["mdlBin"]["headerInfo"], decryptFile, rootFrameAppearance)
     if result.reloadFlag:
         reloadFile()
 
@@ -306,6 +312,7 @@ def reloadFile():
 
 def listNumModify():
     global root
+    global rootFrameAppearance
     global decryptFile
     global frame
     selectId = frame.tree.selection()[0]
@@ -314,13 +321,14 @@ def listNumModify():
     num = arr[0].strip("-").strip("#")
 
     scriptDataInfoList = decryptFile.scriptDataAllInfoList[int(num)]
-    result = ListNumModifyDialog(root, textSetting.textList["mdlBin"]["listNumModifyLabel"], decryptFile, num, len(scriptDataInfoList))
+    result = ListNumModifyDialog(root, textSetting.textList["mdlBin"]["listNumModifyLabel"], decryptFile, rootFrameAppearance, num, len(scriptDataInfoList))
     if result.reloadFlag:
         reloadFile()
 
 
 def listHeaderModify():
     global root
+    global rootFrameAppearance
     global decryptFile
     global frame
     selectId = frame.tree.selection()[0]
@@ -330,18 +338,19 @@ def listHeaderModify():
     listNum = arr[1].strip("-").strip("#")
     headerInfo = [int(n) for n in selectItem["param1"].split(",")]
 
-    result = ListHeaderModifyDialog(root, textSetting.textList["mdlBin"]["listHeaderModifyLabel"], decryptFile, int(num), int(listNum), headerInfo)
+    result = ListHeaderModifyDialog(root, textSetting.textList["mdlBin"]["listHeaderModifyLabel"], decryptFile, rootFrameAppearance, int(num), int(listNum), headerInfo)
     if result.reloadFlag:
         reloadFile()
 
 
 def numModify():
     global root
+    global rootFrameAppearance
     global decryptFile
     global frame
 
     scriptDataAllInfoList = decryptFile.scriptDataAllInfoList
-    result = NumModifyDialog(root, textSetting.textList["mdlBin"]["numModifyLabel"], decryptFile, len(scriptDataAllInfoList))
+    result = NumModifyDialog(root, textSetting.textList["mdlBin"]["numModifyLabel"], decryptFile, rootFrameAppearance, len(scriptDataAllInfoList))
     if result.reloadFlag:
         reloadFile()
 
@@ -449,8 +458,9 @@ def csvLoadAndSave():
         reloadFile()
 
 
-def call_mdlBin(rootTk, programFrame):
+def call_mdlBin(rootTk, appearance):
     global root
+    global rootFrameAppearance
     global v_fileName
     global v_select
     global editLineBtn
@@ -467,49 +477,64 @@ def call_mdlBin(rootTk, programFrame):
     global scriptLf
 
     root = rootTk
-    v_fileName = tkinter.StringVar()
-    fileNameEt = ttk.Entry(programFrame, textvariable=v_fileName, font=textSetting.textList["font2"], width=23, state="readonly", justify="center")
-    fileNameEt.place(relx=0.053, rely=0.03)
+    rootFrameAppearance = appearance
 
-    selectLb = ttk.Label(programFrame, text=textSetting.textList["mdlBin"]["selectNum"], font=textSetting.textList["font2"])
-    selectLb.place(relx=0.05, rely=0.09)
+    headerFrame = ttkCustomWidget.CustomTtkFrame(root)
+    headerFrame.pack(fill=tkinter.BOTH, padx=40, pady=(20, 0))
+
+    selectLbFrame = ttkCustomWidget.CustomTtkFrame(headerFrame)
+    selectLbFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT)
+
+    v_fileName = tkinter.StringVar()
+    fileNameEt = ttkCustomWidget.CustomTtkEntry(selectLbFrame, textvariable=v_fileName, font=textSetting.textList["font2"], width=23, state="readonly", justify="center")
+    fileNameEt.grid(columnspan=6, row=0, column=0, pady=(0, 15), sticky=tkinter.W)
+
+    selectLb = ttkCustomWidget.CustomTtkLabel(selectLbFrame, text=textSetting.textList["mdlBin"]["selectNum"], font=textSetting.textList["font2"])
+    selectLb.grid(columnspan=3, row=1, column=0, pady=(0, 15), sticky=tkinter.W)
 
     v_select = tkinter.StringVar()
-    selectEt = ttk.Entry(programFrame, textvariable=v_select, font=textSetting.textList["font2"], width=6, state="readonly", justify="center")
-    selectEt.place(relx=0.22, rely=0.09)
+    selectEt = ttkCustomWidget.CustomTtkEntry(selectLbFrame, textvariable=v_select, font=textSetting.textList["font2"], width=6, state="readonly", justify="center")
+    selectEt.grid(row=1, column=3, padx=(0, 80), pady=(0, 15), sticky=tkinter.E)
 
-    editLineBtn = ttk.Button(programFrame, text=textSetting.textList["mdlBin"]["editLineLabel"], width=25, state="disabled", command=editLine)
-    editLineBtn.place(relx=0.43, rely=0.03)
+    csvExtractBtn = ttkCustomWidget.CustomTtkButton(selectLbFrame, text=textSetting.textList["mdlBin"]["csvExtractLabel"], width=23, state="disabled", command=csvExtract)
+    csvExtractBtn.grid(columnspan=3, row=2, column=0, padx=(0, 15), pady=(0, 15), sticky=tkinter.EW)
 
-    insertLineBtn = ttk.Button(programFrame, text=textSetting.textList["mdlBin"]["insertLineLabel"], width=25, state="disabled", command=insertLine)
-    insertLineBtn.place(relx=0.62, rely=0.03)
+    csvLoadAndSaveBtn = ttkCustomWidget.CustomTtkButton(selectLbFrame, text=textSetting.textList["mdlBin"]["csvSaveLabel"], width=23, state="disabled", command=csvLoadAndSave)
+    csvLoadAndSaveBtn.grid(columnspan=3, row=2, column=3, padx=(0, 15), pady=(0, 15), sticky=tkinter.EW)
 
-    deleteLineBtn = ttk.Button(programFrame, text=textSetting.textList["mdlBin"]["deleteLineLabel"], width=25, state="disabled", command=deleteLine)
-    deleteLineBtn.place(relx=0.81, rely=0.03)
+    btnFrame = ttkCustomWidget.CustomTtkFrame(headerFrame)
+    btnFrame.pack(fill=tkinter.BOTH, padx=(40, 0))
 
-    copyLineBtn = ttk.Button(programFrame, text=textSetting.textList["mdlBin"]["copyLineLabel"], width=25, state="disabled", command=copyLine)
-    copyLineBtn.place(relx=0.43, rely=0.09)
+    editLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["mdlBin"]["editLineLabel"], width=25, state="disabled", command=editLine)
+    editLineBtn.grid(row=0, column=0, padx=10, pady=(0, 20))
 
-    pasteLineBtn = ttk.Button(programFrame, text=textSetting.textList["mdlBin"]["pasteLineLabel"], width=25, state="disabled", command=pasteLine)
-    pasteLineBtn.place(relx=0.62, rely=0.09)
+    insertLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["mdlBin"]["insertLineLabel"], width=25, state="disabled", command=insertLine)
+    insertLineBtn.grid(row=0, column=1, padx=10, pady=(0, 20))
 
-    headerFileEditBtn = ttk.Button(programFrame, text=textSetting.textList["mdlBin"]["headerEditLabel"], width=25, state="disabled", command=headerFileEdit)
-    headerFileEditBtn.place(relx=0.81, rely=0.09)
+    deleteLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["mdlBin"]["deleteLineLabel"], width=25, state="disabled", command=deleteLine)
+    deleteLineBtn.grid(row=0, column=2, padx=10, pady=(0, 20))
 
-    listNumModifyBtn = ttk.Button(programFrame, text=textSetting.textList["mdlBin"]["listNumModifyBtnLabel"], width=25, state="disabled", command=listNumModify)
-    listNumModifyBtn.place(relx=0.43, rely=0.15)
+    copyLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["mdlBin"]["copyLineLabel"], width=25, state="disabled", command=copyLine)
+    copyLineBtn.grid(row=1, column=0, padx=10, pady=(0, 20))
 
-    listHeaderModifyBtn = ttk.Button(programFrame, text=textSetting.textList["mdlBin"]["listHeaderModifyBtnLabel"], width=25, state="disabled", command=listHeaderModify)
-    listHeaderModifyBtn.place(relx=0.62, rely=0.15)
+    pasteLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["mdlBin"]["pasteLineLabel"], width=25, state="disabled", command=pasteLine)
+    pasteLineBtn.grid(row=1, column=1, padx=10, pady=(0, 20))
 
-    numModifyBtn = ttk.Button(programFrame, text=textSetting.textList["mdlBin"]["numModifyBtnLabel"], width=25, state="disabled", command=numModify)
-    numModifyBtn.place(relx=0.81, rely=0.15)
+    headerFileEditBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["mdlBin"]["headerEditLabel"], width=25, state="disabled", command=headerFileEdit)
+    headerFileEditBtn.grid(row=1, column=2, padx=10, pady=(0, 20))
 
-    csvExtractBtn = ttk.Button(programFrame, text=textSetting.textList["mdlBin"]["csvExtractLabel"], width=25, state="disabled", command=csvExtract)
-    csvExtractBtn.place(relx=0.05, rely=0.15)
+    listNumModifyBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["mdlBin"]["listNumModifyBtnLabel"], width=25, state="disabled", command=listNumModify)
+    listNumModifyBtn.grid(row=2, column=0, padx=10, pady=(0, 20))
 
-    csvLoadAndSaveBtn = ttk.Button(programFrame, text=textSetting.textList["mdlBin"]["csvSaveLabel"], width=25, state="disabled", command=csvLoadAndSave)
-    csvLoadAndSaveBtn.place(relx=0.22, rely=0.15)
+    listHeaderModifyBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["mdlBin"]["listHeaderModifyBtnLabel"], width=25, state="disabled", command=listHeaderModify)
+    listHeaderModifyBtn.grid(row=2, column=1, padx=10, pady=(0, 20))
 
-    scriptLf = ttk.LabelFrame(programFrame, text=textSetting.textList["mdlBin"]["scriptLabel"])
-    scriptLf.place(relx=0.03, rely=0.20, relwidth=0.95, relheight=0.77)
+    numModifyBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["mdlBin"]["numModifyBtnLabel"], width=25, state="disabled", command=numModify)
+    numModifyBtn.grid(row=2, column=2, padx=10, pady=(0, 20))
+
+    btnFrame.grid_columnconfigure(0, weight=1)
+    btnFrame.grid_columnconfigure(1, weight=1)
+    btnFrame.grid_columnconfigure(2, weight=1)
+
+    scriptLf = ttkCustomWidget.CustomTtkLabelFrame(root, text=textSetting.textList["mdlBin"]["scriptLabel"])
+    scriptLf.pack(expand=True, fill=tkinter.BOTH, padx=25, pady=(0, 25))

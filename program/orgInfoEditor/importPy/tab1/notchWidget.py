@@ -1,12 +1,12 @@
 import tkinter
-from tkinter import ttk
-from tkinter import simpledialog as sd
 from tkinter import messagebox as mb
 import program.textSetting as textSetting
+import program.appearance.ttkCustomWidget as ttkCustomWidget
+from program.appearance.customSimpleDialog import CustomSimpleDialog
 
 
 class NotchWidget():
-    def __init__(self, root, cbIdx, i, notchCnt, frame, speed, decryptFile, notchContentCnt, varList, btnList, defaultData):
+    def __init__(self, root, cbIdx, i, notchCnt, frame, speed, decryptFile, notchContentCnt, varList, btnList, defaultData, rootFrameAppearance):
         self.root = root
         self.cbIdx = cbIdx
         self.decryptFile = decryptFile
@@ -14,10 +14,11 @@ class NotchWidget():
         self.varList = varList
         self.btnList = btnList
         self.defaultData = defaultData
+        self.rootFrameAppearance = rootFrameAppearance
 
         self.notchNum = textSetting.textList["orgInfoEditor"]["notchLabel"] + str(i + 1)
-        self.notchNumLb = tkinter.Label(frame, text=self.notchNum, font=textSetting.textList["font6"], width=14, borderwidth=1, relief="solid")
-        self.notchNumLb.grid(rowspan=self.notchContentCnt, row=self.notchContentCnt * i, column=0, sticky=tkinter.N + tkinter.S)
+        self.notchNumLb = ttkCustomWidget.CustomTtkLabel(frame, text=self.notchNum, font=textSetting.textList["font6"], anchor=tkinter.CENTER, relief="solid")
+        self.notchNumLb.grid(rowspan=self.notchContentCnt, row=self.notchContentCnt * i, column=0, sticky=tkinter.NSEW)
 
         try:
             color = ""
@@ -32,20 +33,20 @@ class NotchWidget():
             color = "green"
             speedDefaultValue = None
 
-        self.speedNameLb = tkinter.Label(frame, text=textSetting.textList["orgInfoEditor"]["csvNotchSpeed"], font=textSetting.textList["font6"], width=5, borderwidth=1, relief="solid")
-        self.speedNameLb.grid(row=self.notchContentCnt * i, column=1, sticky=tkinter.N + tkinter.W + tkinter.S + tkinter.E)
+        self.speedNameLb = ttkCustomWidget.CustomTtkLabel(frame, text=textSetting.textList["orgInfoEditor"]["csvNotchSpeed"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, relief="solid")
+        self.speedNameLb.grid(row=self.notchContentCnt * i, column=1, sticky=tkinter.NSEW)
         self.varSpeed = tkinter.DoubleVar()
         self.varSpeed.set(str(speed[i]))
 
         self.varList.append(self.varSpeed)
-        self.speedLb = tkinter.Label(frame, textvariable=self.varSpeed, font=textSetting.textList["font6"], width=5, borderwidth=1, relief="solid")
-        self.speedLb.grid(row=self.notchContentCnt * i, column=2, sticky=tkinter.N + tkinter.W + tkinter.S + tkinter.E)
-        self.speedBtn = tkinter.Button(frame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], font=textSetting.textList["font7"], command=lambda: self.editVar([self.speedNameLb, self.speedLb], self.varSpeed, self.varSpeed.get(), "speed", i, speedDefaultValue), state="disabled")
-        self.speedBtn.grid(row=self.notchContentCnt * i, column=3, sticky=tkinter.N + tkinter.W + tkinter.S + tkinter.E)
+        self.speedLb = ttkCustomWidget.CustomTtkLabel(frame, textvariable=self.varSpeed, font=textSetting.textList["font6"], anchor=tkinter.CENTER, relief="solid")
+        self.speedLb.grid(row=self.notchContentCnt * i, column=2, sticky=tkinter.NSEW)
+        self.speedBtn = ttkCustomWidget.CustomTtkButton(frame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=lambda: self.editVar([self.speedNameLb, self.speedLb], self.varSpeed, self.varSpeed.get(), "speed", i, speedDefaultValue), state="disabled")
+        self.speedBtn.grid(row=self.notchContentCnt * i, column=3, sticky=tkinter.NSEW, padx=(0, 10))
         self.btnList.append(self.speedBtn)
 
-        self.speedNameLb["fg"] = color
-        self.speedLb["fg"] = color
+        self.speedNameLb.setFgColor(color)
+        self.speedLb.setFgColor(color)
 
         try:
             color = ""
@@ -60,19 +61,19 @@ class NotchWidget():
             color = "green"
             tlkDefaultValue = None
 
-        self.tlkNameLb = tkinter.Label(frame, text=textSetting.textList["orgInfoEditor"]["csvNotchTlk"], font=textSetting.textList["font6"], width=5, borderwidth=1, relief="solid")
-        self.tlkNameLb.grid(row=self.notchContentCnt * i + 1, column=1, sticky=tkinter.N + tkinter.W + tkinter.S + tkinter.E)
+        self.tlkNameLb = ttkCustomWidget.CustomTtkLabel(frame, text=textSetting.textList["orgInfoEditor"]["csvNotchTlk"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, relief="solid")
+        self.tlkNameLb.grid(row=self.notchContentCnt * i + 1, column=1, sticky=tkinter.NSEW)
         self.varTlk = tkinter.DoubleVar()
         self.varTlk.set(str(speed[notchCnt + i]))
         self.varList.append(self.varTlk)
-        self.tlkLb = tkinter.Label(frame, textvariable=self.varTlk, font=textSetting.textList["font6"], width=5, borderwidth=1, relief="solid")
-        self.tlkLb.grid(row=self.notchContentCnt * i + 1, column=2, sticky=tkinter.N + tkinter.W + tkinter.S + tkinter.E)
-        self.tlkBtn = tkinter.Button(frame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], font=textSetting.textList["font7"], command=lambda: self.editVar([self.tlkNameLb, self.tlkLb], self.varTlk, self.varTlk.get(), "tlk", i, tlkDefaultValue), state="disabled")
-        self.tlkBtn.grid(row=self.notchContentCnt * i + 1, column=3, sticky=tkinter.N + tkinter.W + tkinter.S + tkinter.E)
+        self.tlkLb = ttkCustomWidget.CustomTtkLabel(frame, textvariable=self.varTlk, font=textSetting.textList["font6"], anchor=tkinter.CENTER, relief="solid")
+        self.tlkLb.grid(row=self.notchContentCnt * i + 1, column=2, sticky=tkinter.NSEW)
+        self.tlkBtn = ttkCustomWidget.CustomTtkButton(frame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=lambda: self.editVar([self.tlkNameLb, self.tlkLb], self.varTlk, self.varTlk.get(), "tlk", i, tlkDefaultValue), state="disabled")
+        self.tlkBtn.grid(row=self.notchContentCnt * i + 1, column=3, sticky=tkinter.NSEW, padx=(0, 10))
         self.btnList.append(self.tlkBtn)
 
-        self.tlkNameLb["fg"] = color
-        self.tlkLb["fg"] = color
+        self.tlkNameLb.setFgColor(color)
+        self.tlkLb.setFgColor(color)
 
         if self.notchContentCnt > 2:
             try:
@@ -88,19 +89,19 @@ class NotchWidget():
                 color = "green"
                 soundDefaultValue = None
 
-            self.soundNameLb = tkinter.Label(frame, text=textSetting.textList["orgInfoEditor"]["csvNotchSound"], font=textSetting.textList["font6"], width=5, borderwidth=1, relief="solid")
-            self.soundNameLb.grid(row=self.notchContentCnt * i + 2, column=1, sticky=tkinter.N + tkinter.W + tkinter.S + tkinter.E)
+            self.soundNameLb = ttkCustomWidget.CustomTtkLabel(frame, text=textSetting.textList["orgInfoEditor"]["csvNotchSound"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, relief="solid")
+            self.soundNameLb.grid(row=self.notchContentCnt * i + 2, column=1, sticky=tkinter.NSEW)
             self.varSound = tkinter.IntVar()
             self.varSound.set(str(speed[notchCnt * 2 + i]))
             self.varList.append(self.varSound)
-            self.soundLb = tkinter.Label(frame, textvariable=self.varSound, font=textSetting.textList["font6"], width=5, borderwidth=1, relief="solid")
-            self.soundLb.grid(row=self.notchContentCnt * i + 2, column=2, sticky=tkinter.N + tkinter.W + tkinter.S + tkinter.E)
-            self.soundBtn = tkinter.Button(frame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], font=textSetting.textList["font7"], command=lambda: self.editVar([self.soundNameLb, self.soundLb], self.varSound, self.varSound.get(), "sound", i, soundDefaultValue, True), state="disabled")
-            self.soundBtn.grid(row=self.notchContentCnt * i + 2, column=3, sticky=tkinter.N + tkinter.W + tkinter.S + tkinter.E)
+            self.soundLb = ttkCustomWidget.CustomTtkLabel(frame, textvariable=self.varSound, font=textSetting.textList["font6"], anchor=tkinter.CENTER, relief="solid")
+            self.soundLb.grid(row=self.notchContentCnt * i + 2, column=2, sticky=tkinter.NSEW)
+            self.soundBtn = ttkCustomWidget.CustomTtkButton(frame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=lambda: self.editVar([self.soundNameLb, self.soundLb], self.varSound, self.varSound.get(), "sound", i, soundDefaultValue, True), state="disabled")
+            self.soundBtn.grid(row=self.notchContentCnt * i + 2, column=3, sticky=tkinter.NSEW, padx=(0, 10))
             self.btnList.append(self.soundBtn)
 
-            self.soundNameLb["fg"] = color
-            self.soundLb["fg"] = color
+            self.soundNameLb.setFgColor(color)
+            self.soundLb.setFgColor(color)
 
             try:
                 color = ""
@@ -115,26 +116,30 @@ class NotchWidget():
                 color = "green"
                 addDefaultValue = None
 
-            self.addNameLb = tkinter.Label(frame, text=textSetting.textList["orgInfoEditor"]["csvNotchAdd"], font=textSetting.textList["font6"], width=5, borderwidth=1, relief="solid")
-            self.addNameLb.grid(row=self.notchContentCnt * i + 3, column=1, sticky=tkinter.N + tkinter.W + tkinter.S + tkinter.E)
+            self.addNameLb = ttkCustomWidget.CustomTtkLabel(frame, text=textSetting.textList["orgInfoEditor"]["csvNotchAdd"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, relief="solid")
+            self.addNameLb.grid(row=self.notchContentCnt * i + 3, column=1, sticky=tkinter.NSEW)
             self.varAdd = tkinter.DoubleVar()
             self.varAdd.set(str(speed[notchCnt * 3 + i]))
             self.varList.append(self.varAdd)
-            self.addLb = tkinter.Label(frame, textvariable=self.varAdd, font=textSetting.textList["font6"], width=5, borderwidth=1, relief="solid")
-            self.addLb.grid(row=self.notchContentCnt * i + 3, column=2, sticky=tkinter.N + tkinter.W + tkinter.S + tkinter.E)
-            self.addBtn = tkinter.Button(frame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], font=textSetting.textList["font7"], command=lambda: self.editVar([self.addNameLb, self.addLb], self.varAdd, self.varAdd.get(), "add", i, addDefaultValue), state="disabled")
-            self.addBtn.grid(row=self.notchContentCnt * i + 3, column=3, sticky=tkinter.N + tkinter.W + tkinter.S + tkinter.E)
+            self.addLb = ttkCustomWidget.CustomTtkLabel(frame, textvariable=self.varAdd, font=textSetting.textList["font6"], anchor=tkinter.CENTER, relief="solid")
+            self.addLb.grid(row=self.notchContentCnt * i + 3, column=2, sticky=tkinter.NSEW)
+            self.addBtn = ttkCustomWidget.CustomTtkButton(frame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=lambda: self.editVar([self.addNameLb, self.addLb], self.varAdd, self.varAdd.get(), "add", i, addDefaultValue), state="disabled")
+            self.addBtn.grid(row=self.notchContentCnt * i + 3, column=3, sticky=tkinter.NSEW, padx=(0, 10))
             self.btnList.append(self.addBtn)
 
-            self.addNameLb["fg"] = color
-            self.addLb["fg"] = color
+            self.addNameLb.setFgColor(color)
+            self.addLb.setFgColor(color)
+
+        frame.grid_columnconfigure(0, weight=10)
+        frame.grid_columnconfigure(1, weight=1)
+        frame.grid_columnconfigure(2, weight=1)
 
     def editVar(self, labelList, var, value, notchName, notchNum, defaultValue, flag=False):
-        EditNotchVarInfo(self.root, textSetting.textList["orgInfoEditor"]["valueModify"], labelList, var, value, notchName, notchNum, defaultValue, flag)
+        EditNotchVarInfo(self.root, textSetting.textList["orgInfoEditor"]["valueModify"], labelList, var, value, notchName, notchNum, defaultValue, self.rootFrameAppearance, flag)
 
 
-class EditNotchVarInfo(sd.Dialog):
-    def __init__(self, master, title, labelList, var, value, notchName, notchNum, defaultValue, flag=False):
+class EditNotchVarInfo(CustomSimpleDialog):
+    def __init__(self, master, title, labelList, var, value, notchName, notchNum, defaultValue, rootFrameAppearance, flag=False):
         self.labelList = labelList
         self.master = master
         self.var = var
@@ -143,35 +148,36 @@ class EditNotchVarInfo(sd.Dialog):
         self.notchNum = notchNum
         self.defaultValue = defaultValue
         self.flag = flag
-        super(EditNotchVarInfo, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, frame):
-        self.defaultLb = tkinter.Label(frame, text=textSetting.textList["orgInfoEditor"]["defaultValueLabel"] + str(self.defaultValue), font=textSetting.textList["font2"])
+        self.defaultLb = ttkCustomWidget.CustomTtkLabel(frame, text=textSetting.textList["orgInfoEditor"]["defaultValueLabel"] + str(self.defaultValue), font=textSetting.textList["font2"])
         self.defaultLb.pack()
 
-        sep = ttk.Separator(frame, orient="horizontal")
+        sep = ttkCustomWidget.CustomTtkSeparator(frame, orient="horizontal")
         sep.pack(fill=tkinter.X, ipady=5)
 
         self.v_calcMinSpeed = tkinter.DoubleVar()
         self.v_calcMinSpeed.set(0.0)
         if self.notchName == "tlk":
-            calcMinSpeedLb = tkinter.Label(frame, text=textSetting.textList["orgInfoEditor"]["calcMinSpeedLabel"].format(self.notchNum, self.notchNum + 1), font=textSetting.textList["font2"])
+            calcMinSpeedLb = ttkCustomWidget.CustomTtkLabel(frame, text=textSetting.textList["orgInfoEditor"]["calcMinSpeedLabel"].format(self.notchNum, self.notchNum + 1), font=textSetting.textList["font2"])
             calcMinSpeedLb.pack()
-            calcMinSpeedValue = tkinter.Label(frame, textvariable=self.v_calcMinSpeed, font=textSetting.textList["font2"])
+            calcMinSpeedValue = ttkCustomWidget.CustomTtkLabel(frame, textvariable=self.v_calcMinSpeed, font=textSetting.textList["font2"])
             calcMinSpeedValue.pack()
-            sep = ttk.Separator(frame, orient="horizontal")
+            sep = ttkCustomWidget.CustomTtkSeparator(frame, orient="horizontal")
             sep.pack(fill=tkinter.X, ipady=5)
 
-        self.inputLb = tkinter.Label(frame, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
+        self.inputLb = ttkCustomWidget.CustomTtkLabel(frame, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
         self.inputLb.pack()
 
         self.v_val = tkinter.StringVar()
         self.v_val.set(self.value)
-        self.inputEt = tkinter.Entry(frame, textvariable=self.v_val, font=textSetting.textList["font2"])
+        self.inputEt = ttkCustomWidget.CustomTtkEntry(frame, textvariable=self.v_val, font=textSetting.textList["font2"])
         self.inputEt.pack()
         if self.notchName == "tlk":
             self.inputEt.bind("<KeyRelease>", self.calcMinSpeedHandler)
-        self.calcMinSpeed()
+            self.calcMinSpeed()
+        super().body(frame)
 
     def calcMinSpeedHandler(self, event):
         self.calcMinSpeed()
@@ -182,9 +188,7 @@ class EditNotchVarInfo(sd.Dialog):
         except Exception:
             inputTlk = float(self.value)
 
-
-        programFrame = self.master.winfo_children()[0]
-        notchPerfFrame = programFrame.winfo_children()[1]
+        notchPerfFrame = self.master.winfo_children()[1]
         perfLabelFrame = notchPerfFrame.winfo_children()[1]
         perfAllFrame = perfLabelFrame.winfo_children()[0]
         perfCanvas = perfAllFrame.winfo_children()[1]
@@ -243,5 +247,5 @@ class EditNotchVarInfo(sd.Dialog):
                     color = "black"
 
                 for label in self.labelList:
-                    label["fg"] = color
+                    label.setFgColor(color)
             return True

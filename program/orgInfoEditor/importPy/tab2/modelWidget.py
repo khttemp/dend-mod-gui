@@ -1,23 +1,24 @@
 import copy
 
 import tkinter
-from tkinter import ttk
-from tkinter import simpledialog as sd
 from tkinter import messagebox as mb
 import program.textSetting as textSetting
+import program.appearance.ttkCustomWidget as ttkCustomWidget
+from program.appearance.customSimpleDialog import CustomSimpleDialog, CustomAskstring
 
 import program.orgInfoEditor.importPy.gameDefine as gameDefine
 gameDefine.load()
 
 
 class TrainModelWidget():
-    def __init__(self, root, trainIdx, game, frame, widgetList, innerButtonList, decryptFile, reloadFunc):
+    def __init__(self, root, trainIdx, game, frame, widgetList, innerButtonList, decryptFile, rootFrameAppearance, reloadFunc):
         self.root = root
         self.trainIdx = trainIdx
         self.game = game
         self.frame = frame
         self.decryptFile = decryptFile
         self.notchContentCnt = decryptFile.notchContentCnt
+        self.rootFrameAppearance = rootFrameAppearance
         self.reloadFunc = reloadFunc
 
         edit_hensei_button = innerButtonList[3]
@@ -32,32 +33,29 @@ class TrainModelWidget():
 
         modelInfo = self.decryptFile.trainModelList[self.trainIdx]
 
-        self.btnFrame = ttk.Frame(self.frame)
-        self.btnFrame.pack(anchor=tkinter.NW, padx=20)
+        self.mdlFrame = ttkCustomWidget.CustomTtkFrame(self.frame)
+        self.mdlFrame.pack(padx=4)
 
-        self.mdlFrame = ttk.Frame(self.frame)
-        self.mdlFrame.pack(side=tkinter.LEFT, padx=20)
-
-        self.trainLb = tkinter.Label(self.mdlFrame, text=textSetting.textList["orgInfoEditor"]["modelTrainLabel"], font=textSetting.textList["font6"], width=6, borderwidth=1, relief="solid")
+        self.trainLb = ttkCustomWidget.CustomTtkLabel(self.mdlFrame, text=textSetting.textList["orgInfoEditor"]["modelTrainLabel"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=6, borderwidth=1, relief="solid")
         self.trainLb.grid(row=0, column=0)
-        self.modelLb = tkinter.Label(self.mdlFrame, text=textSetting.textList["orgInfoEditor"]["modelModelLabel"], font=textSetting.textList["font6"], width=6, borderwidth=1, relief="solid")
+        self.modelLb = ttkCustomWidget.CustomTtkLabel(self.mdlFrame, text=textSetting.textList["orgInfoEditor"]["modelModelLabel"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=6, borderwidth=1, relief="solid")
         self.modelLb.grid(row=1, column=0)
         if len(modelInfo["pantaNames"]) > 0:
-            self.pantaLb = tkinter.Label(self.mdlFrame, text=textSetting.textList["orgInfoEditor"]["modelPantaLabel"], font=textSetting.textList["font6"], width=6, borderwidth=1, relief="solid")
+            self.pantaLb = ttkCustomWidget.CustomTtkLabel(self.mdlFrame, text=textSetting.textList["orgInfoEditor"]["modelPantaLabel"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=6, borderwidth=1, relief="solid")
             self.pantaLb.grid(row=2, column=0)
         if len(modelInfo["colList"]) > 0:
-            self.colLb = tkinter.Label(self.mdlFrame, text=textSetting.textList["orgInfoEditor"]["modelColLabel"], font=textSetting.textList["font6"], width=6, borderwidth=1, relief="solid")
+            self.colLb = ttkCustomWidget.CustomTtkLabel(self.mdlFrame, text=textSetting.textList["orgInfoEditor"]["modelColLabel"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=6, borderwidth=1, relief="solid")
             self.colLb.grid(row=3, column=0)
 
         self.mdlNoLbList = []
         self.comboList = []
 
         for i in range(modelInfo["mdlCnt"]):
-            self.mdlNoLb = tkinter.Label(self.mdlFrame, text=str(i + 1), font=textSetting.textList["font6"], width=16, borderwidth=1, relief="solid")
+            self.mdlNoLb = ttkCustomWidget.CustomTtkLabel(self.mdlFrame, text=str(i + 1), font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=16, borderwidth=1, relief="solid")
             self.mdlNoLb.grid(row=0, column=i + 1, sticky=tkinter.W + tkinter.E)
             self.mdlNoLbList.append(self.mdlNoLb)
 
-            self.mdlCb = ttk.Combobox(self.mdlFrame, font=textSetting.textList["font6"], width=20, value=modelInfo["mdlNames"], state="disabled")
+            self.mdlCb = ttkCustomWidget.CustomTtkCombobox(self.mdlFrame, font=textSetting.textList["font6"], width=20, value=modelInfo["mdlNames"], state="disabled")
             self.mdlCb.grid(row=1, column=i + 1)
             if modelInfo["mdlList"][i] == -1:
                 self.mdlCb.current(len(modelInfo["mdlNames"]) - 1)
@@ -66,7 +64,7 @@ class TrainModelWidget():
             self.comboList.append(self.mdlCb)
 
             if len(modelInfo["pantaNames"]) > 0:
-                self.pantaCb = ttk.Combobox(self.mdlFrame, font=textSetting.textList["font6"], width=20, value=modelInfo["pantaNames"], state="disabled")
+                self.pantaCb = ttkCustomWidget.CustomTtkCombobox(self.mdlFrame, font=textSetting.textList["font6"], width=20, value=modelInfo["pantaNames"], state="disabled")
                 self.pantaCb.grid(row=2, column=i + 1)
                 if modelInfo["pantaList"][i] == -1:
                     self.pantaCb.current(len(modelInfo["pantaNames"]) - 1)
@@ -75,7 +73,7 @@ class TrainModelWidget():
                 self.comboList.append(self.pantaCb)
 
             if len(modelInfo["colList"]) > 0:
-                self.colCb = ttk.Combobox(self.mdlFrame, font=textSetting.textList["font6"], width=20, value=modelInfo["colNames"], state="disabled")
+                self.colCb = ttkCustomWidget.CustomTtkCombobox(self.mdlFrame, font=textSetting.textList["font6"], width=20, value=modelInfo["colNames"], state="disabled")
                 self.colCb.grid(row=3, column=i + 1)
                 if modelInfo["colList"][i] == -1:
                     self.colCb.current(len(modelInfo["colNames"]) - 1)
@@ -139,28 +137,29 @@ class TrainModelWidget():
         self.reloadFunc()
 
     def editModel(self):
-        result = EditModelInfo(self.root, textSetting.textList["orgInfoEditor"]["editModelLabel"], self.game, self.trainIdx, self.decryptFile, self)
+        result = EditModelInfo(self.root, textSetting.textList["orgInfoEditor"]["editModelLabel"], self.game, self.trainIdx, self.decryptFile, self, self.rootFrameAppearance)
         if result.reloadFlag:
             self.reloadFunc()
 
 
-class EditModelInfo(sd.Dialog):
-    def __init__(self, master, title, game, trainIdx, decryptFile, trainWidget):
+class EditModelInfo(CustomSimpleDialog):
+    def __init__(self, master, title, game, trainIdx, decryptFile, trainWidget, rootFrameAppearance):
         self.game = game
         self.trainIdx = trainIdx
         self.decryptFile = decryptFile
         self.trainWidget = trainWidget
         self.henseiCnt = 0
         self.reloadFlag = False
-        super(EditModelInfo, self).__init__(parent=master, title=title)
+        self.rootFrameAppearance = rootFrameAppearance
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, frame):
         modelInfo = self.decryptFile.trainModelList[self.trainIdx]
         self.henseiCnt = modelInfo["mdlCnt"]
 
-        self.btnFrame = tkinter.Frame(frame, pady=5)
-        self.btnFrame.pack()
-        self.listFrame = tkinter.Frame(frame)
+        self.btnFrame = ttkCustomWidget.CustomTtkFrame(frame)
+        self.btnFrame.pack(pady=5)
+        self.listFrame = ttkCustomWidget.CustomTtkFrame(frame)
         self.listFrame.pack()
 
         self.editableNum = len(self.trainWidget.comboList) // modelInfo["mdlCnt"]
@@ -170,56 +169,57 @@ class EditModelInfo(sd.Dialog):
         self.selectValue = ""
         self.modelInfo = None
 
-        self.modifyBtn = tkinter.Button(self.btnFrame, font=textSetting.textList["font2"], text=textSetting.textList["modify"], state="disabled", command=self.modify)
+        self.modifyBtn = ttkCustomWidget.CustomTtkButton(self.btnFrame, text=textSetting.textList["modify"], style="custom.listbox.TButton", state="disabled", command=self.modify)
         self.modifyBtn.grid(padx=10, row=0, column=0, sticky=tkinter.W + tkinter.E)
-        self.insertBtn = tkinter.Button(self.btnFrame, font=textSetting.textList["font2"], text=textSetting.textList["insert"], state="disabled", command=self.insert)
+        self.insertBtn = ttkCustomWidget.CustomTtkButton(self.btnFrame, text=textSetting.textList["insert"], style="custom.listbox.TButton", state="disabled", command=self.insert)
         self.insertBtn.grid(padx=10, row=0, column=1, sticky=tkinter.W + tkinter.E)
-        self.deleteBtn = tkinter.Button(self.btnFrame, font=textSetting.textList["font2"], text=textSetting.textList["delete"], state="disabled", command=self.delete)
+        self.deleteBtn = ttkCustomWidget.CustomTtkButton(self.btnFrame, text=textSetting.textList["delete"], style="custom.listbox.TButton", state="disabled", command=self.delete)
         self.deleteBtn.grid(padx=10, row=0, column=2, sticky=tkinter.W + tkinter.E)
 
-        self.trackModelLb = tkinter.Label(self.listFrame, font=textSetting.textList["font2"], text=textSetting.textList["orgInfoEditor"]["csvDaishaTitle"])
+        self.trackModelLb = ttkCustomWidget.CustomTtkLabel(self.listFrame, font=textSetting.textList["font2"], text=textSetting.textList["orgInfoEditor"]["csvDaishaTitle"])
         self.trackModelLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
         self.v_trackModel = tkinter.StringVar(value=modelInfo["trackNames"])
-        self.trackModelList = tkinter.Listbox(self.listFrame, font=textSetting.textList["font2"], listvariable=self.v_trackModel)
+        self.trackModelList = tkinter.Listbox(self.listFrame, height=6, font=textSetting.textList["font2"], listvariable=self.v_trackModel, bg=self.rootFrameAppearance.bgColor, fg=self.rootFrameAppearance.fgColor)
         self.trackModelList.grid(row=1, column=0, sticky=tkinter.W + tkinter.E)
         self.trackModelList.bind("<<ListboxSelect>>", lambda e: self.buttonActive(e, 0, self.trackModelList.curselection()))
 
-        self.padLb = tkinter.Label(self.listFrame, width=3)
+        self.padLb = ttkCustomWidget.CustomTtkLabel(self.listFrame, width=3)
         self.padLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
 
-        self.trainModelLb = tkinter.Label(self.listFrame, font=textSetting.textList["font2"], text=textSetting.textList["orgInfoEditor"]["csvMdlTitle"])
+        self.trainModelLb = ttkCustomWidget.CustomTtkLabel(self.listFrame, font=textSetting.textList["font2"], text=textSetting.textList["orgInfoEditor"]["csvMdlTitle"])
         self.trainModelLb.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
         trainModelList = copy.deepcopy(modelInfo["mdlNames"])
         trainModelList.pop()
         self.v_trainModel = tkinter.StringVar(value=trainModelList)
-        self.trainModelList = tkinter.Listbox(self.listFrame, font=textSetting.textList["font2"], listvariable=self.v_trainModel)
+        self.trainModelList = tkinter.Listbox(self.listFrame, height=6, font=textSetting.textList["font2"], listvariable=self.v_trainModel, bg=self.rootFrameAppearance.bgColor, fg=self.rootFrameAppearance.fgColor)
         self.trainModelList.grid(row=1, column=2, sticky=tkinter.W + tkinter.E)
         self.trainModelList.bind("<<ListboxSelect>>", lambda e: self.buttonActive(e, 1, self.trainModelList.curselection()))
 
-        self.padLb = tkinter.Label(self.listFrame, width=3)
+        self.padLb = ttkCustomWidget.CustomTtkLabel(self.listFrame, width=3)
         self.padLb.grid(row=0, column=3, sticky=tkinter.W + tkinter.E)
 
-        self.pantaModelLb = tkinter.Label(self.listFrame, font=textSetting.textList["font2"], text=textSetting.textList["orgInfoEditor"]["csvPantaTitle"])
+        self.pantaModelLb = ttkCustomWidget.CustomTtkLabel(self.listFrame, font=textSetting.textList["font2"], text=textSetting.textList["orgInfoEditor"]["csvPantaTitle"])
         self.pantaModelLb.grid(row=0, column=4, sticky=tkinter.W + tkinter.E)
         pantaModelList = copy.deepcopy(modelInfo["pantaNames"])
         pantaModelList.pop()
         self.v_pantaModel = tkinter.StringVar(value=pantaModelList)
-        self.pantaModelList = tkinter.Listbox(self.listFrame, font=textSetting.textList["font2"], listvariable=self.v_pantaModel)
+        self.pantaModelList = tkinter.Listbox(self.listFrame, height=6, font=textSetting.textList["font2"], listvariable=self.v_pantaModel, bg=self.rootFrameAppearance.bgColor, fg=self.rootFrameAppearance.fgColor)
         self.pantaModelList.grid(row=1, column=4, sticky=tkinter.W + tkinter.E)
         self.pantaModelList.bind("<<ListboxSelect>>", lambda e: self.buttonActive(e, 2, self.pantaModelList.curselection()))
 
         if self.editableNum == 3:
-            self.padLb = tkinter.Label(self.listFrame, width=3)
+            self.padLb = ttkCustomWidget.CustomTtkLabel(self.listFrame, width=3)
             self.padLb.grid(row=0, column=5, sticky=tkinter.W + tkinter.E)
 
-            self.colModelLb = tkinter.Label(self.listFrame, font=textSetting.textList["font2"], text=textSetting.textList["orgInfoEditor"]["csvColTitle"])
+            self.colModelLb = ttkCustomWidget.CustomTtkLabel(self.listFrame, font=textSetting.textList["font2"], text=textSetting.textList["orgInfoEditor"]["csvColTitle"])
             self.colModelLb.grid(row=0, column=6, sticky=tkinter.W + tkinter.E)
             colModelList = copy.deepcopy(modelInfo["colNames"])
             colModelList.pop()
             self.v_colModel = tkinter.StringVar(value=colModelList)
-            self.colModelList = tkinter.Listbox(self.listFrame, font=textSetting.textList["font2"], listvariable=self.v_colModel)
+            self.colModelList = tkinter.Listbox(self.listFrame, height=6, font=textSetting.textList["font2"], listvariable=self.v_colModel, bg=self.rootFrameAppearance.bgColor, fg=self.rootFrameAppearance.fgColor)
             self.colModelList.grid(row=1, column=6, sticky=tkinter.W + tkinter.E)
             self.colModelList.bind("<<ListboxSelect>>", lambda e: self.buttonActive(e, 3, self.colModelList.curselection()))
+        super().body(frame)
 
     def buttonActive(self, event, num, value):
         if len(value) == 0:
@@ -240,7 +240,8 @@ class EditModelInfo(sd.Dialog):
         self.deleteBtn["state"] = "normal"
 
     def modify(self):
-        result = sd.askstring(title=textSetting.textList["modify"], prompt=textSetting.textList["infoList"]["I27"], initialvalue=self.selectValue, parent=self)
+        resultObj = CustomAskstring(self, title=textSetting.textList["modify"], prompt=textSetting.textList["infoList"]["I27"], initialvalue=self.selectValue, bgColor=self.rootFrameAppearance.bgColor)
+        result = resultObj.result
 
         if result:
             if self.selectListNum == 0:
@@ -261,7 +262,8 @@ class EditModelInfo(sd.Dialog):
             self.deleteBtn["state"] = "disabled"
 
     def insert(self):
-        result = sd.askstring(title=textSetting.textList["insert"], prompt=textSetting.textList["infoList"]["I27"], initialvalue=self.selectValue, parent=self)
+        resultObj = CustomAskstring(self, title=textSetting.textList["insert"], prompt=textSetting.textList["infoList"]["I27"], initialvalue=self.selectValue, bgColor=self.rootFrameAppearance.bgColor)
+        result = resultObj.result
 
         if result:
             if self.selectListNum == 0:

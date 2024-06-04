@@ -1,51 +1,53 @@
 import tkinter
-from tkinter import ttk
 from tkinter import messagebox as mb
-from tkinter import simpledialog as sd
 import program.textSetting as textSetting
+import program.appearance.ttkCustomWidget as ttkCustomWidget
+from program.appearance.customSimpleDialog import CustomSimpleDialog
 
 from program.railEditor.importPy.tkinterScrollbarTreeviewRailEditor import ScrollbarTreeviewRailEditor
 
 
 class StationNameWidget:
-    def __init__(self, frame, decryptFile, stationNameList, reloadFunc, selectId):
+    def __init__(self, root, frame, decryptFile, stationNameList, rootFrameAppearance, reloadFunc, selectId):
+        self.root = root
         self.frame = frame
         self.decryptFile = decryptFile
         self.stationNameList = stationNameList
+        self.rootFrameAppearance = rootFrameAppearance
         self.reloadFunc = reloadFunc
         self.copyStationNameInfo = []
-        self.stationNameLf = ttk.LabelFrame(self.frame, text=textSetting.textList["railEditor"]["stationNameLabel"])
-        self.stationNameLf.pack(anchor=tkinter.NW, padx=10, pady=5, fill=tkinter.BOTH, expand=True)
+        stationNameLf = ttkCustomWidget.CustomTtkLabelFrame(self.frame, text=textSetting.textList["railEditor"]["stationNameLabel"])
+        stationNameLf.pack(anchor=tkinter.NW, padx=10, pady=5, fill=tkinter.BOTH, expand=True)
 
-        self.headerFrame = ttk.Frame(self.stationNameLf)
-        self.headerFrame.pack()
+        headerFrame = ttkCustomWidget.CustomTtkFrame(stationNameLf)
+        headerFrame.pack()
 
-        self.selectLbFrame = ttk.Frame(self.headerFrame)
-        self.selectLbFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT)
+        selectLbFrame = ttkCustomWidget.CustomTtkFrame(headerFrame)
+        selectLbFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT)
 
-        selectLb = ttk.Label(self.selectLbFrame, text=textSetting.textList["railEditor"]["selectNum"], font=textSetting.textList["font2"])
+        selectLb = ttkCustomWidget.CustomTtkLabel(selectLbFrame, text=textSetting.textList["railEditor"]["selectNum"], font=textSetting.textList["font2"])
         selectLb.pack(side=tkinter.LEFT, padx=15, pady=15)
 
         self.v_select = tkinter.StringVar()
-        selectEt = ttk.Entry(self.selectLbFrame, textvariable=self.v_select, font=textSetting.textList["font2"], width=5, state="readonly", justify="center")
+        selectEt = ttkCustomWidget.CustomTtkEntry(selectLbFrame, textvariable=self.v_select, font=textSetting.textList["font2"], width=5, state="readonly", justify="center")
         selectEt.pack(side=tkinter.LEFT, padx=5, pady=15)
 
-        self.btnFrame = ttk.Frame(self.headerFrame)
-        self.btnFrame.pack(anchor=tkinter.NE, padx=15)
+        btnFrame = ttkCustomWidget.CustomTtkFrame(headerFrame)
+        btnFrame.pack(anchor=tkinter.NE, padx=15)
 
-        editLineBtn = ttk.Button(self.btnFrame, text=textSetting.textList["railEditor"]["commonEditLineLabel"], width=25, state="disabled", command=self.editLine)
+        editLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["railEditor"]["commonEditLineLabel"], width=25, state="disabled", command=self.editLine)
         editLineBtn.grid(row=0, column=0, padx=10, pady=15)
 
-        insertLineBtn = ttk.Button(self.btnFrame, text=textSetting.textList["railEditor"]["commonInsertLineLabel"], width=25, state="disabled", command=self.insertLine)
+        insertLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["railEditor"]["commonInsertLineLabel"], width=25, state="disabled", command=self.insertLine)
         insertLineBtn.grid(row=0, column=1, padx=10, pady=15)
 
-        deleteLineBtn = ttk.Button(self.btnFrame, text=textSetting.textList["railEditor"]["commonDeleteLineLabel"], width=25, state="disabled", command=self.deleteLine)
+        deleteLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["railEditor"]["commonDeleteLineLabel"], width=25, state="disabled", command=self.deleteLine)
         deleteLineBtn.grid(row=0, column=2, padx=10, pady=15)
 
-        copyLineBtn = ttk.Button(self.btnFrame, text=textSetting.textList["railEditor"]["commonCopyLineLabel"], width=25, state="disabled", command=self.copyLine)
+        copyLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["railEditor"]["commonCopyLineLabel"], width=25, state="disabled", command=self.copyLine)
         copyLineBtn.grid(row=1, column=0, padx=10, pady=15)
 
-        self.pasteLineBtn = ttk.Button(self.btnFrame, text=textSetting.textList["railEditor"]["commonPasteLineLabel"], width=25, state="disabled", command=self.pasteLine)
+        self.pasteLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["railEditor"]["commonPasteLineLabel"], width=25, state="disabled", command=self.pasteLine)
         self.pasteLineBtn.grid(row=1, column=1, padx=10, pady=15)
 
         btnList = [
@@ -55,7 +57,7 @@ class StationNameWidget:
             copyLineBtn
         ]
 
-        self.treeviewFrame = ScrollbarTreeviewRailEditor(self.stationNameLf, self.v_select, btnList)
+        self.treeviewFrame = ScrollbarTreeviewRailEditor(stationNameLf, self.v_select, btnList)
 
         if len(self.stationNameList) == 0:
             insertLineBtn["state"] = "normal"
@@ -200,7 +202,7 @@ class StationNameWidget:
         selectId = self.treeviewFrame.tree.selection()[0]
         selectItem = self.treeviewFrame.tree.set(selectId)
         num = int(selectItem["treeNum"])
-        result = EditStationNameListWidget(self.frame, textSetting.textList["railEditor"]["modifyStationNameLabel"], self.decryptFile, "modify", num, selectItem)
+        result = EditStationNameListWidget(self.root, textSetting.textList["railEditor"]["modifyStationNameLabel"], self.decryptFile, "modify", num, selectItem, self.rootFrameAppearance)
         if result.reloadFlag:
             if not self.decryptFile.saveStationNameInfo(num, "modify", result.resultValueList):
                 self.decryptFile.printError()
@@ -223,7 +225,7 @@ class StationNameWidget:
             selectId = self.treeviewFrame.tree.selection()[0]
             selectItem = self.treeviewFrame.tree.set(selectId)
             num = int(selectItem["treeNum"])
-        result = EditStationNameListWidget(self.frame, textSetting.textList["railEditor"]["insertStationNameLabel"], self.decryptFile, "insert", num, selectItem)
+        result = EditStationNameListWidget(self.root, textSetting.textList["railEditor"]["insertStationNameLabel"], self.decryptFile, "insert", num, selectItem, self.rootFrameAppearance)
         if result.reloadFlag:
             if noStationNameInfoFlag:
                 if result.insert == 0:
@@ -268,13 +270,13 @@ class StationNameWidget:
     def pasteLine(self):
         selectId = self.treeviewFrame.tree.selection()[0]
         selectItem = self.treeviewFrame.tree.set(selectId)
-        result = PasteStationNameDialog(self.frame, textSetting.textList["railEditor"]["pasteStationNameLabel"], self.decryptFile, int(selectItem["treeNum"]), self.copyStationNameInfo)
+        result = PasteStationNameDialog(self.root, textSetting.textList["railEditor"]["pasteStationNameLabel"], self.decryptFile, int(selectItem["treeNum"]), self.copyStationNameInfo, self.rootFrameAppearance)
         if result.reloadFlag:
             self.reloadFunc(selectId)
 
 
-class EditStationNameListWidget(sd.Dialog):
-    def __init__(self, master, title, decryptFile, mode, num, stationNameInfo):
+class EditStationNameListWidget(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, mode, num, stationNameInfo, rootFrameAppearance):
         self.decryptFile = decryptFile
         self.mode = mode
         self.num = num
@@ -283,7 +285,7 @@ class EditStationNameListWidget(sd.Dialog):
         self.reloadFlag = False
         self.insert = 0
         self.resultValueList = []
-        super(EditStationNameListWidget, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(False, False)
@@ -291,79 +293,80 @@ class EditStationNameListWidget(sd.Dialog):
         stationNameInfoKeyList = list(self.stationNameInfo.keys())
         stationNameInfoKeyList.pop(0)
         for i in range(len(stationNameInfoKeyList)):
-            self.stationNameInfoLb = ttk.Label(master, text=textSetting.textList["railEditor"][stationNameInfoKeyList[i]], font=textSetting.textList["font2"])
-            self.stationNameInfoLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
+            stationNameInfoLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["railEditor"][stationNameInfoKeyList[i]], font=textSetting.textList["font2"])
+            stationNameInfoLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
             if self.decryptFile.game in ["CS", "RS"]:
                 if i == 0:
-                    self.varStationNameInfo = tkinter.StringVar()
-                    self.varList.append(self.varStationNameInfo)
-                    self.stationNameInfoEt = ttk.Entry(master, textvariable=self.varStationNameInfo, font=textSetting.textList["font2"])
-                    self.stationNameInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                    varStationNameInfo = tkinter.StringVar()
+                    self.varList.append(varStationNameInfo)
+                    stationNameInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
+                    stationNameInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
                     if self.mode == "modify":
-                        self.varStationNameInfo.set(self.stationNameInfo[stationNameInfoKeyList[i]])
+                        varStationNameInfo.set(self.stationNameInfo[stationNameInfoKeyList[i]])
                 elif i in [3, 4, 5]:
-                    self.varStationNameInfo = tkinter.DoubleVar()
-                    self.varList.append(self.varStationNameInfo)
-                    self.stationNameInfoEt = ttk.Entry(master, textvariable=self.varStationNameInfo, font=textSetting.textList["font2"])
-                    self.stationNameInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                    varStationNameInfo = tkinter.DoubleVar()
+                    self.varList.append(varStationNameInfo)
+                    stationNameInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
+                    stationNameInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
                     if self.mode == "modify":
-                        self.varStationNameInfo.set(self.stationNameInfo[stationNameInfoKeyList[i]])
+                        varStationNameInfo.set(self.stationNameInfo[stationNameInfoKeyList[i]])
                 else:
-                    self.varStationNameInfo = tkinter.IntVar()
-                    self.varList.append(self.varStationNameInfo)
-                    self.stationNameInfoEt = ttk.Entry(master, textvariable=self.varStationNameInfo, font=textSetting.textList["font2"])
-                    self.stationNameInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                    varStationNameInfo = tkinter.IntVar()
+                    self.varList.append(varStationNameInfo)
+                    stationNameInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
+                    stationNameInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
                     if self.mode == "modify":
-                        self.varStationNameInfo.set(self.stationNameInfo[stationNameInfoKeyList[i]])
+                        varStationNameInfo.set(self.stationNameInfo[stationNameInfoKeyList[i]])
             elif self.decryptFile.game == "BS":
                 if i == 0:
-                    self.varStationNameInfo = tkinter.StringVar()
-                    self.varList.append(self.varStationNameInfo)
-                    self.stationNameInfoEt = ttk.Entry(master, textvariable=self.varStationNameInfo, font=textSetting.textList["font2"])
-                    self.stationNameInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                    varStationNameInfo = tkinter.StringVar()
+                    self.varList.append(varStationNameInfo)
+                    stationNameInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
+                    stationNameInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
                     if self.mode == "modify":
-                        self.varStationNameInfo.set(self.stationNameInfo[stationNameInfoKeyList[i]])
+                        varStationNameInfo.set(self.stationNameInfo[stationNameInfoKeyList[i]])
                 else:
-                    self.varStationNameInfo = tkinter.IntVar()
-                    self.varList.append(self.varStationNameInfo)
-                    self.stationNameInfoEt = ttk.Entry(master, textvariable=self.varStationNameInfo, font=textSetting.textList["font2"])
-                    self.stationNameInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                    varStationNameInfo = tkinter.IntVar()
+                    self.varList.append(varStationNameInfo)
+                    stationNameInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
+                    stationNameInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
                     if self.mode == "modify":
-                        self.varStationNameInfo.set(self.stationNameInfo[stationNameInfoKeyList[i]])
+                        varStationNameInfo.set(self.stationNameInfo[stationNameInfoKeyList[i]])
             elif self.decryptFile.game == "LS":
                 if i == 0:
-                    self.varStationNameInfo = tkinter.StringVar()
-                    self.varList.append(self.varStationNameInfo)
-                    self.stationNameInfoEt = ttk.Entry(master, textvariable=self.varStationNameInfo, font=textSetting.textList["font2"])
-                    self.stationNameInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                    varStationNameInfo = tkinter.StringVar()
+                    self.varList.append(varStationNameInfo)
+                    stationNameInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
+                    stationNameInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
                     if self.mode == "modify":
-                        self.varStationNameInfo.set(self.stationNameInfo[stationNameInfoKeyList[i]])
+                        varStationNameInfo.set(self.stationNameInfo[stationNameInfoKeyList[i]])
                 elif i in [1, 2]:
-                    self.varStationNameInfo = tkinter.IntVar()
-                    self.varList.append(self.varStationNameInfo)
-                    self.stationNameInfoEt = ttk.Entry(master, textvariable=self.varStationNameInfo, font=textSetting.textList["font2"])
-                    self.stationNameInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                    varStationNameInfo = tkinter.IntVar()
+                    self.varList.append(varStationNameInfo)
+                    stationNameInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
+                    stationNameInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
                     if self.mode == "modify":
-                        self.varStationNameInfo.set(self.stationNameInfo[stationNameInfoKeyList[i]])
+                        varStationNameInfo.set(self.stationNameInfo[stationNameInfoKeyList[i]])
                 else:
-                    self.varStationNameInfo = tkinter.DoubleVar()
-                    self.varList.append(self.varStationNameInfo)
-                    self.stationNameInfoEt = ttk.Entry(master, textvariable=self.varStationNameInfo, font=textSetting.textList["font2"])
-                    self.stationNameInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                    varStationNameInfo = tkinter.DoubleVar()
+                    self.varList.append(varStationNameInfo)
+                    stationNameInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
+                    stationNameInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
                     if self.mode == "modify":
-                        self.varStationNameInfo.set(self.stationNameInfo[stationNameInfoKeyList[i]])
+                        varStationNameInfo.set(self.stationNameInfo[stationNameInfoKeyList[i]])
 
         if self.mode == "insert":
             self.setInsertWidget(master, len(stationNameInfoKeyList))
+        super().body(master)
 
     def setInsertWidget(self, master, index):
-        self.xLine = ttk.Separator(master, orient=tkinter.HORIZONTAL)
-        self.xLine.grid(row=index, column=0, columnspan=2, sticky=tkinter.W + tkinter.E, pady=10)
+        xLine = ttkCustomWidget.CustomTtkSeparator(master, orient=tkinter.HORIZONTAL)
+        xLine.grid(row=index, column=0, columnspan=2, sticky=tkinter.W + tkinter.E, pady=10)
 
-        self.insertLb = ttk.Label(master, text=textSetting.textList["railEditor"]["posLabel"], font=textSetting.textList["font2"])
-        self.insertLb.grid(row=index + 1, column=0, sticky=tkinter.W + tkinter.E)
+        insertLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["railEditor"]["posLabel"], font=textSetting.textList["font2"])
+        insertLb.grid(row=index + 1, column=0, sticky=tkinter.W + tkinter.E)
         self.v_insert = tkinter.StringVar()
-        self.insertCb = ttk.Combobox(master, state="readonly", font=textSetting.textList["font2"], textvariable=self.v_insert, values=textSetting.textList["railEditor"]["posValue"])
+        self.insertCb = ttkCustomWidget.CustomTtkCombobox(master, state="readonly", font=textSetting.textList["font2"], textvariable=self.v_insert, values=textSetting.textList["railEditor"]["posValue"])
         self.insertCb.grid(row=index + 1, column=1, sticky=tkinter.W + tkinter.E)
         self.insertCb.current(0)
 
@@ -423,28 +426,31 @@ class EditStationNameListWidget(sd.Dialog):
         self.reloadFlag = True
 
 
-class PasteStationNameDialog(sd.Dialog):
-    def __init__(self, master, title, decryptFile, num, copyStationNameInfo):
+class PasteStationNameDialog(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, num, copyStationNameInfo, rootFrameAppearance):
         self.decryptFile = decryptFile
         self.num = num
         self.copyStationNameInfo = copyStationNameInfo
         self.reloadFlag = False
-        super(PasteStationNameDialog, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(False, False)
-        self.posLb = ttk.Label(master, text=textSetting.textList["infoList"]["I4"], font=textSetting.textList["font2"])
-        self.posLb.pack(padx=10, pady=10)
+        posLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["infoList"]["I4"], font=textSetting.textList["font2"])
+        posLb.pack(padx=10, pady=10)
+        super().body(master)
 
     def buttonbox(self):
-        box = tkinter.Frame(self, padx=5, pady=5)
-        self.frontBtn = tkinter.Button(box, text=textSetting.textList["railEditor"]["pasteFront"], font=textSetting.textList["font2"], width=10, command=self.frontInsert)
+        super().buttonbox()
+        for idx, child in enumerate(self.buttonList):
+            child.destroy()
+        self.box.config(padx=5, pady=5)
+        self.frontBtn = ttkCustomWidget.CustomTtkButton(self.box, text=textSetting.textList["railEditor"]["pasteFront"], style="custom.paste.TButton", width=10, command=self.frontInsert)
         self.frontBtn.grid(row=0, column=0, padx=5)
-        self.backBtn = tkinter.Button(box, text=textSetting.textList["railEditor"]["pasteBack"], font=textSetting.textList["font2"], width=10, command=self.backInsert)
+        self.backBtn = ttkCustomWidget.CustomTtkButton(self.box, text=textSetting.textList["railEditor"]["pasteBack"], style="custom.paste.TButton", width=10, command=self.backInsert)
         self.backBtn.grid(row=0, column=1, padx=5)
-        self.cancelBtn = tkinter.Button(box, text=textSetting.textList["railEditor"]["pasteCancel"], font=textSetting.textList["font2"], width=10, command=self.cancel)
+        self.cancelBtn = ttkCustomWidget.CustomTtkButton(self.box, text=textSetting.textList["railEditor"]["pasteCancel"], style="custom.paste.TButton", width=10, command=self.cancel)
         self.cancelBtn.grid(row=0, column=2, padx=5)
-        box.pack()
 
     def frontInsert(self):
         self.ok()

@@ -1,14 +1,14 @@
 import copy
 
 import tkinter
-from tkinter import ttk
-from tkinter import simpledialog as sd
 from tkinter import messagebox as mb
 import program.textSetting as textSetting
+import program.appearance.ttkCustomWidget as ttkCustomWidget
+from program.appearance.customSimpleDialog import CustomSimpleDialog
 
 
-class InputDialog(sd.Dialog):
-    def __init__(self, master, title, decryptFile, num, cmdItem=None):
+class InputDialog(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, rootFrameAppearance, num, cmdItem=None):
         self.decryptFile = decryptFile
         self.num = num
         self.cmdItem = cmdItem
@@ -24,51 +24,52 @@ class InputDialog(sd.Dialog):
             self.infoMsg = textSetting.textList["infoList"]["I2"]
             self.p_cmd = None
             self.p_cnt = None
-        super(InputDialog, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(False, False)
-        self.cmdLb = ttk.Label(master, text=textSetting.textList["comicscript"]["cmdLabel"], width=12, font=textSetting.textList["font2"])
-        self.cmdLb.grid(row=0, column=0, sticky=tkinter.N+tkinter.S)
+        cmdLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["comicscript"]["cmdLabel"], width=12, font=textSetting.textList["font2"])
+        cmdLb.grid(row=0, column=0, sticky=tkinter.N+tkinter.S)
         self.v_cmd = tkinter.StringVar()
         cmdCopy = copy.deepcopy(self.decryptFile.cmdList)
         cmdCopy.sort()
-        self.cmdCb = ttk.Combobox(master, textvariable=self.v_cmd, width=25, font=textSetting.textList["font2"], state="readonly", value=cmdCopy)
-        self.cmdCb.grid(row=0, column=1, sticky=tkinter.N+tkinter.S, pady=10)
+        cmdCb = ttkCustomWidget.CustomTtkCombobox(master, textvariable=self.v_cmd, width=25, font=textSetting.textList["font2"], state="readonly", value=cmdCopy)
+        cmdCb.grid(row=0, column=1, sticky=tkinter.N+tkinter.S, pady=10)
         if self.p_cmd is not None:
             self.v_cmd.set(self.p_cmd)
         else:
             self.v_cmd.set(cmdCopy[0])
 
-        self.paramCntLb = ttk.Label(master, text=textSetting.textList["comicscript"]["paramLabel"], width=12, font=textSetting.textList["font2"])
-        self.paramCntLb.grid(row=1, column=0, sticky=tkinter.N+tkinter.S)
+        paramCntLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["comicscript"]["paramLabel"], width=12, font=textSetting.textList["font2"])
+        paramCntLb.grid(row=1, column=0, sticky=tkinter.N+tkinter.S)
         self.v_paramCnt = tkinter.IntVar()
         paramCntList = [cnt for cnt in range(0, 16)]
-        self.paramCntCb = ttk.Combobox(master, textvariable=self.v_paramCnt, width=25, font=textSetting.textList["font2"], state="readonly", value=paramCntList)
-        self.paramCntCb.grid(row=1, column=1, sticky=tkinter.N+tkinter.S, pady=10)
+        paramCntCb = ttkCustomWidget.CustomTtkCombobox(master, textvariable=self.v_paramCnt, width=25, font=textSetting.textList["font2"], state="readonly", value=paramCntList)
+        paramCntCb.grid(row=1, column=1, sticky=tkinter.N+tkinter.S, pady=10)
         if self.p_cnt is not None:
             self.v_paramCnt.set(self.p_cnt)
         else:
             self.v_paramCnt.set(0)
 
         if self.cmdItem is None:
-            self.position = ttk.Label(master, text=textSetting.textList["comicscript"]["posLabel"], width=12, font=textSetting.textList["font2"])
-            self.position.grid(row=2, column=0, sticky=tkinter.N+tkinter.S)
+            positionLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["comicscript"]["posLabel"], width=12, font=textSetting.textList["font2"])
+            positionLb.grid(row=2, column=0, sticky=tkinter.N+tkinter.S)
             self.v_position = tkinter.StringVar()
             positionList = textSetting.textList["comicscript"]["posValue"]
-            self.positionCb = ttk.Combobox(master, textvariable=self.v_position, width=25, font=textSetting.textList["font2"], state="readonly", value=positionList)
+            self.positionCb = ttkCustomWidget.CustomTtkCombobox(master, textvariable=self.v_position, width=25, font=textSetting.textList["font2"], state="readonly", value=positionList)
             self.positionCb.grid(row=2, column=1, sticky=tkinter.N+tkinter.S, pady=10)
             self.v_position.set(positionList[0])
 
-        self.xLine = ttk.Separator(master, orient=tkinter.HORIZONTAL)
-        self.xLine.grid(columnspan=2, row=3, column=0, sticky=tkinter.E+tkinter.W, pady=10)
+        xLine = ttkCustomWidget.CustomTtkSeparator(master, orient=tkinter.HORIZONTAL)
+        xLine.grid(columnspan=2, row=3, column=0, sticky=tkinter.E+tkinter.W, pady=10)
 
-        self.paramFrame = ttk.tkinter.Frame(master)
-        self.paramFrame.grid(columnspan=2, row=4, column=0, sticky=tkinter.N+tkinter.E+tkinter.W+tkinter.S)
+        paramFrame = ttkCustomWidget.CustomTtkFrame(master)
+        paramFrame.grid(columnspan=2, row=4, column=0, sticky=tkinter.N+tkinter.E+tkinter.W+tkinter.S)
 
-        self.paramCntCb.bind("<<ComboboxSelected>>", lambda e: self.selectParam(self.v_paramCnt.get(), self.paramFrame))
+        paramCntCb.bind("<<ComboboxSelected>>", lambda e: self.selectParam(self.v_paramCnt.get(), paramFrame))
         if self.p_cnt != 0:
-            self.selectParam(self.v_paramCnt.get(), self.paramFrame, self.cmdItem)
+            self.selectParam(self.v_paramCnt.get(), paramFrame, self.cmdItem)
+        super().body(master)
 
     def selectParam(self, paramCnt, frame, cmdItem=None):
         self.v_paramList = []
@@ -77,16 +78,15 @@ class InputDialog(sd.Dialog):
             child.destroy()
 
         if paramCnt == 0:
-            self.paramLb = ttk.Label(frame)
-            self.paramLb.grid(row=0, column=0)
+            paramLb = ttkCustomWidget.CustomTtkLabel(frame)
+            paramLb.grid(row=0, column=0)
 
         for i in range(paramCnt):
-            self.paramLb = ttk.Label(frame, text=textSetting.textList["comicscript"]["paramNumLabel"].format(i+1), width=12, font=textSetting.textList["font2"])
-            self.paramLb.grid(row=i, column=0, sticky=tkinter.N+tkinter.S)
-            v_param = tkinter.DoubleVar()
-            self.v_paramList.append(v_param)
-            self.paramEt = ttk.Entry(frame, textvariable=v_param, width=27, font=textSetting.textList["font2"])
-            self.paramEt.grid(row=i, column=1, sticky=tkinter.N+tkinter.S)
+            paramLb = ttkCustomWidget.CustomTtkLabel(frame, text=textSetting.textList["comicscript"]["paramNumLabel"].format(i+1), width=12, font=textSetting.textList["font2"])
+            paramLb.grid(row=i, column=0, sticky=tkinter.N+tkinter.S)
+            self.v_paramList.append(tkinter.DoubleVar())
+            paramEt = ttkCustomWidget.CustomTtkEntry(frame, textvariable=self.v_paramList[i], width=27, font=textSetting.textList["font2"])
+            paramEt.grid(row=i, column=1, sticky=tkinter.N+tkinter.S)
         if cmdItem is not None:
             for i in range(len(self.v_paramList)):
                 self.v_paramList[i].set(cmdItem[textSetting.textList["comicscript"]["paramNumLabel"].format(i+1)])
@@ -127,28 +127,31 @@ class InputDialog(sd.Dialog):
         self.reloadFlag = True
 
 
-class PasteDialog(sd.Dialog):
-    def __init__(self, master, title, decryptFile, num, comicData):
+class PasteDialog(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, rootFrameAppearance, num, comicData):
         self.decryptFile = decryptFile
         self.num = num
         self.comicData = comicData
         self.reloadFlag = False
-        super(PasteDialog, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(False, False)
-        self.posLb = ttk.Label(master, text=textSetting.textList["infoList"]["I4"], font=textSetting.textList["font2"])
-        self.posLb.pack(padx=10, pady=10)
+        posLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["infoList"]["I4"], font=textSetting.textList["font2"])
+        posLb.pack(padx=10, pady=10)
+        super().body(master)
 
     def buttonbox(self):
-        box = tkinter.Frame(self, padx=5, pady=5)
-        self.frontBtn = tkinter.Button(box, text=textSetting.textList["comicscript"]["pasteFront"], width=10, font=textSetting.textList["font2"], command=self.frontInsert)
+        super().buttonbox()
+        for idx, child in enumerate(self.buttonList):
+            child.destroy()
+        self.box.config(padx=5, pady=5)
+        self.frontBtn = ttkCustomWidget.CustomTtkButton(self.box, text=textSetting.textList["comicscript"]["pasteFront"], width=10, style="custom.paste.TButton", command=self.frontInsert)
         self.frontBtn.grid(row=0, column=0, padx=5)
-        self.backBtn = tkinter.Button(box, text=textSetting.textList["comicscript"]["pasteBack"], width=10, font=textSetting.textList["font2"], command=self.backInsert)
+        self.backBtn = ttkCustomWidget.CustomTtkButton(self.box, text=textSetting.textList["comicscript"]["pasteBack"], width=10, style="custom.paste.TButton", command=self.backInsert)
         self.backBtn.grid(row=0, column=1, padx=5)
-        self.cancelBtn = tkinter.Button(box, text=textSetting.textList["comicscript"]["pasteCancel"], width=10, font=textSetting.textList["font2"], command=self.cancel)
+        self.cancelBtn = ttkCustomWidget.CustomTtkButton(self.box, text=textSetting.textList["comicscript"]["pasteCancel"], width=10, style="custom.paste.TButton", command=self.cancel)
         self.cancelBtn.grid(row=0, column=2, padx=5)
-        box.pack()
 
     def frontInsert(self):
         if not self.decryptFile.saveFile("insert", self.num, self.comicData):
@@ -171,10 +174,11 @@ class PasteDialog(sd.Dialog):
         self.reloadFlag = True
 
 
-class HeaderFileInfo(sd.Dialog):
-    def __init__(self, master, title, decryptFile):
+class HeaderFileInfo(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, rootFrameAppearance):
         self.master = master
         self.decryptFile = decryptFile
+        self.rootFrameAppearance = rootFrameAppearance
         self.imgList = copy.deepcopy(decryptFile.imgList)
         self.imgSizeList = copy.deepcopy(decryptFile.imgSizeList)
         self.seList = copy.deepcopy(decryptFile.seList)
@@ -183,63 +187,64 @@ class HeaderFileInfo(sd.Dialog):
         self.selectIndexNum = -1
         self.dirtyFlag = False
         self.reloadFlag = False
-        super(HeaderFileInfo, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
-        self.btnFrame = tkinter.Frame(master, pady=5)
-        self.btnFrame.pack()
-        self.listFrame = tkinter.Frame(master)
-        self.listFrame.pack()
+        btnFrame = ttkCustomWidget.CustomTtkFrame(master)
+        btnFrame.pack(pady=5)
+        listFrame = ttkCustomWidget.CustomTtkFrame(master)
+        listFrame.pack()
 
-        self.modifyBtn = tkinter.Button(self.btnFrame, text=textSetting.textList["modify"], font=textSetting.textList["font2"], state="disabled", command=self.modify)
+        self.modifyBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["modify"], style="custom.listbox.TButton", state="disabled", command=self.modify)
         self.modifyBtn.grid(padx=10, row=0, column=0, sticky=tkinter.W+tkinter.E)
-        self.insertBtn = tkinter.Button(self.btnFrame, text=textSetting.textList["insert"], font=textSetting.textList["font2"], state="disabled", command=self.insert)
+        self.insertBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["insert"], style="custom.listbox.TButton", state="disabled", command=self.insert)
         self.insertBtn.grid(padx=10, row=0, column=1, sticky=tkinter.W+tkinter.E)
-        self.deleteBtn = tkinter.Button(self.btnFrame, text=textSetting.textList["delete"], font=textSetting.textList["font2"], state="disabled", command=self.delete)
+        self.deleteBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["delete"], style="custom.listbox.TButton", state="disabled", command=self.delete)
         self.deleteBtn.grid(padx=10, row=0, column=2, sticky=tkinter.W+tkinter.E)
 
-        self.imgListLb = tkinter.Label(self.listFrame, text=textSetting.textList["comicscript"]["imgInfo"], font=textSetting.textList["font2"])
-        self.imgListLb.grid(row=0, column=0, sticky=tkinter.W+tkinter.E)
+        imgListLb = ttkCustomWidget.CustomTtkLabel(listFrame, text=textSetting.textList["comicscript"]["imgInfo"], font=textSetting.textList["font2"])
+        imgListLb.grid(row=0, column=0, sticky=tkinter.W+tkinter.E)
 
         copyImgList = self.setListboxInfo(0, self.imgList)
 
         self.v_imgList = tkinter.StringVar(value=copyImgList)
-        self.imgListBox = tkinter.Listbox(self.listFrame, font=textSetting.textList["font2"], listvariable=self.v_imgList)
-        self.imgListBox.grid(row=1, column=0, sticky=tkinter.W+tkinter.E)
-        self.imgListBox.bind("<<ListboxSelect>>", lambda e:  self.buttonActive(e, self.imgListBox, 0, self.imgListBox.curselection()))
+        imgListBox = tkinter.Listbox(listFrame, font=textSetting.textList["font2"], listvariable=self.v_imgList, bg=self.rootFrameAppearance.bgColor, fg=self.rootFrameAppearance.fgColor)
+        imgListBox.grid(row=1, column=0, sticky=tkinter.W+tkinter.E)
+        imgListBox.bind("<<ListboxSelect>>", lambda e:  self.buttonActive(e, imgListBox, 0, imgListBox.curselection()))
 
-        self.padLb = tkinter.Label(self.listFrame, width=3)
-        self.padLb.grid(row=0, column=1, sticky=tkinter.W+tkinter.E)
+        padLb = ttkCustomWidget.CustomTtkLabel(listFrame, width=3)
+        padLb.grid(row=0, column=1, sticky=tkinter.W+tkinter.E)
 
-        self.imgSizeListLb = tkinter.Label(self.listFrame, text=textSetting.textList["comicscript"]["imgSizeInfo"], font=textSetting.textList["font2"], width=40)
-        self.imgSizeListLb.grid(row=0, column=2, sticky=tkinter.W+tkinter.E)
+        imgSizeListLb = ttkCustomWidget.CustomTtkLabel(listFrame, text=textSetting.textList["comicscript"]["imgSizeInfo"], font=textSetting.textList["font2"], width=40)
+        imgSizeListLb.grid(row=0, column=2, sticky=tkinter.W+tkinter.E)
 
         copyImgSizeList = self.setListboxInfo(1, self.imgSizeList)
         self.v_imgSizeList = tkinter.StringVar(value=copyImgSizeList)
-        self.imgSizeListBox = tkinter.Listbox(self.listFrame, font=textSetting.textList["font2"], listvariable=self.v_imgSizeList)
-        self.imgSizeListBox.grid(row=1, column=2, sticky=tkinter.W+tkinter.E)
-        self.imgSizeListBox.bind("<<ListboxSelect>>", lambda e: self.buttonActive(e, self.imgSizeListBox, 1, self.imgSizeListBox.curselection()))
+        imgSizeListBox = tkinter.Listbox(listFrame, font=textSetting.textList["font2"], listvariable=self.v_imgSizeList, bg=self.rootFrameAppearance.bgColor, fg=self.rootFrameAppearance.fgColor)
+        imgSizeListBox.grid(row=1, column=2, sticky=tkinter.W+tkinter.E)
+        imgSizeListBox.bind("<<ListboxSelect>>", lambda e: self.buttonActive(e, imgSizeListBox, 1, imgSizeListBox.curselection()))
 
-        self.seListLb = tkinter.Label(self.listFrame, text=textSetting.textList["comicscript"]["seInfo"], font=textSetting.textList["font2"])
-        self.seListLb.grid(row=2, column=0, sticky=tkinter.W+tkinter.E)
+        seListLb = ttkCustomWidget.CustomTtkLabel(listFrame, text=textSetting.textList["comicscript"]["seInfo"], font=textSetting.textList["font2"])
+        seListLb.grid(row=2, column=0, sticky=tkinter.W+tkinter.E)
 
         copySeList = self.setListboxInfo(2, self.seList)
         self.v_seList = tkinter.StringVar(value=copySeList)
-        self.seListBox = tkinter.Listbox(self.listFrame, font=textSetting.textList["font2"], width=40, listvariable=self.v_seList)
-        self.seListBox.grid(row=3, column=0, sticky=tkinter.W+tkinter.E)
-        self.seListBox.bind("<<ListboxSelect>>", lambda e: self.buttonActive(e, self.seListBox, 2, self.seListBox.curselection()))
+        seListBox = tkinter.Listbox(listFrame, font=textSetting.textList["font2"], width=40, listvariable=self.v_seList, bg=self.rootFrameAppearance.bgColor, fg=self.rootFrameAppearance.fgColor)
+        seListBox.grid(row=3, column=0, sticky=tkinter.W+tkinter.E)
+        seListBox.bind("<<ListboxSelect>>", lambda e: self.buttonActive(e, seListBox, 2, seListBox.curselection()))
 
-        self.padLb = tkinter.Label(self.listFrame, width=3)
-        self.padLb.grid(row=2, column=1, sticky=tkinter.W+tkinter.E)
+        padLb = ttkCustomWidget.CustomTtkLabel(listFrame, width=3)
+        padLb.grid(row=2, column=1, sticky=tkinter.W+tkinter.E)
 
-        self.bgmListLb = tkinter.Label(self.listFrame, text=textSetting.textList["comicscript"]["bgmInfo"], font=textSetting.textList["font2"])
-        self.bgmListLb.grid(row=2, column=2, sticky=tkinter.W+tkinter.E)
+        bgmListLb = ttkCustomWidget.CustomTtkLabel(listFrame, text=textSetting.textList["comicscript"]["bgmInfo"], font=textSetting.textList["font2"])
+        bgmListLb.grid(row=2, column=2, sticky=tkinter.W+tkinter.E)
 
         copyBgmList = self.setListboxInfo(3, self.bgmList)
         self.v_bgmList = tkinter.StringVar(value=copyBgmList)
-        self.bgmListBox = tkinter.Listbox(self.listFrame, font=textSetting.textList["font2"], listvariable=self.v_bgmList)
-        self.bgmListBox.grid(row=3, column=2, sticky=tkinter.W+tkinter.E)
-        self.bgmListBox.bind("<<ListboxSelect>>", lambda e: self.buttonActive(e, self.bgmListBox, 3, self.bgmListBox.curselection()))
+        bgmListBox = tkinter.Listbox(listFrame, font=textSetting.textList["font2"], listvariable=self.v_bgmList, bg=self.rootFrameAppearance.bgColor, fg=self.rootFrameAppearance.fgColor)
+        bgmListBox.grid(row=3, column=2, sticky=tkinter.W+tkinter.E)
+        bgmListBox.bind("<<ListboxSelect>>", lambda e: self.buttonActive(e, bgmListBox, 3, bgmListBox.curselection()))
+        super().body(master)
 
     def setListboxInfo(self, index, listboxInfo):
         if index == 0:
@@ -300,7 +305,7 @@ class HeaderFileInfo(sd.Dialog):
         elif self.selectListNum == 3:
             selectList = self.bgmList
 
-        result = HeaderFileEdit(self.master, textSetting.textList["comicscript"]["headerModify"], "modify", self.selectListNum, self.selectIndexNum, selectList)
+        result = HeaderFileEdit(self.master, textSetting.textList["comicscript"]["headerModify"], "modify", self.selectListNum, self.selectIndexNum, selectList, self.rootFrameAppearance)
         if result.dirtyFlag:
             self.dirtyFlag = True
             if self.selectListNum == 0:
@@ -327,7 +332,7 @@ class HeaderFileInfo(sd.Dialog):
         elif self.selectListNum == 3:
             selectList = self.bgmList
 
-        result = HeaderFileEdit(self.master, textSetting.textList["comicscript"]["headerInsert"], "insert", self.selectListNum, self.selectIndexNum, selectList)
+        result = HeaderFileEdit(self.master, textSetting.textList["comicscript"]["headerInsert"], "insert", self.selectListNum, self.selectIndexNum, selectList, self.rootFrameAppearance)
         if result.dirtyFlag:
             self.dirtyFlag = True
             if self.selectListNum == 0:
@@ -361,32 +366,22 @@ class HeaderFileInfo(sd.Dialog):
             self.dirtyFlag = True
             if self.selectListNum == 0:
                 self.imgList.pop(self.selectIndexNum)
-                if len(self.imgList) == 0:
-                    self.modifyBtn["state"] = "disabled"
-                    self.deleteBtn["state"] = "disabled"
                 copyImgList = self.setListboxInfo(0, self.imgList)
                 self.v_imgList.set(copyImgList)
             elif self.selectListNum == 1:
                 self.imgSizeList.pop(self.selectIndexNum)
-                if len(self.imgSizeList) == 0:
-                    self.modifyBtn["state"] = "disabled"
-                    self.deleteBtn["state"] = "disabled"
                 copyImgSizeList = self.setListboxInfo(1, self.imgSizeList)
                 self.v_imgSizeList.set(copyImgSizeList)
             elif self.selectListNum == 2:
                 self.seList.pop(self.selectIndexNum)
-                if len(self.seList) == 0:
-                    self.modifyBtn["state"] = "disabled"
-                    self.deleteBtn["state"] = "disabled"
                 copySeList = self.setListboxInfo(2, self.seList)
                 self.v_seList.set(copySeList)
             elif self.selectListNum == 3:
                 self.bgmList.pop(self.selectIndexNum)
-                if len(self.bgmList) == 0:
-                    self.modifyBtn["state"] = "disabled"
-                    self.deleteBtn["state"] = "disabled"
                 copyBgmList = self.setListboxInfo(3, self.bgmList)
                 self.v_bgmList.set(copyBgmList)
+            self.modifyBtn["state"] = "disabled"
+            self.deleteBtn["state"] = "disabled"
 
     def validate(self):
         if self.dirtyFlag:
@@ -407,53 +402,53 @@ class HeaderFileInfo(sd.Dialog):
             self.reloadFlag = True
 
 
-class HeaderFileEdit(sd.Dialog):
-    def __init__(self, master, title, mode, selectListNum, selectIndexNum, selectList):
+class HeaderFileEdit(CustomSimpleDialog):
+    def __init__(self, master, title, mode, selectListNum, selectIndexNum, selectList, rootFrameAppearance):
         self.mode = mode
         self.selectListNum = selectListNum
         self.selectIndexNum = selectIndexNum
         self.selectList = selectList
         self.dirtyFlag = False
-        super(HeaderFileEdit, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         if self.selectListNum == 0:
-            self.imgLb = ttk.Label(master, text=textSetting.textList["comicscript"]["headerImgLabel"], font=textSetting.textList["font2"])
-            self.imgLb.grid(row=1, column=0, sticky=tkinter.W+tkinter.E)
+            imgLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["comicscript"]["headerImgLabel"], font=textSetting.textList["font2"])
+            imgLb.grid(row=1, column=0, sticky=tkinter.W+tkinter.E)
             self.v_img = tkinter.StringVar()
-            self.imgEt = ttk.Entry(master, textvariable=self.v_img, font=textSetting.textList["font2"])
-            self.imgEt.grid(row=1, column=1, sticky=tkinter.W+tkinter.E)
+            imgEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.v_img, font=textSetting.textList["font2"])
+            imgEt.grid(row=1, column=1, sticky=tkinter.W+tkinter.E)
             if self.mode == "modify":
                 self.v_img.set(self.selectList[self.selectIndexNum])
             else:
                 self.setInsertWidget(master, 2)
         elif self.selectListNum == 1:
-            self.imgIndexLb = ttk.Label(master, text=textSetting.textList["comicscript"]["headerImgIndex"], font=textSetting.textList["font2"])
-            self.imgIndexLb.grid(row=1, column=0, sticky=tkinter.W+tkinter.E)
-            self.imgIndex_xLb = ttk.Label(master, text=textSetting.textList["comicscript"]["headerImgX"], font=textSetting.textList["font2"])
-            self.imgIndex_xLb.grid(row=2, column=0, sticky=tkinter.W+tkinter.E)
-            self.imgIndex_yLb = ttk.Label(master, text=textSetting.textList["comicscript"]["headerImgY"], font=textSetting.textList["font2"])
-            self.imgIndex_yLb.grid(row=3, column=0, sticky=tkinter.W+tkinter.E)
-            self.imgIndex_widthLb = ttk.Label(master, text=textSetting.textList["comicscript"]["headerImgWidth"], font=textSetting.textList["font2"])
-            self.imgIndex_widthLb.grid(row=4, column=0, sticky=tkinter.W+tkinter.E)
-            self.imgIndex_heightLb = ttk.Label(master, text=textSetting.textList["comicscript"]["headerImgHeight"], font=textSetting.textList["font2"])
-            self.imgIndex_heightLb.grid(row=5, column=0, sticky=tkinter.W+tkinter.E)
+            imgIndexLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["comicscript"]["headerImgIndex"], font=textSetting.textList["font2"])
+            imgIndexLb.grid(row=1, column=0, sticky=tkinter.W+tkinter.E)
+            imgIndex_xLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["comicscript"]["headerImgX"], font=textSetting.textList["font2"])
+            imgIndex_xLb.grid(row=2, column=0, sticky=tkinter.W+tkinter.E)
+            imgIndex_yLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["comicscript"]["headerImgY"], font=textSetting.textList["font2"])
+            imgIndex_yLb.grid(row=3, column=0, sticky=tkinter.W+tkinter.E)
+            imgIndex_widthLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["comicscript"]["headerImgWidth"], font=textSetting.textList["font2"])
+            imgIndex_widthLb.grid(row=4, column=0, sticky=tkinter.W+tkinter.E)
+            imgIndex_heightLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["comicscript"]["headerImgHeight"], font=textSetting.textList["font2"])
+            imgIndex_heightLb.grid(row=5, column=0, sticky=tkinter.W+tkinter.E)
 
             self.v_imgIndex = tkinter.IntVar()
             self.v_imgIndex_x = tkinter.DoubleVar()
             self.v_imgIndex_y = tkinter.DoubleVar()
             self.v_imgIndex_width = tkinter.DoubleVar()
             self.v_imgIndex_height = tkinter.DoubleVar()
-            self.imgIndexEt = ttk.Entry(master, textvariable=self.v_imgIndex, font=textSetting.textList["font2"])
-            self.imgIndexEt.grid(row=1, column=1, sticky=tkinter.W+tkinter.E)
-            self.imgIndex_xEt = ttk.Entry(master, textvariable=self.v_imgIndex_x, font=textSetting.textList["font2"])
-            self.imgIndex_xEt.grid(row=2, column=1, sticky=tkinter.W+tkinter.E)
-            self.imgIndex_yEt = ttk.Entry(master, textvariable=self.v_imgIndex_y, font=textSetting.textList["font2"])
-            self.imgIndex_yEt.grid(row=3, column=1, sticky=tkinter.W+tkinter.E)
-            self.imgIndex_widthEt = ttk.Entry(master, textvariable=self.v_imgIndex_width, font=textSetting.textList["font2"])
-            self.imgIndex_widthEt.grid(row=4, column=1, sticky=tkinter.W+tkinter.E)
-            self.imgIndex_heightEt = ttk.Entry(master, textvariable=self.v_imgIndex_height, font=textSetting.textList["font2"])
-            self.imgIndex_heightEt.grid(row=5, column=1, sticky=tkinter.W+tkinter.E)
+            imgIndexEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.v_imgIndex, font=textSetting.textList["font2"])
+            imgIndexEt.grid(row=1, column=1, sticky=tkinter.W+tkinter.E)
+            imgIndex_xEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.v_imgIndex_x, font=textSetting.textList["font2"])
+            imgIndex_xEt.grid(row=2, column=1, sticky=tkinter.W+tkinter.E)
+            imgIndex_yEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.v_imgIndex_y, font=textSetting.textList["font2"])
+            imgIndex_yEt.grid(row=3, column=1, sticky=tkinter.W+tkinter.E)
+            imgIndex_widthEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.v_imgIndex_width, font=textSetting.textList["font2"])
+            imgIndex_widthEt.grid(row=4, column=1, sticky=tkinter.W+tkinter.E)
+            imgIndex_heightEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.v_imgIndex_height, font=textSetting.textList["font2"])
+            imgIndex_heightEt.grid(row=5, column=1, sticky=tkinter.W+tkinter.E)
 
             if self.mode == "modify":
                 self.v_imgIndex.set(int(self.selectList[self.selectIndexNum][0]))
@@ -464,17 +459,17 @@ class HeaderFileEdit(sd.Dialog):
             else:
                 self.setInsertWidget(master, 6)
         elif self.selectListNum == 2:
-            self.seLb = ttk.Label(master, text=textSetting.textList["comicscript"]["headerSELabel"], font=textSetting.textList["font2"])
-            self.seLb.grid(row=1, column=0, sticky=tkinter.W+tkinter.E)
-            self.seFileCntLb = ttk.Label(master, text=textSetting.textList["comicscript"]["headerSEGroup"], font=textSetting.textList["font2"])
-            self.seFileCntLb.grid(row=2, column=0, sticky=tkinter.W+tkinter.E)
+            seLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["comicscript"]["headerSELabel"], font=textSetting.textList["font2"])
+            seLb.grid(row=1, column=0, sticky=tkinter.W+tkinter.E)
+            seFileCntLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["comicscript"]["headerSEGroup"], font=textSetting.textList["font2"])
+            seFileCntLb.grid(row=2, column=0, sticky=tkinter.W+tkinter.E)
 
             self.v_se = tkinter.StringVar()
             self.v_seFileCnt = tkinter.IntVar()
-            self.seEt = ttk.Entry(master, textvariable=self.v_se, font=textSetting.textList["font2"])
-            self.seEt.grid(row=1, column=1, sticky=tkinter.W+tkinter.E)
-            self.seFileCntEt = ttk.Entry(master, textvariable=self.v_seFileCnt, font=textSetting.textList["font2"])
-            self.seFileCntEt.grid(row=2, column=1, sticky=tkinter.W+tkinter.E)
+            seEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.v_se, font=textSetting.textList["font2"])
+            seEt.grid(row=1, column=1, sticky=tkinter.W+tkinter.E)
+            seFileCntEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.v_seFileCnt, font=textSetting.textList["font2"])
+            seFileCntEt.grid(row=2, column=1, sticky=tkinter.W+tkinter.E)
 
             if self.mode == "modify":
                 self.v_se.set(self.selectList[self.selectIndexNum][0])
@@ -482,28 +477,28 @@ class HeaderFileEdit(sd.Dialog):
             else:
                 self.setInsertWidget(master, 3)
         elif self.selectListNum == 3:
-            self.bgmLb = ttk.Label(master, text=textSetting.textList["comicscript"]["headerBGMLabel"], font=textSetting.textList["font2"])
-            self.bgmLb.grid(row=1, column=0, sticky=tkinter.W+tkinter.E)
-            self.bgmLoopFlagLb = ttk.Label(master, text=textSetting.textList["comicscript"]["headerBGMLoopFlag"], font=textSetting.textList["font2"])
-            self.bgmLoopFlagLb.grid(row=2, column=0, sticky=tkinter.W+tkinter.E)
-            self.bgmStartLb = ttk.Label(master, text=textSetting.textList["comicscript"]["headerBGMStart"], font=textSetting.textList["font2"])
-            self.bgmStartLb.grid(row=3, column=0, sticky=tkinter.W+tkinter.E)
-            self.bgmLoopStartLb = ttk.Label(master, text=textSetting.textList["comicscript"]["headerBGMLoopStart"], font=textSetting.textList["font2"])
-            self.bgmLoopStartLb.grid(row=4, column=0, sticky=tkinter.W+tkinter.E)
+            bgmLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["comicscript"]["headerBGMLabel"], font=textSetting.textList["font2"])
+            bgmLb.grid(row=1, column=0, sticky=tkinter.W+tkinter.E)
+            bgmLoopFlagLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["comicscript"]["headerBGMLoopFlag"], font=textSetting.textList["font2"])
+            bgmLoopFlagLb.grid(row=2, column=0, sticky=tkinter.W+tkinter.E)
+            bgmStartLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["comicscript"]["headerBGMStart"], font=textSetting.textList["font2"])
+            bgmStartLb.grid(row=3, column=0, sticky=tkinter.W+tkinter.E)
+            bgmLoopStartLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["comicscript"]["headerBGMLoopStart"], font=textSetting.textList["font2"])
+            bgmLoopStartLb.grid(row=4, column=0, sticky=tkinter.W+tkinter.E)
 
             self.v_bgm = tkinter.StringVar()
             self.v_bgmLoopFlag = tkinter.IntVar()
             self.v_bgmStart = tkinter.DoubleVar()
             self.v_bgmLoopStart = tkinter.DoubleVar()
-            self.bgmEt = ttk.Entry(master, textvariable=self.v_bgm, font=textSetting.textList["font2"])
-            self.bgmEt.grid(row=1, column=1, sticky=tkinter.W+tkinter.E)
-            self.bgmLoopFlagCb = ttk.Combobox(master, width=24, font=textSetting.textList["font2"], state="readonly", value=textSetting.textList["comicscript"]["headerBGMLoopLabelInfo"])
+            bgmEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.v_bgm, font=textSetting.textList["font2"])
+            bgmEt.grid(row=1, column=1, sticky=tkinter.W+tkinter.E)
+            self.bgmLoopFlagCb = ttkCustomWidget.CustomTtkCombobox(master, width=24, font=textSetting.textList["font2"], state="readonly", value=textSetting.textList["comicscript"]["headerBGMLoopLabelInfo"])
             self.bgmLoopFlagCb.grid(row=2, column=1, sticky=tkinter.W+tkinter.E)
             self.bgmLoopFlagCb.current(self.v_bgmLoopFlag.get())
-            self.bgmStartEt = ttk.Entry(master, textvariable=self.v_bgmStart, font=textSetting.textList["font2"])
-            self.bgmStartEt.grid(row=3, column=1, sticky=tkinter.W+tkinter.E)
-            self.bgmLoopStartEt = ttk.Entry(master, textvariable=self.v_bgmLoopStart, font=textSetting.textList["font2"])
-            self.bgmLoopStartEt.grid(row=4, column=1, sticky=tkinter.W+tkinter.E)
+            bgmStartEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.v_bgmStart, font=textSetting.textList["font2"])
+            bgmStartEt.grid(row=3, column=1, sticky=tkinter.W+tkinter.E)
+            bgmLoopStartEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.v_bgmLoopStart, font=textSetting.textList["font2"])
+            bgmLoopStartEt.grid(row=4, column=1, sticky=tkinter.W+tkinter.E)
 
             if self.mode == "modify":
                 self.v_bgm.set(self.selectList[self.selectIndexNum][0])
@@ -512,15 +507,16 @@ class HeaderFileEdit(sd.Dialog):
                 self.v_bgmLoopStart.set(self.selectList[self.selectIndexNum][3])
             else:
                 self.setInsertWidget(master, 5)
+        super().body(master)
 
     def setInsertWidget(self, master, index):
-        self.xLine = ttk.Separator(master, orient=tkinter.HORIZONTAL)
-        self.xLine.grid(row=index, column=0, columnspan=2, sticky=tkinter.W+tkinter.E, pady=10)
+        xLine = ttkCustomWidget.CustomTtkSeparator(master, orient=tkinter.HORIZONTAL)
+        xLine.grid(row=index, column=0, columnspan=2, sticky=tkinter.W+tkinter.E, pady=10)
 
-        self.insertLb = ttk.Label(master, text=textSetting.textList["comicscript"]["posLabel"], font=textSetting.textList["font2"])
-        self.insertLb.grid(row=index+1, column=0, sticky=tkinter.W+tkinter.E)
+        insertLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["comicscript"]["posLabel"], font=textSetting.textList["font2"])
+        insertLb.grid(row=index+1, column=0, sticky=tkinter.W+tkinter.E)
         self.v_insert = tkinter.StringVar()
-        self.insertCb = ttk.Combobox(master, textvariable=self.v_insert, font=textSetting.textList["font2"], state="readonly", values=textSetting.textList["comicscript"]["posValue"])
+        self.insertCb = ttkCustomWidget.CustomTtkCombobox(master, textvariable=self.v_insert, font=textSetting.textList["font2"], state="readonly", values=textSetting.textList["comicscript"]["posValue"])
         self.insertCb.grid(row=index+1, column=1, sticky=tkinter.W+tkinter.E)
         self.insertCb.current(0)
 

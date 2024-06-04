@@ -1,28 +1,29 @@
 import tkinter
-from tkinter import ttk
-from tkinter import simpledialog as sd
 from tkinter import messagebox as mb
 import program.textSetting as textSetting
+import program.appearance.ttkCustomWidget as ttkCustomWidget
+from program.appearance.customSimpleDialog import CustomSimpleDialog
 
 
 class PerfWidget():
-    def __init__(self, root, cbIdx, i, frame, perf, decryptFile, varList, btnList, defaultData):
+    def __init__(self, root, cbIdx, i, frame, perf, decryptFile, varList, btnList, defaultData, rootFrameAppearance):
         self.root = root
         self.cbIdx = cbIdx
         self.decryptFile = decryptFile
         self.varList = varList
         self.btnList = btnList
         self.defaultData = defaultData
+        self.rootFrameAppearance = rootFrameAppearance
 
-        self.perfNameLb = tkinter.Label(frame, text=self.decryptFile.trainPerfNameList[i], font=textSetting.textList["font6"], width=27, borderwidth=1, relief="solid")
-        self.perfNameLb.grid(row=i, column=0, sticky=tkinter.N + tkinter.W + tkinter.S + tkinter.E)
+        self.perfNameLb = ttkCustomWidget.CustomTtkLabel(frame, text=self.decryptFile.trainPerfNameList[i], font=textSetting.textList["font6"], anchor=tkinter.CENTER, relief="solid")
+        self.perfNameLb.grid(row=i, column=0, sticky=tkinter.NSEW)
         self.varPerf = tkinter.DoubleVar()
         self.varPerf.set(str(perf[i]))
         self.varList.append(self.varPerf)
-        self.perfLb = tkinter.Label(frame, textvariable=self.varPerf, font=textSetting.textList["font6"], width=10, borderwidth=1, relief="solid")
-        self.perfLb.grid(row=i, column=1, sticky=tkinter.N + tkinter.W + tkinter.S + tkinter.E)
-        self.perfBtn = tkinter.Button(frame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], font=textSetting.textList["font7"], command=lambda: self.editVar([self.perfNameLb, self.perfLb], self.varPerf, self.varPerf.get(), self.defaultData[self.cbIdx]["att"][i]), state="disabled")
-        self.perfBtn.grid(row=i, column=2, sticky=tkinter.N + tkinter.W + tkinter.S + tkinter.E)
+        self.perfLb = ttkCustomWidget.CustomTtkLabel(frame, textvariable=self.varPerf, font=textSetting.textList["font6"], anchor=tkinter.CENTER, relief="solid")
+        self.perfLb.grid(row=i, column=1, sticky=tkinter.NSEW)
+        self.perfBtn = ttkCustomWidget.CustomTtkButton(frame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=lambda: self.editVar([self.perfNameLb, self.perfLb], self.varPerf, self.varPerf.get(), self.defaultData[self.cbIdx]["att"][i]), state="disabled")
+        self.perfBtn.grid(row=i, column=2, sticky=tkinter.NSEW, padx=(0, 10))
         self.btnList.append(self.perfBtn)
 
         color = ""
@@ -32,36 +33,40 @@ class PerfWidget():
             color = "blue"
         else:
             color = "black"
-        self.perfNameLb["fg"] = color
-        self.perfLb["fg"] = color
+        self.perfNameLb.setFgColor(color)
+        self.perfLb.setFgColor(color)
+
+        frame.grid_columnconfigure(0, weight=10)
+        frame.grid_columnconfigure(1, weight=1)
 
     def editVar(self, labelList, var, value, defaultValue, flag=False):
-        EditPerfVarInfo(self.root, textSetting.textList["orgInfoEditor"]["valueModify"], labelList, var, value, defaultValue, flag)
+        EditPerfVarInfo(self.root, textSetting.textList["orgInfoEditor"]["valueModify"], labelList, var, value, defaultValue, self.rootFrameAppearance, flag)
 
 
-class EditPerfVarInfo(sd.Dialog):
-    def __init__(self, master, title, labelList, var, value, defaultValue, flag=False):
+class EditPerfVarInfo(CustomSimpleDialog):
+    def __init__(self, master, title, labelList, var, value, defaultValue, rootFrameAppearance, flag=False):
         self.labelList = labelList
         self.var = var
         self.value = value
         self.defaultValue = defaultValue
         self.flag = flag
-        super(EditPerfVarInfo, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, frame):
-        self.defaultLb = tkinter.Label(frame, text=textSetting.textList["orgInfoEditor"]["defaultValueLabel"] + str(self.defaultValue), font=textSetting.textList["font2"])
+        self.defaultLb = ttkCustomWidget.CustomTtkLabel(frame, text=textSetting.textList["orgInfoEditor"]["defaultValueLabel"] + str(self.defaultValue), font=textSetting.textList["font2"])
         self.defaultLb.pack()
 
-        sep = ttk.Separator(frame, orient="horizontal")
+        sep = ttkCustomWidget.CustomTtkSeparator(frame, orient="horizontal")
         sep.pack(fill=tkinter.X, ipady=5)
 
-        self.inputLb = tkinter.Label(frame, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
+        self.inputLb = ttkCustomWidget.CustomTtkLabel(frame, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
         self.inputLb.pack()
 
-        v_val = tkinter.StringVar()
-        v_val.set(self.value)
-        self.inputEt = tkinter.Entry(frame, textvariable=v_val, font=textSetting.textList["font2"])
+        self.v_val = tkinter.StringVar()
+        self.v_val.set(self.value)
+        self.inputEt = ttkCustomWidget.CustomTtkEntry(frame, textvariable=self.v_val, font=textSetting.textList["font2"])
         self.inputEt.pack()
+        super().body(frame)
 
     def validate(self):
         result = self.inputEt.get()
@@ -102,5 +107,5 @@ class EditPerfVarInfo(sd.Dialog):
                     color = "black"
 
                 for label in self.labelList:
-                    label["fg"] = color
+                    label.setFgColor(color)
             return True

@@ -3,6 +3,7 @@ from tkinter import ttk
 from tkinter import filedialog as fd
 from tkinter import messagebox as mb
 import program.textSetting as textSetting
+import program.appearance.ttkCustomWidget as ttkCustomWidget
 
 from program.musicEditor.dendMusicDecrypt import BSMusicDecrypt as dendBs
 from program.musicEditor.dendMusicDecrypt import CSMusicDecrypt as dendCs
@@ -19,6 +20,7 @@ v_radio = None
 bgmLf = None
 decryptFile = None
 frame = None
+rootFrameAppearance = None
 
 BS = 1
 CS = 2
@@ -95,24 +97,26 @@ def createWidget():
 
 def editMusic():
     global root
+    global rootFrameAppearance
     global decryptFile
     global frame
 
     selectId = frame.tree.selection()[0]
     selectItem = frame.tree.set(selectId)
-    result = InputDialog(root, textSetting.textList["musicEditor"]["bgmModify"], decryptFile, int(selectItem[textSetting.textList["musicEditor"]["bgmNo"]]), selectItem)
+    result = InputDialog(root, textSetting.textList["musicEditor"]["bgmModify"], decryptFile, rootFrameAppearance, int(selectItem[textSetting.textList["musicEditor"]["bgmNo"]]), selectItem)
     if result.reloadFlag:
         reloadFile()
 
 
 def swapMusic():
     global root
+    global rootFrameAppearance
     global decryptFile
     global frame
 
     selectId = frame.tree.selection()[0]
     selectItem = frame.tree.set(selectId)
-    result = InputDialog(root, textSetting.textList["musicEditor"]["bgmSwap"], decryptFile, int(selectItem[textSetting.textList["musicEditor"]["bgmNo"]]))
+    result = InputDialog(root, textSetting.textList["musicEditor"]["bgmSwap"], decryptFile, rootFrameAppearance, int(selectItem[textSetting.textList["musicEditor"]["bgmNo"]]))
     if result.reloadFlag:
         reloadFile()
 
@@ -147,8 +151,9 @@ def deleteWidget():
     swap_button["state"] = "disabled"
 
 
-def call_musicEditor(rootTk, programFrame):
+def call_musicEditor(rootTk, appearance):
     global root
+    global rootFrameAppearance
     global v_edit
     global v_swap
     global edit_button
@@ -157,27 +162,40 @@ def call_musicEditor(rootTk, programFrame):
     global bgmLf
 
     root = rootTk
+    rootFrameAppearance = appearance
+
+    headerFrame = ttkCustomWidget.CustomTtkFrame(root)
+    headerFrame.pack(fill=tkinter.X, padx=40, pady=(25, 0))
+
+    radioFrame = ttkCustomWidget.CustomTtkFrame(headerFrame)
+    radioFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT)
+
+    v_radio = tkinter.IntVar(value=RS)
+
+    bsRb = ttkCustomWidget.CustomTtkRadiobutton(radioFrame, text="Burning Stage", command=deleteWidget, variable=v_radio, value=BS)
+    bsRb.grid(row=0, column=0, padx=(0, 50))
+
+    csRb = ttkCustomWidget.CustomTtkRadiobutton(radioFrame, text="Climax Stage", command=deleteWidget, variable=v_radio, value=CS)
+    csRb.grid(row=0, column=1, padx=(0, 50))
+
+    rsRb = ttkCustomWidget.CustomTtkRadiobutton(radioFrame, text="Rising Stage", command=deleteWidget, variable=v_radio, value=RS)
+    rsRb.grid(row=0, column=2, padx=(0, 50))
+
+    btnFrame = ttkCustomWidget.CustomTtkFrame(headerFrame)
+    btnFrame.pack(fill=tkinter.X)
+
     v_edit = tkinter.StringVar()
     v_edit.set(textSetting.textList["musicEditor"]["bgmModifyLabel"])
-    edit_button = ttk.Button(programFrame, textvariable=v_edit, command=editMusic, state="disabled")
-    edit_button.place(relx=0.48, rely=0.02, relwidth=0.2, height=25)
+    edit_button = ttkCustomWidget.CustomTtkButton(btnFrame, textvariable=v_edit, width=30, command=editMusic, state="disabled")
+    edit_button.grid(row=0, column=0)
 
     v_swap = tkinter.StringVar()
     v_swap.set(textSetting.textList["musicEditor"]["bgmSwapLabel"])
-    swap_button = ttk.Button(programFrame, textvariable=v_swap, command=swapMusic, state="disabled")
-    swap_button.place(relx=0.75, rely=0.02, relwidth=0.2, height=25)
+    swap_button = ttkCustomWidget.CustomTtkButton(btnFrame, textvariable=v_swap, width=30, command=swapMusic, state="disabled")
+    swap_button.grid(row=0, column=1)
 
-    v_radio = tkinter.IntVar()
+    btnFrame.grid_columnconfigure(0, weight=1)
+    btnFrame.grid_columnconfigure(1, weight=1)
 
-    bsRb = tkinter.Radiobutton(programFrame, text="Burning Stage", command=deleteWidget, variable=v_radio, value=BS)
-    bsRb.place(relx=0.04, rely=0.02)
-
-    csRb = tkinter.Radiobutton(programFrame, text="Climax Stage", command=deleteWidget, variable=v_radio, value=CS)
-    csRb.place(relx=0.18, rely=0.02)
-
-    rsRb = tkinter.Radiobutton(programFrame, text="Rising Stage", command=deleteWidget, variable=v_radio, value=RS)
-    rsRb.select()
-    rsRb.place(relx=0.32, rely=0.02)
-
-    bgmLf = ttk.LabelFrame(programFrame, text=textSetting.textList["musicEditor"]["scriptLabel"])
-    bgmLf.place(relx=0.03, rely=0.07, relwidth=0.95, relheight=0.90)
+    bgmLf = ttkCustomWidget.CustomTtkLabelFrame(root, text=textSetting.textList["musicEditor"]["scriptLabel"])
+    bgmLf.pack(expand=True, fill=tkinter.BOTH, padx=25, pady=(0, 25))

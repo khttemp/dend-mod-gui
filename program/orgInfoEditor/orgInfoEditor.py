@@ -3,10 +3,10 @@ import codecs
 import sys
 import tkinter
 import copy
-from tkinter import ttk
 from tkinter import filedialog as fd
 from tkinter import messagebox as mb
 import program.textSetting as textSetting
+import program.appearance.ttkCustomWidget as ttkCustomWidget
 
 import program.orgInfoEditor.importPy.gameDefine as gameDefine
 from program.orgInfoEditor.importPy.tkinterTab import tab1AllWidget, tab2AllWidget, tab3AllWidget
@@ -25,6 +25,7 @@ menuCb = None
 v_edit = None
 edit_stage_train_button = None
 tabFrame = None
+rootFrameAppearance = None
 decryptFile = None
 varList = []
 btnList = []
@@ -225,6 +226,7 @@ def selectInfo(trainIdx, index):
     global edit_stage_train_button
     global tabFrame
     global decryptFile
+    global rootFrameAppearance
     deleteWidget()
 
     widgetList = [
@@ -236,11 +238,11 @@ def selectInfo(trainIdx, index):
     game = gameCb.current()
 
     if index == 0:
-        tab1AllWidget(tabFrame, decryptFile, trainIdx, game, varList, btnList, defaultData, widgetList, reloadFile)
+        tab1AllWidget(tabFrame, decryptFile, trainIdx, game, varList, btnList, defaultData, widgetList, rootFrameAppearance, reloadFile)
     elif index == 1:
-        tab2AllWidget(tabFrame, decryptFile, trainIdx, game, defaultData, widgetList, reloadFile)
+        tab2AllWidget(tabFrame, decryptFile, trainIdx, game, defaultData, widgetList, rootFrameAppearance, reloadFile)
     elif index == 2:
-        tab3AllWidget(tabFrame, decryptFile, trainIdx, game, widgetList, reloadFile)
+        tab3AllWidget(tabFrame, decryptFile, trainIdx, game, widgetList, rootFrameAppearance, reloadFile)
 
 
 def deleteWidget():
@@ -291,16 +293,17 @@ def selectGame():
     menuCb.set("")
 
     if gameCb.current() in [gameDefine.BS, gameDefine.CS, gameDefine.RS]:
-        edit_stage_train_button.place(relx=0.76, rely=0.02, relwidth=0.2, height=25)
+        edit_stage_train_button.grid(row=0, column=3)
         edit_stage_train_button["state"] = "disabled"
     else:
-        edit_stage_train_button.place_forget()
+        edit_stage_train_button.grid_remove()
 
 
 def editStageTrain():
     global root
     global gameCb
     global decryptFile
+    global rootFrameAppearance
 
     index = decryptFile.stageIdx
     if index == -1:
@@ -309,7 +312,7 @@ def editStageTrain():
         return
 
     game = gameCb.current()
-    EditStageInfo(root, textSetting.textList["orgInfoEditor"]["editStageLabel"], game, decryptFile)
+    EditStageInfo(root, textSetting.textList["orgInfoEditor"]["editStageLabel"], game, decryptFile, rootFrameAppearance)
 
 
 def modifiedTrainNameList():
@@ -421,7 +424,7 @@ def modifiedTrainNameList():
     return copyTrainNameList
 
 
-def call_orgInfoEditor(rootTk, programFrame):
+def call_orgInfoEditor(rootTk, appearance):
     global root
     global gameCb
     global trainCb
@@ -429,28 +432,33 @@ def call_orgInfoEditor(rootTk, programFrame):
     global v_edit
     global edit_stage_train_button
     global tabFrame
+    global rootFrameAppearance
 
     root = rootTk
+    rootFrameAppearance = appearance
 
-    gameCb = ttk.Combobox(programFrame, width=10, state="readonly", values=gameDefine.gameList)
+    headerFrame = ttkCustomWidget.CustomTtkFrame(root)
+    headerFrame.pack(fill=tkinter.X, padx=40, pady=(25, 0))
+
+    gameCb = ttkCustomWidget.CustomTtkCombobox(headerFrame, width=23, state="readonly", values=gameDefine.gameList)
     gameCb.bind("<<ComboboxSelected>>", lambda e: selectGame())
-    gameCb.place(relx=0.05, rely=0.02, relwidth=0.15, height=25)
+    gameCb.grid(row=0, column=0, padx=15, pady=(0, 15))
     gameCb.current(0)
 
-    trainCb = ttk.Combobox(programFrame, width=10, state="disabled")
+    trainCb = ttkCustomWidget.CustomTtkCombobox(headerFrame, width=40, state="disabled")
     trainCb.bind("<<ComboboxSelected>>", lambda e: selectTrain(trainCb.current()))
-    trainCb.place(relx=0.24, rely=0.02, relwidth=0.25, height=25)
+    trainCb.grid(row=0, column=1, padx=20, pady=(0, 15))
 
-    menuCb = ttk.Combobox(programFrame, width=10, state="disabled")
+    menuCb = ttkCustomWidget.CustomTtkCombobox(headerFrame, width=30, state="disabled")
     menuCb.bind("<<ComboboxSelected>>", lambda e: selectInfo(trainCb.current(), menuCb.current()))
-    menuCb.place(relx=0.53, rely=0.02, relwidth=0.2, height=25)
+    menuCb.grid(row=0, column=2, padx=20, pady=(0, 15))
 
     v_edit = tkinter.StringVar()
 
-    edit_stage_train_button = ttk.Button(programFrame, text=textSetting.textList["orgInfoEditor"]["editStageDefaultTrain"], command=editStageTrain, state="disabled")
-    edit_stage_train_button.place(relx=0.76, rely=0.02, relwidth=0.2, height=25)
+    edit_stage_train_button = ttkCustomWidget.CustomTtkButton(headerFrame, text=textSetting.textList["orgInfoEditor"]["editStageDefaultTrain"], width=23, command=editStageTrain, state="disabled")
+    edit_stage_train_button.grid(row=0, column=3, padx=20, pady=(0, 10))
 
-    tabFrame = ttk.Frame(programFrame, borderwidth=1, relief="solid")
-    tabFrame.place(relx=0.03, rely=0.08, relwidth=0.95, relheight=0.89)
+    tabFrame = ttkCustomWidget.CustomTtkFrame(root, borderwidth=1, relief="solid")
+    tabFrame.pack(expand=True, fill=tkinter.BOTH, padx=25, pady=(0, 20))
 
     selectGame()

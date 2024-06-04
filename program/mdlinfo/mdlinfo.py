@@ -3,10 +3,10 @@ import codecs
 import tkinter
 import traceback
 
-from tkinter import ttk
 from tkinter import messagebox as mb
 from tkinter import filedialog as fd
 import program.textSetting as textSetting
+import program.appearance.ttkCustomWidget as ttkCustomWidget
 
 from program.mdlinfo.importPy.decrypt import MdlDecrypt
 from program.mdlinfo.importPy.tkinterScrollbarTreeviewMdlinfo import ScrollbarTreeviewMdlinfo
@@ -15,6 +15,7 @@ from program.mdlinfo.importPy.tkinterClass import TreeViewDialog, ImageDialog, S
 from program.smf.importPy.decrypt import SmfDecrypt
 
 root = None
+rootFrameAppearance = None
 v_fileName = None
 v_select = None
 v_search = None
@@ -184,21 +185,23 @@ def allDeleteTreeview():
 
 
 def getMdlDetail():
+    global rootFrameAppearance
     global frame
     global decryptFile
     selectId = int(frame.tree.selection()[0])
     selectItem = frame.tree.set(selectId)
     num = int(selectItem["treeNum"]) - 1
-    TreeViewDialog(root, textSetting.textList["mdlinfo"]["detailModelInfo"], num, decryptFile)
+    TreeViewDialog(root, textSetting.textList["mdlinfo"]["detailModelInfo"], num, decryptFile, rootFrameAppearance)
 
 
 def getMdlImage():
+    global rootFrameAppearance
     global frame
     global decryptFile
     selectId = int(frame.tree.selection()[0])
     selectItem = frame.tree.set(selectId)
     num = int(selectItem["treeNum"]) - 1
-    ImageDialog(root, textSetting.textList["mdlinfo"]["detailModelImageInfo"], num, decryptFile)
+    ImageDialog(root, textSetting.textList["mdlinfo"]["detailModelImageInfo"], num, decryptFile, rootFrameAppearance)
 
     allDeleteTreeview()
     decryptFile = decryptFile.reload()
@@ -207,12 +210,13 @@ def getMdlImage():
 
 
 def getSmfDetail():
+    global rootFrameAppearance
     global frame
     global decryptFile
     selectId = int(frame.tree.selection()[0])
     selectItem = frame.tree.set(selectId)
     num = int(selectItem["treeNum"]) - 1
-    SmfDetailDialog(root, textSetting.textList["mdlinfo"]["smfInfo"], num, decryptFile)
+    SmfDetailDialog(root, textSetting.textList["mdlinfo"]["smfInfo"], num, decryptFile, rootFrameAppearance)
 
     allDeleteTreeview()
     decryptFile = decryptFile.reload()
@@ -221,12 +225,13 @@ def getSmfDetail():
 
 
 def getBinOrFlag():
+    global rootFrameAppearance
     global frame
     global decryptFile
     selectId = int(frame.tree.selection()[0])
     selectItem = frame.tree.set(selectId)
     num = int(selectItem["treeNum"]) - 1
-    BinFileOrFlagEditDialog(root, textSetting.textList["mdlinfo"]["binFileOrFlagLabel"], num, decryptFile)
+    BinFileOrFlagEditDialog(root, textSetting.textList["mdlinfo"]["binFileOrFlagLabel"], num, decryptFile, rootFrameAppearance)
 
     allDeleteTreeview()
     decryptFile = decryptFile.reload()
@@ -235,6 +240,7 @@ def getBinOrFlag():
 
 
 def copyAnother():
+    global rootFrameAppearance
     global decryptFile
     file_path = fd.askopenfilename(filetypes=[(textSetting.textList["mdlinfo"]["fileType"], "MDLINFO*.BIN")])
 
@@ -247,7 +253,7 @@ def copyAnother():
                 mb.showerror(title=textSetting.textList["error"], message=errorMsg)
                 return
 
-            result = CopyMdlDialog(root, textSetting.textList["mdlinfo"]["copyAnotherMdlinfo"], tempDecryptFile)
+            result = CopyMdlDialog(root, textSetting.textList["mdlinfo"]["copyAnotherMdlinfo"], tempDecryptFile, rootFrameAppearance)
             if result.dirtyFlag:
                 copyByteArr = result.copyByteArr
                 del tempDecryptFile
@@ -318,13 +324,14 @@ def copyInfo():
 
 
 def pasteInfo():
+    global rootFrameAppearance
     global decryptFile
     global frame
     global copyInfoByteArr
     selectId = frame.tree.selection()[0]
     selectItem = frame.tree.set(selectId)
     num = int(selectItem["treeNum"])
-    result = PasteDialog(root, textSetting.textList["mdlinfo"]["copyModelLabel"], decryptFile, num, copyInfoByteArr)
+    result = PasteDialog(root, textSetting.textList["mdlinfo"]["copyModelLabel"], decryptFile, num, copyInfoByteArr, rootFrameAppearance)
     if result.reloadFlag:
         allDeleteTreeview()
         decryptFile = decryptFile.reload()
@@ -358,8 +365,9 @@ def readSMF():
         frame.tree.selection_set(len(decryptFile.allInfoList) - 1)
 
 
-def call_mdlinfo(rootTk, programFrame):
+def call_mdlinfo(rootTk, appearance):
     global root
+    global rootFrameAppearance
     global v_fileName
     global v_select
     global v_search
@@ -376,51 +384,66 @@ def call_mdlinfo(rootTk, programFrame):
     global readSMFBtn
 
     root = rootTk
-    v_fileName = tkinter.StringVar()
-    fileNameEt = ttk.Entry(programFrame, textvariable=v_fileName, font=textSetting.textList["font2"], width=23, state="readonly", justify="center")
-    fileNameEt.place(relx=0.053, rely=0.03)
+    rootFrameAppearance = appearance
 
-    selectLb = ttk.Label(programFrame, text=textSetting.textList["mdlinfo"]["selectNum"], font=textSetting.textList["font2"])
-    selectLb.place(relx=0.05, rely=0.09)
+    headerFrame = ttkCustomWidget.CustomTtkFrame(root)
+    headerFrame.pack(fill=tkinter.BOTH, padx=40, pady=(20, 0))
+
+    selectLbFrame = ttkCustomWidget.CustomTtkFrame(headerFrame)
+    selectLbFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT)
+
+    v_fileName = tkinter.StringVar()
+    fileNameEt = ttkCustomWidget.CustomTtkEntry(selectLbFrame, textvariable=v_fileName, font=textSetting.textList["font2"], width=23, state="readonly", justify="center")
+    fileNameEt.grid(columnspan=5, row=0, column=0, pady=(0, 15), sticky=tkinter.EW)
+
+    selectLb = ttkCustomWidget.CustomTtkLabel(selectLbFrame, text=textSetting.textList["mdlinfo"]["selectNum"], font=textSetting.textList["font2"])
+    selectLb.grid(columnspan=4, row=1, column=0, pady=(0, 15), sticky=tkinter.EW)
 
     v_select = tkinter.StringVar()
-    selectEt = ttk.Entry(programFrame, textvariable=v_select, font=textSetting.textList["font2"], width=6, state="readonly", justify="center")
-    selectEt.place(relx=0.22, rely=0.09)
+    selectEt = ttkCustomWidget.CustomTtkEntry(selectLbFrame, textvariable=v_select, font=textSetting.textList["font2"], width=6, state="readonly", justify="center")
+    selectEt.grid(row=1, column=4, pady=(0, 15), sticky=tkinter.E)
 
-    searchLb = ttk.Label(programFrame, text=textSetting.textList["mdlinfo"]["searchModel"], font=textSetting.textList["font2"])
-    searchLb.place(relx=0.05, rely=0.15)
+    searchLb = ttkCustomWidget.CustomTtkLabel(selectLbFrame, text=textSetting.textList["mdlinfo"]["searchModel"], font=textSetting.textList["font2"])
+    searchLb.grid(columnspan=2, row=2, column=0, pady=(0, 15), sticky=tkinter.E)
 
     v_search = tkinter.StringVar()
-    searchEt = ttk.Entry(programFrame, textvariable=v_search, font=textSetting.textList["font2"], state="readonly", justify="center")
-    searchEt.place(relx=0.18, rely=0.15, relwidth=0.20)
+    searchEt = ttkCustomWidget.CustomTtkEntry(selectLbFrame, textvariable=v_search, font=textSetting.textList["font2"], state="readonly", justify="center")
+    searchEt.grid(columnspan=6, row=2, column=3, pady=(0, 15), sticky=tkinter.EW)
     searchEt.bind("<KeyRelease>", filterModelList)
 
-    mdlInfoLf = ttk.LabelFrame(programFrame, text=textSetting.textList["mdlinfo"]["scriptLabel"])
-    mdlInfoLf.place(relx=0.03, rely=0.20, relwidth=0.95, relheight=0.77)
+    btnFrame = ttkCustomWidget.CustomTtkFrame(headerFrame)
+    btnFrame.pack(fill=tkinter.BOTH, padx=(40, 0))
 
-    getMdlDetailBtn = ttk.Button(programFrame, text=textSetting.textList["mdlinfo"]["mdlDetailLabel"], width=25, state="disabled", command=getMdlDetail)
-    getMdlDetailBtn.place(relx=0.43, rely=0.03)
+    getMdlDetailBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["mdlinfo"]["mdlDetailLabel"], width=25, state="disabled", command=getMdlDetail)
+    getMdlDetailBtn.grid(row=0, column=0, padx=10, pady=(0, 20))
 
-    getMdlImageBtn = ttk.Button(programFrame, text=textSetting.textList["mdlinfo"]["mdlImageLabel"], width=25, state="disabled", command=getMdlImage)
-    getMdlImageBtn.place(relx=0.62, rely=0.03)
+    getMdlImageBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["mdlinfo"]["mdlImageLabel"], width=25, state="disabled", command=getMdlImage)
+    getMdlImageBtn.grid(row=0, column=1, padx=10, pady=(0, 20))
 
-    getSmfDetailBtn = ttk.Button(programFrame, text=textSetting.textList["mdlinfo"]["mdlSmfEleLabel"], width=25, state="disabled", command=getSmfDetail)
-    getSmfDetailBtn.place(relx=0.81, rely=0.03)
+    getSmfDetailBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["mdlinfo"]["mdlSmfEleLabel"], width=25, state="disabled", command=getSmfDetail)
+    getSmfDetailBtn.grid(row=0, column=2, padx=10, pady=(0, 20))
 
-    getBinOrFlagBtn = ttk.Button(programFrame, text=textSetting.textList["mdlinfo"]["binFileFlagLabel"], width=25, state="disabled", command=getBinOrFlag)
-    getBinOrFlagBtn.place(relx=0.43, rely=0.09)
+    getBinOrFlagBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["mdlinfo"]["binFileFlagLabel"], width=25, state="disabled", command=getBinOrFlag)
+    getBinOrFlagBtn.grid(row=1, column=0, padx=10, pady=(0, 20))
 
-    copyAnotherBtn = ttk.Button(programFrame, text=textSetting.textList["mdlinfo"]["copyAnotherMdlinfoLabel"], width=25, state="disabled", command=copyAnother)
-    copyAnotherBtn.place(relx=0.62, rely=0.09)
+    copyAnotherBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["mdlinfo"]["copyAnotherMdlinfoLabel"], width=25, state="disabled", command=copyAnother)
+    copyAnotherBtn.grid(row=1, column=1, padx=10, pady=(0, 20))
 
-    deleteMdlInfoBtn = ttk.Button(programFrame, text=textSetting.textList["mdlinfo"]["mdlinfoDeleteLabel"], width=25, state="disabled", command=deleteMdlInfo)
-    deleteMdlInfoBtn.place(relx=0.81, rely=0.09)
+    deleteMdlInfoBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["mdlinfo"]["mdlinfoDeleteLabel"], width=25, state="disabled", command=deleteMdlInfo)
+    deleteMdlInfoBtn.grid(row=1, column=2, padx=10, pady=(0, 20))
 
-    copyInfoBtn = ttk.Button(programFrame, text=textSetting.textList["mdlinfo"]["mdlinfoCopyLabel"], width=25, state="disabled", command=copyInfo)
-    copyInfoBtn.place(relx=0.43, rely=0.15)
+    copyInfoBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["mdlinfo"]["mdlinfoCopyLabel"], width=25, state="disabled", command=copyInfo)
+    copyInfoBtn.grid(row=2, column=0, padx=10, pady=(0, 20))
 
-    pasteInfoBtn = ttk.Button(programFrame, text=textSetting.textList["mdlinfo"]["mdlinfoPasteLabel"], width=25, state="disabled", command=pasteInfo)
-    pasteInfoBtn.place(relx=0.62, rely=0.15)
+    pasteInfoBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["mdlinfo"]["mdlinfoPasteLabel"], width=25, state="disabled", command=pasteInfo)
+    pasteInfoBtn.grid(row=2, column=1, padx=10, pady=(0, 20))
 
-    readSMFBtn = ttk.Button(programFrame, text=textSetting.textList["mdlinfo"]["addSmfModelLabel"], width=25, state="disabled", command=readSMF)
-    readSMFBtn.place(relx=0.81, rely=0.15)
+    readSMFBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["mdlinfo"]["addSmfModelLabel"], width=25, state="disabled", command=readSMF)
+    readSMFBtn.grid(row=2, column=2, padx=10, pady=(0, 20))
+
+    btnFrame.grid_columnconfigure(0, weight=1)
+    btnFrame.grid_columnconfigure(1, weight=1)
+    btnFrame.grid_columnconfigure(2, weight=1)
+
+    mdlInfoLf = ttkCustomWidget.CustomTtkLabelFrame(root, text=textSetting.textList["mdlinfo"]["scriptLabel"])
+    mdlInfoLf.pack(expand=True, fill=tkinter.BOTH, padx=25, pady=(0, 25))

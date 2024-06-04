@@ -1,33 +1,35 @@
 import tkinter
-from tkinter import ttk
 from tkinter import messagebox as mb
-from tkinter import simpledialog as sd
 import program.textSetting as textSetting
+import program.appearance.ttkCustomWidget as ttkCustomWidget
+from program.appearance.customSimpleDialog import CustomSimpleDialog
 
 
 class StationNoWidget:
-    def __init__(self, frame, decryptFile, stationNo, num, reloadFunc):
+    def __init__(self, root, frame, decryptFile, stationNo, num, rootFrameAppearance, reloadFunc):
+        self.root = root
         self.frame = frame
         self.decryptFile = decryptFile
         self.stationNo = stationNo
         self.num = num
+        self.rootFrameAppearance = rootFrameAppearance
         self.reloadFunc = reloadFunc
 
-        self.txtFrame = tkinter.Frame(self.frame, padx=1, pady=5)
-        self.txtFrame.pack(anchor=tkinter.NW)
+        txtFrame = ttkCustomWidget.CustomTtkFrame(self.frame)
+        txtFrame.pack(anchor=tkinter.NW, padx=10, pady=5)
 
-        self.stationNoLb = tkinter.Label(self.txtFrame, text=textSetting.textList["railEditor"]["stationNo"], font=textSetting.textList["font6"], width=12, borderwidth=1, relief="solid")
-        self.stationNoLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
+        stationNoLb = ttkCustomWidget.CustomTtkLabel(txtFrame, text=textSetting.textList["railEditor"]["stationNo"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, borderwidth=1, relief="solid")
+        stationNoLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, ipadx=5)
 
         self.varStationNo = tkinter.IntVar()
         self.varStationNo.set(self.stationNo)
-        self.stationNoTextLb = tkinter.Label(self.txtFrame, textvariable=self.varStationNo, font=textSetting.textList["font6"], width=7, borderwidth=1, relief="solid")
-        self.stationNoTextLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
-        self.stationNoBtn = tkinter.Button(self.txtFrame, text=textSetting.textList["railEditor"]["modifyBtnLabel"], font=textSetting.textList["font7"], command=lambda: self.editVar(self.varStationNo.get()))
-        self.stationNoBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
+        stationNoTextLb = ttkCustomWidget.CustomTtkLabel(txtFrame, textvariable=self.varStationNo, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
+        stationNoTextLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
+        stationNoBtn = ttkCustomWidget.CustomTtkButton(txtFrame, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=lambda: self.editVar(self.varStationNo.get()))
+        stationNoBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
 
     def editVar(self, value):
-        result = EditStationNoWidget(self.frame, textSetting.textList["railEditor"]["editStationNoLabel"], self.decryptFile, value)
+        result = EditStationNoWidget(self.root, textSetting.textList["railEditor"]["editStationNoLabel"], self.decryptFile, value, self.rootFrameAppearance)
 
         if result.reloadFlag:
             if not self.decryptFile.saveStationNo(self.num, result.resultValue):
@@ -39,24 +41,25 @@ class StationNoWidget:
             self.reloadFunc()
 
 
-class EditStationNoWidget(sd.Dialog):
-    def __init__(self, master, title, decryptFile, val):
+class EditStationNoWidget(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, val, rootFrameAppearance):
         self.decryptFile = decryptFile
         self.val = val
         self.reloadFlag = False
         self.resultValue = 0
-        super(EditStationNoWidget, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(False, False)
 
-        self.valLb = ttk.Label(master, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
-        self.valLb.pack()
+        valLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
+        valLb.pack()
 
         self.varStationNo = tkinter.IntVar()
         self.varStationNo.set(self.val)
-        self.valEt = ttk.Entry(master, textvariable=self.varStationNo, font=textSetting.textList["font2"], width=16)
-        self.valEt.pack()
+        valEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varStationNo, font=textSetting.textList["font2"], width=16)
+        valEt.pack()
+        super().body(master)
 
     def validate(self):
         result = mb.askokcancel(title=textSetting.textList["confirm"], message=textSetting.textList["infoList"]["I21"], parent=self)

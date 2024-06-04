@@ -4,10 +4,10 @@ import codecs
 import traceback
 
 import tkinter
-from tkinter import ttk
 from tkinter import filedialog as fd
 from tkinter import messagebox as mb
 import program.textSetting as textSetting
+import program.appearance.ttkCustomWidget as ttkCustomWidget
 
 from program.cmdList import cmdList
 
@@ -22,6 +22,7 @@ v_btnList = []
 decryptFile = None
 scriptLf = None
 frame = None
+rootFrameAppearance = None
 copyComicData = None
 
 
@@ -121,21 +122,23 @@ def deleteWidget():
 
 def editLine():
     global root
+    global rootFrameAppearance
     global decryptFile
     global frame
     selectId = frame.tree.selection()[0]
     selectItem = frame.tree.set(selectId)
-    result = InputDialog(root, textSetting.textList["comicscript"]["cmdModify"], decryptFile, int(selectItem["treeNum"]), selectItem)
+    result = InputDialog(root, textSetting.textList["comicscript"]["cmdModify"], decryptFile, rootFrameAppearance, int(selectItem["treeNum"]), selectItem)
     if result.reloadFlag:
         reloadFile()
 
 
 def insertLine():
     global root
+    global rootFrameAppearance
     global frame
     selectId = frame.tree.selection()[0]
     selectItem = frame.tree.set(selectId)
-    result = InputDialog(root, textSetting.textList["comicscript"]["cmdInsert"], decryptFile, int(selectItem["treeNum"]))
+    result = InputDialog(root, textSetting.textList["comicscript"]["cmdInsert"], decryptFile, rootFrameAppearance, int(selectItem["treeNum"]))
     if result.reloadFlag:
         reloadFile()
 
@@ -176,13 +179,14 @@ def copyLine():
 
 def pasteLine():
     global root
+    global rootFrameAppearance
     global decryptFile
     global frame
     global copyComicData
     selectId = frame.tree.selection()[0]
     selectItem = frame.tree.set(selectId)
     num = int(selectItem["treeNum"])
-    result = PasteDialog(root, textSetting.textList["comicscript"]["cmdPaste"], decryptFile, num, copyComicData)
+    result = PasteDialog(root, textSetting.textList["comicscript"]["cmdPaste"], decryptFile, rootFrameAppearance, num, copyComicData)
     if result.reloadFlag:
         reloadFile()
 
@@ -304,66 +308,81 @@ def csvLoadAndSave():
 
 def headerFileEdit():
     global root
+    global rootFrameAppearance
     global decryptFile
-    result = HeaderFileInfo(root, textSetting.textList["comicscript"]["headerInfo"], decryptFile)
+    result = HeaderFileInfo(root, textSetting.textList["comicscript"]["headerInfo"], decryptFile, rootFrameAppearance)
     if result.reloadFlag:
         reloadFile()
 
 
-def call_comicscript(rootTk, programFrame):
+def call_comicscript(rootTk, appearance):
     global root
     global v_fileName
     global v_select
     global v_btnList
     global scriptLf
+    global rootFrameAppearance
     root = rootTk
+    rootFrameAppearance = appearance
+
+    headerFrame = ttkCustomWidget.CustomTtkFrame(root)
+    headerFrame.pack(fill=tkinter.BOTH, padx=40, pady=(20, 0))
+
+    selectLbFrame = ttkCustomWidget.CustomTtkFrame(headerFrame)
+    selectLbFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT)
 
     v_fileName = tkinter.StringVar()
-    fileNameEt = ttk.Entry(programFrame, textvariable=v_fileName, font=textSetting.textList["font2"], width=23, state="readonly", justify="center")
-    fileNameEt.place(relx=0.053, rely=0.03)
+    fileNameEt = ttkCustomWidget.CustomTtkEntry(selectLbFrame, textvariable=v_fileName, font=textSetting.textList["font2"], width=23, state="readonly", justify="center")
+    fileNameEt.grid(columnspan=5, row=0, column=0, pady=(0, 15), sticky=tkinter.EW)
 
-    selectLb = ttk.Label(programFrame, text=textSetting.textList["comicscript"]["selectNum"], font=textSetting.textList["font2"])
-    selectLb.place(relx=0.05, rely=0.09)
+    selectLb = ttkCustomWidget.CustomTtkLabel(selectLbFrame, text=textSetting.textList["comicscript"]["selectNum"], font=textSetting.textList["font2"])
+    selectLb.grid(columnspan=4, row=1, column=0, pady=(0, 15), sticky=tkinter.EW)
 
     v_select = tkinter.StringVar()
-    selectEt = ttk.Entry(programFrame, textvariable=v_select, font=textSetting.textList["font2"], width=6, state="readonly", justify="center")
-    selectEt.place(relx=0.22, rely=0.09)
+    selectEt = ttkCustomWidget.CustomTtkEntry(selectLbFrame, textvariable=v_select, font=textSetting.textList["font2"], width=6, state="readonly", justify="center")
+    selectEt.grid(row=1, column=4, pady=(0, 15), sticky=tkinter.E)
+
+    btnFrame = ttkCustomWidget.CustomTtkFrame(headerFrame)
+    btnFrame.pack(fill=tkinter.BOTH, padx=(120, 0))
 
     buttonWidth = 25
-
     v_btnList = []
 
-    editLineBtn = ttk.Button(programFrame, text=textSetting.textList["comicscript"]["editLineLabel"], width=buttonWidth, state="disabled", command=editLine)
-    editLineBtn.place(relx=0.43, rely=0.03)
+    editLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["comicscript"]["editLineLabel"], width=buttonWidth, state="disabled", command=editLine)
+    editLineBtn.grid(row=0, column=0, padx=10, pady=(0, 20))
     v_btnList.append(editLineBtn)
 
-    insertLineBtn = ttk.Button(programFrame, text=textSetting.textList["comicscript"]["insertLineLabel"], width=buttonWidth, state="disabled", command=insertLine)
-    insertLineBtn.place(relx=0.62, rely=0.03)
+    insertLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["comicscript"]["insertLineLabel"], width=buttonWidth, state="disabled", command=insertLine)
+    insertLineBtn.grid(row=0, column=1, padx=10, pady=(0, 20))
     v_btnList.append(insertLineBtn)
 
-    deleteLineBtn = ttk.Button(programFrame, text=textSetting.textList["comicscript"]["deleteLineLabel"], width=buttonWidth, state="disabled", command=deleteLine)
-    deleteLineBtn.place(relx=0.81, rely=0.03)
+    deleteLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["comicscript"]["deleteLineLabel"], width=buttonWidth, state="disabled", command=deleteLine)
+    deleteLineBtn.grid(row=0, column=2, padx=10, pady=(0, 20))
     v_btnList.append(deleteLineBtn)
 
-    copyLineBtn = ttk.Button(programFrame, text=textSetting.textList["comicscript"]["copyLineLabel"], width=buttonWidth, state="disabled", command=copyLine)
-    copyLineBtn.place(relx=0.43, rely=0.09)
+    copyLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["comicscript"]["copyLineLabel"], width=buttonWidth, state="disabled", command=copyLine)
+    copyLineBtn.grid(row=1, column=0, padx=10, pady=(0, 20))
     v_btnList.append(copyLineBtn)
 
-    pasteLineBtn = ttk.Button(programFrame, text=textSetting.textList["comicscript"]["pasteLineLabel"], width=buttonWidth, state="disabled", command=pasteLine)
-    pasteLineBtn.place(relx=0.62, rely=0.09)
+    pasteLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["comicscript"]["pasteLineLabel"], width=buttonWidth, state="disabled", command=pasteLine)
+    pasteLineBtn.grid(row=1, column=1, padx=10, pady=(0, 20))
     v_btnList.append(pasteLineBtn)
 
-    csvExtractBtn = ttk.Button(programFrame, text=textSetting.textList["comicscript"]["csvExtractLabel"], width=buttonWidth, state="disabled", command=csvExtract)
-    csvExtractBtn.place(relx=0.43, rely=0.15)
+    csvExtractBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["comicscript"]["csvExtractLabel"], width=buttonWidth, state="disabled", command=csvExtract)
+    csvExtractBtn.grid(row=2, column=0, padx=10, pady=(0, 20))
     v_btnList.append(csvExtractBtn)
 
-    csvLoadAndSaveBtn = ttk.Button(programFrame, text=textSetting.textList["comicscript"]["csvSaveLabel"], width=buttonWidth, state="disabled", command=csvLoadAndSave)
-    csvLoadAndSaveBtn.place(relx=0.62, rely=0.15)
+    csvLoadAndSaveBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["comicscript"]["csvSaveLabel"], width=buttonWidth, state="disabled", command=csvLoadAndSave)
+    csvLoadAndSaveBtn.grid(row=2, column=1, padx=10, pady=(0, 20))
     v_btnList.append(csvLoadAndSaveBtn)
 
-    headerFileEditBtn = ttk.Button(programFrame, text=textSetting.textList["comicscript"]["headerEditLabel"], width=buttonWidth, state="disabled", command=headerFileEdit)
-    headerFileEditBtn.place(relx=0.81, rely=0.15)
+    headerFileEditBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["comicscript"]["headerEditLabel"], width=buttonWidth, state="disabled", command=headerFileEdit)
+    headerFileEditBtn.grid(row=2, column=2, padx=10, pady=(0, 20))
     v_btnList.append(headerFileEditBtn)
 
-    scriptLf = ttk.LabelFrame(programFrame, text=textSetting.textList["comicscript"]["scriptLabel"])
-    scriptLf.place(relx=0.03, rely=0.20, relwidth=0.95, relheight=0.77)
+    btnFrame.grid_columnconfigure(0, weight=1)
+    btnFrame.grid_columnconfigure(1, weight=1)
+    btnFrame.grid_columnconfigure(2, weight=1)
+
+    scriptLf = ttkCustomWidget.CustomTtkLabelFrame(root, text=textSetting.textList["comicscript"]["scriptLabel"])
+    scriptLf.pack(expand=True, fill=tkinter.BOTH, padx=25, pady=(0, 25))

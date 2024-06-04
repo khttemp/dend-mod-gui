@@ -1,44 +1,46 @@
 import copy
 
 import tkinter
-from tkinter import ttk
 from tkinter import messagebox as mb
-from tkinter import simpledialog as sd
 import program.textSetting as textSetting
+import program.appearance.ttkCustomWidget as ttkCustomWidget
+from program.appearance.customSimpleDialog import CustomSimpleDialog
 
 
 class ComicScriptWidget:
-    def __init__(self, frame, decryptFile, comicScriptList, reloadFunc):
+    def __init__(self, root, frame, decryptFile, comicScriptList, rootFrameAppearance, reloadFunc):
+        self.root = root
         self.frame = frame
         self.decryptFile = decryptFile
         self.comicScriptList = comicScriptList
+        self.rootFrameAppearance = rootFrameAppearance
         self.reloadFunc = reloadFunc
         self.selectIndexNum = -1
 
-        self.comicScriptLf = ttk.LabelFrame(self.frame, text=textSetting.textList["railEditor"]["comicScriptLabel"])
-        self.comicScriptLf.pack(anchor=tkinter.NW, padx=10, side=tkinter.LEFT, fill=tkinter.Y)
+        comicScriptLf = ttkCustomWidget.CustomTtkLabelFrame(self.frame, text=textSetting.textList["railEditor"]["comicScriptLabel"])
+        comicScriptLf.pack(anchor=tkinter.NW, padx=10, side=tkinter.LEFT, fill=tkinter.Y)
 
-        self.btnFrame = ttk.Frame(self.comicScriptLf)
-        self.btnFrame.pack()
+        btnFrame = ttkCustomWidget.CustomTtkFrame(comicScriptLf)
+        btnFrame.pack()
 
-        self.modifyBtn = tkinter.Button(self.btnFrame, font=textSetting.textList["font2"], text=textSetting.textList["modify"], state="disabled", command=self.modify)
+        self.modifyBtn = ttkCustomWidget.CustomTtkButton(btnFrame, style="custom.listbox.TButton", text=textSetting.textList["modify"], state="disabled", command=self.modify)
         self.modifyBtn.grid(padx=10, row=0, column=0, sticky=tkinter.W + tkinter.E)
-        self.insertBtn = tkinter.Button(self.btnFrame, font=textSetting.textList["font2"], text=textSetting.textList["insert"], state="disabled", command=self.insert)
+        self.insertBtn = ttkCustomWidget.CustomTtkButton(btnFrame, style="custom.listbox.TButton", text=textSetting.textList["insert"], state="disabled", command=self.insert)
         self.insertBtn.grid(padx=10, row=0, column=1, sticky=tkinter.W + tkinter.E)
-        self.deleteBtn = tkinter.Button(self.btnFrame, font=textSetting.textList["font2"], text=textSetting.textList["delete"], state="disabled", command=self.delete)
+        self.deleteBtn = ttkCustomWidget.CustomTtkButton(btnFrame, style="custom.listbox.TButton", text=textSetting.textList["delete"], state="disabled", command=self.delete)
         self.deleteBtn.grid(padx=10, row=0, column=2, sticky=tkinter.W + tkinter.E)
 
-        self.listFrame = ttk.Frame(self.comicScriptLf)
-        self.listFrame.pack()
+        listFrame = ttkCustomWidget.CustomTtkFrame(comicScriptLf)
+        listFrame.pack()
 
         copyComicScriptList = self.setListboxInfo(self.comicScriptList)
         self.v_comicScriptList = tkinter.StringVar(value=copyComicScriptList)
         listWidth = 25
         if self.decryptFile.game == "LS":
             listWidth = 80
-        self.comicScriptListListbox = tkinter.Listbox(self.listFrame, selectmode="single", height=25, font=textSetting.textList["font2"], width=listWidth, listvariable=self.v_comicScriptList)
-        self.comicScriptListListbox.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
-        self.comicScriptListListbox.bind("<<ListboxSelect>>", lambda e: self.buttonActive(self.comicScriptListListbox, self.comicScriptListListbox.curselection()))
+        comicScriptListListbox = tkinter.Listbox(listFrame, selectmode="single", height=22, font=textSetting.textList["font2"], width=listWidth, listvariable=self.v_comicScriptList, bg=rootFrameAppearance.bgColor, fg=rootFrameAppearance.fgColor)
+        comicScriptListListbox.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
+        comicScriptListListbox.bind("<<ListboxSelect>>", lambda e: self.buttonActive(comicScriptListListbox, comicScriptListListbox.curselection()))
 
     def buttonActive(self, listbox, value):
         if len(value) == 0:
@@ -72,7 +74,7 @@ class ComicScriptWidget:
         return copyComicScriptList
 
     def modify(self):
-        result = EditComicScriptListWidget(self.frame, textSetting.textList["railEditor"]["modifyComicScriptLabel"], self.decryptFile, "modify", self.selectIndexNum, self.comicScriptList)
+        result = EditComicScriptListWidget(self.root, textSetting.textList["railEditor"]["modifyComicScriptLabel"], self.decryptFile, "modify", self.selectIndexNum, self.comicScriptList, self.rootFrameAppearance)
         if result.reloadFlag:
             self.comicScriptList[self.selectIndexNum] = result.resultValueList
             if not self.decryptFile.saveComicScriptList(self.comicScriptList):
@@ -83,7 +85,7 @@ class ComicScriptWidget:
             self.reloadFunc()
 
     def insert(self):
-        result = EditComicScriptListWidget(self.frame, textSetting.textList["railEditor"]["insertComicScriptLabel"], self.decryptFile, "insert", self.selectIndexNum, self.comicScriptList)
+        result = EditComicScriptListWidget(self.root, textSetting.textList["railEditor"]["insertComicScriptLabel"], self.decryptFile, "insert", self.selectIndexNum, self.comicScriptList, self.rootFrameAppearance)
         if result.reloadFlag:
             if result.insert == 0:
                 self.selectIndexNum += 1
@@ -108,66 +110,70 @@ class ComicScriptWidget:
             self.reloadFunc()
 
 
-class EditComicScriptListWidget(sd.Dialog):
-    def __init__(self, master, title, decryptFile, mode, index, comicScriptList):
+class EditComicScriptListWidget(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, mode, index, comicScriptList, rootFrameAppearance):
         self.decryptFile = decryptFile
         self.mode = mode
         self.index = index
         self.comicScriptList = comicScriptList
         self.varList = []
+        self.varCnt = 0
         self.resultValueList = []
         self.insert = 0
         self.reloadFlag = False
-        super(EditComicScriptListWidget, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(False, False)
 
-        self.valLb = ttk.Label(master, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
-        self.valLb.grid(columnspan=2, row=0, column=0, sticky=tkinter.W + tkinter.E)
+        valLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
+        valLb.grid(columnspan=2, row=0, column=0, sticky=tkinter.W + tkinter.E)
 
         self.comicScriptLb = textSetting.textList["railEditor"]["editComicScriptLabelList"]
 
         for i in range(len(self.comicScriptLb)):
-            self.tempNameLb = ttk.Label(master, text=self.comicScriptLb[i], font=textSetting.textList["font2"], width=15)
-            self.tempNameLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
-            self.varTemp = tkinter.IntVar()
-            self.varList.append(self.varTemp)
-            self.txtEt = ttk.Entry(master, textvariable=self.varTemp, font=textSetting.textList["font2"])
-            self.txtEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+            tempNameLb = ttkCustomWidget.CustomTtkLabel(master, text=self.comicScriptLb[i], font=textSetting.textList["font2"], width=15)
+            tempNameLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
+            varTemp = tkinter.IntVar()
+            self.varList.append(varTemp)
+            txtEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[self.varCnt], font=textSetting.textList["font2"])
+            txtEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
             if self.mode == "modify":
-                self.comicScriptInfo = self.comicScriptList[self.index]
-                self.varTemp.set(self.comicScriptInfo[i])
+                comicScriptInfo = self.comicScriptList[self.index]
+                varTemp.set(comicScriptInfo[i])
+            self.varCnt += 1
 
         if self.decryptFile.game == "LS":
-            self.xLine = ttk.Separator(master, orient=tkinter.HORIZONTAL)
-            self.xLine.grid(row=len(self.comicScriptLb), column=0, columnspan=2, sticky=tkinter.W + tkinter.E, pady=10)
+            xLine = ttkCustomWidget.CustomTtkSeparator(master, orient=tkinter.HORIZONTAL)
+            xLine.grid(row=len(self.comicScriptLb), column=0, columnspan=2, sticky=tkinter.W + tkinter.E, pady=10)
 
             for i in range(9):
-                self.tempNameLb = ttk.Label(master, text=textSetting.textList["railEditor"]["editLsComicScriptFLabel"].format(i + 1), font=textSetting.textList["font2"], width=15)
-                self.tempNameLb.grid(row=len(self.comicScriptLb) + i + 1, column=0, sticky=tkinter.W + tkinter.E)
-                self.varTemp = tkinter.IntVar()
-                self.varList.append(self.varTemp)
-                self.txtEt = ttk.Entry(master, textvariable=self.varTemp, font=textSetting.textList["font2"])
-                self.txtEt.grid(row=len(self.comicScriptLb) + i + 1, column=1, sticky=tkinter.W + tkinter.E)
+                tempNameLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["railEditor"]["editLsComicScriptFLabel"].format(i + 1), font=textSetting.textList["font2"], width=15)
+                tempNameLb.grid(row=len(self.comicScriptLb) + i + 1, column=0, sticky=tkinter.W + tkinter.E)
+                varTemp = tkinter.IntVar()
+                self.varList.append(varTemp)
+                txtEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[self.varCnt], font=textSetting.textList["font2"])
+                txtEt.grid(row=len(self.comicScriptLb) + i + 1, column=1, sticky=tkinter.W + tkinter.E)
                 if self.mode == "modify":
-                    self.comicScriptInfo = self.comicScriptList[self.index]
-                    self.varTemp.set(self.comicScriptInfo[3][i])
+                    comicScriptInfo = self.comicScriptList[self.index]
+                    varTemp.set(comicScriptInfo[3][i])
+                self.varCnt += 1
 
         if self.mode == "insert":
             if self.decryptFile.game in ["BS", "CS", "RS"]:
                 self.setInsertWidget(master, len(self.comicScriptLb))
             else:
                 self.setInsertWidget(master, len(self.comicScriptLb) + 10)
+        super().body(master)
 
     def setInsertWidget(self, master, index):
-        self.xLine = ttk.Separator(master, orient=tkinter.HORIZONTAL)
-        self.xLine.grid(row=index, column=0, columnspan=2, sticky=tkinter.W + tkinter.E, pady=10)
+        xLine = ttkCustomWidget.CustomTtkSeparator(master, orient=tkinter.HORIZONTAL)
+        xLine.grid(row=index, column=0, columnspan=2, sticky=tkinter.W + tkinter.E, pady=10)
 
-        self.insertLb = ttk.Label(master, text=textSetting.textList["railEditor"]["posLabel"], font=textSetting.textList["font2"])
-        self.insertLb.grid(row=index + 1, column=0, sticky=tkinter.W + tkinter.E)
+        insertLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["railEditor"]["posLabel"], font=textSetting.textList["font2"])
+        insertLb.grid(row=index + 1, column=0, sticky=tkinter.W + tkinter.E)
         self.v_insert = tkinter.StringVar()
-        self.insertCb = ttk.Combobox(master, state="readonly", font=textSetting.textList["font2"], textvariable=self.v_insert, values=textSetting.textList["railEditor"]["posValue"])
+        self.insertCb = ttkCustomWidget.CustomTtkCombobox(master, state="readonly", font=textSetting.textList["font2"], textvariable=self.v_insert, values=textSetting.textList["railEditor"]["posValue"])
         self.insertCb.grid(row=index + 1, column=1, sticky=tkinter.W + tkinter.E)
         self.insertCb.current(0)
 

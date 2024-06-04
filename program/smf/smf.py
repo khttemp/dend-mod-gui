@@ -9,12 +9,14 @@ from tkinter import ttk
 from tkinter import filedialog as fd
 from tkinter import messagebox as mb
 import program.textSetting as textSetting
+import program.appearance.ttkCustomWidget as ttkCustomWidget
 
 from program.smf.importPy.decrypt import SmfDecrypt
 from program.smf.importPy.tkinterEditClass import SwapDialog
 from program.smf.importPy.tkinterScrollbarTreeviewSmf import ScrollbarTreeviewSmf
 
 root = None
+rootFrameAppearance = None
 frame = None
 v_process = None
 processBar = None
@@ -174,11 +176,12 @@ def createStandardGaugeButton():
 
 def swapFrame():
     global root
+    global rootFrameAppearance
     global frame
     global decryptFile
 
     selectId = frame.tree.selection()[0]
-    result = SwapDialog(root, textSetting.textList["smf"]["swapFrame"], decryptFile, selectId)
+    result = SwapDialog(root, textSetting.textList["smf"]["swapFrame"], decryptFile, rootFrameAppearance, selectId)
     if result.reloadFlag:
         reloadWidget()
 
@@ -275,8 +278,9 @@ def copyImage():
             copyImageButton["state"] = "disabled"
 
 
-def call_smf(rootTk, programFrame):
+def call_smf(rootTk, appearance):
     global root
+    global rootFrameAppearance
     global frame
     global v_process
     global processBar
@@ -291,44 +295,45 @@ def call_smf(rootTk, programFrame):
     global copyImageButton
 
     root = rootTk
+    rootFrameAppearance = appearance
 
     v_process = tkinter.IntVar()
     v_process.set(0)
 
-    processScriptFrame = ttk.Frame(programFrame)
+    processScriptFrame = ttkCustomWidget.CustomTtkFrame(root)
     processScriptFrame.pack(side=tkinter.LEFT, expand=True, fill=tkinter.BOTH, padx=30, pady=15)
-    buttonListFrame = ttk.Frame(programFrame)
+    buttonListFrame = ttkCustomWidget.CustomTtkFrame(root)
     buttonListFrame.pack(side=tkinter.LEFT, expand=True, fill=tkinter.BOTH, padx=5, pady=5)
 
     processBar = ttk.Progressbar(processScriptFrame, orient=tkinter.HORIZONTAL, variable=v_process, maximum=100, length=400, mode="determinate")
     processBar.pack(fill=tkinter.X)
 
-    scriptLf = ttk.LabelFrame(processScriptFrame, text=textSetting.textList["smf"]["scriptLabel"])
+    scriptLf = ttkCustomWidget.CustomTtkLabelFrame(processScriptFrame, text=textSetting.textList["smf"]["scriptLabel"])
     scriptLf.pack(expand=True, fill=tkinter.BOTH, pady=15)
     frame = ScrollbarTreeviewSmf(scriptLf, None)
 
-    standardButton = ttk.Button(buttonListFrame, text=textSetting.textList["smf"]["createStandardLabel"], width=25, command=createStandardGaugeButton, state="disabled")
+    standardButton = ttkCustomWidget.CustomTtkButton(buttonListFrame, text=textSetting.textList["smf"]["createStandardLabel"], width=25, command=createStandardGaugeButton, state="disabled")
     standardButton.grid(row=0, column=0, padx=30, pady=5)
 
-    swapFrameButton = ttk.Button(buttonListFrame, text=textSetting.textList["smf"]["swapFrameLabel"], width=25, command=swapFrame, state="disabled")
+    swapFrameButton = ttkCustomWidget.CustomTtkButton(buttonListFrame, text=textSetting.textList["smf"]["swapFrameLabel"], width=25, command=swapFrame, state="disabled")
     swapFrameButton.grid(row=0, column=1, padx=30, pady=5)
 
-    deleteFrameButton = ttk.Button(buttonListFrame, text=textSetting.textList["smf"]["deleteFrameLabel"], width=25, command=deleteFrame, state="disabled")
+    deleteFrameButton = ttkCustomWidget.CustomTtkButton(buttonListFrame, text=textSetting.textList["smf"]["deleteFrameLabel"], width=25, command=deleteFrame, state="disabled")
     deleteFrameButton.grid(row=1, column=0, padx=30, pady=5)
 
-    scanSmfImageButton = ttk.Button(buttonListFrame, text=textSetting.textList["smf"]["scanSmfImageLabel"], width=50, command=scanSmfImage)
+    scanSmfImageButton = ttkCustomWidget.CustomTtkButton(buttonListFrame, text=textSetting.textList["smf"]["scanSmfImageLabel"], width=50, command=scanSmfImage)
     scanSmfImageButton.grid(row=2, column=0, columnspan=4, sticky=tkinter.EW, padx=30, pady=5)
 
     v_modelCount = tkinter.StringVar()
-    modelCountEntry = ttk.Entry(buttonListFrame, textvariable=v_modelCount, font=textSetting.textList["defaultFont"], justify="center", state="readonly")
+    modelCountEntry = ttkCustomWidget.CustomTtkEntry(buttonListFrame, textvariable=v_modelCount, font=textSetting.textList["defaultFont"], justify="center", state="readonly")
     modelCountEntry.grid(row=3, column=0, columnspan=2, sticky=tkinter.EW, padx=30, pady=5)
 
-    noImageListbox = tkinter.Listbox(buttonListFrame, selectmode="single", font=textSetting.textList["font2"])
+    noImageListbox = tkinter.Listbox(buttonListFrame, selectmode="single", font=textSetting.textList["font2"], bg=rootFrameAppearance.bgColor, fg=rootFrameAppearance.fgColor)
     noImageListbox.grid(row=4, column=0, columnspan=2, sticky=tkinter.EW, padx=30, pady=5)
 
     v_modelPath = tkinter.StringVar()
-    modelPathEntry = ttk.Entry(buttonListFrame, textvariable=v_modelPath, font=textSetting.textList["defaultFont"], state="readonly")
+    modelPathEntry = ttkCustomWidget.CustomTtkEntry(buttonListFrame, textvariable=v_modelPath, font=textSetting.textList["defaultFont"], state="readonly")
     modelPathEntry.grid(row=5, column=0, columnspan=2, sticky=tkinter.EW, padx=30, pady=5)
 
-    copyImageButton = ttk.Button(buttonListFrame, text=textSetting.textList["smf"]["copyImageLabel"], width=50, command=copyImage, state="disabled")
+    copyImageButton = ttkCustomWidget.CustomTtkButton(buttonListFrame, text=textSetting.textList["smf"]["copyImageLabel"], width=50, command=copyImage, state="disabled")
     copyImageButton.grid(row=6, column=0, columnspan=2, sticky=tkinter.EW, padx=30, pady=5)

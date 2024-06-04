@@ -1,36 +1,38 @@
 import copy
 import tkinter
-from tkinter import ttk
 from tkinter import messagebox as mb
-from tkinter import simpledialog as sd
 import program.textSetting as textSetting
+import program.appearance.ttkCustomWidget as ttkCustomWidget
+from program.appearance.customSimpleDialog import CustomSimpleDialog
 
 
 class MusicWidget:
-    def __init__(self, frame, decryptFile, reloadFunc):
+    def __init__(self, root, frame, decryptFile, rootFrameAppearance, reloadFunc):
+        self.root = root
         self.frame = frame
         self.decryptFile = decryptFile
+        self.rootFrameAppearance = rootFrameAppearance
         self.reloadFunc = reloadFunc
 
-        self.txtFrame = tkinter.Frame(self.frame, padx=10, pady=5)
-        self.txtFrame.pack(anchor=tkinter.NW)
+        txtFrame = ttkCustomWidget.CustomTtkFrame(self.frame)
+        txtFrame.pack(anchor=tkinter.NW, padx=10, pady=5)
 
-        self.musicLb = tkinter.Label(self.txtFrame, text=textSetting.textList["railEditor"]["bgmNum"], font=textSetting.textList["font6"], width=7, borderwidth=1, relief="solid")
-        self.musicLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
+        musicLb = ttkCustomWidget.CustomTtkLabel(txtFrame, text=textSetting.textList["railEditor"]["bgmNum"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
+        musicLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
 
         self.varMusic = tkinter.IntVar()
         self.varMusic.set(self.decryptFile.musicCnt)
-        self.musicTextLb = tkinter.Label(self.txtFrame, textvariable=self.varMusic, font=textSetting.textList["font6"], width=7, borderwidth=1, relief="solid")
-        self.musicTextLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
+        musicTextLb = ttkCustomWidget.CustomTtkLabel(txtFrame, textvariable=self.varMusic, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
+        musicTextLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
         if self.decryptFile.game in ["CS", "RS"]:
-            self.musicBtn = tkinter.Button(self.txtFrame, text=textSetting.textList["railEditor"]["modifyBtnLabel"], font=textSetting.textList["font7"], command=lambda: self.editVar(self.varMusic.get()))
-            self.musicBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
+            musicBtn = ttkCustomWidget.CustomTtkButton(txtFrame, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=lambda: self.editVar(self.varMusic.get()))
+            musicBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
         else:
-            self.musicBtn = tkinter.Button(self.txtFrame, text=textSetting.textList["railEditor"]["modifyBtnLabel"], font=textSetting.textList["font7"], command=lambda: self.editMusicList())
-            self.musicBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
+            musicBtn = ttkCustomWidget.CustomTtkButton(txtFrame, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=lambda: self.editMusicList())
+            musicBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
 
     def editVar(self, value):
-        result = EditMusicCnt(self.frame, textSetting.textList["railEditor"]["editBgmNumLabel"], self.decryptFile, value)
+        result = EditMusicCnt(self.root, textSetting.textList["railEditor"]["editBgmNumLabel"], self.decryptFile, value, self.rootFrameAppearance)
 
         if result.reloadFlag:
             if not self.decryptFile.saveMusic(result.resultValue):
@@ -42,7 +44,7 @@ class MusicWidget:
             self.reloadFunc()
 
     def editMusicList(self):
-        result = EditMusicList(self.frame, textSetting.textList["railEditor"]["editBgmListLabel"], self.decryptFile)
+        result = EditMusicList(self.root, textSetting.textList["railEditor"]["editBgmListLabel"], self.decryptFile, self.rootFrameAppearance)
         if result.reloadFlag:
             if not self.decryptFile.saveMusicList(result.musicList):
                 self.decryptFile.printError()
@@ -52,24 +54,25 @@ class MusicWidget:
             self.reloadFunc()
 
 
-class EditMusicCnt(sd.Dialog):
-    def __init__(self, master, title, decryptFile, val):
+class EditMusicCnt(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, val, rootFrameAppearance):
         self.decryptFile = decryptFile
         self.val = val
         self.reloadFlag = False
         self.resultValue = 0
-        super(EditMusicCnt, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(False, False)
 
-        self.valLb = ttk.Label(master, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
-        self.valLb.pack()
+        valLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
+        valLb.pack()
 
         self.varMusicCnt = tkinter.IntVar()
         self.varMusicCnt.set(self.val)
-        self.valEt = ttk.Entry(master, textvariable=self.varMusicCnt, font=textSetting.textList["font2"], width=16)
-        self.valEt.pack()
+        valEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varMusicCnt, font=textSetting.textList["font2"], width=16)
+        valEt.pack()
+        super().body(master)
 
     def validate(self):
         result = mb.askokcancel(title=textSetting.textList["confirm"], message=textSetting.textList["infoList"]["I21"], parent=self)
@@ -97,39 +100,41 @@ class EditMusicCnt(sd.Dialog):
         self.reloadFlag = True
 
 
-class EditMusicList(sd.Dialog):
-    def __init__(self, master, title, decryptFile):
+class EditMusicList(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, rootFrameAppearance):
         self.decryptFile = decryptFile
         self.musicList = copy.deepcopy(decryptFile.musicList)
         self.dirtyFlag = False
         self.reloadFlag = False
         self.resultList = []
-        super(EditMusicList, self).__init__(parent=master, title=title)
+        self.rootFrameAppearance = rootFrameAppearance
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.frame = master
         self.resizable(False, False)
 
-        self.btnFrame = ttk.Frame(self.frame)
-        self.btnFrame.pack()
+        btnFrame = ttkCustomWidget.CustomTtkFrame(self.frame)
+        btnFrame.pack()
 
-        self.modifyBtn = tkinter.Button(self.btnFrame, font=textSetting.textList["font2"], text=textSetting.textList["modify"], state="disabled", command=self.modify)
+        self.modifyBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["modify"], style="custom.listbox.TButton", state="disabled", command=self.modify)
         self.modifyBtn.grid(padx=10, row=0, column=0, sticky=tkinter.W + tkinter.E)
 
         if self.decryptFile.game != "LS":
-            self.insertBtn = tkinter.Button(self.btnFrame, font=textSetting.textList["font2"], text=textSetting.textList["insert"], state="disabled", command=self.insert)
+            self.insertBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["insert"], style="custom.listbox.TButton", state="disabled", command=self.insert)
             self.insertBtn.grid(padx=10, row=0, column=1, sticky=tkinter.W + tkinter.E)
-            self.deleteBtn = tkinter.Button(self.btnFrame, font=textSetting.textList["font2"], text=textSetting.textList["delete"], state="disabled", command=self.delete)
+            self.deleteBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["delete"], style="custom.listbox.TButton", state="disabled", command=self.delete)
             self.deleteBtn.grid(padx=10, row=0, column=2, sticky=tkinter.W + tkinter.E)
 
-        self.listFrame = ttk.Frame(self.frame)
-        self.listFrame.pack()
+        listFrame = ttkCustomWidget.CustomTtkFrame(self.frame)
+        listFrame.pack()
 
         copyMusicList = self.setListboxInfo(self.musicList)
         self.v_musicList = tkinter.StringVar(value=copyMusicList)
-        self.musicListListbox = tkinter.Listbox(self.listFrame, selectmode="single", font=textSetting.textList["font2"], width=55, listvariable=self.v_musicList)
-        self.musicListListbox.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
-        self.musicListListbox.bind("<<ListboxSelect>>", lambda e: self.buttonActive(self.musicListListbox, self.musicListListbox.curselection()))
+        musicListListbox = tkinter.Listbox(listFrame, selectmode="single", font=textSetting.textList["font2"], width=55, height=6, listvariable=self.v_musicList, bg=self.rootFrameAppearance.bgColor, fg=self.rootFrameAppearance.fgColor)
+        musicListListbox.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
+        musicListListbox.bind("<<ListboxSelect>>", lambda e: self.buttonActive(musicListListbox, musicListListbox.curselection()))
+        super().body(master)
 
     def buttonActive(self, listbox, value):
         if len(value) == 0:
@@ -162,7 +167,7 @@ class EditMusicList(sd.Dialog):
         return copyMusicList
 
     def modify(self):
-        result = EditMusicListWidget(self.frame, textSetting.textList["railEditor"]["modifyBgmLabel"], self.decryptFile, "modify", self.selectIndexNum, self.musicList)
+        result = EditMusicListWidget(self.frame, textSetting.textList["railEditor"]["modifyBgmLabel"], self.decryptFile, "modify", self.selectIndexNum, self.musicList, self.rootFrameAppearance)
         if result.dirtyFlag:
             self.dirtyFlag = True
             self.musicList[self.selectIndexNum] = result.resultValueList
@@ -170,7 +175,7 @@ class EditMusicList(sd.Dialog):
             self.v_musicList.set(copyMusicList)
 
     def insert(self):
-        result = EditMusicListWidget(self.frame, textSetting.textList["railEditor"]["insertBgmLabel"], self.decryptFile, "insert", self.selectIndexNum, self.musicList)
+        result = EditMusicListWidget(self.frame, textSetting.textList["railEditor"]["insertBgmLabel"], self.decryptFile, "insert", self.selectIndexNum, self.musicList, self.rootFrameAppearance)
         if result.dirtyFlag:
             self.dirtyFlag = True
             self.musicList.insert(self.selectIndexNum + result.insertPos, result.resultValueList)
@@ -199,8 +204,8 @@ class EditMusicList(sd.Dialog):
             return True
 
 
-class EditMusicListWidget(sd.Dialog):
-    def __init__(self, master, title, decryptFile, mode, index, musicList):
+class EditMusicListWidget(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, mode, index, musicList, rootFrameAppearance):
         self.decryptFile = decryptFile
         self.mode = mode
         self.index = index
@@ -209,15 +214,15 @@ class EditMusicListWidget(sd.Dialog):
         self.resultValueList = []
         self.insertPos = -1
         self.dirtyFlag = False
-        super(EditMusicListWidget, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(False, False)
 
         musicInfoLb = textSetting.textList["railEditor"]["editBgmInfoLabelList"]
         for i in range(len(musicInfoLb)):
-            self.musicLb = ttk.Label(master, text=musicInfoLb[i], font=textSetting.textList["font2"])
-            self.musicLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
+            musicLb = ttkCustomWidget.CustomTtkLabel(master, text=musicInfoLb[i], font=textSetting.textList["font2"])
+            musicLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
             if i == 2 or i == 3:
                 self.varMusic = tkinter.DoubleVar()
                 if self.mode == "modify":
@@ -229,20 +234,21 @@ class EditMusicListWidget(sd.Dialog):
                     musicInfo = self.musicList[self.index]
                     self.varMusic.set(musicInfo[i])
             self.varList.append(self.varMusic)
-            self.musicEt = ttk.Entry(master, textvariable=self.varMusic, font=textSetting.textList["font2"])
-            self.musicEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+            musicEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varMusic, font=textSetting.textList["font2"])
+            musicEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
 
         if self.mode == "insert":
             self.setInsertWidget(master, len(musicInfoLb))
+        super().body(master)
 
     def setInsertWidget(self, master, index):
-        self.xLine = ttk.Separator(master, orient=tkinter.HORIZONTAL)
-        self.xLine.grid(row=index, column=0, columnspan=2, sticky=tkinter.W + tkinter.E, pady=10)
+        xLine = ttkCustomWidget.CustomTtkSeparator(master, orient=tkinter.HORIZONTAL)
+        xLine.grid(row=index, column=0, columnspan=2, sticky=tkinter.W + tkinter.E, pady=10)
 
-        self.insertLb = ttk.Label(master, text=textSetting.textList["railEditor"]["posLabel"], font=textSetting.textList["font2"])
-        self.insertLb.grid(row=index + 1, column=0, sticky=tkinter.W + tkinter.E)
+        insertLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["railEditor"]["posLabel"], font=textSetting.textList["font2"])
+        insertLb.grid(row=index + 1, column=0, sticky=tkinter.W + tkinter.E)
         self.v_insert = tkinter.StringVar()
-        self.insertCb = ttk.Combobox(master, state="readonly", font=textSetting.textList["font2"], textvariable=self.v_insert, values=textSetting.textList["railEditor"]["posValue"])
+        self.insertCb = ttkCustomWidget.CustomTtkCombobox(master, state="readonly", font=textSetting.textList["font2"], textvariable=self.v_insert, values=textSetting.textList["railEditor"]["posValue"])
         self.insertCb.grid(row=index + 1, column=1, sticky=tkinter.W + tkinter.E)
         self.insertCb.current(0)
 

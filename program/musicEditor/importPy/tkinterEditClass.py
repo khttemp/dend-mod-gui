@@ -1,12 +1,12 @@
 import tkinter
-from tkinter import ttk
-from tkinter import simpledialog as sd
 from tkinter import messagebox as mb
 import program.textSetting as textSetting
+import program.appearance.ttkCustomWidget as ttkCustomWidget
+from program.appearance.customSimpleDialog import CustomSimpleDialog
 
 
-class InputDialog(sd.Dialog):
-    def __init__(self, master, title, decryptFile, num, bgmItem=None):
+class InputDialog(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, rootFrameAppearance, num, bgmItem=None):
         self.decryptFile = decryptFile
         self.num = num
         self.bgmItem = bgmItem
@@ -22,7 +22,7 @@ class InputDialog(sd.Dialog):
             self.infoMsg = ""
             self.swapInfoMsg = textSetting.textList["infoList"]["I39"]
 
-        super(InputDialog, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(False, False)
@@ -30,8 +30,8 @@ class InputDialog(sd.Dialog):
 
         if self.bgmItem is not None:
             for i in range(2, len(self.decryptFile.headerList)):
-                self.editBgmLb = ttk.Label(master, text=self.decryptFile.headerList[i][0], font=textSetting.textList["font2"])
-                self.editBgmLb.grid(row=i, column=0, sticky=tkinter.N + tkinter.S)
+                editBgmLb = ttkCustomWidget.CustomTtkLabel(master, text=self.decryptFile.headerList[i][0], font=textSetting.textList["font2"])
+                editBgmLb.grid(row=i, column=0, sticky=tkinter.N + tkinter.S)
 
                 idxName = self.decryptFile.headerList[i][0]
                 item = self.bgmItem[idxName]
@@ -40,16 +40,16 @@ class InputDialog(sd.Dialog):
                     maxLen = len(item)
                 v_item = tkinter.StringVar()
                 self.v_itemList.append(v_item)
-                self.editBgmEt = ttk.Entry(master, textvariable=v_item, font=textSetting.textList["font2"])
-                self.editBgmEt.grid(row=i, column=1, sticky=tkinter.N + tkinter.S)
-                self.entryList.append(self.editBgmEt)
+                editBgmEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=v_item, font=textSetting.textList["font2"])
+                editBgmEt.grid(row=i, column=1, sticky=tkinter.N + tkinter.S)
+                self.entryList.append(editBgmEt)
 
             for i in range(2, len(self.decryptFile.headerList)):
                 self.v_itemList[i - 2].set(self.itemList[i - 2])
                 self.entryList[i - 2].config(width=maxLen + 5)
         else:
-            self.swapLb = ttk.Label(master, text=textSetting.textList["musicEditor"]["changeBgmNum"], font=textSetting.textList["font2"])
-            self.swapLb.grid(row=0, column=0, sticky=tkinter.N + tkinter.S)
+            swapLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["musicEditor"]["changeBgmNum"], font=textSetting.textList["font2"])
+            swapLb.grid(row=0, column=0, sticky=tkinter.N + tkinter.S)
 
             swapBgmList = []
             for bgm in range(len(self.decryptFile.musicList)):
@@ -59,9 +59,10 @@ class InputDialog(sd.Dialog):
 
             self.v_swap = tkinter.StringVar()
             self.v_swap.set(swapBgmList[0])
-            self.swapCb = ttk.Combobox(master, textvariable=self.v_swap, width=30, font=textSetting.textList["font2"], state="readonly", value=swapBgmList)
-            self.swapCb.grid(row=0, column=1, sticky=tkinter.N + tkinter.S, pady=10)
-            self.swapCb.set(swapBgmList[0])
+            swapCb = ttkCustomWidget.CustomTtkCombobox(master, textvariable=self.v_swap, width=30, font=textSetting.textList["font2"], state="readonly", value=swapBgmList)
+            swapCb.grid(row=0, column=1, sticky=tkinter.N + tkinter.S, pady=10)
+            swapCb.set(swapBgmList[0])
+        super().body(master)
 
     def validate(self):
         if self.bgmItem is not None:

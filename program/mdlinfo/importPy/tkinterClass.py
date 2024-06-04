@@ -1,47 +1,48 @@
 import tkinter
-from tkinter import ttk
 from tkinter import messagebox as mb
-from tkinter import simpledialog as sd
 import program.textSetting as textSetting
+import program.appearance.ttkCustomWidget as ttkCustomWidget
+from program.appearance.customSimpleDialog import CustomSimpleDialog, CustomAskstring
+
+from program.mdlinfo.importPy.tkinterScrollbarTreeviewMdlinfo import ScrollbarTreeviewMdlinfo
 
 
-class TreeViewDialog(sd.Dialog):
-    def __init__(self, master, title, num, decryptFile):
+class TreeViewDialog(CustomSimpleDialog):
+    def __init__(self, master, title, num, decryptFile, rootFrameAppearance):
         self.num = num
         self.master = master
         self.decryptFile = decryptFile
+        self.rootFrameAppearance = rootFrameAppearance
         self.smfName = decryptFile.allInfoList[self.num]["smfName"]
         self.detailMdlList = decryptFile.allInfoList[self.num]["detailMdlList"]
-        super(TreeViewDialog, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(False, False)
-        mainFrame = ttk.Frame(master, width=800, height=360)
+        mainFrame = ttkCustomWidget.CustomTtkFrame(master, width=800, height=360)
         mainFrame.pack()
 
         self.v_smfName = tkinter.StringVar()
         self.v_smfName.set(self.smfName)
-        fileNameEt = ttk.Entry(mainFrame, textvariable=self.v_smfName, font=textSetting.textList["font2"], width=20, state="readonly", justify="center")
+        fileNameEt = ttkCustomWidget.CustomTtkEntry(mainFrame, textvariable=self.v_smfName, font=textSetting.textList["font2"], width=20, state="readonly", justify="center")
         fileNameEt.place(relx=0.04, rely=0.03)
 
-        self.mdlInfoLf = tkinter.LabelFrame(mainFrame, text=textSetting.textList["mdlinfo"]["mdlinfoLf"])
-        self.mdlInfoLf.place(relx=0.02, rely=0.25, relwidth=0.96, relheight=0.74)
+        mdlInfoLf = ttkCustomWidget.CustomTtkLabelFrame(mainFrame, text=textSetting.textList["mdlinfo"]["mdlinfoLf"])
+        mdlInfoLf.place(relx=0.02, rely=0.25, relwidth=0.96, relheight=0.74)
 
-        self.frame = ttk.Frame(self.mdlInfoLf)
-        self.frame.pack(expand=True, fill=tkinter.BOTH)
+        self.editColorBtn = ttkCustomWidget.CustomTtkButton(mainFrame, text=textSetting.textList["mdlinfo"]["editColorLabel"], width=25, state="disabled", command=self.editColor)
+        self.editColorBtn.place(relx=0.42, rely=0.03)
 
-        self.tree = ttk.Treeview(self.frame, selectmode="browse")
+        self.editElementBtn = ttkCustomWidget.CustomTtkButton(mainFrame, text=textSetting.textList["mdlinfo"]["elementModifyLabel"], width=25, state="disabled", command=self.editElement)
+        self.editElementBtn.place(relx=0.1, rely=0.13)
 
-        self.scrollbar_x = ttk.Scrollbar(self.frame, orient=tkinter.HORIZONTAL, command=self.tree.xview)
-        self.tree.configure(xscrollcommand=lambda first, last: self.scrollbar_x.set(first, last))
-        self.scrollbar_x.pack(side=tkinter.BOTTOM, fill=tkinter.X)
+        self.insertElementBtn = ttkCustomWidget.CustomTtkButton(mainFrame, text=textSetting.textList["mdlinfo"]["elementInsertLabel"], width=25, state="disabled", command=self.insertElement)
+        self.insertElementBtn.place(relx=0.42, rely=0.13)
 
-        self.scrollbar_y = ttk.Scrollbar(self.frame, orient=tkinter.VERTICAL, command=self.tree.yview)
-        self.tree.configure(yscrollcommand=lambda first, last: self.scrollbar_y.set(first, last))
-        self.scrollbar_y.pack(side=tkinter.RIGHT, fill=tkinter.Y)
+        self.deleteElementBtn = ttkCustomWidget.CustomTtkButton(mainFrame, text=textSetting.textList["mdlinfo"]["elementDeleteLabel"], width=25, state="disabled", command=self.deleteElement)
+        self.deleteElementBtn.place(relx=0.74, rely=0.13)
 
-        self.tree.pack(expand=True, fill=tkinter.BOTH)
-        self.tree.bind("<<TreeviewSelect>>", self.treeSelect)
+        self.frame = ScrollbarTreeviewMdlinfo(mdlInfoLf, None, [])
 
         self.colIdTuple = [
             "treeNum",
@@ -69,8 +70,8 @@ class TreeViewDialog(sd.Dialog):
             textSetting.textList["mdlinfo"]["treeNum2"] + "2",
         ]
 
-        self.tree["columns"] = self.colIdTuple
-        self.tree.column("#0", width=0, stretch=False)
+        self.frame.tree["columns"] = self.colIdTuple
+        self.frame.tree.column("#0", width=0, stretch=False)
 
         for index, colIdName in enumerate(self.colIdTuple):
             widthLen = 50
@@ -80,24 +81,13 @@ class TreeViewDialog(sd.Dialog):
                 widthLen = 150
             elif colIdName == "treeEmis":
                 widthLen = 150
-            self.tree.column(colIdName, anchor=tkinter.CENTER, width=widthLen)
-            self.tree.heading(colIdName, text=self.colTuple[index], anchor=tkinter.CENTER)
+            self.frame.tree.column(colIdName, anchor=tkinter.CENTER, width=widthLen)
+            self.frame.tree.heading(colIdName, text=self.colTuple[index], anchor=tkinter.CENTER)
 
-        self.tree["displaycolumns"] = self.colIdTuple
-
+        self.frame.tree["displaycolumns"] = self.colIdTuple
         self.viewData(self.detailMdlList)
-
-        self.editColorBtn = ttk.Button(mainFrame, text=textSetting.textList["mdlinfo"]["editColorLabel"], width=25, state="disabled", command=self.editColor)
-        self.editColorBtn.place(relx=0.42, rely=0.03)
-
-        self.editElementBtn = ttk.Button(mainFrame, text=textSetting.textList["mdlinfo"]["elementModifyLabel"], width=25, state="disabled", command=self.editElement)
-        self.editElementBtn.place(relx=0.1, rely=0.13)
-
-        self.insertElementBtn = ttk.Button(mainFrame, text=textSetting.textList["mdlinfo"]["elementInsertLabel"], width=25, state="disabled", command=self.insertElement)
-        self.insertElementBtn.place(relx=0.42, rely=0.13)
-
-        self.deleteElementBtn = ttk.Button(mainFrame, text=textSetting.textList["mdlinfo"]["elementDeleteLabel"], width=25, state="disabled", command=self.deleteElement)
-        self.deleteElementBtn.place(relx=0.74, rely=0.13)
+        self.frame.tree.bind("<<TreeviewSelect>>", self.treeSelect)
+        super().body(master)
 
     def viewData(self, detailMdlList):
         index = 0
@@ -112,13 +102,12 @@ class TreeViewDialog(sd.Dialog):
                 data += (",".join(str(n) for n in detailMdlInfo["textureList"][11:14]),)
                 data += (detailMdlInfo["textureList"][14],)
                 data += (detailMdlInfo["textureList"][15],)
-            self.tree.insert(parent="", index="end", iid=index, values=data)
+            self.frame.tree.insert(parent="", index="end", iid=index, values=data)
             index += 1
 
     def treeSelect(self, event):
-        selectId = self.tree.selection()[0]
-        selectItem = self.tree.set(selectId)
-
+        selectId = int(self.frame.tree.selection()[0])
+        selectItem = self.frame.tree.set(selectId)
         if selectItem["treeMesh"] == "0,0":
             self.editColorBtn["state"] = "disabled"
         else:
@@ -131,40 +120,40 @@ class TreeViewDialog(sd.Dialog):
         self.decryptFile = self.decryptFile.reload()
         self.detailMdlList = self.decryptFile.allInfoList[self.num]["detailMdlList"]
 
-        for i in self.tree.get_children():
-            self.tree.delete(i)
+        for i in self.frame.tree.get_children():
+            self.frame.tree.delete(i)
         self.viewData(self.detailMdlList)
 
     def editColor(self):
-        selectId = int(self.tree.selection()[0])
-        selectItem = self.tree.set(selectId)
+        selectId = int(self.frame.tree.selection()[0])
+        selectItem = self.frame.tree.set(selectId)
         detailNum = int(selectItem["treeNum"]) - 1
-        result = TexImageDialog(self.master, textSetting.textList["mdlinfo"]["texImageLabel"], self.num, detailNum, self.decryptFile, self.detailMdlList)
+        result = TexImageDialog(self.master, textSetting.textList["mdlinfo"]["texImageLabel"], self.num, detailNum, self.decryptFile, self.detailMdlList, self.rootFrameAppearance)
         if result.dirtyFlag:
             self.reload()
-            self.tree.selection_set(selectId)
+            self.frame.tree.selection_set(selectId)
 
     def editElement(self):
-        selectId = int(self.tree.selection()[0])
-        selectItem = self.tree.set(selectId)
+        selectId = int(self.frame.tree.selection()[0])
+        selectItem = self.frame.tree.set(selectId)
         detailNum = int(selectItem["treeNum"]) - 1
-        result = DetailDialog(self.master, textSetting.textList["mdlinfo"]["detailModelLabel"], "edit", self.num, detailNum, self.decryptFile, self.colIdTuple, self.colTuple, self.detailMdlList)
+        result = DetailDialog(self.master, textSetting.textList["mdlinfo"]["detailModelLabel"], "edit", self.num, detailNum, self.decryptFile, self.colIdTuple, self.colTuple, self.detailMdlList, self.rootFrameAppearance)
         if result.cancelFlag:
             self.reload()
-            self.tree.selection_set(selectId)
+            self.frame.tree.selection_set(selectId)
 
     def insertElement(self):
-        selectId = int(self.tree.selection()[0])
-        selectItem = self.tree.set(selectId)
+        selectId = int(self.frame.tree.selection()[0])
+        selectItem = self.frame.tree.set(selectId)
         detailNum = int(selectItem["treeNum"]) - 1
-        result = DetailDialog(self.master, textSetting.textList["mdlinfo"]["detailModelLabel"], "insert", self.num, detailNum, self.decryptFile, self.colIdTuple, self.colTuple, self.detailMdlList)
+        result = DetailDialog(self.master, textSetting.textList["mdlinfo"]["detailModelLabel"], "insert", self.num, detailNum, self.decryptFile, self.colIdTuple, self.colTuple, self.detailMdlList, self.rootFrameAppearance)
         if result.cancelFlag:
             self.reload()
-            self.tree.selection_set(selectId)
+            self.frame.tree.selection_set(selectId)
 
     def deleteElement(self):
-        selectId = int(self.tree.selection()[0])
-        selectItem = self.tree.set(selectId)
+        selectId = int(self.frame.tree.selection()[0])
+        selectItem = self.frame.tree.set(selectId)
         detailNum = int(selectItem["treeNum"]) - 1
         warnMsg = textSetting.textList["infoList"]["I25"].format(detailNum + 1)
         result = mb.askokcancel(title=textSetting.textList["warning"], message=warnMsg, icon="warning", parent=self)
@@ -179,39 +168,42 @@ class TreeViewDialog(sd.Dialog):
             if selectId < 0:
                 selectId = 0
             self.reload()
-            self.tree.selection_set(selectId)
+            self.frame.tree.selection_set(selectId)
 
 
-class TexImageDialog(sd.Dialog):
-    def __init__(self, master, title, num, detailNum, decryptFile, detailMdlList):
+class TexImageDialog(CustomSimpleDialog):
+    def __init__(self, master, title, num, detailNum, decryptFile, detailMdlList, rootFrameAppearance):
+        self.master = master
         self.num = num
         self.detailNum = detailNum
         self.decryptFile = decryptFile
         self.txtImgList = detailMdlList[self.detailNum]["textureImgList"]
+        self.rootFrameAppearance = rootFrameAppearance
         self.dirtyFlag = False
         self.selectIndex = None
         self.selectValue = None
-        super(TexImageDialog, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
-        self.btnFrame = tkinter.Frame(master, pady=5)
-        self.btnFrame.pack()
-        self.listFrame = tkinter.Frame(master)
-        self.listFrame.pack()
+        btnFrame = ttkCustomWidget.CustomTtkFrame(master)
+        btnFrame.pack(pady=5)
+        listFrame = ttkCustomWidget.CustomTtkFrame(master)
+        listFrame.pack()
 
-        self.modifyBtn = tkinter.Button(self.btnFrame, font=textSetting.textList["font2"], text=textSetting.textList["modify"], state="disabled", command=self.modify)
+        self.modifyBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["modify"], style="custom.listbox.TButton", state="disabled", command=self.modify)
         self.modifyBtn.grid(padx=10, row=0, column=0, sticky=tkinter.W + tkinter.E)
-        self.insertBtn = tkinter.Button(self.btnFrame, font=textSetting.textList["font2"], text=textSetting.textList["insert"], state="disabled", command=self.insert)
+        self.insertBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["insert"], style="custom.listbox.TButton", state="disabled", command=self.insert)
         self.insertBtn.grid(padx=10, row=0, column=1, sticky=tkinter.W + tkinter.E)
-        self.deleteBtn = tkinter.Button(self.btnFrame, font=textSetting.textList["font2"], text=textSetting.textList["delete"], state="disabled", command=self.delete)
+        self.deleteBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["delete"], style="custom.listbox.TButton", state="disabled", command=self.delete)
         self.deleteBtn.grid(padx=10, row=0, column=2, sticky=tkinter.W + tkinter.E)
 
-        self.imageLb = tkinter.Label(self.listFrame, font=textSetting.textList["font2"], text=textSetting.textList["mdlinfo"]["imageListLabel"])
-        self.imageLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
+        imageLb = ttkCustomWidget.CustomTtkLabel(listFrame, font=textSetting.textList["font2"], text=textSetting.textList["mdlinfo"]["imageListLabel"])
+        imageLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
         self.v_imageList = tkinter.StringVar(value=self.txtImgList)
-        self.imageListbox = tkinter.Listbox(self.listFrame, font=textSetting.textList["font2"], listvariable=self.v_imageList, width=30)
+        self.imageListbox = tkinter.Listbox(listFrame, font=textSetting.textList["font2"], listvariable=self.v_imageList, width=30, height=6, bg=self.rootFrameAppearance.bgColor, fg=self.rootFrameAppearance.fgColor)
         self.imageListbox.grid(row=1, column=0, sticky=tkinter.W + tkinter.E)
         self.imageListbox.bind("<<ListboxSelect>>", lambda e: self.buttonActive(e, self.imageListbox.curselection()))
+        super().body(master)
 
     def buttonActive(self, event, value):
         if len(value) > 0:
@@ -226,19 +218,29 @@ class TexImageDialog(sd.Dialog):
         self.insertBtn["state"] = "normal"
 
     def modify(self):
-        result = sd.askstring(title=textSetting.textList["modify"], prompt=textSetting.textList["infoList"]["I27"], initialvalue=self.selectValue, parent=self)
+        resultObj = CustomAskstring(self.master, title=textSetting.textList["modify"], prompt=textSetting.textList["infoList"]["I27"], initialvalue=self.selectValue, bgColor=self.rootFrameAppearance.bgColor)
+        result = resultObj.result
 
         if result:
             self.dirtyFlag = True
             self.imageListbox.delete(self.selectIndex)
             self.imageListbox.insert(self.selectIndex, result)
 
+            self.modifyBtn["state"] = "disabled"
+            self.insertBtn["state"] = "disabled"
+            self.deleteBtn["state"] = "disabled"
+
     def insert(self):
-        result = sd.askstring(title=textSetting.textList["insert"], prompt=textSetting.textList["infoList"]["I27"], initialvalue=self.selectValue, parent=self)
+        resultObj = CustomAskstring(self.master, title=textSetting.textList["insert"], prompt=textSetting.textList["infoList"]["I27"], initialvalue=self.selectValue, bgColor=self.rootFrameAppearance.bgColor)
+        result = resultObj.result
 
         if result:
             self.dirtyFlag = True
             self.imageListbox.insert(tkinter.END, result)
+
+            self.modifyBtn["state"] = "disabled"
+            self.insertBtn["state"] = "disabled"
+            self.deleteBtn["state"] = "disabled"
 
     def delete(self):
         warnMsg = textSetting.textList["infoList"]["I25"].format(self.selectIndex + 1)
@@ -247,7 +249,10 @@ class TexImageDialog(sd.Dialog):
         if result:
             self.dirtyFlag = True
             self.imageListbox.delete(self.selectIndex)
-            self.imageListbox.select_set(tkinter.END)
+
+            self.modifyBtn["state"] = "disabled"
+            self.insertBtn["state"] = "disabled"
+            self.deleteBtn["state"] = "disabled"
 
     def validate(self):
         if not self.dirtyFlag:
@@ -271,8 +276,8 @@ class TexImageDialog(sd.Dialog):
             mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I29"])
 
 
-class DetailDialog(sd.Dialog):
-    def __init__(self, master, title, mode, num, detailNum, decryptFile, colIdTuple, colTuple, detailMdlList):
+class DetailDialog(CustomSimpleDialog):
+    def __init__(self, master, title, mode, num, detailNum, decryptFile, colIdTuple, colTuple, detailMdlList, rootFrameAppearance):
         self.mode = mode
         self.num = num
         self.detailNum = detailNum
@@ -282,72 +287,68 @@ class DetailDialog(sd.Dialog):
         self.textureList = detailMdlList[self.detailNum]["textureList"]
         self.cancelFlag = False
         self.detailMdlList = detailMdlList
-        super(DetailDialog, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         index = 0
         self.varList = []
+        self.varCnt = 0
         self.entryWidth = 20
         for idx, colIdName in enumerate(self.colIdTuple):
             if colIdName == "treeMesh":
-                self.eleLb = ttk.Label(master, font=textSetting.textList["font2"], text=textSetting.textList["mdlinfo"]["detailModelMeshLabel"])
-                self.eleLb.grid(row=index, column=0, sticky=tkinter.W + tkinter.E)
-                self.v_ele = tkinter.IntVar()
-                self.v_ele.set(self.textureList[index])
-                self.eleEt = ttk.Entry(master, font=textSetting.textList["font2"], textvariable=self.v_ele, width=self.entryWidth)
-                self.eleEt.grid(row=index, column=1, sticky=tkinter.W + tkinter.E)
-                self.varList.append(self.v_ele)
+                eleLb = ttkCustomWidget.CustomTtkLabel(master, font=textSetting.textList["font2"], text=textSetting.textList["mdlinfo"]["detailModelMeshLabel"])
+                eleLb.grid(row=index, column=0, sticky=tkinter.W + tkinter.E)
+                self.varList.append(tkinter.IntVar(value=self.textureList[index]))
+                eleEt = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.varList[self.varCnt], width=self.entryWidth)
+                eleEt.grid(row=index, column=1, sticky=tkinter.W + tkinter.E)
+                self.varCnt += 1
                 index += 1
 
-                self.eleLb = ttk.Label(master, font=textSetting.textList["font2"], text=textSetting.textList["mdlinfo"]["detailModelMtrlLabel"])
-                self.eleLb.grid(row=index, column=0, sticky=tkinter.W + tkinter.E)
-                self.v_ele = tkinter.IntVar()
-                self.v_ele.set(self.textureList[index])
-                self.eleEt = ttk.Entry(master, font=textSetting.textList["font2"], textvariable=self.v_ele, width=self.entryWidth)
-                self.eleEt.grid(row=index, column=1, sticky=tkinter.W + tkinter.E)
-                self.varList.append(self.v_ele)
+                eleLb = ttkCustomWidget.CustomTtkLabel(master, font=textSetting.textList["font2"], text=textSetting.textList["mdlinfo"]["detailModelMtrlLabel"])
+                eleLb.grid(row=index, column=0, sticky=tkinter.W + tkinter.E)
+                self.varList.append(tkinter.IntVar(value=self.textureList[index]))
+                eleEt = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.varList[self.varCnt], width=self.entryWidth)
+                eleEt.grid(row=index, column=1, sticky=tkinter.W + tkinter.E)
+                self.varCnt += 1
                 index += 1
             elif colIdName == "treeEle1-3":
                 for i in range(3):
-                    self.eleLb = ttk.Label(master, font=textSetting.textList["font2"], text=textSetting.textList["mdlinfo"]["detailModelEleNum"].format(i + 1))
-                    self.eleLb.grid(row=index, column=0, sticky=tkinter.W + tkinter.E)
-                    self.v_ele = tkinter.IntVar()
-                    self.v_ele.set(self.textureList[index])
-                    self.eleEt = ttk.Entry(master, font=textSetting.textList["font2"], textvariable=self.v_ele, width=self.entryWidth)
-                    self.eleEt.grid(row=index, column=1, sticky=tkinter.W + tkinter.E)
-                    self.varList.append(self.v_ele)
+                    eleLb = ttkCustomWidget.CustomTtkLabel(master, font=textSetting.textList["font2"], text=textSetting.textList["mdlinfo"]["detailModelEleNum"].format(i + 1))
+                    eleLb.grid(row=index, column=0, sticky=tkinter.W + tkinter.E)
+                    self.varList.append(tkinter.IntVar(value=self.textureList[index]))
+                    eleEt = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.varList[self.varCnt], width=self.entryWidth)
+                    eleEt.grid(row=index, column=1, sticky=tkinter.W + tkinter.E)
+                    self.varCnt += 1
                     index += 1
             elif colIdName == "treeDiff":
                 colorLabelList = ["DIFF_R", "DIFF_G", "DIFF_B", "DIFF_A"]
                 for i in range(4):
-                    self.eleLb = ttk.Label(master, font=textSetting.textList["font2"], text=colorLabelList[i])
-                    self.eleLb.grid(row=index, column=0, sticky=tkinter.W + tkinter.E)
-                    self.v_ele = tkinter.DoubleVar()
-                    self.v_ele.set(self.textureList[index])
-                    self.eleEt = ttk.Entry(master, font=textSetting.textList["font2"], textvariable=self.v_ele, width=self.entryWidth)
-                    self.eleEt.grid(row=index, column=1, sticky=tkinter.W + tkinter.E)
-                    self.varList.append(self.v_ele)
+                    eleLb = ttkCustomWidget.CustomTtkLabel(master, font=textSetting.textList["font2"], text=colorLabelList[i])
+                    eleLb.grid(row=index, column=0, sticky=tkinter.W + tkinter.E)
+                    self.varList.append(tkinter.DoubleVar(value=self.textureList[index]))
+                    eleEt = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.varList[self.varCnt], width=self.entryWidth)
+                    eleEt.grid(row=index, column=1, sticky=tkinter.W + tkinter.E)
+                    self.varCnt += 1
                     index += 1
             elif colIdName == "treeEmis":
                 colorLabelList = ["EMIS_R", "EMIS_G", "EMIS_B"]
                 for i in range(3):
-                    self.eleLb = ttk.Label(master, font=textSetting.textList["font2"], text=colorLabelList[i])
-                    self.eleLb.grid(row=index, column=0, sticky=tkinter.W + tkinter.E)
-                    self.v_ele = tkinter.DoubleVar()
-                    self.v_ele.set(self.textureList[index])
-                    self.eleEt = ttk.Entry(master, font=textSetting.textList["font2"], textvariable=self.v_ele, width=self.entryWidth)
-                    self.eleEt.grid(row=index, column=1, sticky=tkinter.W + tkinter.E)
-                    self.varList.append(self.v_ele)
+                    eleLb = ttkCustomWidget.CustomTtkLabel(master, font=textSetting.textList["font2"], text=colorLabelList[i])
+                    eleLb.grid(row=index, column=0, sticky=tkinter.W + tkinter.E)
+                    self.varList.append(tkinter.DoubleVar(value=self.textureList[index]))
+                    eleEt = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.varList[self.varCnt], width=self.entryWidth)
+                    eleEt.grid(row=index, column=1, sticky=tkinter.W + tkinter.E)
+                    self.varCnt += 1
                     index += 1
             else:
-                self.eleLb = ttk.Label(master, font=textSetting.textList["font2"], text=self.colTuple[idx])
-                self.eleLb.grid(row=index, column=0, sticky=tkinter.W + tkinter.E)
-                self.v_ele = tkinter.IntVar()
-                self.v_ele.set(self.textureList[index])
-                self.eleEt = ttk.Entry(master, font=textSetting.textList["font2"], textvariable=self.v_ele, width=self.entryWidth)
-                self.eleEt.grid(row=index, column=1, sticky=tkinter.W + tkinter.E)
-                self.varList.append(self.v_ele)
+                eleLb = ttkCustomWidget.CustomTtkLabel(master, font=textSetting.textList["font2"], text=self.colTuple[idx])
+                eleLb.grid(row=index, column=0, sticky=tkinter.W + tkinter.E)
+                self.varList.append(tkinter.IntVar(value=self.textureList[index]))
+                eleEt = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.varList[self.varCnt], width=self.entryWidth)
+                eleEt.grid(row=index, column=1, sticky=tkinter.W + tkinter.E)
+                self.varCnt += 1
                 index += 1
+        super().body(master)
 
     def validate(self):
         textureList = [x["textureList"][0:2] for x in self.detailMdlList]
@@ -381,35 +382,38 @@ class DetailDialog(sd.Dialog):
         mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I26"])
 
 
-class ImageDialog(sd.Dialog):
-    def __init__(self, master, title, num, decryptFile):
+class ImageDialog(CustomSimpleDialog):
+    def __init__(self, master, title, num, decryptFile, rootFrameAppearance):
+        self.master = master
         self.num = num
         self.decryptFile = decryptFile
+        self.rootFrameAppearance = rootFrameAppearance
         self.imgList = decryptFile.allInfoList[self.num]["imgList"]
         self.dirtyFlag = False
         self.selectIndex = None
         self.selectValue = None
-        super(ImageDialog, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
-        self.btnFrame = tkinter.Frame(master, pady=5)
-        self.btnFrame.pack()
-        self.listFrame = tkinter.Frame(master)
-        self.listFrame.pack()
+        btnFrame = ttkCustomWidget.CustomTtkFrame(master)
+        btnFrame.pack(pady=5)
+        listFrame = ttkCustomWidget.CustomTtkFrame(master)
+        listFrame.pack()
 
-        self.modifyBtn = tkinter.Button(self.btnFrame, font=textSetting.textList["font2"], text=textSetting.textList["modify"], state="disabled", command=self.modify)
+        self.modifyBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["modify"], style="custom.listbox.TButton", state="disabled", command=self.modify)
         self.modifyBtn.grid(padx=10, row=0, column=0, sticky=tkinter.W + tkinter.E)
-        self.insertBtn = tkinter.Button(self.btnFrame, font=textSetting.textList["font2"], text=textSetting.textList["insert"], state="disabled", command=self.insert)
+        self.insertBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["insert"], style="custom.listbox.TButton", state="disabled", command=self.insert)
         self.insertBtn.grid(padx=10, row=0, column=1, sticky=tkinter.W + tkinter.E)
-        self.deleteBtn = tkinter.Button(self.btnFrame, font=textSetting.textList["font2"], text=textSetting.textList["delete"], state="disabled", command=self.delete)
+        self.deleteBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["delete"], style="custom.listbox.TButton", state="disabled", command=self.delete)
         self.deleteBtn.grid(padx=10, row=0, column=2, sticky=tkinter.W + tkinter.E)
 
-        self.imageLb = tkinter.Label(self.listFrame, font=textSetting.textList["font2"], text=textSetting.textList["mdlinfo"]["imageListLabel"])
-        self.imageLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
+        imageLb = ttkCustomWidget.CustomTtkLabel(listFrame, font=textSetting.textList["font2"], text=textSetting.textList["mdlinfo"]["imageListLabel"])
+        imageLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
         self.v_imageList = tkinter.StringVar(value=self.imgList)
-        self.imageListbox = tkinter.Listbox(self.listFrame, font=textSetting.textList["font2"], listvariable=self.v_imageList, width=30)
+        self.imageListbox = tkinter.Listbox(listFrame, font=textSetting.textList["font2"], listvariable=self.v_imageList, width=30, height=6, bg=self.rootFrameAppearance.bgColor, fg=self.rootFrameAppearance.fgColor)
         self.imageListbox.grid(row=1, column=0, sticky=tkinter.W + tkinter.E)
         self.imageListbox.bind("<<ListboxSelect>>", lambda e: self.buttonActive(e, self.imageListbox.curselection()))
+        super().body(master)
 
     def buttonActive(self, event, value):
         if len(value) > 0:
@@ -424,19 +428,29 @@ class ImageDialog(sd.Dialog):
         self.insertBtn["state"] = "normal"
 
     def modify(self):
-        result = sd.askstring(title=textSetting.textList["modify"], prompt=textSetting.textList["infoList"]["I27"], initialvalue=self.selectValue, parent=self)
+        resultObj = CustomAskstring(self.master, title=textSetting.textList["modify"], prompt=textSetting.textList["infoList"]["I27"], initialvalue=self.selectValue, bgColor=self.rootFrameAppearance.bgColor)
+        result = resultObj.result
 
         if result:
             self.dirtyFlag = True
             self.imageListbox.delete(self.selectIndex)
             self.imageListbox.insert(self.selectIndex, result)
 
+            self.modifyBtn["state"] = "disabled"
+            self.insertBtn["state"] = "disabled"
+            self.deleteBtn["state"] = "disabled"
+
     def insert(self):
-        result = sd.askstring(title=textSetting.textList["insert"], prompt=textSetting.textList["infoList"]["I27"], initialvalue=self.selectValue, parent=self)
+        resultObj = CustomAskstring(self.master, title=textSetting.textList["insert"], prompt=textSetting.textList["infoList"]["I27"], initialvalue=self.selectValue, bgColor=self.rootFrameAppearance.bgColor)
+        result = resultObj.result
 
         if result:
             self.dirtyFlag = True
             self.imageListbox.insert(tkinter.END, result)
+
+            self.modifyBtn["state"] = "disabled"
+            self.insertBtn["state"] = "disabled"
+            self.deleteBtn["state"] = "disabled"
 
     def delete(self):
         warnMsg = textSetting.textList["infoList"]["I25"].format(self.selectIndex + 1)
@@ -445,7 +459,10 @@ class ImageDialog(sd.Dialog):
         if result:
             self.dirtyFlag = True
             self.imageListbox.delete(self.selectIndex)
-            self.imageListbox.select_set(tkinter.END)
+
+            self.modifyBtn["state"] = "disabled"
+            self.insertBtn["state"] = "disabled"
+            self.deleteBtn["state"] = "disabled"
 
     def validate(self):
         if not self.dirtyFlag:
@@ -469,46 +486,42 @@ class ImageDialog(sd.Dialog):
             mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I29"])
 
 
-class SmfDetailDialog(sd.Dialog):
-    def __init__(self, master, title, num, decryptFile):
+class SmfDetailDialog(CustomSimpleDialog):
+    def __init__(self, master, title, num, decryptFile, rootFrameAppearance):
         self.num = num
         self.master = master
         self.selectIndex = None
         self.selectItem = None
         self.maxSize = 0
         self.decryptFile = decryptFile
+        self.rootFrameAppearance = rootFrameAppearance
         self.smfName = decryptFile.allInfoList[self.num]["smfName"]
         self.smfDetailList = decryptFile.allInfoList[self.num]["smfDetailList"]
-        super(SmfDetailDialog, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(False, False)
-        mainFrame = ttk.Frame(master, width=720, height=360)
+        mainFrame = ttkCustomWidget.CustomTtkFrame(master, width=720, height=360)
         mainFrame.pack()
 
         self.v_smfName = tkinter.StringVar()
         self.v_smfName.set(self.smfName)
-        fileNameEt = ttk.Entry(mainFrame, textvariable=self.v_smfName, font=textSetting.textList["font2"], width=20, state="readonly", justify="center")
+        fileNameEt = ttkCustomWidget.CustomTtkEntry(mainFrame, textvariable=self.v_smfName, font=textSetting.textList["font2"], width=20, state="readonly", justify="center")
         fileNameEt.place(relx=0.02, rely=0.03)
 
-        self.mdlInfoLf = tkinter.LabelFrame(mainFrame, text=textSetting.textList["mdlinfo"]["smfInfo"])
-        self.mdlInfoLf.place(relx=0.02, rely=0.14, relwidth=0.96, relheight=0.80)
+        mdlInfoLf = ttkCustomWidget.CustomTtkLabelFrame(mainFrame, text=textSetting.textList["mdlinfo"]["smfInfo"])
+        mdlInfoLf.place(relx=0.02, rely=0.14, relwidth=0.96, relheight=0.80)
 
-        self.frame = ttk.Frame(self.mdlInfoLf)
-        self.frame.pack(expand=True, fill=tkinter.BOTH)
+        self.modifyBtn = ttkCustomWidget.CustomTtkButton(mainFrame, text=textSetting.textList["mdlinfo"]["smfInfoModify"], width=16, state="disabled", command=self.modify)
+        self.modifyBtn.place(relx=0.34, rely=0.03)
 
-        self.tree = ttk.Treeview(self.frame, selectmode="browse")
+        self.insertBtn = ttkCustomWidget.CustomTtkButton(mainFrame, text=textSetting.textList["mdlinfo"]["smfInfoInsert"], width=16, state="normal", command=self.insert)
+        self.insertBtn.place(relx=0.57, rely=0.03)
 
-        self.scrollbar_x = ttk.Scrollbar(self.frame, orient=tkinter.HORIZONTAL, command=self.tree.xview)
-        self.tree.configure(xscrollcommand=lambda first, last: self.scrollbar_x.set(first, last))
-        self.scrollbar_x.pack(side=tkinter.BOTTOM, fill=tkinter.X)
+        self.deleteBtn = ttkCustomWidget.CustomTtkButton(mainFrame, text=textSetting.textList["mdlinfo"]["smfInfoDelete"], width=16, state="disabled", command=self.delete)
+        self.deleteBtn.place(relx=0.8, rely=0.03)
 
-        self.scrollbar_y = ttk.Scrollbar(self.frame, orient=tkinter.VERTICAL, command=self.tree.yview)
-        self.tree.configure(yscrollcommand=lambda first, last: self.scrollbar_y.set(first, last))
-        self.scrollbar_y.pack(side=tkinter.RIGHT, fill=tkinter.Y)
-
-        self.tree.pack(expand=True, fill=tkinter.BOTH)
-        self.tree.bind("<<TreeviewSelect>>", self.treeSelect)
+        self.frame = ScrollbarTreeviewMdlinfo(mdlInfoLf, None, [])
 
         self.colIdTuple = [
             "treeNum",
@@ -532,36 +545,29 @@ class SmfDetailDialog(sd.Dialog):
             textSetting.textList["mdlinfo"]["smfParam"] + "6",
         ]
 
-        self.tree["columns"] = self.colIdTuple
-        self.tree.column("#0", width=0, stretch=False)
+        self.frame.tree["columns"] = self.colIdTuple
+        self.frame.tree.column("#0", width=0, stretch=False)
 
         for index, colIdName in enumerate(self.colIdTuple):
             widthLen = 50
             if colIdName == "smfName":
                 widthLen = 80
-            self.tree.column(colIdName, anchor=tkinter.CENTER, width=widthLen)
-            self.tree.heading(colIdName, text=self.colTuple[index], anchor=tkinter.CENTER)
+            self.frame.tree.column(colIdName, anchor=tkinter.CENTER, width=widthLen)
+            self.frame.tree.heading(colIdName, text=self.colTuple[index], anchor=tkinter.CENTER)
 
-        self.tree["displaycolumns"] = self.colIdTuple
-
+        self.frame.tree["displaycolumns"] = self.colIdTuple
         self.viewData(self.smfDetailList)
-
-        self.modifyBtn = ttk.Button(mainFrame, text=textSetting.textList["mdlinfo"]["smfInfoModify"], width=16, state="disabled", command=self.modify)
-        self.modifyBtn.place(relx=0.34, rely=0.03)
-
-        self.insertBtn = ttk.Button(mainFrame, text=textSetting.textList["mdlinfo"]["smfInfoInsert"], width=16, state="normal", command=self.insert)
-        self.insertBtn.place(relx=0.57, rely=0.03)
-
-        self.deleteBtn = ttk.Button(mainFrame, text=textSetting.textList["mdlinfo"]["smfInfoDelete"], width=16, state="disabled", command=self.delete)
-        self.deleteBtn.place(relx=0.8, rely=0.03)
+        self.frame.tree.bind("<<TreeviewSelect>>", self.treeSelect)
+        super().body(master)
 
     def treeSelect(self, event):
-        selectId = self.tree.selection()[0]
-        self.selectItem = self.tree.set(selectId)
-        self.selectIndex = int(self.selectItem["treeNum"]) - 1
+        if len(self.frame.tree.selection()) > 0:
+            selectId = self.frame.tree.selection()[0]
+            self.selectItem = self.frame.tree.set(selectId)
+            self.selectIndex = int(self.selectItem["treeNum"]) - 1
 
-        self.modifyBtn["state"] = "normal"
-        self.deleteBtn["state"] = "normal"
+            self.modifyBtn["state"] = "normal"
+            self.deleteBtn["state"] = "normal"
 
     def viewData(self, smfDetailList):
         index = 0
@@ -570,7 +576,7 @@ class SmfDetailDialog(sd.Dialog):
             data = (index + 1,)
             for smfDetail in smfDetailInfo["smfDetail"]:
                 data += (smfDetail,)
-            self.tree.insert(parent="", index="end", iid=index, values=data)
+            self.frame.tree.insert(parent="", index="end", iid=index, values=data)
             index += 1
             self.maxSize += 1
 
@@ -578,26 +584,26 @@ class SmfDetailDialog(sd.Dialog):
         self.decryptFile = self.decryptFile.reload()
         self.smfDetailList = self.decryptFile.allInfoList[self.num]["smfDetailList"]
 
-        for i in self.tree.get_children():
-            self.tree.delete(i)
+        for i in self.frame.tree.get_children():
+            self.frame.tree.delete(i)
         self.viewData(self.smfDetailList)
 
     def modify(self):
         valueList = []
         for colIdName in self.colIdTuple:
             valueList.append(self.selectItem[colIdName])
-        result = SmfDetailEditDialog(self.master, textSetting.textList["mdlinfo"]["smfElementModify"], self.num, self.selectIndex, self.maxSize, self.decryptFile, self.colIdTuple, self.colTuple, valueList)
+        result = SmfDetailEditDialog(self.master, textSetting.textList["mdlinfo"]["smfElementModify"], self.num, self.selectIndex, self.maxSize, self.decryptFile, self.colIdTuple, self.colTuple, valueList, self.rootFrameAppearance)
         if result.dirtyFlag:
             self.reload()
             if self.selectIndex is not None and self.selectIndex >= 0:
-                self.tree.selection_set(self.selectIndex)
+                self.frame.tree.selection_set(self.selectIndex)
 
     def insert(self):
-        result = SmfDetailEditDialog(self.master, textSetting.textList["mdlinfo"]["smfElementInsert"], self.num, self.selectIndex, self.maxSize, self.decryptFile, self.colIdTuple, self.colTuple, None)
+        result = SmfDetailEditDialog(self.master, textSetting.textList["mdlinfo"]["smfElementInsert"], self.num, self.selectIndex, self.maxSize, self.decryptFile, self.colIdTuple, self.colTuple, None, self.rootFrameAppearance)
         if result.dirtyFlag:
             self.reload()
             if self.selectIndex is not None and self.selectIndex >= 0:
-                self.tree.selection_set(self.selectIndex)
+                self.frame.tree.selection_set(self.selectIndex)
 
     def delete(self):
         warnMsg = textSetting.textList["infoList"]["I25"].format(self.selectIndex + 1)
@@ -609,16 +615,20 @@ class SmfDetailDialog(sd.Dialog):
                 mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
             mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I33"])
             self.reload()
-            if self.selectIndex is not None:
-                if self.selectIndex >= len(self.smfDetailList):
-                    self.selectIndex = len(self.smfDetailList) - 1
+            if len(self.smfDetailList) > 0:
+                if self.selectIndex is not None:
+                    if self.selectIndex >= len(self.smfDetailList):
+                        self.selectIndex = len(self.smfDetailList) - 1
 
-                if self.selectIndex >= 0:
-                    self.tree.selection_set(self.selectIndex)
+                    if self.selectIndex >= 0:
+                        self.frame.tree.selection_set(self.selectIndex)
+            else:
+                self.modifyBtn["state"] = "disabled"
+                self.deleteBtn["state"] = "disabled"
 
 
-class SmfDetailEditDialog(sd.Dialog):
-    def __init__(self, master, title, smfNum, num, maxSize, decryptFile, colIdTuple, colTuple, valueList):
+class SmfDetailEditDialog(CustomSimpleDialog):
+    def __init__(self, master, title, smfNum, num, maxSize, decryptFile, colIdTuple, colTuple, valueList, rootFrameAppearance):
         self.smfNum = smfNum
         self.smfDetailNum = num
         self.maxSize = maxSize
@@ -630,7 +640,7 @@ class SmfDetailEditDialog(sd.Dialog):
 
         if valueList is not None:
             self.valueList = valueList[1:]
-        super(SmfDetailEditDialog, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(False, False)
@@ -640,39 +650,40 @@ class SmfDetailEditDialog(sd.Dialog):
 
         index = 0
         if self.valueList is None:
-            self.position = ttk.Label(master, font=textSetting.textList["font2"], text=textSetting.textList["mdlinfo"]["posLabel"])
-            self.position.grid(row=index, column=0, sticky=tkinter.N + tkinter.S)
+            position = ttkCustomWidget.CustomTtkLabel(master, font=textSetting.textList["font2"], text=textSetting.textList["mdlinfo"]["posLabel"])
+            position.grid(row=index, column=0, sticky=tkinter.N + tkinter.S)
             if self.smfDetailNum is not None:
                 positionList = [textSetting.textList["mdlinfo"]["pos1"].format(self.smfDetailNum + 1), textSetting.textList["mdlinfo"]["pos2"].format(self.smfDetailNum + 1)]
             else:
                 positionList = [textSetting.textList["mdlinfo"]["pos3"]]
             self.v_position = tkinter.StringVar()
-            self.positionCb = ttk.Combobox(master, font=textSetting.textList["font2"], textvariable=self.v_position, width=self.entryWidth, state="readonly", value=positionList)
-            self.positionCb.grid(row=index, column=1, sticky=tkinter.N + tkinter.S, pady=10)
+            positionCb = ttkCustomWidget.CustomTtkCombobox(master, font=textSetting.textList["font2"], textvariable=self.v_position, width=self.entryWidth, state="readonly", value=positionList)
+            positionCb.grid(row=index, column=1, sticky=tkinter.N + tkinter.S, pady=10)
             self.v_position.set(positionList[0])
             index += 1
 
-            self.xLine = ttk.Separator(master, orient=tkinter.HORIZONTAL)
-            self.xLine.grid(columnspan=2, row=index, column=0, sticky=tkinter.W + tkinter.E, pady=10)
+            xLine = ttkCustomWidget.CustomTtkSeparator(master, orient=tkinter.HORIZONTAL)
+            xLine.grid(columnspan=2, row=index, column=0, sticky=tkinter.W + tkinter.E, pady=10)
             index += 1
 
         valueIndex = 0
         for idx, colIdName in enumerate(self.colIdTuple):
-            self.v_ele = None
-            self.eleLb = ttk.Label(master, font=textSetting.textList["font2"], text=self.colTuple[idx])
-            self.eleLb.grid(row=index, column=0, sticky=tkinter.W + tkinter.E)
+            v_ele = None
+            eleLb = ttkCustomWidget.CustomTtkLabel(master, font=textSetting.textList["font2"], text=self.colTuple[idx])
+            eleLb.grid(row=index, column=0, sticky=tkinter.W + tkinter.E)
             if colIdName == "smfName":
-                self.v_ele = tkinter.StringVar()
+                v_ele = tkinter.StringVar()
             else:
-                self.v_ele = tkinter.DoubleVar()
-            self.eleEt = ttk.Entry(master, font=textSetting.textList["font2"], textvariable=self.v_ele, width=self.entryWidth)
-            self.eleEt.grid(row=index, column=1, sticky=tkinter.W + tkinter.E)
-            self.varList.append(self.v_ele)
+                v_ele = tkinter.DoubleVar()
+            self.varList.append(v_ele)
+            eleEt = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.varList[idx], width=self.entryWidth)
+            eleEt.grid(row=index, column=1, sticky=tkinter.W + tkinter.E)
 
             if self.valueList is not None:
-                self.v_ele.set(self.valueList[valueIndex])
+                v_ele.set(self.valueList[valueIndex])
                 valueIndex += 1
             index += 1
+        super().body(master)
 
     def validate(self):
         warnMsg = textSetting.textList["infoList"]["I34"]
@@ -710,38 +721,39 @@ class SmfDetailEditDialog(sd.Dialog):
         mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I33"])
 
 
-class BinFileOrFlagEditDialog(sd.Dialog):
-    def __init__(self, master, title, num, decryptFile):
+class BinFileOrFlagEditDialog(CustomSimpleDialog):
+    def __init__(self, master, title, num, decryptFile, rootFrameAppearance):
         self.smfNum = num
         self.decryptFile = decryptFile
         self.smfName = decryptFile.allInfoList[self.smfNum]["smfName"]
         self.binFile = decryptFile.allInfoList[self.smfNum]["binInfo"][0]
         self.flag = decryptFile.allInfoList[self.smfNum]["binInfo"][1]
         self.dirtyFlag = False
-        super(BinFileOrFlagEditDialog, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.entryWidth = 20
-        self.smfNameLb = ttk.Label(master, text=textSetting.textList["mdlinfo"]["smfNameLabel"], font=textSetting.textList["font2"])
-        self.smfNameLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
+        smfNameLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["mdlinfo"]["smfNameLabel"], font=textSetting.textList["font2"])
+        smfNameLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
         self.v_smfName = tkinter.StringVar()
         self.v_smfName.set(self.smfName)
-        self.smfNameEt = ttk.Entry(master, font=textSetting.textList["font2"], textvariable=self.v_smfName, width=self.entryWidth)
-        self.smfNameEt.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
+        smfNameEt = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.v_smfName, width=self.entryWidth)
+        smfNameEt.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
 
-        self.binFileLb = ttk.Label(master, text=textSetting.textList["mdlinfo"]["binFileLabel"], font=textSetting.textList["font2"])
-        self.binFileLb.grid(row=1, column=0, sticky=tkinter.W + tkinter.E)
+        binFileLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["mdlinfo"]["binFileLabel"], font=textSetting.textList["font2"])
+        binFileLb.grid(row=1, column=0, sticky=tkinter.W + tkinter.E)
         self.v_binFile = tkinter.StringVar()
         self.v_binFile.set(self.binFile)
-        self.binFileEt = ttk.Entry(master, font=textSetting.textList["font2"], textvariable=self.v_binFile, width=self.entryWidth)
-        self.binFileEt.grid(row=1, column=1, sticky=tkinter.W + tkinter.E)
+        binFileEt = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.v_binFile, width=self.entryWidth)
+        binFileEt.grid(row=1, column=1, sticky=tkinter.W + tkinter.E)
 
-        self.flagLb = ttk.Label(master, text=textSetting.textList["mdlinfo"]["binFileFlag"], font=textSetting.textList["font2"])
-        self.flagLb.grid(row=2, column=0, sticky=tkinter.W + tkinter.E)
+        flagLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["mdlinfo"]["binFileFlag"], font=textSetting.textList["font2"])
+        flagLb.grid(row=2, column=0, sticky=tkinter.W + tkinter.E)
         self.v_flag = tkinter.IntVar()
         self.v_flag.set(self.flag)
-        self.flagEt = ttk.Entry(master, font=textSetting.textList["font2"], textvariable=self.v_flag, width=self.entryWidth)
-        self.flagEt.grid(row=2, column=1, sticky=tkinter.W + tkinter.E)
+        flagEt = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.v_flag, width=self.entryWidth)
+        flagEt.grid(row=2, column=1, sticky=tkinter.W + tkinter.E)
+        super().body(master)
 
     def validate(self):
         warnMsg = textSetting.textList["infoList"]["I35"]
@@ -767,8 +779,8 @@ class BinFileOrFlagEditDialog(sd.Dialog):
         mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I36"])
 
 
-class CopyMdlDialog(sd.Dialog):
-    def __init__(self, master, title, decryptFile):
+class CopyMdlDialog(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, rootFrameAppearance):
         self.decryptFile = decryptFile
         self.smfName = []
         self.cbSmfName = []
@@ -780,17 +792,18 @@ class CopyMdlDialog(sd.Dialog):
             index += 1
         self.dirtyFlag = False
         self.copyByteArr = None
-        super(CopyMdlDialog, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         msg = textSetting.textList["infoList"]["I37"]
-        self.lb = ttk.Label(master, text=msg, font=textSetting.textList["font2"])
-        self.lb.pack()
+        lb = ttkCustomWidget.CustomTtkLabel(master, text=msg, font=textSetting.textList["font2"])
+        lb.pack()
 
         self.v_cb = tkinter.StringVar()
-        self.cb = ttk.Combobox(master, textvariable=self.v_cb, font=textSetting.textList["font2"], width=30, state="readonly", value=self.cbSmfName)
         self.v_cb.set(self.cbSmfName[0])
+        self.cb = ttkCustomWidget.CustomTtkCombobox(master, textvariable=self.v_cb, font=textSetting.textList["font2"], width=30, state="readonly", value=self.cbSmfName)
         self.cb.pack()
+        super().body(master)
 
     def validate(self):
         idx = self.cb.current()
@@ -812,28 +825,31 @@ class CopyMdlDialog(sd.Dialog):
         self.dirtyFlag = True
 
 
-class PasteDialog(sd.Dialog):
-    def __init__(self, master, title, decryptFile, num, copyInfoByteArr):
+class PasteDialog(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, num, copyInfoByteArr, rootFrameAppearance):
         self.decryptFile = decryptFile
         self.num = num
         self.copyInfoByteArr = copyInfoByteArr
         self.reloadFlag = False
-        super(PasteDialog, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(False, False)
-        self.posLb = ttk.Label(master, text=textSetting.textList["infoList"]["I4"], font=textSetting.textList["font2"])
-        self.posLb.pack(padx=10, pady=10)
+        posLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["infoList"]["I4"], font=textSetting.textList["font2"])
+        posLb.pack(padx=10, pady=10)
+        super().body(master)
 
     def buttonbox(self):
-        box = tkinter.Frame(self, padx=5, pady=5)
-        self.frontBtn = tkinter.Button(box, text=textSetting.textList["mdlinfo"]["pasteFront"], font=textSetting.textList["font2"], width=10, command=self.frontInsert)
+        super().buttonbox()
+        for idx, child in enumerate(self.buttonList):
+            child.destroy()
+        self.box.config(padx=5, pady=5)
+        self.frontBtn = ttkCustomWidget.CustomTtkButton(self.box, text=textSetting.textList["mdlinfo"]["pasteFront"], style="custom.paste.TButton", width=10, command=self.frontInsert)
         self.frontBtn.grid(row=0, column=0, padx=5)
-        self.backBtn = tkinter.Button(box, text=textSetting.textList["mdlinfo"]["pasteBack"], font=textSetting.textList["font2"], width=10, command=self.backInsert)
+        self.backBtn = ttkCustomWidget.CustomTtkButton(self.box, text=textSetting.textList["mdlinfo"]["pasteBack"], style="custom.paste.TButton", width=10, command=self.backInsert)
         self.backBtn.grid(row=0, column=1, padx=5)
-        self.cancelBtn = tkinter.Button(box, text=textSetting.textList["mdlinfo"]["pasteCancel"], font=textSetting.textList["font2"], width=10, command=self.cancel)
+        self.cancelBtn = ttkCustomWidget.CustomTtkButton(self.box, text=textSetting.textList["mdlinfo"]["pasteCancel"], style="custom.paste.TButton", width=10, command=self.cancel)
         self.cancelBtn.grid(row=0, column=2, padx=5)
-        box.pack()
 
     def frontInsert(self):
         if not self.decryptFile.copySaveFile(self.num - 1, self.copyInfoByteArr):

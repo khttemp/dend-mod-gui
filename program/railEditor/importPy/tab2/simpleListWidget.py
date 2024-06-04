@@ -1,44 +1,46 @@
 import copy
 
 import tkinter
-from tkinter import ttk
 from tkinter import messagebox as mb
-from tkinter import simpledialog as sd
 import program.textSetting as textSetting
+import program.appearance.ttkCustomWidget as ttkCustomWidget
+from program.appearance.customSimpleDialog import CustomSimpleDialog
 
 
 class SimpleListWidget:
-    def __init__(self, frame, text, decryptFile, listInfo, index, listCntVer, reloadFunc):
+    def __init__(self, root, frame, text, decryptFile, listInfo, index, listCntVer, rootFrameAppearance, reloadFunc):
+        self.root = root
         self.frame = frame
         self.text = text
         self.decryptFile = decryptFile
         self.index = index
         self.listCntVer = listCntVer
+        self.rootFrameAppearance = rootFrameAppearance
         self.reloadFunc = reloadFunc
         self.simpleList = copy.deepcopy(listInfo)
         self.selectIndexNum = -1
 
-        self.simpleListLf = ttk.LabelFrame(self.frame, text=text)
-        self.simpleListLf.pack(anchor=tkinter.NW, padx=10, side=tkinter.LEFT)
+        simpleListLf = ttkCustomWidget.CustomTtkLabelFrame(self.frame, text=text)
+        simpleListLf.pack(anchor=tkinter.NW, padx=10, pady=5, side=tkinter.LEFT)
 
-        self.btnFrame = ttk.Frame(self.simpleListLf)
-        self.btnFrame.pack()
+        btnFrame = ttkCustomWidget.CustomTtkFrame(simpleListLf)
+        btnFrame.pack()
 
-        self.modifyBtn = tkinter.Button(self.btnFrame, font=textSetting.textList["font2"], text=textSetting.textList["modify"], state="disabled", command=self.modify)
+        self.modifyBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["modify"], style="custom.listbox.TButton", state="disabled", command=self.modify)
         self.modifyBtn.grid(padx=10, row=0, column=0, sticky=tkinter.W + tkinter.E)
-        self.insertBtn = tkinter.Button(self.btnFrame, font=textSetting.textList["font2"], text=textSetting.textList["insert"], state="disabled", command=self.insert)
+        self.insertBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["insert"], style="custom.listbox.TButton", state="disabled", command=self.insert)
         self.insertBtn.grid(padx=10, row=0, column=1, sticky=tkinter.W + tkinter.E)
-        self.deleteBtn = tkinter.Button(self.btnFrame, font=textSetting.textList["font2"], text=textSetting.textList["delete"], state="disabled", command=self.delete)
+        self.deleteBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["delete"], style="custom.listbox.TButton", state="disabled", command=self.delete)
         self.deleteBtn.grid(padx=10, row=0, column=2, sticky=tkinter.W + tkinter.E)
 
-        self.listFrame = ttk.Frame(self.simpleListLf)
-        self.listFrame.pack()
+        listFrame = ttkCustomWidget.CustomTtkFrame(simpleListLf)
+        listFrame.pack()
 
         copySimpleList = self.setListboxInfo(self.simpleList)
         self.v_simpleList = tkinter.StringVar(value=copySimpleList)
-        self.simpleListListbox = tkinter.Listbox(self.listFrame, selectmode="single", font=textSetting.textList["font2"], width=25, listvariable=self.v_simpleList)
-        self.simpleListListbox.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
-        self.simpleListListbox.bind("<<ListboxSelect>>", lambda e: self.buttonActive(self.simpleListListbox, self.simpleListListbox.curselection()))
+        simpleListListbox = tkinter.Listbox(listFrame, selectmode="single", font=textSetting.textList["font2"], width=25, height=6, listvariable=self.v_simpleList, bg=rootFrameAppearance.bgColor, fg=rootFrameAppearance.fgColor)
+        simpleListListbox.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
+        simpleListListbox.bind("<<ListboxSelect>>", lambda e: self.buttonActive(simpleListListbox, simpleListListbox.curselection()))
 
     def buttonActive(self, listbox, value):
         if len(value) == 0:
@@ -69,7 +71,7 @@ class SimpleListWidget:
         return copySimpleList
 
     def modify(self):
-        result = EditSimpleListWidget(self.frame, self.text + textSetting.textList["railEditor"]["commonModifyLabel"], self.decryptFile, "modify", self.selectIndexNum, self.simpleList)
+        result = EditSimpleListWidget(self.root, self.text + textSetting.textList["railEditor"]["commonModifyLabel"], self.decryptFile, "modify", self.selectIndexNum, self.simpleList, self.rootFrameAppearance)
         if result.reloadFlag:
             if not self.decryptFile.saveSimpleList(self.index, self.listCntVer, result.simpleList):
                 self.decryptFile.printError()
@@ -79,7 +81,7 @@ class SimpleListWidget:
             self.reloadFunc()
 
     def insert(self):
-        result = EditSimpleListWidget(self.frame, self.text + textSetting.textList["railEditor"]["commonInsertLabel"], self.decryptFile, "insert", self.selectIndexNum, self.simpleList)
+        result = EditSimpleListWidget(self.root, self.text + textSetting.textList["railEditor"]["commonInsertLabel"], self.decryptFile, "insert", self.selectIndexNum, self.simpleList, self.rootFrameAppearance)
         if result.reloadFlag:
             if not self.decryptFile.saveSimpleList(self.index, self.listCntVer, result.simpleList):
                 self.decryptFile.printError()
@@ -101,40 +103,41 @@ class SimpleListWidget:
             self.reloadFunc()
 
 
-class EditSimpleListWidget(sd.Dialog):
-    def __init__(self, master, title, decryptFile, mode, index, simpleList):
+class EditSimpleListWidget(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, mode, index, simpleList, rootFrameAppearance):
         self.decryptFile = decryptFile
         self.mode = mode
         self.index = index
         self.simpleList = simpleList
         self.reloadFlag = False
-        super(EditSimpleListWidget, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(False, False)
 
-        self.valLb = ttk.Label(master, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
-        self.valLb.grid(columnspan=2, row=0, column=0, sticky=tkinter.W + tkinter.E)
+        valLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
+        valLb.grid(columnspan=2, row=0, column=0, sticky=tkinter.W + tkinter.E)
 
-        self.tempNameLb = ttk.Label(master, text=textSetting.textList["railEditor"]["editValueLabel"], font=textSetting.textList["font2"], width=12)
-        self.tempNameLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
+        tempNameLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["railEditor"]["editValueLabel"], font=textSetting.textList["font2"], width=12)
+        tempNameLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
         self.varTemp = tkinter.StringVar()
         if self.mode == "modify":
             self.varTemp.set(self.simpleList[self.index])
-        self.txtEt = ttk.Entry(master, textvariable=self.varTemp, font=textSetting.textList["font2"])
-        self.txtEt.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
+        txtEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varTemp, font=textSetting.textList["font2"])
+        txtEt.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
 
         if self.mode == "insert":
             self.setInsertWidget(master, 1)
+        super().body(master)
 
     def setInsertWidget(self, master, index):
-        self.xLine = ttk.Separator(master, orient=tkinter.HORIZONTAL)
-        self.xLine.grid(row=index, column=0, columnspan=2, sticky=tkinter.W + tkinter.E, pady=10)
+        xLine = ttkCustomWidget.CustomTtkSeparator(master, orient=tkinter.HORIZONTAL)
+        xLine.grid(row=index, column=0, columnspan=2, sticky=tkinter.W + tkinter.E, pady=10)
 
-        self.insertLb = ttk.Label(master, text=textSetting.textList["railEditor"]["posLabel"], font=textSetting.textList["font2"])
-        self.insertLb.grid(row=index + 1, column=0, sticky=tkinter.W + tkinter.E)
+        insertLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["railEditor"]["posLabel"], font=textSetting.textList["font2"])
+        insertLb.grid(row=index + 1, column=0, sticky=tkinter.W + tkinter.E)
         self.v_insert = tkinter.StringVar()
-        self.insertCb = ttk.Combobox(master, state="readonly", font=textSetting.textList["font2"], textvariable=self.v_insert, values=textSetting.textList["railEditor"]["posValue"])
+        self.insertCb = ttkCustomWidget.CustomTtkCombobox(master, state="readonly", font=textSetting.textList["font2"], textvariable=self.v_insert, values=textSetting.textList["railEditor"]["posValue"])
         self.insertCb.grid(row=index + 1, column=1, sticky=tkinter.W + tkinter.E)
         self.insertCb.current(0)
 

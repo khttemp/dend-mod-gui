@@ -1,14 +1,14 @@
 import copy
 
 import tkinter
-from tkinter import ttk
-from tkinter import simpledialog as sd
 from tkinter import messagebox as mb
 import program.textSetting as textSetting
+import program.appearance.ttkCustomWidget as ttkCustomWidget
+from program.appearance.customSimpleDialog import CustomSimpleDialog
 
 
-class InputDialog(sd.Dialog):
-    def __init__(self, master, title, decryptFile, cmdList, num, section, cmdItem=None):
+class InputDialog(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, rootFrameAppearance, cmdList, num, section, cmdItem=None):
         self.v_paramList = []
         self.decryptFile = decryptFile
         self.ver = decryptFile.ver
@@ -27,37 +27,37 @@ class InputDialog(sd.Dialog):
             self.info = textSetting.textList["infoList"]["I2"]
             self.p_cmd = None
             self.p_cnt = None
-        super(InputDialog, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(False, False)
-        self.delayLb = ttk.Label(master, text=textSetting.textList["mdlBin"]["treeDelay"], width=12, font=textSetting.textList["font2"])
-        self.delayLb.grid(row=0, column=0, sticky=tkinter.N+tkinter.S)
+        delayLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["mdlBin"]["treeDelay"], width=12, font=textSetting.textList["font2"])
+        delayLb.grid(row=0, column=0, sticky=tkinter.N+tkinter.S)
         self.v_delay = tkinter.StringVar()
         if self.cmdItem is not None:
             self.v_delay.set(self.cmdItem["treeDelay"])
         else:
             self.v_delay.set(0)
-        self.delayEt = ttk.Entry(master, textvariable=self.v_delay, width=27, font=textSetting.textList["font2"])
-        self.delayEt.grid(row=0, column=1, sticky=tkinter.N+tkinter.S, pady=10)
+        delayEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.v_delay, width=27, font=textSetting.textList["font2"])
+        delayEt.grid(row=0, column=1, sticky=tkinter.N+tkinter.S, pady=10)
 
-        self.cmdLb = ttk.Label(master, text=textSetting.textList["mdlBin"]["treeName"], width=12, font=textSetting.textList["font2"])
-        self.cmdLb.grid(row=1, column=0, sticky=tkinter.N+tkinter.S)
+        cmdLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["mdlBin"]["treeName"], width=12, font=textSetting.textList["font2"])
+        cmdLb.grid(row=1, column=0, sticky=tkinter.N+tkinter.S)
         self.v_cmd = tkinter.StringVar()
         cmdCopy = copy.deepcopy(self.cmdList)
         cmdCopy.sort()
-        self.cmdCb = ttk.Combobox(master, textvariable=self.v_cmd, width=25, font=textSetting.textList["font2"], state="readonly", value=cmdCopy)
-        self.cmdCb.grid(row=1, column=1, sticky=tkinter.N+tkinter.S, pady=10)
+        cmdCb = ttkCustomWidget.CustomTtkCombobox(master, textvariable=self.v_cmd, width=25, font=textSetting.textList["font2"], state="readonly", value=cmdCopy)
+        cmdCb.grid(row=1, column=1, sticky=tkinter.N+tkinter.S, pady=10)
         if self.p_cmd is not None:
             self.v_cmd.set(self.p_cmd)
         else:
             self.v_cmd.set(cmdCopy[0])
 
-        self.paramCntLb = ttk.Label(master, text=textSetting.textList["mdlBin"]["paramLabel"], width=12, font=textSetting.textList["font2"])
-        self.paramCntLb.grid(row=2, column=0, sticky=tkinter.N+tkinter.S)
+        paramCntLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["mdlBin"]["paramLabel"], width=12, font=textSetting.textList["font2"])
+        paramCntLb.grid(row=2, column=0, sticky=tkinter.N+tkinter.S)
         self.v_paramCnt = tkinter.IntVar()
         paramCntList = [cnt for cnt in range(0, 16)]
-        self.paramCntCb = ttk.Combobox(master, textvariable=self.v_paramCnt, width=25, font=textSetting.textList["font2"], state="readonly", value=paramCntList)
+        self.paramCntCb = ttkCustomWidget.CustomTtkCombobox(master, textvariable=self.v_paramCnt, width=25, font=textSetting.textList["font2"], state="readonly", value=paramCntList)
         self.paramCntCb.grid(row=2, column=1, sticky=tkinter.N+tkinter.S, pady=10)
         if self.p_cnt is not None:
             self.v_paramCnt.set(self.p_cnt)
@@ -65,27 +65,28 @@ class InputDialog(sd.Dialog):
             self.v_paramCnt.set(0)
 
         if self.cmdItem is None:
-            self.position = ttk.Label(master, text=textSetting.textList["mdlBin"]["posLabel"], width=12, font=textSetting.textList["font2"])
-            self.position.grid(row=3, column=0, sticky=tkinter.N+tkinter.S)
+            positionLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["mdlBin"]["posLabel"], width=12, font=textSetting.textList["font2"])
+            positionLb.grid(row=3, column=0, sticky=tkinter.N+tkinter.S)
             self.v_position = tkinter.StringVar()
             positionList = textSetting.textList["mdlBin"]["posValue"]
-            self.positionCb = ttk.Combobox(master, textvariable=self.v_position, width=25, font=textSetting.textList["font2"], state="readonly", value=positionList)
+            self.positionCb = ttkCustomWidget.CustomTtkCombobox(master, textvariable=self.v_position, width=25, font=textSetting.textList["font2"], state="readonly", value=positionList)
             self.positionCb.grid(row=3, column=1, sticky=tkinter.N+tkinter.S, pady=10)
             self.v_position.set(positionList[0])
 
-        self.xLine = ttk.Separator(master, orient=tkinter.HORIZONTAL)
-        self.xLine.grid(columnspan=2, row=4, column=0, sticky=tkinter.E + tkinter.W, pady=10)
+        xLine = ttkCustomWidget.CustomTtkSeparator(master, orient=tkinter.HORIZONTAL)
+        xLine.grid(columnspan=2, row=4, column=0, sticky=tkinter.E + tkinter.W, pady=10)
 
-        self.paramFrame = ttk.Frame(master)
+        self.paramFrame = ttkCustomWidget.CustomTtkFrame(master)
         self.paramFrame.grid(columnspan=2, row=5, column=0, sticky=tkinter.N + tkinter.E + tkinter.W + tkinter.S)
 
         if self.ver == 2:
-            self.cmdCb.bind("<<ComboboxSelected>>", lambda e: self.cmdLock())
+            cmdCb.bind("<<ComboboxSelected>>", lambda e: self.cmdLock())
             self.cmdLock()
 
         self.paramCntCb.bind("<<ComboboxSelected>>", lambda e: self.selectParam(self.v_paramCnt.get(), self.paramFrame))
         if self.p_cnt != 0:
             self.selectParam(self.v_paramCnt.get(), self.paramFrame, self.cmdItem)
+        super().body(master)
 
     def selectParam(self, paramCnt, frame, cmdItem=None):
         self.v_paramList = []
@@ -94,16 +95,16 @@ class InputDialog(sd.Dialog):
             child.destroy()
 
         if paramCnt == 0:
-            self.paramLb = ttk.Label(frame)
-            self.paramLb.grid(row=0, column=0)
+            paramLb = ttkCustomWidget.CustomTtkLabel(frame)
+            paramLb.grid(row=0, column=0)
 
         for i in range(paramCnt):
-            self.paramLb = ttk.Label(frame, text=textSetting.textList["mdlBin"]["paramNumLabel"].format(i + 1), width=12, font=textSetting.textList["font2"])
-            self.paramLb.grid(row=i, column=0, sticky=tkinter.N+tkinter.S)
+            paramLb = ttkCustomWidget.CustomTtkLabel(frame, text=textSetting.textList["mdlBin"]["paramNumLabel"].format(i + 1), width=12, font=textSetting.textList["font2"])
+            paramLb.grid(row=i, column=0, sticky=tkinter.N+tkinter.S)
             v_param = tkinter.StringVar()
             self.v_paramList.append(v_param)
-            self.paramEt = ttk.Entry(frame, textvariable=v_param, width=27, font=textSetting.textList["font2"])
-            self.paramEt.grid(row=i, column=1, sticky=tkinter.N+tkinter.S)
+            paramEt = ttkCustomWidget.CustomTtkEntry(frame, textvariable=v_param, width=27, font=textSetting.textList["font2"])
+            paramEt.grid(row=i, column=1, sticky=tkinter.N+tkinter.S)
         if cmdItem is not None:
             for i in range(len(self.v_paramList)):
                 self.v_paramList[i].set(cmdItem[textSetting.textList["mdlBin"]["paramNumLabel"].format(i + 1)])
@@ -200,30 +201,33 @@ class InputDialog(sd.Dialog):
         self.reloadFlag = True
 
 
-class PasteDialog(sd.Dialog):
-    def __init__(self, master, title, decryptFile, cmdList, num, section, copyScriptData):
+class PasteDialog(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, rootFrameAppearance, cmdList, num, section, copyScriptData):
         self.decryptFile = decryptFile
         self.cmdList = cmdList
         self.num = num
         self.section = section
         self.copyScriptData = copyScriptData
         self.reloadFlag = False
-        super(PasteDialog, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(False, False)
-        self.posLb = ttk.Label(master, text=textSetting.textList["infoList"]["I4"], font=textSetting.textList["font2"])
-        self.posLb.pack(padx=10, pady=10)
+        posLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["infoList"]["I4"], font=textSetting.textList["font2"])
+        posLb.pack(padx=10, pady=10)
+        super().body(master)
 
     def buttonbox(self):
-        box = tkinter.Frame(self, padx=5, pady=5)
-        self.frontBtn = tkinter.Button(box, text=textSetting.textList["mdlBin"]["pasteFront"], font=textSetting.textList["font2"], width=10, command=self.frontInsert)
+        super().buttonbox()
+        for idx, child in enumerate(self.buttonList):
+            child.destroy()
+        self.box.config(padx=5, pady=5)
+        self.frontBtn = ttkCustomWidget.CustomTtkButton(self.box, text=textSetting.textList["mdlBin"]["pasteFront"], style="custom.paste.TButton", width=10, command=self.frontInsert)
         self.frontBtn.grid(row=0, column=0, padx=5)
-        self.backBtn = tkinter.Button(box, text=textSetting.textList["mdlBin"]["pasteBack"], font=textSetting.textList["font2"], width=10, command=self.backInsert)
+        self.backBtn = ttkCustomWidget.CustomTtkButton(self.box, text=textSetting.textList["mdlBin"]["pasteBack"], style="custom.paste.TButton", width=10, command=self.backInsert)
         self.backBtn.grid(row=0, column=1, padx=5)
-        self.cancelBtn = tkinter.Button(box, text=textSetting.textList["mdlBin"]["pasteCancel"], font=textSetting.textList["font2"], width=10, command=self.cancel)
+        self.cancelBtn = ttkCustomWidget.CustomTtkButton(self.box, text=textSetting.textList["mdlBin"]["pasteCancel"], style="custom.paste.TButton", width=10, command=self.cancel)
         self.cancelBtn.grid(row=0, column=2, padx=5)
-        box.pack()
 
     def frontInsert(self):
         self.ok()
@@ -254,12 +258,13 @@ class PasteDialog(sd.Dialog):
         self.reloadFlag = True
 
 
-class HeaderDialog(sd.Dialog):
-    def __init__(self, master, title, decryptFile):
+class HeaderDialog(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, rootFrameAppearance):
         self.master = master
         self.selectListNum = -1
         self.selectIndexNum = -1
         self.decryptFile = decryptFile
+        self.rootFrameAppearance = rootFrameAppearance
         self.dirtyFlag = False
         self.reloadFlag = False
         self.imgList = copy.deepcopy(self.decryptFile.imgList)
@@ -267,75 +272,76 @@ class HeaderDialog(sd.Dialog):
         self.smfList = copy.deepcopy(self.decryptFile.smfList)
         self.wavList = copy.deepcopy(self.decryptFile.wavList)
         self.tgaList = copy.deepcopy(self.decryptFile.tgaList)
-        super(HeaderDialog, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(True, True)
-        self.btnFrame = tkinter.Frame(master, pady=5)
-        self.btnFrame.pack()
-        self.listFrame = tkinter.Frame(master)
-        self.listFrame.pack()
+        btnFrame = ttkCustomWidget.CustomTtkFrame(master)
+        btnFrame.pack(pady=5)
+        listFrame = ttkCustomWidget.CustomTtkFrame(master)
+        listFrame.pack()
 
         listHeight = 8
 
-        self.modifyBtn = tkinter.Button(self.btnFrame, font=textSetting.textList["font2"], text=textSetting.textList["modify"], state="disabled", command=self.modify)
+        self.modifyBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["modify"], style="custom.listbox.TButton", state="disabled", command=self.modify)
         self.modifyBtn.grid(padx=10, row=0, column=0, sticky=tkinter.W+tkinter.E)
-        self.insertBtn = tkinter.Button(self.btnFrame, font=textSetting.textList["font2"], text=textSetting.textList["insert"], state="disabled", command=self.insert)
+        self.insertBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["insert"], style="custom.listbox.TButton", state="disabled", command=self.insert)
         self.insertBtn.grid(padx=10, row=0, column=1, sticky=tkinter.W+tkinter.E)
-        self.deleteBtn = tkinter.Button(self.btnFrame, font=textSetting.textList["font2"], text=textSetting.textList["delete"], state="disabled", command=self.delete)
+        self.deleteBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["delete"], style="custom.listbox.TButton", state="disabled", command=self.delete)
         self.deleteBtn.grid(padx=10, row=0, column=2, sticky=tkinter.W+tkinter.E)
         ###
-        self.imgListLb = tkinter.Label(self.listFrame, font=textSetting.textList["font2"], text=textSetting.textList["mdlBin"]["imgInfo"])
-        self.imgListLb.grid(row=0, column=0, sticky=tkinter.W+tkinter.E)
+        imgListLb = ttkCustomWidget.CustomTtkLabel(listFrame, font=textSetting.textList["font2"], text=textSetting.textList["mdlBin"]["imgInfo"])
+        imgListLb.grid(row=0, column=0, sticky=tkinter.W+tkinter.E)
 
         copyImgList = self.setListboxInfo(0, self.imgList)
         self.v_imgList = tkinter.StringVar(value=copyImgList)
-        self.imgListListbox = tkinter.Listbox(self.listFrame, selectmode="single", font=textSetting.textList["font2"], width=30, height=listHeight, listvariable=self.v_imgList)
-        self.imgListListbox.grid(row=1, column=0, sticky=tkinter.W+tkinter.E)
-        self.imgListListbox.bind("<<ListboxSelect>>", lambda e: self.buttonActive(e, 0, self.imgListListbox, self.imgListListbox.curselection()))
+        imgListListbox = tkinter.Listbox(listFrame, selectmode="single", font=textSetting.textList["font2"], width=30, height=listHeight, listvariable=self.v_imgList, bg=self.rootFrameAppearance.bgColor, fg=self.rootFrameAppearance.fgColor)
+        imgListListbox.grid(row=1, column=0, sticky=tkinter.W+tkinter.E)
+        imgListListbox.bind("<<ListboxSelect>>", lambda e: self.buttonActive(e, 0, imgListListbox, imgListListbox.curselection()))
         ###
-        self.padLb = tkinter.Label(self.listFrame, width=3)
-        self.padLb.grid(row=0, column=1, sticky=tkinter.W+tkinter.E)
+        padLb = ttkCustomWidget.CustomTtkLabel(listFrame, width=3)
+        padLb.grid(row=0, column=1, sticky=tkinter.W+tkinter.E)
         ###
-        self.imgSizeListLb = tkinter.Label(self.listFrame, font=textSetting.textList["font2"], text=textSetting.textList["mdlBin"]["imgSizeInfo"])
-        self.imgSizeListLb.grid(row=0, column=2, sticky=tkinter.W+tkinter.E)
+        imgSizeListLb = ttkCustomWidget.CustomTtkLabel(listFrame, font=textSetting.textList["font2"], text=textSetting.textList["mdlBin"]["imgSizeInfo"])
+        imgSizeListLb.grid(row=0, column=2, sticky=tkinter.W+tkinter.E)
 
         copyImgSizeList = self.setListboxInfo(1, self.imgSizeList)
         self.v_imgSize = tkinter.StringVar(value=copyImgSizeList)
-        self.imgSizeListbox = tkinter.Listbox(self.listFrame, selectmode="single", font=textSetting.textList["font2"], width=30, height=listHeight, listvariable=self.v_imgSize)
-        self.imgSizeListbox.grid(row=1, column=2, sticky=tkinter.W+tkinter.E)
-        self.imgSizeListbox.bind("<<ListboxSelect>>", lambda e: self.buttonActive(e, 1, self.imgSizeListbox, self.imgSizeListbox.curselection()))
+        imgSizeListbox = tkinter.Listbox(listFrame, selectmode="single", font=textSetting.textList["font2"], width=30, height=listHeight, listvariable=self.v_imgSize, bg=self.rootFrameAppearance.bgColor, fg=self.rootFrameAppearance.fgColor)
+        imgSizeListbox.grid(row=1, column=2, sticky=tkinter.W+tkinter.E)
+        imgSizeListbox.bind("<<ListboxSelect>>", lambda e: self.buttonActive(e, 1, imgSizeListbox, imgSizeListbox.curselection()))
         ###
-        self.smfListLb = tkinter.Label(self.listFrame, font=textSetting.textList["font2"], text=textSetting.textList["mdlBin"]["smfInfo"])
-        self.smfListLb.grid(row=2, column=0, sticky=tkinter.W+tkinter.E)
+        smfListLb = ttkCustomWidget.CustomTtkLabel(listFrame, font=textSetting.textList["font2"], text=textSetting.textList["mdlBin"]["smfInfo"])
+        smfListLb.grid(row=2, column=0, sticky=tkinter.W+tkinter.E)
 
         copySmfList = self.setListboxInfo(2, self.smfList)
         self.v_smfList = tkinter.StringVar(value=copySmfList)
-        self.smfListListbox = tkinter.Listbox(self.listFrame, selectmode="single", font=textSetting.textList["font2"], width=30, height=listHeight, listvariable=self.v_smfList)
-        self.smfListListbox.grid(row=3, column=0, sticky=tkinter.W+tkinter.E)
-        self.smfListListbox.bind("<<ListboxSelect>>", lambda e: self.buttonActive(e, 2, self.smfListListbox, self.smfListListbox.curselection()))
+        smfListListbox = tkinter.Listbox(listFrame, selectmode="single", font=textSetting.textList["font2"], width=30, height=listHeight, listvariable=self.v_smfList, bg=self.rootFrameAppearance.bgColor, fg=self.rootFrameAppearance.fgColor)
+        smfListListbox.grid(row=3, column=0, sticky=tkinter.W+tkinter.E)
+        smfListListbox.bind("<<ListboxSelect>>", lambda e: self.buttonActive(e, 2, smfListListbox, smfListListbox.curselection()))
         ###
-        self.padLb = tkinter.Label(self.listFrame, width=3)
-        self.padLb.grid(row=2, column=1, sticky=tkinter.W+tkinter.E)
+        padLb = ttkCustomWidget.CustomTtkLabel(listFrame, width=3)
+        padLb.grid(row=2, column=1, sticky=tkinter.W+tkinter.E)
         ###
-        self.wavListLb = tkinter.Label(self.listFrame, font=textSetting.textList["font2"], text=textSetting.textList["mdlBin"]["seInfo"])
-        self.wavListLb.grid(row=2, column=2, sticky=tkinter.W+tkinter.E)
+        wavListLb = ttkCustomWidget.CustomTtkLabel(listFrame, font=textSetting.textList["font2"], text=textSetting.textList["mdlBin"]["seInfo"])
+        wavListLb.grid(row=2, column=2, sticky=tkinter.W+tkinter.E)
 
         copyWavList = self.setListboxInfo(3, self.wavList)
         self.v_wavList = tkinter.StringVar(value=copyWavList)
-        self.wavListListbox = tkinter.Listbox(self.listFrame, selectmode="single", font=textSetting.textList["font2"], width=30, height=listHeight, listvariable=self.v_wavList)
-        self.wavListListbox.grid(row=3, column=2, sticky=tkinter.W+tkinter.E)
-        self.wavListListbox.bind("<<ListboxSelect>>", lambda e: self.buttonActive(e, 3, self.wavListListbox, self.wavListListbox.curselection()))
+        wavListListbox = tkinter.Listbox(listFrame, selectmode="single", font=textSetting.textList["font2"], width=30, height=listHeight, listvariable=self.v_wavList, bg=self.rootFrameAppearance.bgColor, fg=self.rootFrameAppearance.fgColor)
+        wavListListbox.grid(row=3, column=2, sticky=tkinter.W+tkinter.E)
+        wavListListbox.bind("<<ListboxSelect>>", lambda e: self.buttonActive(e, 3, wavListListbox, wavListListbox.curselection()))
         ###
         if self.decryptFile.ver != 1:
-            self.tgaListLb = tkinter.Label(self.listFrame, font=textSetting.textList["font2"], text=textSetting.textList["mdlBin"]["tgaInfo"])
-            self.tgaListLb.grid(row=4, column=0, columnspan=3, sticky=tkinter.W+tkinter.E)
+            tgaListLb = ttkCustomWidget.CustomTtkLabel(listFrame, font=textSetting.textList["font2"], text=textSetting.textList["mdlBin"]["tgaInfo"])
+            tgaListLb.grid(row=4, column=0, columnspan=3, sticky=tkinter.W+tkinter.E)
 
             copyTgaList = self.setListboxInfo(4, self.tgaList)
             self.v_tgaList = tkinter.StringVar(value=copyTgaList)
-            self.tgaListListbox = tkinter.Listbox(self.listFrame, selectmode="single", font=textSetting.textList["font2"], height=listHeight, listvariable=self.v_tgaList)
-            self.tgaListListbox.grid(row=5, column=0, columnspan=3, sticky=tkinter.W+tkinter.E)
-            self.tgaListListbox.bind("<<ListboxSelect>>", lambda e: self.buttonActive(e, 4, self.tgaListListbox, self.tgaListListbox.curselection()))
+            tgaListListbox = tkinter.Listbox(listFrame, selectmode="single", font=textSetting.textList["font2"], height=listHeight, listvariable=self.v_tgaList, bg=self.rootFrameAppearance.bgColor, fg=self.rootFrameAppearance.fgColor)
+            tgaListListbox.grid(row=5, column=0, columnspan=3, sticky=tkinter.W+tkinter.E)
+            tgaListListbox.bind("<<ListboxSelect>>", lambda e: self.buttonActive(e, 4, tgaListListbox, tgaListListbox.curselection()))
+        super().body(master)
 
     def buttonActive(self, event, num, listbox, value):
         if len(value) == 0:
@@ -419,7 +425,7 @@ class HeaderDialog(sd.Dialog):
             selectList = self.wavList
         elif self.selectListNum == 4:
             selectList = self.tgaList
-        result = HeaderEditDialog(self.master, textSetting.textList["mdlBin"]["headerModify"], self.decryptFile.ver, "modify", self.selectListNum, self.selectIndexNum, selectList)
+        result = HeaderEditDialog(self.master, textSetting.textList["mdlBin"]["headerModify"], self.decryptFile.ver, "modify", self.selectListNum, self.selectIndexNum, selectList, self.rootFrameAppearance)
         if result.dirtyFlag:
             self.dirtyFlag = True
             if self.selectListNum == 0:
@@ -450,7 +456,7 @@ class HeaderDialog(sd.Dialog):
             selectList = self.wavList
         elif self.selectListNum == 4:
             selectList = self.tgaList
-        result = HeaderEditDialog(self.master, textSetting.textList["mdlBin"]["headerInsert"], self.decryptFile.ver, "insert", self.selectListNum, self.selectIndexNum, selectList)
+        result = HeaderEditDialog(self.master, textSetting.textList["mdlBin"]["headerInsert"], self.decryptFile.ver, "insert", self.selectListNum, self.selectIndexNum, selectList, self.rootFrameAppearance)
         if result.dirtyFlag:
             self.dirtyFlag = True
             if self.selectListNum == 0:
@@ -490,37 +496,24 @@ class HeaderDialog(sd.Dialog):
                 self.imgList.pop(self.selectIndexNum)
                 copyImgList = self.setListboxInfo(0, self.imgList)
                 self.v_imgList.set(copyImgList)
-                if len(self.imgList) == 0:
-                    self.modifyBtn["state"] = "disabled"
-                    self.deleteBtn["state"] = "disabled"
             elif self.selectListNum == 1:
                 self.imgSizeList.pop(self.selectIndexNum)
                 copyImgSizeList = self.setListboxInfo(1, self.imgSizeList)
                 self.v_imgSize.set(copyImgSizeList)
-                if len(self.imgSizeList) == 0:
-                    self.modifyBtn["state"] = "disabled"
-                    self.deleteBtn["state"] = "disabled"
             elif self.selectListNum == 2:
                 self.smfList.pop(self.selectIndexNum)
                 copySmfList = self.setListboxInfo(2, self.smfList)
                 self.v_smfList.set(copySmfList)
-                if len(self.smfList) == 0:
-                    self.modifyBtn["state"] = "disabled"
-                    self.deleteBtn["state"] = "disabled"
             elif self.selectListNum == 3:
                 self.wavList.pop(self.selectIndexNum)
                 copyWavList = self.setListboxInfo(3, self.wavList)
                 self.v_wavList.set(copyWavList)
-                if len(self.wavList) == 0:
-                    self.modifyBtn["state"] = "disabled"
-                    self.deleteBtn["state"] = "disabled"
             elif self.selectListNum == 4:
                 self.tgaList.pop(self.selectIndexNum)
                 copyTgaList = self.setListboxInfo(4, self.tgaList)
                 self.v_tgaList.set(copyTgaList)
-                if len(self.tgaList) == 0:
-                    self.modifyBtn["state"] = "disabled"
-                    self.deleteBtn["state"] = "disabled"
+            self.modifyBtn["state"] = "disabled"
+            self.deleteBtn["state"] = "disabled"
 
     def validate(self):
         if self.dirtyFlag:
@@ -541,37 +534,37 @@ class HeaderDialog(sd.Dialog):
             self.reloadFlag = True
 
 
-class HeaderEditDialog(sd.Dialog):
-    def __init__(self, master, title, ver, mode, selectListNum, selectIndexNum, selectList):
+class HeaderEditDialog(CustomSimpleDialog):
+    def __init__(self, master, title, ver, mode, selectListNum, selectIndexNum, selectList, rootFrameAppearance):
         self.ver = ver
         self.mode = mode
         self.selectListNum = selectListNum
         self.selectIndexNum = selectIndexNum
         self.selectList = selectList
         self.dirtyFlag = False
-        super(HeaderEditDialog, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         if self.selectListNum == 0:
-            self.imgNameLb = ttk.Label(master, text=textSetting.textList["mdlBin"]["headerImgLabel"], font=textSetting.textList["font2"])
-            self.imgNameLb.grid(row=0, column=0, sticky=tkinter.W+tkinter.E)
+            imgNameLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["mdlBin"]["headerImgLabel"], font=textSetting.textList["font2"])
+            imgNameLb.grid(row=0, column=0, sticky=tkinter.W+tkinter.E)
             self.v_imgName = tkinter.StringVar()
-            self.imgNameEt = ttk.Entry(master, font=textSetting.textList["font2"], textvariable=self.v_imgName)
-            self.imgNameEt.grid(row=0, column=1, sticky=tkinter.W+tkinter.E)
+            imgNameEt = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.v_imgName)
+            imgNameEt.grid(row=0, column=1, sticky=tkinter.W+tkinter.E)
 
             if self.ver == 4:
-                self.imgElse1Lb = ttk.Label(master, text=textSetting.textList["mdlBin"]["else"] + "1", font=textSetting.textList["font2"])
-                self.imgElse1Lb.grid(row=1, column=0, sticky=tkinter.W+tkinter.E)
+                imgElse1Lb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["mdlBin"]["else"] + "1", font=textSetting.textList["font2"])
+                imgElse1Lb.grid(row=1, column=0, sticky=tkinter.W+tkinter.E)
                 self.v_imgElse1 = tkinter.StringVar()
-                self.imgElseCb = ttk.Combobox(master, state="readonly", font=textSetting.textList["font2"], textvariable=self.v_imgElse1, values=textSetting.textList["mdlBin"]["headerElse1Value"])
+                self.imgElseCb = ttkCustomWidget.CustomTtkCombobox(master, state="readonly", font=textSetting.textList["font2"], textvariable=self.v_imgElse1, values=textSetting.textList["mdlBin"]["headerElse1Value"])
                 self.imgElseCb.grid(row=1, column=1, sticky=tkinter.W+tkinter.E)
                 self.imgElseCb.current(0)
                 self.imgElseCb.bind("<<ComboboxSelected>>", self.imgElseCbChange)
 
-                self.imgElse2Lb = ttk.Label(master, text=textSetting.textList["mdlBin"]["else"] + "2", font=textSetting.textList["font2"])
-                self.imgElse2Lb.grid(row=2, column=0, sticky=tkinter.W+tkinter.E)
+                imgElse2Lb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["mdlBin"]["else"] + "2", font=textSetting.textList["font2"])
+                imgElse2Lb.grid(row=2, column=0, sticky=tkinter.W+tkinter.E)
                 self.v_imgElse2 = tkinter.StringVar()
-                self.imgElseEt = ttk.Entry(master, font=textSetting.textList["font2"], textvariable=self.v_imgElse2, state="disabled")
+                self.imgElseEt = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.v_imgElse2, state="disabled")
                 self.imgElseEt.grid(row=2, column=1, sticky=tkinter.W+tkinter.E)
 
             if self.mode == "modify":
@@ -593,32 +586,32 @@ class HeaderEditDialog(sd.Dialog):
                 else:
                     self.setInsertWidget(master, 1)
         elif self.selectListNum == 1:
-            self.imgIndexLb = ttk.Label(master, text=textSetting.textList["mdlBin"]["headerImgIndex"], font=textSetting.textList["font2"])
-            self.imgIndexLb.grid(row=1, column=0, sticky=tkinter.W+tkinter.E)
-            self.imgIndex_xLb = ttk.Label(master, text=textSetting.textList["mdlBin"]["headerImgX"], font=textSetting.textList["font2"])
-            self.imgIndex_xLb.grid(row=2, column=0, sticky=tkinter.W+tkinter.E)
-            self.imgIndex_yLb = ttk.Label(master, text=textSetting.textList["mdlBin"]["headerImgY"], font=textSetting.textList["font2"])
-            self.imgIndex_yLb.grid(row=3, column=0, sticky=tkinter.W+tkinter.E)
-            self.imgIndex_widthLb = ttk.Label(master, text=textSetting.textList["mdlBin"]["headerImgWidth"], font=textSetting.textList["font2"])
-            self.imgIndex_widthLb.grid(row=4, column=0, sticky=tkinter.W+tkinter.E)
-            self.imgIndex_heightLb = ttk.Label(master, text=textSetting.textList["mdlBin"]["headerImgHeight"], font=textSetting.textList["font2"])
-            self.imgIndex_heightLb.grid(row=5, column=0, sticky=tkinter.W+tkinter.E)
+            imgIndexLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["mdlBin"]["headerImgIndex"], font=textSetting.textList["font2"])
+            imgIndexLb.grid(row=1, column=0, sticky=tkinter.W+tkinter.E)
+            imgIndex_xLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["mdlBin"]["headerImgX"], font=textSetting.textList["font2"])
+            imgIndex_xLb.grid(row=2, column=0, sticky=tkinter.W+tkinter.E)
+            imgIndex_yLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["mdlBin"]["headerImgY"], font=textSetting.textList["font2"])
+            imgIndex_yLb.grid(row=3, column=0, sticky=tkinter.W+tkinter.E)
+            imgIndex_widthLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["mdlBin"]["headerImgWidth"], font=textSetting.textList["font2"])
+            imgIndex_widthLb.grid(row=4, column=0, sticky=tkinter.W+tkinter.E)
+            imgIndex_heightLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["mdlBin"]["headerImgHeight"], font=textSetting.textList["font2"])
+            imgIndex_heightLb.grid(row=5, column=0, sticky=tkinter.W+tkinter.E)
 
             self.v_imgIndex = tkinter.IntVar()
             self.v_imgIndex_x = tkinter.DoubleVar()
             self.v_imgIndex_y = tkinter.DoubleVar()
             self.v_imgIndex_width = tkinter.DoubleVar()
             self.v_imgIndex_height = tkinter.DoubleVar()
-            self.imgIndexEt = ttk.Entry(master, textvariable=self.v_imgIndex, font=textSetting.textList["font2"])
-            self.imgIndexEt.grid(row=1, column=1, sticky=tkinter.W+tkinter.E)
-            self.imgIndex_xEt = ttk.Entry(master, textvariable=self.v_imgIndex_x, font=textSetting.textList["font2"])
-            self.imgIndex_xEt.grid(row=2, column=1, sticky=tkinter.W+tkinter.E)
-            self.imgIndex_yEt = ttk.Entry(master, textvariable=self.v_imgIndex_y, font=textSetting.textList["font2"])
-            self.imgIndex_yEt.grid(row=3, column=1, sticky=tkinter.W+tkinter.E)
-            self.imgIndex_widthEt = ttk.Entry(master, textvariable=self.v_imgIndex_width, font=textSetting.textList["font2"])
-            self.imgIndex_widthEt.grid(row=4, column=1, sticky=tkinter.W+tkinter.E)
-            self.imgIndex_heightEt = ttk.Entry(master, textvariable=self.v_imgIndex_height, font=textSetting.textList["font2"])
-            self.imgIndex_heightEt.grid(row=5, column=1, sticky=tkinter.W+tkinter.E)
+            imgIndexEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.v_imgIndex, font=textSetting.textList["font2"])
+            imgIndexEt.grid(row=1, column=1, sticky=tkinter.W+tkinter.E)
+            imgIndex_xEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.v_imgIndex_x, font=textSetting.textList["font2"])
+            imgIndex_xEt.grid(row=2, column=1, sticky=tkinter.W+tkinter.E)
+            imgIndex_yEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.v_imgIndex_y, font=textSetting.textList["font2"])
+            imgIndex_yEt.grid(row=3, column=1, sticky=tkinter.W+tkinter.E)
+            imgIndex_widthEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.v_imgIndex_width, font=textSetting.textList["font2"])
+            imgIndex_widthEt.grid(row=4, column=1, sticky=tkinter.W+tkinter.E)
+            imgIndex_heightEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.v_imgIndex_height, font=textSetting.textList["font2"])
+            imgIndex_heightEt.grid(row=5, column=1, sticky=tkinter.W+tkinter.E)
 
             if self.mode == "modify":
                 self.v_imgIndex.set(int(self.selectList[self.selectIndexNum][0]))
@@ -629,28 +622,28 @@ class HeaderEditDialog(sd.Dialog):
             else:
                 self.setInsertWidget(master, 6)
         elif self.selectListNum == 2:
-            self.smfNameLb = ttk.Label(master, text=textSetting.textList["mdlBin"]["headerSmfLabel"], font=textSetting.textList["font2"])
-            self.smfNameLb.grid(row=0, column=0, sticky=tkinter.W+tkinter.E)
+            smfNameLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["mdlBin"]["headerSmfLabel"], font=textSetting.textList["font2"])
+            smfNameLb.grid(row=0, column=0, sticky=tkinter.W+tkinter.E)
             self.v_smfName = tkinter.StringVar()
-            self.smfNameEt = ttk.Entry(master, font=textSetting.textList["font2"], textvariable=self.v_smfName)
-            self.smfNameEt.grid(row=0, column=1, sticky=tkinter.W+tkinter.E)
+            smfNameEt = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.v_smfName)
+            smfNameEt.grid(row=0, column=1, sticky=tkinter.W+tkinter.E)
 
             if self.mode == "modify":
                 self.v_smfName.set(self.selectList[self.selectIndexNum])
             else:
                 self.setInsertWidget(master, 1)
         elif self.selectListNum == 3:
-            self.wavNameLb = ttk.Label(master, text=textSetting.textList["mdlBin"]["headerSELabel"], font=textSetting.textList["font2"])
-            self.wavNameLb.grid(row=0, column=0, sticky=tkinter.W+tkinter.E)
+            wavNameLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["mdlBin"]["headerSELabel"], font=textSetting.textList["font2"])
+            wavNameLb.grid(row=0, column=0, sticky=tkinter.W+tkinter.E)
             self.v_wavName = tkinter.StringVar()
-            self.wavNameEt = ttk.Entry(master, font=textSetting.textList["font2"], textvariable=self.v_wavName)
-            self.wavNameEt.grid(row=0, column=1, sticky=tkinter.W+tkinter.E)
+            wavNameEt = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.v_wavName)
+            wavNameEt.grid(row=0, column=1, sticky=tkinter.W+tkinter.E)
 
-            self.wavCntLb = ttk.Label(master, text=textSetting.textList["mdlBin"]["headerSEGroup"], font=textSetting.textList["font2"])
-            self.wavCntLb.grid(row=1, column=0, sticky=tkinter.W+tkinter.E)
+            wavCntLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["mdlBin"]["headerSEGroup"], font=textSetting.textList["font2"])
+            wavCntLb.grid(row=1, column=0, sticky=tkinter.W+tkinter.E)
             self.v_wavCnt = tkinter.IntVar()
-            self.wavCntEt = ttk.Entry(master, font=textSetting.textList["font2"], textvariable=self.v_wavCnt)
-            self.wavCntEt.grid(row=1, column=1, sticky=tkinter.W+tkinter.E)
+            wavCntEt = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.v_wavCnt)
+            wavCntEt.grid(row=1, column=1, sticky=tkinter.W+tkinter.E)
 
             if self.mode == "modify":
                 self.v_wavName.set(self.selectList[self.selectIndexNum][0])
@@ -658,62 +651,62 @@ class HeaderEditDialog(sd.Dialog):
             else:
                 self.setInsertWidget(master, 2)
         elif self.selectListNum == 4:
-            self.tgaName1Lb = ttk.Label(master, text=textSetting.textList["mdlBin"]["headerTgaLabel"] + "1", font=textSetting.textList["font2"])
-            self.tgaName1Lb.grid(row=0, column=0, sticky=tkinter.W+tkinter.E)
+            tgaName1Lb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["mdlBin"]["headerTgaLabel"] + "1", font=textSetting.textList["font2"])
+            tgaName1Lb.grid(row=0, column=0, sticky=tkinter.W+tkinter.E)
             self.v_tgaName1 = tkinter.StringVar()
-            self.tgaName1Et = ttk.Entry(master, font=textSetting.textList["font2"], textvariable=self.v_tgaName1)
-            self.tgaName1Et.grid(row=0, column=1, sticky=tkinter.W+tkinter.E)
+            tgaName1Et = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.v_tgaName1)
+            tgaName1Et.grid(row=0, column=1, sticky=tkinter.W+tkinter.E)
 
-            self.tgaName2Lb = ttk.Label(master, text=textSetting.textList["mdlBin"]["headerTgaLabel"] + "2", font=textSetting.textList["font2"])
-            self.tgaName2Lb.grid(row=1, column=0, sticky=tkinter.W+tkinter.E)
+            tgaName2Lb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["mdlBin"]["headerTgaLabel"] + "2", font=textSetting.textList["font2"])
+            tgaName2Lb.grid(row=1, column=0, sticky=tkinter.W+tkinter.E)
             self.v_tgaName2 = tkinter.StringVar()
-            self.tgaName2Et = ttk.Entry(master, font=textSetting.textList["font2"], textvariable=self.v_tgaName2)
-            self.tgaName2Et.grid(row=1, column=1, sticky=tkinter.W+tkinter.E)
+            tgaName2Et = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.v_tgaName2)
+            tgaName2Et.grid(row=1, column=1, sticky=tkinter.W+tkinter.E)
 
-            self.tgaEle1Lb = ttk.Label(master, text=textSetting.textList["mdlBin"]["else"] + "1", font=textSetting.textList["font2"])
-            self.tgaEle1Lb.grid(row=2, column=0, sticky=tkinter.W+tkinter.E)
+            tgaEle1Lb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["mdlBin"]["else"] + "1", font=textSetting.textList["font2"])
+            tgaEle1Lb.grid(row=2, column=0, sticky=tkinter.W+tkinter.E)
             self.v_tgaEle1 = tkinter.DoubleVar()
-            self.tgaEle1Et = ttk.Entry(master, font=textSetting.textList["font2"], textvariable=self.v_tgaEle1)
-            self.tgaEle1Et.grid(row=2, column=1, sticky=tkinter.W+tkinter.E)
+            tgaEle1Et = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.v_tgaEle1)
+            tgaEle1Et.grid(row=2, column=1, sticky=tkinter.W+tkinter.E)
 
-            self.tgaEle2Lb = ttk.Label(master, text=textSetting.textList["mdlBin"]["else"] + "2", font=textSetting.textList["font2"])
-            self.tgaEle2Lb.grid(row=3, column=0, sticky=tkinter.W+tkinter.E)
+            tgaEle2Lb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["mdlBin"]["else"] + "2", font=textSetting.textList["font2"])
+            tgaEle2Lb.grid(row=3, column=0, sticky=tkinter.W+tkinter.E)
             self.v_tgaEle2 = tkinter.DoubleVar()
-            self.tgaEle2Et = ttk.Entry(master, font=textSetting.textList["font2"], textvariable=self.v_tgaEle2)
-            self.tgaEle2Et.grid(row=3, column=1, sticky=tkinter.W+tkinter.E)
+            tgaEle2Et = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.v_tgaEle2)
+            tgaEle2Et.grid(row=3, column=1, sticky=tkinter.W+tkinter.E)
 
-            self.xLine = ttk.Separator(master, orient=tkinter.HORIZONTAL)
-            self.xLine.grid(row=4, column=0, columnspan=2, sticky=tkinter.W+tkinter.E, pady=10)
+            xLine = ttkCustomWidget.CustomTtkSeparator(master, orient=tkinter.HORIZONTAL)
+            xLine.grid(row=4, column=0, columnspan=2, sticky=tkinter.W+tkinter.E, pady=10)
 
-            self.tgaElseB1Lb = ttk.Label(master, text=textSetting.textList["mdlBin"]["headerTgaB"] + "1", font=textSetting.textList["font2"])
-            self.tgaElseB1Lb.grid(row=5, column=0, sticky=tkinter.W+tkinter.E)
+            tgaElseB1Lb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["mdlBin"]["headerTgaB"] + "1", font=textSetting.textList["font2"])
+            tgaElseB1Lb.grid(row=5, column=0, sticky=tkinter.W+tkinter.E)
             self.v_tgaElseB1 = tkinter.IntVar()
-            self.tgaElseB1Et = ttk.Entry(master, font=textSetting.textList["font2"], textvariable=self.v_tgaElseB1)
-            self.tgaElseB1Et.grid(row=5, column=1, sticky=tkinter.W+tkinter.E)
+            tgaElseB1Et = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.v_tgaElseB1)
+            tgaElseB1Et.grid(row=5, column=1, sticky=tkinter.W+tkinter.E)
 
-            self.tgaElseB2Lb = ttk.Label(master, text=textSetting.textList["mdlBin"]["headerTgaB"] + "2", font=textSetting.textList["font2"])
-            self.tgaElseB2Lb.grid(row=6, column=0, sticky=tkinter.W+tkinter.E)
+            tgaElseB2Lb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["mdlBin"]["headerTgaB"] + "2", font=textSetting.textList["font2"])
+            tgaElseB2Lb.grid(row=6, column=0, sticky=tkinter.W+tkinter.E)
             self.v_tgaElseB2 = tkinter.IntVar()
-            self.tgaElseB2Et = ttk.Entry(master, font=textSetting.textList["font2"], textvariable=self.v_tgaElseB2)
-            self.tgaElseB2Et.grid(row=6, column=1, sticky=tkinter.W+tkinter.E)
+            tgaElseB2Et = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.v_tgaElseB2)
+            tgaElseB2Et.grid(row=6, column=1, sticky=tkinter.W+tkinter.E)
 
-            self.tgaElseB3Lb = ttk.Label(master, text=textSetting.textList["mdlBin"]["headerTgaB"] + "3", font=textSetting.textList["font2"])
-            self.tgaElseB3Lb.grid(row=7, column=0, sticky=tkinter.W+tkinter.E)
+            tgaElseB3Lb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["mdlBin"]["headerTgaB"] + "3", font=textSetting.textList["font2"])
+            tgaElseB3Lb.grid(row=7, column=0, sticky=tkinter.W+tkinter.E)
             self.v_tgaElseB3 = tkinter.IntVar()
-            self.tgaElseB3Et = ttk.Entry(master, font=textSetting.textList["font2"], textvariable=self.v_tgaElseB3)
-            self.tgaElseB3Et.grid(row=7, column=1, sticky=tkinter.W+tkinter.E)
+            tgaElseB3Et = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.v_tgaElseB3)
+            tgaElseB3Et.grid(row=7, column=1, sticky=tkinter.W+tkinter.E)
 
-            self.tgaElseB4Lb = ttk.Label(master, text=textSetting.textList["mdlBin"]["headerTgaB"] + "4", font=textSetting.textList["font2"])
-            self.tgaElseB4Lb.grid(row=8, column=0, sticky=tkinter.W+tkinter.E)
+            tgaElseB4Lb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["mdlBin"]["headerTgaB"] + "4", font=textSetting.textList["font2"])
+            tgaElseB4Lb.grid(row=8, column=0, sticky=tkinter.W+tkinter.E)
             self.v_tgaElseB4 = tkinter.IntVar()
-            self.tgaElseB4Et = ttk.Entry(master, font=textSetting.textList["font2"], textvariable=self.v_tgaElseB4)
-            self.tgaElseB4Et.grid(row=8, column=1, sticky=tkinter.W+tkinter.E)
+            tgaElseB4Et = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.v_tgaElseB4)
+            tgaElseB4Et.grid(row=8, column=1, sticky=tkinter.W+tkinter.E)
 
-            self.tgaElsePerLb = ttk.Label(master, text=textSetting.textList["mdlBin"]["headerTgaPer"], font=textSetting.textList["font2"])
-            self.tgaElsePerLb.grid(row=9, column=0, sticky=tkinter.W+tkinter.E)
+            tgaElsePerLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["mdlBin"]["headerTgaPer"], font=textSetting.textList["font2"])
+            tgaElsePerLb.grid(row=9, column=0, sticky=tkinter.W+tkinter.E)
             self.v_tgaElsePer = tkinter.IntVar()
-            self.tgaElsePerEt = ttk.Entry(master, font=textSetting.textList["font2"], textvariable=self.v_tgaElsePer)
-            self.tgaElsePerEt.grid(row=9, column=1, sticky=tkinter.W+tkinter.E)
+            tgaElsePerEt = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.v_tgaElsePer)
+            tgaElsePerEt.grid(row=9, column=1, sticky=tkinter.W+tkinter.E)
 
             if self.mode == "modify":
                 self.v_tgaName1.set(self.selectList[self.selectIndexNum]["tgaInfo"][0])
@@ -727,15 +720,16 @@ class HeaderEditDialog(sd.Dialog):
                 self.v_tgaElsePer.set(self.selectList[self.selectIndexNum]["tgaElse"][4])
             else:
                 self.setInsertWidget(master, 10)
+        super().body(master)
 
     def setInsertWidget(self, master, index):
-        self.xLine = ttk.Separator(master, orient=tkinter.HORIZONTAL)
-        self.xLine.grid(row=index, column=0, columnspan=2, sticky=tkinter.W+tkinter.E, pady=10)
+        xLine = ttkCustomWidget.CustomTtkSeparator(master, orient=tkinter.HORIZONTAL)
+        xLine.grid(row=index, column=0, columnspan=2, sticky=tkinter.W+tkinter.E, pady=10)
 
-        self.insertLb = ttk.Label(master, text=textSetting.textList["mdlBin"]["posLabel"], font=textSetting.textList["font2"])
-        self.insertLb.grid(row=index + 1, column=0, sticky=tkinter.W+tkinter.E)
+        insertLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["mdlBin"]["posLabel"], font=textSetting.textList["font2"])
+        insertLb.grid(row=index + 1, column=0, sticky=tkinter.W+tkinter.E)
         self.v_insert = tkinter.StringVar()
-        self.insertCb = ttk.Combobox(master, state="readonly", font=textSetting.textList["font2"], textvariable=self.v_insert, values=textSetting.textList["mdlBin"]["posValue"])
+        self.insertCb = ttkCustomWidget.CustomTtkCombobox(master, state="readonly", font=textSetting.textList["font2"], textvariable=self.v_insert, values=textSetting.textList["mdlBin"]["posValue"])
         self.insertCb.grid(row=index + 1, column=1, sticky=tkinter.W+tkinter.E)
         self.insertCb.current(0)
 
@@ -873,26 +867,27 @@ class HeaderEditDialog(sd.Dialog):
         self.dirtyFlag = True
 
 
-class ListNumModifyDialog(sd.Dialog):
-    def __init__(self, master, title, decryptFile, num, curVal):
+class ListNumModifyDialog(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, rootFrameAppearance, num, curVal):
         self.decryptFile = decryptFile
         self.num = num
         self.curVal = curVal
         self.reloadFlag = False
-        super(ListNumModifyDialog, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(False, False)
-        self.listLb = ttk.Label(master, text=textSetting.textList["infoList"]["I18"].format(self.num), font=textSetting.textList["font2"])
-        self.listLb.grid(row=0, column=0)
+        listLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["infoList"]["I18"].format(self.num), font=textSetting.textList["font2"])
+        listLb.grid(row=0, column=0)
 
         self.v_listNum = tkinter.IntVar()
         self.v_listNum.set(self.curVal)
-        self.sp = ttk.Spinbox(master, textvariable=self.v_listNum, font=textSetting.textList["font2"], from_=1, to=100, width=5)
-        self.sp.grid(row=0, column=1, padx=10)
+        sp = ttkCustomWidget.CustomTtkSpinbox(master, textvariable=self.v_listNum, font=textSetting.textList["font2"], from_=1, to=100, width=5)
+        sp.grid(row=0, column=1, padx=10)
 
-        self.list2Lb = ttk.Label(master, text=textSetting.textList["infoList"]["I19"], font=textSetting.textList["font2"])
-        self.list2Lb.grid(row=0, column=2)
+        list2Lb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["infoList"]["I19"], font=textSetting.textList["font2"])
+        list2Lb.grid(row=0, column=2)
+        super().body(master)
 
     def validate(self):
         if self.v_listNum.get() < self.curVal:
@@ -915,25 +910,24 @@ class ListNumModifyDialog(sd.Dialog):
         self.reloadFlag = True
 
 
-class ListHeaderModifyDialog(sd.Dialog):
-    def __init__(self, master, title, decryptFile, num, listNum, headerInfo):
+class ListHeaderModifyDialog(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, rootFrameAppearance, num, listNum, headerInfo):
         self.decryptFile = decryptFile
         self.num = num
         self.listNum = listNum
         self.headerInfo = headerInfo
         self.v_paramList = []
         self.reloadFlag = False
-        super(ListHeaderModifyDialog, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         for i in range(3):
-            self.paramLb = ttk.Label(master, text=textSetting.textList["mdlBin"]["paramNumLabel"].format(i + 1), font=textSetting.textList["font2"])
-            self.paramLb.grid(row=i, column=0, sticky=tkinter.N + tkinter.S)
-            self.v_param = tkinter.IntVar()
-            self.v_param.set(self.headerInfo[i])
-            self.v_paramList.append(self.v_param)
-            self.paramEt = ttk.Entry(master, textvariable=self.v_param, width=20, font=textSetting.textList["font2"])
-            self.paramEt.grid(row=i, column=1, sticky=tkinter.N + tkinter.S)
+            paramLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["mdlBin"]["paramNumLabel"].format(i + 1), font=textSetting.textList["font2"])
+            paramLb.grid(row=i, column=0, sticky=tkinter.N + tkinter.S)
+            self.v_paramList.append(tkinter.IntVar(value=self.headerInfo[i]))
+            paramEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.v_paramList[i], width=20, font=textSetting.textList["font2"])
+            paramEt.grid(row=i, column=1, sticky=tkinter.N + tkinter.S)
+        super().body(master)
 
     def validate(self):
         headerList = []
@@ -962,25 +956,26 @@ class ListHeaderModifyDialog(sd.Dialog):
         self.reloadFlag = True
 
 
-class NumModifyDialog(sd.Dialog):
-    def __init__(self, master, title, decryptFile, curVal):
+class NumModifyDialog(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, rootFrameAppearance, curVal):
         self.decryptFile = decryptFile
         self.curVal = curVal
         self.reloadFlag = False
-        super(NumModifyDialog, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(False, False)
-        self.numLb = ttk.Label(master, text=textSetting.textList["infoList"]["I24"], font=textSetting.textList["font2"])
-        self.numLb.grid(row=0, column=0)
+        numLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["infoList"]["I24"], font=textSetting.textList["font2"])
+        numLb.grid(row=0, column=0)
 
         self.v_num = tkinter.IntVar()
         self.v_num.set(self.curVal)
-        self.sp = ttk.Spinbox(master, textvariable=self.v_num, font=textSetting.textList["font2"], from_=1, to=100, width=5)
-        self.sp.grid(row=0, column=1, padx=10)
+        sp = ttkCustomWidget.CustomTtkSpinbox(master, textvariable=self.v_num, font=textSetting.textList["font2"], from_=1, to=100, width=5)
+        sp.grid(row=0, column=1, padx=10)
 
-        self.num2Lb = ttk.Label(master, text=textSetting.textList["infoList"]["I19"], font=textSetting.textList["font2"])
+        self.num2Lb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["infoList"]["I19"], font=textSetting.textList["font2"])
         self.num2Lb.grid(row=0, column=2)
+        super().body(master)
 
     def validate(self):
         if self.v_num.get() < self.curVal:

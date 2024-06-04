@@ -1,31 +1,33 @@
 import tkinter
-from tkinter import ttk
 from tkinter import messagebox as mb
-from tkinter import simpledialog as sd
 import program.textSetting as textSetting
+import program.appearance.ttkCustomWidget as ttkCustomWidget
+from program.appearance.customSimpleDialog import CustomSimpleDialog
 
 
 class TrainCountWidget:
-    def __init__(self, frame, decryptFile, reloadFunc):
+    def __init__(self, root, frame, decryptFile, rootFrameAppearance, reloadFunc):
+        self.root = root
         self.frame = frame
         self.decryptFile = decryptFile
+        self.rootFrameAppearance = rootFrameAppearance
         self.reloadFunc = reloadFunc
 
-        self.txtFrame = tkinter.Frame(self.frame, padx=10, pady=5)
-        self.txtFrame.pack(anchor=tkinter.NW)
+        txtFrame = ttkCustomWidget.CustomTtkFrame(self.frame)
+        txtFrame.pack(anchor=tkinter.NW, padx=10, pady=5)
 
-        self.trainCntLb = tkinter.Label(self.txtFrame, text=textSetting.textList["railEditor"]["trainCount"], font=textSetting.textList["font6"], width=7, borderwidth=1, relief="solid")
-        self.trainCntLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
+        trainCntLb = ttkCustomWidget.CustomTtkLabel(txtFrame, text=textSetting.textList["railEditor"]["trainCount"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
+        trainCntLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
 
         self.varTrainCnt = tkinter.IntVar()
         self.varTrainCnt.set(self.decryptFile.trainCnt)
-        self.trainCntTextLb = tkinter.Label(self.txtFrame, textvariable=self.varTrainCnt, font=textSetting.textList["font6"], width=7, borderwidth=1, relief="solid")
-        self.trainCntTextLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
-        self.trainCntBtn = tkinter.Button(self.txtFrame, text=textSetting.textList["railEditor"]["modifyBtnLabel"], font=textSetting.textList["font7"], command=lambda: self.editVar(self.varTrainCnt.get()))
-        self.trainCntBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
+        trainCntTextLb = ttkCustomWidget.CustomTtkLabel(txtFrame, textvariable=self.varTrainCnt, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
+        trainCntTextLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
+        trainCntBtn = ttkCustomWidget.CustomTtkButton(txtFrame, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=lambda: self.editVar(self.varTrainCnt.get()))
+        trainCntBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
 
     def editVar(self, value):
-        result = EditTrainCountWidget(self.frame, textSetting.textList["railEditor"]["editTrainCountLabel"], self.decryptFile, value)
+        result = EditTrainCountWidget(self.root, textSetting.textList["railEditor"]["editTrainCountLabel"], self.decryptFile, value, self.rootFrameAppearance)
 
         if result.reloadFlag:
             if not self.decryptFile.saveTrainCnt(result.resultValue):
@@ -37,24 +39,25 @@ class TrainCountWidget:
             self.reloadFunc()
 
 
-class EditTrainCountWidget(sd.Dialog):
-    def __init__(self, master, title, decryptFile, val):
+class EditTrainCountWidget(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, val, rootFrameAppearance):
         self.decryptFile = decryptFile
         self.val = val
         self.reloadFlag = False
         self.resultValue = 0
-        super(EditTrainCountWidget, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(False, False)
 
-        self.valLb = ttk.Label(master, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
-        self.valLb.pack()
+        valLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
+        valLb.pack()
 
         self.varTrainCnt = tkinter.IntVar()
         self.varTrainCnt.set(self.val)
-        self.valEt = ttk.Entry(master, textvariable=self.varTrainCnt, font=textSetting.textList["font2"], width=16)
-        self.valEt.pack()
+        valEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varTrainCnt, font=textSetting.textList["font2"], width=16)
+        valEt.pack()
+        super().body(master)
 
     def validate(self):
         result = mb.askokcancel(title=textSetting.textList["confirm"], message=textSetting.textList["infoList"]["I21"], parent=self)

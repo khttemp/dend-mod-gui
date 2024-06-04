@@ -1,84 +1,85 @@
 import codecs
 import tkinter
 import traceback
-from tkinter import ttk
-from tkinter import simpledialog as sd
 from tkinter import messagebox as mb
 from tkinter import filedialog as fd
 import program.textSetting as textSetting
+import program.appearance.ttkCustomWidget as ttkCustomWidget
+from program.appearance.customSimpleDialog import CustomSimpleDialog
 
 import program.orgInfoEditor.importPy.gameDefine as gameDefine
 gameDefine.load()
 
 
-def setDefault(tabFrame, decryptFile, game, trainIdx, defaultData, reloadFunc):
-    result = SetDefaultEdit(tabFrame, textSetting.textList["orgInfoEditor"]["setDefaultBtnLabel"], decryptFile, game, trainIdx, defaultData)
+def setDefault(tabFrame, decryptFile, game, trainIdx, defaultData, rootFrameAppearance, reloadFunc):
+    result = SetDefaultEdit(tabFrame, textSetting.textList["orgInfoEditor"]["setDefaultBtnLabel"], decryptFile, game, trainIdx, defaultData, rootFrameAppearance)
     if result.reloadFlag:
         reloadFunc()
 
 
-class SetDefaultEdit(sd.Dialog):
-    def __init__(self, master, title, decryptFile, game, trainIdx, defaultData):
+class SetDefaultEdit(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, game, trainIdx, defaultData, rootFrameAppearance):
         self.decryptFile = decryptFile
         self.game = game
         self.trainIdx = trainIdx
         self.defaultData = defaultData
         self.reloadFlag = False
-        super(SetDefaultEdit, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
-        self.copySrcCb = ttk.Combobox(master, width=12, font=textSetting.textList["font2"], value=self.decryptFile.trainNameList, state="readonly")
+        self.copySrcCb = ttkCustomWidget.CustomTtkCombobox(master, width=12, font=textSetting.textList["font2"], value=self.decryptFile.trainNameList, state="readonly")
         self.copySrcCb.bind("<<ComboboxSelected>>", lambda e: self.selectTrain())
         self.copySrcCb.grid(row=0, column=0, sticky=tkinter.N + tkinter.S, padx=3)
         self.copySrcCb.current(self.trainIdx)
 
         self.v_infoNotch = tkinter.IntVar()
         self.v_infoNotch.set(0)
-        self.infoNotchCb = tkinter.Checkbutton(master, text=textSetting.textList["orgInfoEditor"]["notchLabel"], font=textSetting.textList["font2"], variable=self.v_infoNotch)
+        self.infoNotchCb = ttkCustomWidget.CustomTtkCheckbutton(master, text=textSetting.textList["orgInfoEditor"]["notchLabel"], variable=self.v_infoNotch)
         self.infoNotchCb.grid(row=0, column=1, sticky=tkinter.W, padx=3)
 
         self.v_infoPerf = tkinter.IntVar()
         self.v_infoPerf.set(0)
-        self.infoPerfCb = tkinter.Checkbutton(master, text=textSetting.textList["orgInfoEditor"]["perfLabel"], font=textSetting.textList["font2"], variable=self.v_infoPerf)
+        self.infoPerfCb = ttkCustomWidget.CustomTtkCheckbutton(master, text=textSetting.textList["orgInfoEditor"]["perfLabel"], variable=self.v_infoPerf)
         self.infoPerfCb.grid(row=1, column=1, sticky=tkinter.W, padx=3)
 
         if self.game in [gameDefine.LS, gameDefine.BS, gameDefine.CS, gameDefine.RS]:
-            self.infoDefLb = tkinter.Label(master, text=textSetting.textList["orgInfoEditor"]["setDefaultLabel"], font=textSetting.textList["font2"])
+            self.infoDefLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["orgInfoEditor"]["setDefaultLabel"], font=textSetting.textList["font2"])
             self.infoDefLb.grid(row=1, column=2, sticky=tkinter.N + tkinter.S, padx=3)
         else:
             self.v_infoRain = tkinter.IntVar()
             self.v_infoRain.set(0)
-            self.infoRainCb = tkinter.Checkbutton(master, text=textSetting.textList["orgInfoEditor"]["SSRainLfLabel"], font=textSetting.textList["font2"], variable=self.v_infoRain)
+            self.infoRainCb = ttkCustomWidget.CustomTtkCheckbutton(master, text=textSetting.textList["orgInfoEditor"]["SSRainLfLabel"], variable=self.v_infoRain)
             self.infoRainCb.grid(row=2, column=1, sticky=tkinter.W, padx=3)
 
             self.v_infoCarb = tkinter.IntVar()
             self.v_infoCarb.set(0)
-            self.infoCarbCb = tkinter.Checkbutton(master, text=textSetting.textList["orgInfoEditor"]["SSCarbLfLabel"], font=textSetting.textList["font2"], variable=self.v_infoCarb)
+            self.infoCarbCb = ttkCustomWidget.CustomTtkCheckbutton(master, text=textSetting.textList["orgInfoEditor"]["SSCarbLfLabel"], variable=self.v_infoCarb)
             self.infoCarbCb.grid(row=3, column=1, sticky=tkinter.W, padx=3)
 
             self.v_infoOther = tkinter.IntVar()
             self.v_infoOther.set(0)
-            self.infoOtherCb = tkinter.Checkbutton(master, text=textSetting.textList["orgInfoEditor"]["SSOtherLfLabel"], font=textSetting.textList["font2"], variable=self.v_infoOther)
+            self.infoOtherCb = ttkCustomWidget.CustomTtkCheckbutton(master, text=textSetting.textList["orgInfoEditor"]["SSOtherLfLabel"], variable=self.v_infoOther)
             self.infoOtherCb.grid(row=4, column=1, sticky=tkinter.W, padx=3)
 
             self.v_infoHuriko = tkinter.IntVar()
             self.v_infoHuriko.set(0)
             self.v_hurikoText = tkinter.StringVar()
             self.v_hurikoText.set(textSetting.textList["orgInfoEditor"]["SSHurikoLfLabel"])
-            self.infoHurikoCb = tkinter.Checkbutton(master, textvariable=self.v_hurikoText, font=textSetting.textList["font2"], variable=self.v_infoHuriko)
+            self.infoHurikoCb = ttkCustomWidget.CustomTtkCheckbutton(master, textvariable=self.v_hurikoText, variable=self.v_infoHuriko)
             self.infoHurikoCb.grid(row=5, column=1, sticky=tkinter.W, padx=3)
 
             self.v_infoOneWheel = tkinter.IntVar()
             self.v_infoOneWheel.set(0)
             self.v_oneWheelText = tkinter.StringVar()
             self.v_oneWheelText.set(textSetting.textList["orgInfoEditor"]["SSOneWheelLfLabel"])
-            self.infoOneWheelCb = tkinter.Checkbutton(master, textvariable=self.v_oneWheelText, font=textSetting.textList["font2"], variable=self.v_infoOneWheel)
+            self.infoOneWheelCb = ttkCustomWidget.CustomTtkCheckbutton(master, textvariable=self.v_oneWheelText, variable=self.v_infoOneWheel)
             self.infoOneWheelCb.grid(row=6, column=1, sticky=tkinter.W, padx=3)
 
-            self.infoDefLb = tkinter.Label(master, text=textSetting.textList["orgInfoEditor"]["setDefaultLabel"], font=textSetting.textList["font2"])
+            self.infoDefLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["orgInfoEditor"]["setDefaultLabel"], font=textSetting.textList["font2"])
             self.infoDefLb.grid(row=0, column=2, sticky=tkinter.N + tkinter.S, padx=3)
 
             self.selectTrain()
+        super().body(master)
 
     def selectTrain(self):
         if self.game == gameDefine.SS:
@@ -341,41 +342,42 @@ def saveTrain(decryptFile, varList, btnList, widgetList, innerButtonList, reload
     reloadFunc()
 
 
-def editAllTrain(tabFrame, decryptFile, reloadFunc):
-    result = AllEdit(tabFrame, textSetting.textList["orgInfoEditor"]["allSaveLabel"], decryptFile)
+def editAllTrain(tabFrame, decryptFile, rootFrameAppearance, reloadFunc):
+    result = AllEdit(tabFrame, textSetting.textList["orgInfoEditor"]["allSaveLabel"], decryptFile, rootFrameAppearance)
     if result.reloadFlag:
         reloadFunc()
 
 
-class AllEdit(sd.Dialog):
-    def __init__(self, master, title, decryptFile):
+class AllEdit(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, rootFrameAppearance):
         self.decryptFile = decryptFile
         self.notchContentCnt = decryptFile.notchContentCnt
         self.reloadFlag = False
-        super(AllEdit, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
-        self.eleLb = tkinter.Label(master, text=textSetting.textList["orgInfoEditor"]["perfElement"], width=5, font=textSetting.textList["font2"])
+        self.eleLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["orgInfoEditor"]["perfElement"], width=5, font=textSetting.textList["font2"])
         self.eleLb.grid(row=0, column=0, sticky=tkinter.N + tkinter.S, padx=3)
         self.v_ele = tkinter.StringVar()
-        self.eleCb = ttk.Combobox(master, textvariable=self.v_ele, width=24, value=self.decryptFile.trainPerfNameList, state="readonly")
+        self.eleCb = ttkCustomWidget.CustomTtkCombobox(master, textvariable=self.v_ele, width=24, value=self.decryptFile.trainPerfNameList, state="readonly")
         self.eleCb.grid(row=0, column=1, sticky=tkinter.N + tkinter.S, padx=3)
         self.v_ele.set(self.decryptFile.trainPerfNameList[0])
 
-        self.allLb = tkinter.Label(master, text=textSetting.textList["orgInfoEditor"]["perfAllTrainLabel"], width=5, font=textSetting.textList["font2"])
+        self.allLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["orgInfoEditor"]["perfAllTrainLabel"], width=5, font=textSetting.textList["font2"])
         self.allLb.grid(row=0, column=2, sticky=tkinter.N + tkinter.S, padx=3)
 
         self.v_num = tkinter.DoubleVar()
         self.v_num.set(1.0)
-        self.numEt = tkinter.Entry(master, textvariable=self.v_num, width=6, font=textSetting.textList["font2"], justify="right")
+        self.numEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.v_num, width=6, font=textSetting.textList["font2"], justify="right")
         self.numEt.grid(row=0, column=3, sticky=tkinter.N + tkinter.S, padx=3)
 
         calcList = textSetting.textList["orgInfoEditor"]["perfCalcList"]
         self.v_ele2 = tkinter.StringVar()
-        self.eleCb2 = ttk.Combobox(master, textvariable=self.v_ele2, font=textSetting.textList["font2"], width=8, value=calcList, state="readonly")
+        self.eleCb2 = ttkCustomWidget.CustomTtkCombobox(master, textvariable=self.v_ele2, font=textSetting.textList["font2"], width=8, value=calcList, state="readonly")
         self.v_ele2.set(calcList[0])
 
         self.eleCb2.grid(row=0, column=4, sticky=tkinter.N + tkinter.S, padx=3)
+        super().body(master)
 
     def validate(self):
         try:

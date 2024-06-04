@@ -1,83 +1,84 @@
 from functools import partial
 
 import tkinter
-from tkinter import ttk
 from tkinter import messagebox as mb
-from tkinter import simpledialog as sd
 import program.textSetting as textSetting
+import program.appearance.ttkCustomWidget as ttkCustomWidget
+from program.appearance.customSimpleDialog import CustomSimpleDialog
 
 from program.tkinterScrollbarFrameClass import ScrollbarFrame
 
 
 class LensListWidget:
-    def __init__(self, frame, decryptFile, trainIdx, lensList, reloadFunc):
+    def __init__(self, frame, decryptFile, trainIdx, lensList, rootFrameAppearance, reloadFunc):
         self.frame = frame
         self.decryptFile = decryptFile
         self.trainIdx = trainIdx
         self.lensList = lensList
         self.reloadFunc = reloadFunc
+        self.rootFrameAppearance = rootFrameAppearance
 
-        self.lensListLf = ttk.LabelFrame(self.frame, text=textSetting.textList["orgInfoEditor"]["lensInfoLabel"])
-        self.lensListLf.pack(anchor=tkinter.NW, padx=10, expand=True, fill=tkinter.BOTH)
-
-        scrollbarFrame = ScrollbarFrame(self.lensListLf)
+        lensListLf = ttkCustomWidget.CustomTtkLabelFrame(self.frame, text=textSetting.textList["orgInfoEditor"]["lensInfoLabel"])
+        lensListLf.pack(anchor=tkinter.NW, padx=10, expand=True, fill=tkinter.BOTH)
+        scrollbarFrame = ScrollbarFrame(lensListLf, bgColor=rootFrameAppearance.bgColor)
         scrollbarFrame.pack(expand=True, fill=tkinter.BOTH)
 
-        self.txtFrame = ttk.Frame(scrollbarFrame.interior)
-        self.txtFrame.pack(anchor=tkinter.NW)
+        txtFrame = ttkCustomWidget.CustomTtkFrame(scrollbarFrame.interior)
+        txtFrame.pack(anchor=tkinter.NW, padx=10)
 
-        self.lensCntNameLb = tkinter.Label(self.txtFrame, text=textSetting.textList["orgInfoEditor"]["lensCntLabel"], font=textSetting.textList["font6"], width=12, borderwidth=1, relief="solid")
-        self.lensCntNameLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
+        lensCntNameLb = ttkCustomWidget.CustomTtkLabel(txtFrame, text=textSetting.textList["orgInfoEditor"]["lensCntLabel"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=12, borderwidth=1, relief="solid")
+        lensCntNameLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
         self.varLensCnt = tkinter.IntVar()
         self.varLensCnt.set(len(self.lensList))
-        self.lensCntTextLb = tkinter.Label(self.txtFrame, textvariable=self.varLensCnt, font=textSetting.textList["font6"], width=7, borderwidth=1, relief="solid")
-        self.lensCntTextLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
-        self.lensCntBtn = tkinter.Button(self.txtFrame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], font=textSetting.textList["font7"], command=lambda: self.editLensCnt(self.varLensCnt.get()))
-        self.lensCntBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
+        lensCntTextLb = ttkCustomWidget.CustomTtkLabel(txtFrame, textvariable=self.varLensCnt, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
+        lensCntTextLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
+        lensCntBtn = ttkCustomWidget.CustomTtkButton(txtFrame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=lambda: self.editLensCnt(self.varLensCnt.get()))
+        lensCntBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
 
+        self.varList = []
+        varCnt = 0
         for i in range(len(self.lensList)):
-            self.txtFrame2 = ttk.Frame(scrollbarFrame.interior)
-            self.txtFrame2.pack(anchor=tkinter.NW, pady=5)
+            txtFrame2 = ttkCustomWidget.CustomTtkFrame(scrollbarFrame.interior)
+            txtFrame2.pack(anchor=tkinter.NW, padx=10, pady=5)
 
-            self.btnFrame = ttk.Frame(self.txtFrame2)
-            self.btnFrame.pack(side=tkinter.LEFT, anchor=tkinter.NW)
-            self.nameFrame = ttk.Frame(self.txtFrame2)
-            self.nameFrame.pack(anchor=tkinter.NW)
-            self.eleFrame = ttk.Frame(self.txtFrame2)
-            self.eleFrame.pack(anchor=tkinter.NW)
+            btnFrame = ttkCustomWidget.CustomTtkFrame(txtFrame2)
+            btnFrame.pack(side=tkinter.LEFT, anchor=tkinter.NW)
+            nameFrame = ttkCustomWidget.CustomTtkFrame(txtFrame2)
+            nameFrame.pack(anchor=tkinter.NW)
+            eleFrame = ttkCustomWidget.CustomTtkFrame(txtFrame2)
+            eleFrame.pack(anchor=tkinter.NW)
 
             lensInfo = self.lensList[i]
-
             for j in range(len(lensInfo)):
-                self.tempBtn = tkinter.Button(self.btnFrame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], font=textSetting.textList["font7"], command=partial(self.editLensList, i, lensInfo))
-                self.tempBtn.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
-                self.nameLb = tkinter.Label(self.nameFrame, text=textSetting.textList["orgInfoEditor"]["lensNameLabel"], font=textSetting.textList["font6"], width=7, borderwidth=1, relief="solid")
-                self.nameLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
+                tempBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=partial(self.editLensList, i, lensInfo))
+                tempBtn.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
+                nameLb = ttkCustomWidget.CustomTtkLabel(nameFrame, text=textSetting.textList["orgInfoEditor"]["lensNameLabel"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
+                nameLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
 
-                self.f1Lb = tkinter.Label(self.eleFrame, text=textSetting.textList["orgInfoEditor"]["lensF1Label"], font=textSetting.textList["font6"], width=7, borderwidth=1, relief="solid")
-                self.f1Lb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
-                self.b1Lb = tkinter.Label(self.eleFrame, text=textSetting.textList["orgInfoEditor"]["lensB1Label"], font=textSetting.textList["font6"], width=7, borderwidth=1, relief="solid")
-                self.b1Lb.grid(row=i + 1, column=0, sticky=tkinter.W + tkinter.E)
+                f1Lb = ttkCustomWidget.CustomTtkLabel(eleFrame, text=textSetting.textList["orgInfoEditor"]["lensF1Label"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
+                f1Lb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
+                b1Lb = ttkCustomWidget.CustomTtkLabel(eleFrame, text=textSetting.textList["orgInfoEditor"]["lensB1Label"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
+                b1Lb.grid(row=i + 1, column=0, sticky=tkinter.W + tkinter.E)
 
                 if j in [0, 1]:
-                    self.varTemp = tkinter.StringVar()
-                    self.varTemp.set(lensInfo[j])
-                    self.temphTextLb = tkinter.Label(self.nameFrame, textvariable=self.varTemp, font=textSetting.textList["font6"], borderwidth=1, relief="solid")
-                    self.temphTextLb.grid(row=i, column=j + 1, sticky=tkinter.W + tkinter.E, ipadx=10)
+                    self.varList.append(tkinter.StringVar(value=lensInfo[j]))
+                    temphTextLb = ttkCustomWidget.CustomTtkLabel(nameFrame, textvariable=self.varList[varCnt], font=textSetting.textList["font6"], anchor=tkinter.CENTER, borderwidth=1, relief="solid")
+                    temphTextLb.grid(row=i, column=j + 1, sticky=tkinter.W + tkinter.E, ipadx=10)
+                    varCnt += 1
                 elif j in [2, 3]:
-                    self.varTempF = tkinter.DoubleVar()
-                    self.varTempF.set(round(float(lensInfo[j]), 3))
-                    self.temphTextLb = tkinter.Label(self.eleFrame, textvariable=self.varTempF, width=7, font=textSetting.textList["font6"], borderwidth=1, relief="solid")
-                    self.temphTextLb.grid(row=i, column=j - 1, sticky=tkinter.W + tkinter.E)
+                    self.varList.append(tkinter.DoubleVar(value=round(float(lensInfo[j]), 3)))
+                    temphTextLb = ttkCustomWidget.CustomTtkLabel(eleFrame, textvariable=self.varList[varCnt], width=7, font=textSetting.textList["font6"], anchor=tkinter.CENTER, borderwidth=1, relief="solid")
+                    temphTextLb.grid(row=i, column=j - 1, sticky=tkinter.W + tkinter.E)
+                    varCnt += 1
                 elif j == 4:
                     for k in range(len(lensInfo[j])):
-                        self.varTemp = tkinter.IntVar()
-                        self.varTemp.set(int(lensInfo[j][k]))
-                        self.temphTextLb = tkinter.Label(self.eleFrame, textvariable=self.varTemp, width=7, font=textSetting.textList["font6"], borderwidth=1, relief="solid")
-                        self.temphTextLb.grid(row=i + 1, column=k + 1, sticky=tkinter.W + tkinter.E)
+                        self.varList.append(tkinter.IntVar(value=int(lensInfo[j][k])))
+                        temphTextLb = ttkCustomWidget.CustomTtkLabel(eleFrame, textvariable=self.varList[varCnt], width=7, font=textSetting.textList["font6"], anchor=tkinter.CENTER, borderwidth=1, relief="solid")
+                        temphTextLb.grid(row=i + 1, column=k + 1, sticky=tkinter.W + tkinter.E)
+                        varCnt += 1
 
     def editLensCnt(self, val):
-        result = EditLensCntWidget(self.frame, textSetting.textList["orgInfoEditor"]["lensEditCntLabel"], self.decryptFile, val)
+        result = EditLensCntWidget(self.frame, textSetting.textList["orgInfoEditor"]["lensEditCntLabel"], self.decryptFile, val, self.rootFrameAppearance)
         if result.reloadFlag:
             if not self.decryptFile.saveLensCnt(self.trainIdx, result.resultValue):
                 self.decryptFile.printError()
@@ -87,7 +88,7 @@ class LensListWidget:
             self.reloadFunc()
 
     def editLensList(self, i, valList):
-        result = EditLensWidget(self.frame, textSetting.textList["orgInfoEditor"]["lensEditLabel"], self.decryptFile, valList)
+        result = EditLensWidget(self.frame, textSetting.textList["orgInfoEditor"]["lensEditLabel"], self.decryptFile, valList, self.rootFrameAppearance)
         if result.reloadFlag:
             self.lensList[i] = result.resultValueList
             if not self.decryptFile.saveLensList(self.trainIdx, self.lensList):
@@ -98,24 +99,25 @@ class LensListWidget:
             self.reloadFunc()
 
 
-class EditLensCntWidget(sd.Dialog):
-    def __init__(self, master, title, decryptFile, val):
+class EditLensCntWidget(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, val, rootFrameAppearance):
         self.decryptFile = decryptFile
         self.val = val
         self.resultValue = 0
         self.reloadFlag = False
-        super(EditLensCntWidget, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(False, False)
 
-        self.valLb = ttk.Label(master, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
+        self.valLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"], anchor=tkinter.CENTER)
         self.valLb.pack()
 
         self.varLensCnt = tkinter.IntVar()
         self.varLensCnt.set(self.val)
-        self.valEt = ttk.Entry(master, textvariable=self.varLensCnt, font=textSetting.textList["font2"], width=16)
+        self.valEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varLensCnt, font=textSetting.textList["font2"], width=16)
         self.valEt.pack()
+        super().body(master)
 
     def validate(self):
         result = mb.askokcancel(title=textSetting.textList["confirm"], message=textSetting.textList["infoList"]["I21"], parent=self)
@@ -148,14 +150,15 @@ class EditLensCntWidget(sd.Dialog):
         self.reloadFlag = True
 
 
-class EditLensWidget(sd.Dialog):
-    def __init__(self, master, title, decryptFile, lensInfo):
+class EditLensWidget(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, lensInfo, rootFrameAppearance):
         self.decryptFile = decryptFile
         self.lensInfo = lensInfo
         self.varList = []
+        self.varCnt = 0
         self.resultValueList = []
         self.reloadFlag = False
-        super(EditLensWidget, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(False, False)
@@ -163,32 +166,30 @@ class EditLensWidget(sd.Dialog):
         lensInfoLbList = textSetting.textList["orgInfoEditor"]["lensInfoLabelList"]
         for i in range(len(self.lensInfo)):
             if i in [0, 1]:
-                self.lensLb = ttk.Label(master, text=lensInfoLbList[i], font=textSetting.textList["font2"])
+                self.lensLb = ttkCustomWidget.CustomTtkLabel(master, text=lensInfoLbList[i], font=textSetting.textList["font2"])
                 self.lensLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
-                self.varTemp = tkinter.StringVar()
-                self.varTemp.set(self.lensInfo[i])
-                self.varList.append(self.varTemp)
-                self.lensEt = ttk.Entry(master, textvariable=self.varTemp, font=textSetting.textList["font2"])
+                self.varList.append(tkinter.StringVar(value=self.lensInfo[i]))
+                self.lensEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[self.varCnt], font=textSetting.textList["font2"])
                 self.lensEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                self.varCnt += 1
             elif i in [2, 3]:
-                self.lensLb = ttk.Label(master, text=lensInfoLbList[i], font=textSetting.textList["font2"])
+                self.lensLb = ttkCustomWidget.CustomTtkLabel(master, text=lensInfoLbList[i], font=textSetting.textList["font2"])
                 self.lensLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
-                self.varTemp = tkinter.DoubleVar()
-                self.varTemp.set(round(float(self.lensInfo[i]), 3))
-                self.varList.append(self.varTemp)
-                self.lensEt = ttk.Entry(master, textvariable=self.varTemp, font=textSetting.textList["font2"])
+                self.varList.append(tkinter.DoubleVar(value=round(float(self.lensInfo[i]), 3)))
+                self.lensEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[self.varCnt], font=textSetting.textList["font2"])
                 self.lensEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                self.varCnt += 1
             elif i == 4:
                 varList = []
                 for j in range(len(self.lensInfo[i])):
-                    self.lensLb = ttk.Label(master, text=lensInfoLbList[i + j], font=textSetting.textList["font2"])
+                    self.lensLb = ttkCustomWidget.CustomTtkLabel(master, text=lensInfoLbList[i + j], font=textSetting.textList["font2"])
                     self.lensLb.grid(row=i + j, column=0, sticky=tkinter.W + tkinter.E)
-                    self.varTemp = tkinter.IntVar()
-                    self.varTemp.set(self.lensInfo[i][j])
-                    varList.append(self.varTemp)
-                    self.lensEt = ttk.Entry(master, textvariable=self.varTemp, font=textSetting.textList["font2"])
+                    varList.append(tkinter.IntVar(value=self.lensInfo[i][j]))
+                    self.lensEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=varList[j], font=textSetting.textList["font2"])
                     self.lensEt.grid(row=i + j, column=1, sticky=tkinter.W + tkinter.E)
+                    self.varCnt += 1
                 self.varList.append(varList)
+        super().body(master)
 
     def validate(self):
         self.resultValueList = []

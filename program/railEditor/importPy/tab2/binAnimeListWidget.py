@@ -1,56 +1,59 @@
 from functools import partial
 
 import tkinter
-from tkinter import ttk
 from tkinter import messagebox as mb
-from tkinter import simpledialog as sd
 import program.textSetting as textSetting
+import program.appearance.ttkCustomWidget as ttkCustomWidget
+from program.appearance.customSimpleDialog import CustomSimpleDialog
 
 
 class BinAnimeListWidget:
-    def __init__(self, frame, decryptFile, binAnimeList, reloadFunc):
+    def __init__(self, root, frame, decryptFile, binAnimeList, rootFrameAppearance, reloadFunc):
+        self.root = root
         self.frame = frame
         self.decryptFile = decryptFile
         self.binAnimeList = binAnimeList
+        self.rootFrameAppearance = rootFrameAppearance
         self.reloadFunc = reloadFunc
-        self.varList = []
 
-        self.eleLf = ttk.LabelFrame(self.frame, text=textSetting.textList["railEditor"]["editBaseBinAnimeLabel"])
-        self.eleLf.pack(anchor=tkinter.NW, padx=10)
+        eleLf = ttkCustomWidget.CustomTtkLabelFrame(self.frame, text=textSetting.textList["railEditor"]["editBaseBinAnimeLabel"])
+        eleLf.pack(anchor=tkinter.NW, padx=10, pady=5)
 
-        self.txtFrame = ttk.Frame(self.eleLf)
-        self.txtFrame.pack(anchor=tkinter.NW)
+        txtFrame = ttkCustomWidget.CustomTtkFrame(eleLf)
+        txtFrame.pack(anchor=tkinter.NW)
 
         self.varBinAnimeCnt = tkinter.IntVar()
         self.varBinAnimeCnt.set(len(self.binAnimeList))
-        self.binAnimeCntTextLb = tkinter.Label(self.txtFrame, text=textSetting.textList["railEditor"]["animeCntLabel"], font=textSetting.textList["font6"], width=9, borderwidth=1, relief="solid")
-        self.binAnimeCntTextLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
-        self.binAnimeCntLb = tkinter.Label(self.txtFrame, textvariable=self.varBinAnimeCnt, font=textSetting.textList["font6"], width=7, borderwidth=1, relief="solid")
-        self.binAnimeCntLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
+        binAnimeCntTextLb = ttkCustomWidget.CustomTtkLabel(txtFrame, text=textSetting.textList["railEditor"]["animeCntLabel"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=9, borderwidth=1, relief="solid")
+        binAnimeCntTextLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
+        binAnimeCntLb = ttkCustomWidget.CustomTtkLabel(txtFrame, textvariable=self.varBinAnimeCnt, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
+        binAnimeCntLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
         if self.decryptFile.game in ["BS", "CS", "RS"]:
-            self.binAnimeCntBtn = tkinter.Button(self.txtFrame, text=textSetting.textList["railEditor"]["modifyBtnLabel"], font=textSetting.textList["font7"], command=lambda: self.editBinAnimeCnt(self.varBinAnimeCnt.get()))
-            self.binAnimeCntBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
+            binAnimeCntBtn = ttkCustomWidget.CustomTtkButton(txtFrame, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=lambda: self.editBinAnimeCnt(self.varBinAnimeCnt.get()))
+            binAnimeCntBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
 
-        self.txtFrame2 = ttk.Frame(self.eleLf)
-        self.txtFrame2.pack(anchor=tkinter.NW, pady=5)
+        txtFrame2 = ttkCustomWidget.CustomTtkFrame(eleLf)
+        txtFrame2.pack(anchor=tkinter.NW, pady=5)
 
         binAnimeHeaderLb = textSetting.textList["railEditor"]["editBinAnimeHeaderList"]
         for i in range(len(binAnimeHeaderLb)):
-            self.headerLb = tkinter.Label(self.txtFrame2, text=binAnimeHeaderLb[i], font=textSetting.textList["font6"], width=7, borderwidth=1, relief="solid")
-            self.headerLb.grid(row=0, column=i, sticky=tkinter.W + tkinter.E)
+            headerLb = ttkCustomWidget.CustomTtkLabel(txtFrame2, text=binAnimeHeaderLb[i], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
+            headerLb.grid(row=0, column=i, sticky=tkinter.W + tkinter.E)
 
+        self.varList = []
+        self.varCnt = 0
         for i in range(len(self.binAnimeList)):
             binAnimeInfo = self.binAnimeList[i]
             for j in range(len(binAnimeInfo)):
-                self.varTemph = tkinter.IntVar()
-                self.varTemph.set(int(binAnimeInfo[j]))
-                self.temphTextLb = tkinter.Label(self.txtFrame2, textvariable=self.varTemph, font=textSetting.textList["font6"], width=7, borderwidth=1, relief="solid")
-                self.temphTextLb.grid(row=i + 1, column=j, sticky=tkinter.W + tkinter.E)
-            self.temphBtn = tkinter.Button(self.txtFrame2, text=textSetting.textList["railEditor"]["modifyBtnLabel"], font=textSetting.textList["font7"], command=partial(self.editBinAnime, i, binAnimeInfo))
-            self.temphBtn.grid(row=i + 1, column=len(binAnimeInfo), sticky=tkinter.W + tkinter.E)
+                self.varList.append(tkinter.IntVar(value=int(binAnimeInfo[j])))
+                temphTextLb = ttkCustomWidget.CustomTtkLabel(txtFrame2, textvariable=self.varList[self.varCnt], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
+                temphTextLb.grid(row=i + 1, column=j, sticky=tkinter.W + tkinter.E)
+                self.varCnt += 1
+            temphBtn = ttkCustomWidget.CustomTtkButton(txtFrame2, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=partial(self.editBinAnime, i, binAnimeInfo))
+            temphBtn.grid(row=i + 1, column=len(binAnimeInfo), sticky=tkinter.W + tkinter.E)
 
     def editBinAnimeCnt(self, val):
-        result = EditBinAnimeCntWidget(self.frame, textSetting.textList["railEditor"]["editAnimeCntLabel"], self.decryptFile, val)
+        result = EditBinAnimeCntWidget(self.root, textSetting.textList["railEditor"]["editAnimeCntLabel"], self.decryptFile, val, self.rootFrameAppearance)
         if result.reloadFlag:
             if not self.decryptFile.saveBinAnimeCnt(result.resultValue):
                 self.decryptFile.printError()
@@ -60,7 +63,7 @@ class BinAnimeListWidget:
             self.reloadFunc()
 
     def editBinAnime(self, i, binAnimeInfo):
-        result = EditBinAnimeWidget(self.frame, textSetting.textList["railEditor"]["editAnimeCntLabel"], self.decryptFile, binAnimeInfo)
+        result = EditBinAnimeWidget(self.root, textSetting.textList["railEditor"]["editAnimeCntLabel"], self.decryptFile, binAnimeInfo, self.rootFrameAppearance)
         if result.reloadFlag:
             self.binAnimeList[i] = result.resultValueList
             if not self.decryptFile.saveBinAnime(self.binAnimeList):
@@ -71,24 +74,25 @@ class BinAnimeListWidget:
             self.reloadFunc()
 
 
-class EditBinAnimeCntWidget(sd.Dialog):
-    def __init__(self, master, title, decryptFile, val):
+class EditBinAnimeCntWidget(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, val, rootFrameAppearance):
         self.decryptFile = decryptFile
         self.val = val
         self.resultValue = 0
         self.reloadFlag = False
-        super(EditBinAnimeCntWidget, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(False, False)
 
-        self.valLb = ttk.Label(master, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
-        self.valLb.pack()
+        valLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
+        valLb.pack()
 
         self.varBinAnimeCnt = tkinter.IntVar()
         self.varBinAnimeCnt.set(self.val)
-        self.valEt = ttk.Entry(master, textvariable=self.varBinAnimeCnt, font=textSetting.textList["font2"], width=16)
-        self.valEt.pack()
+        valEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varBinAnimeCnt, font=textSetting.textList["font2"], width=16)
+        valEt.pack()
+        super().body(master)
 
     def validate(self):
         result = mb.askokcancel(title=textSetting.textList["confirm"], message=textSetting.textList["infoList"]["I21"], parent=self)
@@ -123,27 +127,26 @@ class EditBinAnimeCntWidget(sd.Dialog):
         self.reloadFlag = True
 
 
-class EditBinAnimeWidget(sd.Dialog):
-    def __init__(self, master, title, decryptFile, binAnimeInfo):
+class EditBinAnimeWidget(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, binAnimeInfo, rootFrameAppearance):
         self.decryptFile = decryptFile
         self.binAnimeInfo = binAnimeInfo
         self.varList = []
         self.resultValueList = []
         self.reloadFlag = False
-        super(EditBinAnimeWidget, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(False, False)
 
         binAnimeInfoLbList = textSetting.textList["railEditor"]["editBinAnimeHeaderList"]
         for i in range(len(self.binAnimeInfo)):
-            self.binAnimeInfoLb = ttk.Label(master, text=binAnimeInfoLbList[i], font=textSetting.textList["font2"])
-            self.binAnimeInfoLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
-            self.varBinAnime = tkinter.IntVar()
-            self.varBinAnime.set(self.binAnimeInfo[i])
-            self.varList.append(self.varBinAnime)
-            self.binAnimeEt = ttk.Entry(master, textvariable=self.varBinAnime, font=textSetting.textList["font2"])
-            self.binAnimeEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+            binAnimeInfoLb = ttkCustomWidget.CustomTtkLabel(master, text=binAnimeInfoLbList[i], font=textSetting.textList["font2"])
+            binAnimeInfoLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
+            self.varList.append(tkinter.IntVar(value=self.binAnimeInfo[i]))
+            binAnimeEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
+            binAnimeEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+        super().body(master)
 
     def validate(self):
         self.resultValueList = []

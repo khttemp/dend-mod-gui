@@ -1,9 +1,9 @@
 import os
 import tkinter
-from tkinter import ttk
 from tkinter import filedialog as fd
 from tkinter import messagebox as mb
 import program.textSetting as textSetting
+import program.appearance.ttkCustomWidget as ttkCustomWidget
 
 from program.railEditor.importPy.tkinterTab import tab1AllWidget, tab2AllWidget, tab3AllWidget, tab4AllWidget, tab5AllWidget, tab6AllWidget, tab7AllWidget, tab8AllWidget, tab9AllWidget, tab10AllWidget, tab11AllWidget
 from program.railEditor.importPy.excelWidget import ExcelWidget
@@ -26,6 +26,7 @@ excelWidget = None
 excelExtractBtn = None
 excelSaveBtn = None
 configPath = None
+rootFrameAppearance = None
 info = textSetting.textList["railEditor"]["railComboValue"]
 lsInfo = textSetting.textList["railEditor"]["railLsComboValue"]
 
@@ -91,32 +92,34 @@ def deleteAllWidget():
 
 
 def selectInfo(index, selectId=None):
+    global root
     global tabFrame
     global decryptFile
+    global rootFrameAppearance
     deleteAllWidget()
 
     if index == 0:
-        tab1AllWidget(tabFrame, decryptFile, reloadWidget)
+        tab1AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadWidget)
     elif index == 1:
-        tab2AllWidget(tabFrame, decryptFile, reloadWidget)
+        tab2AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadWidget)
     elif index == 2:
-        tab3AllWidget(tabFrame, decryptFile, reloadWidget, selectId)
+        tab3AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadWidget, selectId)
     elif index == 3:
-        tab4AllWidget(tabFrame, decryptFile, reloadWidget, selectId)
+        tab4AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadWidget, selectId)
     elif index == 4:
-        tab5AllWidget(tabFrame, decryptFile, reloadWidget)
+        tab5AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadWidget)
     elif index == 5:
-        tab6AllWidget(tabFrame, decryptFile, reloadWidget, selectId)
+        tab6AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadWidget, selectId)
     elif index == 6:
-        tab7AllWidget(tabFrame, decryptFile, reloadWidget)
+        tab7AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadWidget)
     elif index == 7:
-        tab8AllWidget(tabFrame, decryptFile, reloadWidget)
+        tab8AllWidget(tabFrame, decryptFile, rootFrameAppearance, reloadWidget)
     elif index == 8:
-        tab9AllWidget(tabFrame, decryptFile, reloadWidget, selectId)
+        tab9AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadWidget, selectId)
     elif index == 9:
-        tab10AllWidget(tabFrame, decryptFile, reloadWidget)
+        tab10AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadWidget)
     elif index == 10:
-        tab11AllWidget(tabFrame, decryptFile, reloadWidget)
+        tab11AllWidget(tabFrame, decryptFile, rootFrameAppearance, reloadWidget)
 
 
 def reloadWidget(*selectId):
@@ -146,7 +149,7 @@ def selectGame():
     deleteAllWidget()
 
 
-def call_railEditor(rootTk, programFrame, config_ini_path):
+def call_railEditor(rootTk, config_ini_path, appearance):
     global root
     global info
     global v_radio
@@ -156,35 +159,36 @@ def call_railEditor(rootTk, programFrame, config_ini_path):
     global excelExtractBtn
     global excelSaveBtn
     global configPath
+    global rootFrameAppearance
 
     configPath = config_ini_path
+    rootFrameAppearance = appearance
 
     root = rootTk
     v_radio = tkinter.IntVar()
     v_radio.set(RS)
 
-    lsRb = tkinter.Radiobutton(programFrame, text="Lightning Stage", command=selectGame, variable=v_radio, value=LS)
+    lsRb = ttkCustomWidget.CustomTtkRadiobutton(root, text="Lightning Stage", command=selectGame, variable=v_radio, value=LS)
     lsRb.place(relx=0.32, rely=0.02)
-    bsRb = tkinter.Radiobutton(programFrame, text="Burning Stage", command=selectGame, variable=v_radio, value=BS)
+    bsRb = ttkCustomWidget.CustomTtkRadiobutton(root, text="Burning Stage", command=selectGame, variable=v_radio, value=BS)
     bsRb.place(relx=0.50, rely=0.02)
-    csRb = tkinter.Radiobutton(programFrame, text="Climax Stage", command=selectGame, variable=v_radio, value=CS)
+    csRb = ttkCustomWidget.CustomTtkRadiobutton(root, text="Climax Stage", command=selectGame, variable=v_radio, value=CS)
     csRb.place(relx=0.68, rely=0.02)
-    rsRb = tkinter.Radiobutton(programFrame, text="Rising Stage", command=selectGame, variable=v_radio, value=RS)
+    rsRb = ttkCustomWidget.CustomTtkRadiobutton(root, text="Rising Stage", command=selectGame, variable=v_radio, value=RS, state="selected")
     rsRb.place(relx=0.86, rely=0.02)
-    rsRb.select()
 
-    excelExtractBtn = ttk.Button(programFrame, text=textSetting.textList["railEditor"]["railDataExtractExcel"], width=30, state="disabled")
+    excelExtractBtn = ttkCustomWidget.CustomTtkButton(root, text=textSetting.textList["railEditor"]["railDataExtractExcel"], width=30, state="disabled")
     excelExtractBtn.place(relx=0.40, rely=0.08)
-    excelSaveBtn = ttk.Button(programFrame, text=textSetting.textList["railEditor"]["railDataSaveExcel"], width=30, state="disabled")
+    excelSaveBtn = ttkCustomWidget.CustomTtkButton(root, text=textSetting.textList["railEditor"]["railDataSaveExcel"], width=30, state="disabled")
     excelSaveBtn.place(relx=0.70, rely=0.08)
 
     v_filename = tkinter.StringVar()
-    filenameEt = ttk.Entry(programFrame, textvariable=v_filename, font=textSetting.textList["font2"], width=20, state="readonly", justify="center")
+    filenameEt = ttkCustomWidget.CustomTtkEntry(root, textvariable=v_filename, font=textSetting.textList["font2"], width=20, state="readonly", justify="center")
     filenameEt.place(relx=0.05, rely=0.02)
 
-    cb = ttk.Combobox(programFrame, width=20, font=textSetting.textList["font2"], values=info, state="disabled")
+    cb = ttkCustomWidget.CustomTtkCombobox(root, width=20, font=textSetting.textList["font2"], values=info, state="disabled")
     cb.bind("<<ComboboxSelected>>", lambda e: selectInfo(cb.current()))
     cb.place(relx=0.05, rely=0.08)
 
-    tabFrame = ttk.Frame(programFrame, borderwidth=1, relief="solid")
+    tabFrame = ttkCustomWidget.CustomTtkFrame(root, borderwidth=1, relief="solid")
     tabFrame.place(relx=0.03, rely=0.13, relwidth=0.95, relheight=0.84)

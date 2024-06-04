@@ -5,6 +5,7 @@ from tkinter import ttk
 from tkinter import filedialog as fd
 from tkinter import messagebox as mb
 import program.textSetting as textSetting
+import program.appearance.ttkCustomWidget as ttkCustomWidget
 
 from program.tkinterScrollbarFrameClass import ScrollbarFrame
 from program.fvtMaker.importPy.tkinterWidgetClass import CsvWidget, DescWidget
@@ -16,6 +17,7 @@ csvLf = None
 descLf = None
 content = -1
 fvtConvertFile = None
+rootFrameAppearance = None
 
 LS = 0
 BS = 1
@@ -59,15 +61,16 @@ def selectGame():
     global csvLf
     global descLf
     global content
+    global rootFrameAppearance
     deleteWidget()
 
     content = v_radio.get()
-    frame = ScrollbarFrame(csvLf, True)
+    frame = ScrollbarFrame(csvLf, True, bgColor=rootFrameAppearance.bgColor)
     frame.pack(expand=True, fill=tkinter.BOTH)
     CsvWidget(frame.interior, content)
-    frame2 = ScrollbarFrame(descLf, True)
+    frame2 = ScrollbarFrame(descLf, True, bgColor=rootFrameAppearance.bgColor)
     frame2.pack(expand=True, fill=tkinter.BOTH)
-    DescWidget(frame2.interior, content)
+    DescWidget(frame2.interior, content, rootFrameAppearance)
 
 
 def deleteWidget():
@@ -82,33 +85,47 @@ def deleteWidget():
         child.destroy()
 
 
-def call_fvtMaker(rootTk, programFrame):
+def call_fvtMaker(rootTk, appearance):
     global root
     global v_radio
     global csvLf
     global descLf
     global content
+    global rootFrameAppearance
 
     root = rootTk
+    rootFrameAppearance = appearance
     content = -1
+
+    headerFrame = ttkCustomWidget.CustomTtkFrame(root)
+    headerFrame.pack(fill=tkinter.X, padx=40, pady=25)
 
     v_radio = tkinter.IntVar()
     v_radio.set(-1)
 
-    lsRb = tkinter.Radiobutton(programFrame, text="Lightning Stage", command=selectGame, variable=v_radio, value=LS)
-    lsRb.place(relx=0.05, rely=0.02)
+    lsRb = ttkCustomWidget.CustomTtkRadiobutton(headerFrame, text="Lightning Stage", command=selectGame, variable=v_radio, value=LS)
+    lsRb.grid(row=0, column=0, padx=10)
 
-    bsRb = tkinter.Radiobutton(programFrame, text="Burning Stage", command=selectGame, variable=v_radio, value=BS)
-    bsRb.place(relx=0.3, rely=0.02)
+    bsRb = ttkCustomWidget.CustomTtkRadiobutton(headerFrame, text="Burning Stage", command=selectGame, variable=v_radio, value=BS)
+    bsRb.grid(row=0, column=1, padx=10)
 
-    csRb = tkinter.Radiobutton(programFrame, text="Climax Stage", command=selectGame, variable=v_radio, value=CS)
-    csRb.place(relx=0.55, rely=0.02)
+    csRb = ttkCustomWidget.CustomTtkRadiobutton(headerFrame, text="Climax Stage", command=selectGame, variable=v_radio, value=CS)
+    csRb.grid(row=0, column=2, padx=10)
 
-    rsRb = tkinter.Radiobutton(programFrame, text="Rising Stage", command=selectGame, variable=v_radio, value=RS)
-    rsRb.place(relx=0.8, rely=0.02)
+    rsRb = ttkCustomWidget.CustomTtkRadiobutton(headerFrame, text="Rising Stage", command=selectGame, variable=v_radio, value=RS)
+    rsRb.grid(row=0, column=3, padx=10)
 
-    csvLf = ttk.LabelFrame(programFrame, text=textSetting.textList["fvtMaker"]["csvLfLabel"])
-    csvLf.place(relx=0.03, rely=0.07, relwidth=0.95, relheight=0.3)
+    headerFrame.grid_columnconfigure(0, weight=1)
+    headerFrame.grid_columnconfigure(1, weight=1)
+    headerFrame.grid_columnconfigure(2, weight=1)
+    headerFrame.grid_columnconfigure(3, weight=1)
 
-    descLf = ttk.LabelFrame(programFrame, text=textSetting.textList["fvtMaker"]["howWrite"])
-    descLf.place(relx=0.03, rely=0.38, relwidth=0.95, relheight=0.59)
+    bodyFrame = ttkCustomWidget.CustomTtkFrame(root)
+    bodyFrame.pack(expand=True, fill=tkinter.BOTH, padx=25, pady=(0, 25))
+
+    csvLf = ttkCustomWidget.CustomTtkLabelFrame(bodyFrame, text=textSetting.textList["fvtMaker"]["csvLfLabel"], height=250)
+    csvLf.pack(fill=tkinter.BOTH)
+    csvLf.pack_propagate(False)
+
+    descLf = ttkCustomWidget.CustomTtkLabelFrame(bodyFrame, text=textSetting.textList["fvtMaker"]["howWrite"])
+    descLf.pack(expand=True, fill=tkinter.BOTH)

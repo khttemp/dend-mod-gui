@@ -4,12 +4,14 @@ from tkinter import ttk
 from tkinter import filedialog as fd
 from tkinter import messagebox as mb
 import program.textSetting as textSetting
+import program.appearance.ttkCustomWidget as ttkCustomWidget
 
 from program.rsRail.getMemory.getMemory import GetMemory
 from program.tkinterScrollbarFrameClass import ScrollbarFrame
 
 
 root = None
+rootFrameAppearance = None
 v_rail1PRail = None
 v_rail1PPos = None
 v_rail2PRail = None
@@ -58,215 +60,215 @@ def createWidget():
     railValList = []
     railElementList = []
 
-    railPosFrame = ttk.Frame(contentsLf)
+    railPosFrame = ttkCustomWidget.CustomTtkFrame(contentsLf)
     railPosFrame.pack(anchor=tkinter.NW, padx=30, pady=10, fill=tkinter.X)
 
-    rail1PLf = ttk.LabelFrame(railPosFrame, text=textSetting.textList["rsRail"]["1pRailPos"])
+    rail1PLf = ttkCustomWidget.CustomTtkLabelFrame(railPosFrame, text=textSetting.textList["rsRail"]["1pRailPos"])
     rail1PLf.pack(anchor=tkinter.NW, side=tkinter.LEFT)
 
     v_rail1PRail = tkinter.IntVar()
     v_rail1PRail.set(-1)
-    rail1PRailLb = ttk.Label(rail1PLf, textvariable=v_rail1PRail, font=textSetting.textList["font2"], width=7, justify="center", anchor="center")
+    rail1PRailLb = ttkCustomWidget.CustomTtkLabel(rail1PLf, textvariable=v_rail1PRail, font=textSetting.textList["font2"], width=7, justify="center", anchor="center")
     rail1PRailLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
     v_rail1PPos = tkinter.IntVar()
     v_rail1PPos.set(-1)
-    rail1PPosLb = ttk.Label(rail1PLf, textvariable=v_rail1PPos, font=textSetting.textList["font2"], width=7, justify="center", anchor="center")
+    rail1PPosLb = ttkCustomWidget.CustomTtkLabel(rail1PLf, textvariable=v_rail1PPos, font=textSetting.textList["font2"], width=7, justify="center", anchor="center")
     rail1PPosLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-    rail2PLf = ttk.LabelFrame(railPosFrame, text=textSetting.textList["rsRail"]["2pRailPos"])
+    rail2PLf = ttkCustomWidget.CustomTtkLabelFrame(railPosFrame, text=textSetting.textList["rsRail"]["2pRailPos"])
     rail2PLf.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=10)
 
     v_rail2PRail = tkinter.IntVar()
     v_rail2PRail.set(-1)
-    rail2PRailLb = ttk.Label(rail2PLf, textvariable=v_rail2PRail, font=textSetting.textList["font2"], width=7, justify="center", anchor="center")
+    rail2PRailLb = ttkCustomWidget.CustomTtkLabel(rail2PLf, textvariable=v_rail2PRail, font=textSetting.textList["font2"], width=7, justify="center", anchor="center")
     rail2PRailLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
     v_rail2PPos = tkinter.IntVar()
     v_rail2PPos.set(-1)
-    rail2PPosLb = ttk.Label(rail2PLf, textvariable=v_rail2PPos, font=textSetting.textList["font2"], width=7, justify="center", anchor="center")
+    rail2PPosLb = ttkCustomWidget.CustomTtkLabel(rail2PLf, textvariable=v_rail2PPos, font=textSetting.textList["font2"], width=7, justify="center", anchor="center")
     rail2PPosLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
 
-    railPosSearchBtn = ttk.Button(railPosFrame, text=textSetting.textList["rsRail"]["trainPosSearchBtnLabel"], command=lambda: searchRailPos())
+    railPosSearchBtn = ttkCustomWidget.CustomTtkButton(railPosFrame, text=textSetting.textList["rsRail"]["trainPosSearchBtnLabel"], command=lambda: searchRailPos())
     railPosSearchBtn.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=10, pady=20)
 
-    railNoFrame = ttk.Frame(contentsLf)
+    railNoFrame = ttkCustomWidget.CustomTtkFrame(contentsLf)
     railNoFrame.pack(anchor=tkinter.NW, padx=30, pady=10, fill=tkinter.X)
 
-    railNoLb = ttk.Label(railNoFrame, text=textSetting.textList["rsRail"]["railNo"], font=textSetting.textList["font2"])
+    railNoLb = ttkCustomWidget.CustomTtkLabel(railNoFrame, text=textSetting.textList["rsRail"]["railNo"], font=textSetting.textList["font2"])
     railNoLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
     v_railNo = tkinter.IntVar()
-    railNoEt = ttk.Entry(railNoFrame, textvariable=v_railNo, font=textSetting.textList["font2"], width=7, justify="center")
+    railNoEt = ttkCustomWidget.CustomTtkEntry(railNoFrame, textvariable=v_railNo, font=textSetting.textList["font2"], width=7, justify="center")
     railNoEt.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10)
     railElementList.append(railNoEt)
-    searchBtn = ttk.Button(railNoFrame, text=textSetting.textList["rsRail"]["railSearchBtnLabel"], command=lambda: searchRail())
+    searchBtn = ttkCustomWidget.CustomTtkButton(railNoFrame, text=textSetting.textList["rsRail"]["railSearchBtnLabel"], command=lambda: searchRail())
     searchBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E, padx=30)
     railElementList.append(searchBtn)
-    modifyBtn = ttk.Button(railNoFrame, text=textSetting.textList["rsRail"]["railChangeBtnLabel"], command=lambda: modifyRail(), state="disabled")
+    modifyBtn = ttkCustomWidget.CustomTtkButton(railNoFrame, text=textSetting.textList["rsRail"]["railChangeBtnLabel"], command=lambda: modifyRail(), state="disabled")
     modifyBtn.grid(row=0, column=3, sticky=tkinter.W + tkinter.E, padx=30)
     railElementList.append(modifyBtn)
 
-    sidePackFrame = ttk.Frame(contentsLf)
+    sidePackFrame = ttkCustomWidget.CustomTtkFrame(contentsLf)
     sidePackFrame.pack(anchor=tkinter.NW, padx=20)
 
-    xyzFrame = ttk.LabelFrame(sidePackFrame, text=textSetting.textList["rsRail"]["railXyzInfo"])
+    xyzFrame = ttkCustomWidget.CustomTtkLabelFrame(sidePackFrame, text=textSetting.textList["rsRail"]["railXyzInfo"])
     xyzFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=5, pady=15)
-    xLb = ttk.Label(xyzFrame, text=textSetting.textList["rsRail"]["railDirX"], font=textSetting.textList["font2"])
+    xLb = ttkCustomWidget.CustomTtkLabel(xyzFrame, text=textSetting.textList["rsRail"]["railDirX"], font=textSetting.textList["font2"])
     xLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     v_x = tkinter.DoubleVar()
     railValList.append(v_x)
-    xEt = ttk.Entry(xyzFrame, textvariable=v_x, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+    xEt = ttkCustomWidget.CustomTtkEntry(xyzFrame, textvariable=v_x, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
     xEt.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     railElementList.append(xEt)
 
-    yLb = ttk.Label(xyzFrame, text=textSetting.textList["rsRail"]["railDirY"], font=textSetting.textList["font2"])
+    yLb = ttkCustomWidget.CustomTtkLabel(xyzFrame, text=textSetting.textList["rsRail"]["railDirY"], font=textSetting.textList["font2"])
     yLb.grid(row=0, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     v_y = tkinter.DoubleVar()
     railValList.append(v_y)
-    yEt = ttk.Entry(xyzFrame, textvariable=v_y, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+    yEt = ttkCustomWidget.CustomTtkEntry(xyzFrame, textvariable=v_y, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
     yEt.grid(row=0, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     railElementList.append(yEt)
 
-    zLb = ttk.Label(xyzFrame, text=textSetting.textList["rsRail"]["railDirZ"], font=textSetting.textList["font2"])
+    zLb = ttkCustomWidget.CustomTtkLabel(xyzFrame, text=textSetting.textList["rsRail"]["railDirZ"], font=textSetting.textList["font2"])
     zLb.grid(row=0, column=4, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     v_z = tkinter.DoubleVar()
     railValList.append(v_z)
-    zEt = ttk.Entry(xyzFrame, textvariable=v_z, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+    zEt = ttkCustomWidget.CustomTtkEntry(xyzFrame, textvariable=v_z, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
     zEt.grid(row=0, column=5, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     railElementList.append(zEt)
 
-    perFrame = ttk.LabelFrame(sidePackFrame, text=textSetting.textList["rsRail"]["railModelPer"])
+    perFrame = ttkCustomWidget.CustomTtkLabelFrame(sidePackFrame, text=textSetting.textList["rsRail"]["railModelPer"])
     perFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=5, pady=15)
 
-    perLb = ttk.Label(perFrame, text=textSetting.textList["rsRail"]["railPer"], font=textSetting.textList["font2"])
+    perLb = ttkCustomWidget.CustomTtkLabel(perFrame, text=textSetting.textList["rsRail"]["railPer"], font=textSetting.textList["font2"])
     perLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     v_per = tkinter.DoubleVar()
     railValList.append(v_per)
-    perEt = ttk.Entry(perFrame, textvariable=v_per, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+    perEt = ttkCustomWidget.CustomTtkEntry(perFrame, textvariable=v_per, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
     perEt.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     railElementList.append(perEt)
 
     ambValList = []
     ambElementList = []
 
-    ambNoFrame = ttk.Frame(contentsLf)
+    ambNoFrame = ttkCustomWidget.CustomTtkFrame(contentsLf)
     ambNoFrame.pack(anchor=tkinter.NW, padx=30, pady=10, fill=tkinter.X)
 
-    ambNoLb = ttk.Label(ambNoFrame, text=textSetting.textList["rsRail"]["ambNo"], font=textSetting.textList["font2"])
+    ambNoLb = ttkCustomWidget.CustomTtkLabel(ambNoFrame, text=textSetting.textList["rsRail"]["ambNo"], font=textSetting.textList["font2"])
     ambNoLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
     v_ambNo = tkinter.IntVar()
-    ambNoEt = ttk.Entry(ambNoFrame, textvariable=v_ambNo, font=textSetting.textList["font2"], width=7, justify="center")
+    ambNoEt = ttkCustomWidget.CustomTtkEntry(ambNoFrame, textvariable=v_ambNo, font=textSetting.textList["font2"], width=7, justify="center")
     ambNoEt.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10)
     ambElementList.append(ambNoEt)
-    ambSearchBtn = ttk.Button(ambNoFrame, text=textSetting.textList["rsRail"]["ambSearchBtnLabel"], command=lambda: searchAMB())
+    ambSearchBtn = ttkCustomWidget.CustomTtkButton(ambNoFrame, text=textSetting.textList["rsRail"]["ambSearchBtnLabel"], command=lambda: searchAMB())
     ambSearchBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E, padx=30)
     ambElementList.append(ambSearchBtn)
-    ambModifyBtn = ttk.Button(ambNoFrame, text=textSetting.textList["rsRail"]["ambChangeBtnLabel"], command=lambda: modifyAMB(), state="disabled")
+    ambModifyBtn = ttkCustomWidget.CustomTtkButton(ambNoFrame, text=textSetting.textList["rsRail"]["ambChangeBtnLabel"], command=lambda: modifyAMB(), state="disabled")
     ambModifyBtn.grid(row=0, column=3, sticky=tkinter.W + tkinter.E, padx=30)
     ambElementList.append(ambModifyBtn)
 
-    delayLb = ttk.Label(ambNoFrame, text=textSetting.textList["rsRail"]["ambRecreateTime"], font=textSetting.textList["font2"])
+    delayLb = ttkCustomWidget.CustomTtkLabel(ambNoFrame, text=textSetting.textList["rsRail"]["ambRecreateTime"], font=textSetting.textList["font2"])
     delayLb.grid(row=0, column=4, sticky=tkinter.W + tkinter.E)
     v_delay = tkinter.DoubleVar()
     v_delay.set(0.3)
-    delayEt = ttk.Entry(ambNoFrame, textvariable=v_delay, font=textSetting.textList["font2"], width=7, justify="center")
+    delayEt = ttkCustomWidget.CustomTtkEntry(ambNoFrame, textvariable=v_delay, font=textSetting.textList["font2"], width=7, justify="center")
     delayEt.grid(row=0, column=5, sticky=tkinter.W + tkinter.E, padx=10)
 
-    ambContentsFrame = ttk.Frame(contentsLf)
+    ambContentsFrame = ttkCustomWidget.CustomTtkFrame(contentsLf)
     ambContentsFrame.pack(anchor=tkinter.NW, padx=5, fill=tkinter.BOTH, expand=True)
 
     ambScroll = ScrollbarFrame(ambContentsFrame)
     ambScroll.pack(expand=True, fill=tkinter.BOTH)
     ambScrollFrame = ambScroll.interior
 
-    ambParentInfoFrame = ttk.Frame(ambScrollFrame)
+    ambParentInfoFrame = ttkCustomWidget.CustomTtkFrame(ambScrollFrame)
     ambParentInfoFrame.pack(anchor=tkinter.NW)
 
-    ambParentInfoLf = ttk.LabelFrame(ambParentInfoFrame, text=textSetting.textList["rsRail"]["ambInfoLabel"])
+    ambParentInfoLf = ttkCustomWidget.CustomTtkLabelFrame(ambParentInfoFrame, text=textSetting.textList["rsRail"]["ambInfoLabel"])
     ambParentInfoLf.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=15, pady=10)
 
-    lengthLb = ttk.Label(ambParentInfoLf, text=textSetting.textList["rsRail"]["ambLength"], font=textSetting.textList["font2"])
+    lengthLb = ttkCustomWidget.CustomTtkLabel(ambParentInfoLf, text=textSetting.textList["rsRail"]["ambLength"], font=textSetting.textList["font2"])
     lengthLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     v_length = tkinter.DoubleVar()
     ambValList.append(v_length)
-    lengthEt = ttk.Entry(ambParentInfoLf, textvariable=v_length, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+    lengthEt = ttkCustomWidget.CustomTtkEntry(ambParentInfoLf, textvariable=v_length, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
     lengthEt.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     ambElementList.append(lengthEt)
 
-    railNoLb = ttk.Label(ambParentInfoLf, text=textSetting.textList["rsRail"]["ambRailNo"], font=textSetting.textList["font2"])
+    railNoLb = ttkCustomWidget.CustomTtkLabel(ambParentInfoLf, text=textSetting.textList["rsRail"]["ambRailNo"], font=textSetting.textList["font2"])
     railNoLb.grid(row=1, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     v_ambRailNo = tkinter.IntVar()
     ambValList.append(v_ambRailNo)
-    ambRailNoEt = ttk.Entry(ambParentInfoLf, textvariable=v_ambRailNo, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+    ambRailNoEt = ttkCustomWidget.CustomTtkEntry(ambParentInfoLf, textvariable=v_ambRailNo, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
     ambRailNoEt.grid(row=1, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     ambElementList.append(ambRailNoEt)
 
-    railPosLb = ttk.Label(ambParentInfoLf, text=textSetting.textList["rsRail"]["ambRailPos"], font=textSetting.textList["font2"])
+    railPosLb = ttkCustomWidget.CustomTtkLabel(ambParentInfoLf, text=textSetting.textList["rsRail"]["ambRailPos"], font=textSetting.textList["font2"])
     railPosLb.grid(row=2, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     v_ambRailPos = tkinter.IntVar()
     ambValList.append(v_ambRailPos)
-    ambRailPosEt = ttk.Entry(ambParentInfoLf, textvariable=v_ambRailPos, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+    ambRailPosEt = ttkCustomWidget.CustomTtkEntry(ambParentInfoLf, textvariable=v_ambRailPos, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
     ambRailPosEt.grid(row=2, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     ambElementList.append(ambRailPosEt)
 
-    ambxyzFrameLf = ttk.LabelFrame(ambParentInfoFrame, text=textSetting.textList["rsRail"]["ambPosDirInfo"])
-    ambxyzFrameLf.pack(anchor=tkinter.NW, side=tkinter.LEFT, pady=15)
+    ambxyzFrameLf = ttkCustomWidget.CustomTtkLabelFrame(ambParentInfoFrame, text=textSetting.textList["rsRail"]["ambPosDirInfo"])
+    ambxyzFrameLf.pack(anchor=tkinter.NW, side=tkinter.LEFT, pady=10)
 
-    xPosLb = ttk.Label(ambxyzFrameLf, text=textSetting.textList["rsRail"]["ambBasePosX"], font=textSetting.textList["font2"])
+    xPosLb = ttkCustomWidget.CustomTtkLabel(ambxyzFrameLf, text=textSetting.textList["rsRail"]["ambBasePosX"], font=textSetting.textList["font2"])
     xPosLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     v_ambxPos = tkinter.DoubleVar()
     ambValList.append(v_ambxPos)
-    xPosEt = ttk.Entry(ambxyzFrameLf, textvariable=v_ambxPos, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+    xPosEt = ttkCustomWidget.CustomTtkEntry(ambxyzFrameLf, textvariable=v_ambxPos, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
     xPosEt.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     ambElementList.append(xPosEt)
 
-    yPosLb = ttk.Label(ambxyzFrameLf, text=textSetting.textList["rsRail"]["ambBasePosY"], font=textSetting.textList["font2"])
+    yPosLb = ttkCustomWidget.CustomTtkLabel(ambxyzFrameLf, text=textSetting.textList["rsRail"]["ambBasePosY"], font=textSetting.textList["font2"])
     yPosLb.grid(row=1, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     v_ambyPos = tkinter.DoubleVar()
     ambValList.append(v_ambyPos)
-    yPosEt = ttk.Entry(ambxyzFrameLf, textvariable=v_ambyPos, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+    yPosEt = ttkCustomWidget.CustomTtkEntry(ambxyzFrameLf, textvariable=v_ambyPos, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
     yPosEt.grid(row=1, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     ambElementList.append(yPosEt)
 
-    zPosLb = ttk.Label(ambxyzFrameLf, text=textSetting.textList["rsRail"]["ambBasePosZ"], font=textSetting.textList["font2"])
+    zPosLb = ttkCustomWidget.CustomTtkLabel(ambxyzFrameLf, text=textSetting.textList["rsRail"]["ambBasePosZ"], font=textSetting.textList["font2"])
     zPosLb.grid(row=2, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     v_ambzPos = tkinter.DoubleVar()
     ambValList.append(v_ambzPos)
-    zPosEt = ttk.Entry(ambxyzFrameLf, textvariable=v_ambzPos, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+    zPosEt = ttkCustomWidget.CustomTtkEntry(ambxyzFrameLf, textvariable=v_ambzPos, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
     zPosEt.grid(row=2, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     ambElementList.append(zPosEt)
 
-    xRotLb = ttk.Label(ambxyzFrameLf, text=textSetting.textList["rsRail"]["ambBaseDirX"], font=textSetting.textList["font2"])
+    xRotLb = ttkCustomWidget.CustomTtkLabel(ambxyzFrameLf, text=textSetting.textList["rsRail"]["ambBaseDirX"], font=textSetting.textList["font2"])
     xRotLb.grid(row=0, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     v_ambxRot = tkinter.DoubleVar()
     ambValList.append(v_ambxRot)
-    xRotEt = ttk.Entry(ambxyzFrameLf, textvariable=v_ambxRot, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+    xRotEt = ttkCustomWidget.CustomTtkEntry(ambxyzFrameLf, textvariable=v_ambxRot, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
     xRotEt.grid(row=0, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     ambElementList.append(xRotEt)
 
-    yRotLb = ttk.Label(ambxyzFrameLf, text=textSetting.textList["rsRail"]["ambBaseDirY"], font=textSetting.textList["font2"])
+    yRotLb = ttkCustomWidget.CustomTtkLabel(ambxyzFrameLf, text=textSetting.textList["rsRail"]["ambBaseDirY"], font=textSetting.textList["font2"])
     yRotLb.grid(row=1, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     v_ambyRot = tkinter.DoubleVar()
     ambValList.append(v_ambyRot)
-    yRotEt = ttk.Entry(ambxyzFrameLf, textvariable=v_ambyRot, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+    yRotEt = ttkCustomWidget.CustomTtkEntry(ambxyzFrameLf, textvariable=v_ambyRot, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
     yRotEt.grid(row=1, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     ambElementList.append(yRotEt)
 
-    zRotLb = ttk.Label(ambxyzFrameLf, text=textSetting.textList["rsRail"]["ambBaseDirZ"], font=textSetting.textList["font2"])
+    zRotLb = ttkCustomWidget.CustomTtkLabel(ambxyzFrameLf, text=textSetting.textList["rsRail"]["ambBaseDirZ"], font=textSetting.textList["font2"])
     zRotLb.grid(row=2, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     v_ambzRot = tkinter.DoubleVar()
     ambValList.append(v_ambzRot)
-    zRotEt = ttk.Entry(ambxyzFrameLf, textvariable=v_ambzRot, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+    zRotEt = ttkCustomWidget.CustomTtkEntry(ambxyzFrameLf, textvariable=v_ambzRot, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
     zRotEt.grid(row=2, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     ambElementList.append(zRotEt)
 
-    ambModelLf = ttk.LabelFrame(ambScrollFrame, text=textSetting.textList["rsRail"]["ambModelInfo"])
+    ambModelLf = ttkCustomWidget.CustomTtkLabelFrame(ambScrollFrame, text=textSetting.textList["rsRail"]["ambModelInfo"])
     ambModelLf.pack(anchor=tkinter.NW, padx=15, pady=15)
     setAmbModel(ambModelLf, True)
 
-    ambChildModelLf = ttk.LabelFrame(ambScrollFrame, text=textSetting.textList["rsRail"]["ambChildModelInfo"])
+    ambChildModelLf = ttkCustomWidget.CustomTtkLabelFrame(ambScrollFrame, text=textSetting.textList["rsRail"]["ambChildModelInfo"])
     ambChildModelLf.pack(anchor=tkinter.NW, padx=15, pady=15)
-    ambBlankLb = ttk.Label(ambChildModelLf)
+    ambBlankLb = ttkCustomWidget.CustomTtkLabel(ambChildModelLf)
     ambBlankLb.pack()
 
 
@@ -276,142 +278,142 @@ def setAmbModel(ambModelLf, flag):
     global ambChildValList
     global ambChildElementList
 
-    xyzFrame = ttk.Frame(ambModelLf)
+    xyzFrame = ttkCustomWidget.CustomTtkFrame(ambModelLf)
     xyzFrame.pack(anchor=tkinter.NW)
-    xMdlPosLb = ttk.Label(xyzFrame, text=textSetting.textList["rsRail"]["ambModelPosX"], font=textSetting.textList["font2"])
+    xMdlPosLb = ttkCustomWidget.CustomTtkLabel(xyzFrame, text=textSetting.textList["rsRail"]["ambModelPosX"], font=textSetting.textList["font2"])
     xMdlPosLb.grid(row=1, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     v_xMdlPos = tkinter.DoubleVar()
     if flag:
         ambValList.append(v_xMdlPos)
     else:
         ambChildValList.append(v_xMdlPos)
-    xMdlPosEt = ttk.Entry(xyzFrame, textvariable=v_xMdlPos, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+    xMdlPosEt = ttkCustomWidget.CustomTtkEntry(xyzFrame, textvariable=v_xMdlPos, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
     xMdlPosEt.grid(row=1, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     if flag:
         ambElementList.append(xMdlPosEt)
     else:
         ambChildElementList.append(xMdlPosEt)
 
-    yMdlPosLb = ttk.Label(xyzFrame, text=textSetting.textList["rsRail"]["ambModelPosY"], font=textSetting.textList["font2"])
+    yMdlPosLb = ttkCustomWidget.CustomTtkLabel(xyzFrame, text=textSetting.textList["rsRail"]["ambModelPosY"], font=textSetting.textList["font2"])
     yMdlPosLb.grid(row=1, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     v_yMdlPos = tkinter.DoubleVar()
     if flag:
         ambValList.append(v_yMdlPos)
     else:
         ambChildValList.append(v_yMdlPos)
-    yMdlPosEt = ttk.Entry(xyzFrame, textvariable=v_yMdlPos, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+    yMdlPosEt = ttkCustomWidget.CustomTtkEntry(xyzFrame, textvariable=v_yMdlPos, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
     yMdlPosEt.grid(row=1, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     if flag:
         ambElementList.append(yMdlPosEt)
     else:
         ambChildElementList.append(yMdlPosEt)
 
-    zMdlPosLb = ttk.Label(xyzFrame, text=textSetting.textList["rsRail"]["ambModelPosZ"], font=textSetting.textList["font2"])
+    zMdlPosLb = ttkCustomWidget.CustomTtkLabel(xyzFrame, text=textSetting.textList["rsRail"]["ambModelPosZ"], font=textSetting.textList["font2"])
     zMdlPosLb.grid(row=1, column=4, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     v_zMdlPos = tkinter.DoubleVar()
     if flag:
         ambValList.append(v_zMdlPos)
     else:
         ambChildValList.append(v_zMdlPos)
-    zMdlPosEt = ttk.Entry(xyzFrame, textvariable=v_zMdlPos, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+    zMdlPosEt = ttkCustomWidget.CustomTtkEntry(xyzFrame, textvariable=v_zMdlPos, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
     zMdlPosEt.grid(row=1, column=5, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     if flag:
         ambElementList.append(zMdlPosEt)
     else:
         ambChildElementList.append(zMdlPosEt)
 
-    xMdlRotLb = ttk.Label(xyzFrame, text=textSetting.textList["rsRail"]["ambModelDirX"], font=textSetting.textList["font2"])
+    xMdlRotLb = ttkCustomWidget.CustomTtkLabel(xyzFrame, text=textSetting.textList["rsRail"]["ambModelDirX"], font=textSetting.textList["font2"])
     xMdlRotLb.grid(row=2, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     v_xMdlRot = tkinter.DoubleVar()
     if flag:
         ambValList.append(v_xMdlRot)
     else:
         ambChildValList.append(v_xMdlRot)
-    xMdlRotEt = ttk.Entry(xyzFrame, textvariable=v_xMdlRot, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+    xMdlRotEt = ttkCustomWidget.CustomTtkEntry(xyzFrame, textvariable=v_xMdlRot, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
     xMdlRotEt.grid(row=2, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     if flag:
         ambElementList.append(xMdlRotEt)
     else:
         ambChildElementList.append(xMdlRotEt)
 
-    yMdlRotLb = ttk.Label(xyzFrame, text=textSetting.textList["rsRail"]["ambModelDirY"], font=textSetting.textList["font2"])
+    yMdlRotLb = ttkCustomWidget.CustomTtkLabel(xyzFrame, text=textSetting.textList["rsRail"]["ambModelDirY"], font=textSetting.textList["font2"])
     yMdlRotLb.grid(row=2, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     v_yMdlRot = tkinter.DoubleVar()
     if flag:
         ambValList.append(v_yMdlRot)
     else:
         ambChildValList.append(v_yMdlRot)
-    yMdlRotEt = ttk.Entry(xyzFrame, textvariable=v_yMdlRot, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+    yMdlRotEt = ttkCustomWidget.CustomTtkEntry(xyzFrame, textvariable=v_yMdlRot, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
     yMdlRotEt.grid(row=2, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     if flag:
         ambElementList.append(yMdlRotEt)
     else:
         ambChildElementList.append(yMdlRotEt)
 
-    zMdlRotLb = ttk.Label(xyzFrame, text=textSetting.textList["rsRail"]["ambModelDirZ"], font=textSetting.textList["font2"])
+    zMdlRotLb = ttkCustomWidget.CustomTtkLabel(xyzFrame, text=textSetting.textList["rsRail"]["ambModelDirZ"], font=textSetting.textList["font2"])
     zMdlRotLb.grid(row=2, column=4, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     v_zMdlRot = tkinter.DoubleVar()
     if flag:
         ambValList.append(v_zMdlRot)
     else:
         ambChildValList.append(v_zMdlRot)
-    zMdlRotEt = ttk.Entry(xyzFrame, textvariable=v_zMdlRot, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+    zMdlRotEt = ttkCustomWidget.CustomTtkEntry(xyzFrame, textvariable=v_zMdlRot, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
     zMdlRotEt.grid(row=2, column=5, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     if flag:
         ambElementList.append(zMdlRotEt)
     else:
         ambChildElementList.append(zMdlRotEt)
 
-    xMdlRot2Lb = ttk.Label(xyzFrame, text=textSetting.textList["rsRail"]["ambModelRotX"], font=textSetting.textList["font2"])
+    xMdlRot2Lb = ttkCustomWidget.CustomTtkLabel(xyzFrame, text=textSetting.textList["rsRail"]["ambModelRotX"], font=textSetting.textList["font2"])
     xMdlRot2Lb.grid(row=3, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     v_xMdlRot2 = tkinter.DoubleVar()
     if flag:
         ambValList.append(v_xMdlRot2)
     else:
         ambChildValList.append(v_xMdlRot2)
-    xMdlRot2Et = ttk.Entry(xyzFrame, textvariable=v_xMdlRot2, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+    xMdlRot2Et = ttkCustomWidget.CustomTtkEntry(xyzFrame, textvariable=v_xMdlRot2, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
     xMdlRot2Et.grid(row=3, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     if flag:
         ambElementList.append(xMdlRot2Et)
     else:
         ambChildElementList.append(xMdlRot2Et)
 
-    yMdlRot2Lb = ttk.Label(xyzFrame, text=textSetting.textList["rsRail"]["ambModelRotY"], font=textSetting.textList["font2"])
+    yMdlRot2Lb = ttkCustomWidget.CustomTtkLabel(xyzFrame, text=textSetting.textList["rsRail"]["ambModelRotY"], font=textSetting.textList["font2"])
     yMdlRot2Lb.grid(row=3, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     v_yMdlRot2 = tkinter.DoubleVar()
     if flag:
         ambValList.append(v_yMdlRot2)
     else:
         ambChildValList.append(v_yMdlRot2)
-    yMdlRot2Et = ttk.Entry(xyzFrame, textvariable=v_yMdlRot2, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+    yMdlRot2Et = ttkCustomWidget.CustomTtkEntry(xyzFrame, textvariable=v_yMdlRot2, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
     yMdlRot2Et.grid(row=3, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     if flag:
         ambElementList.append(yMdlRot2Et)
     else:
         ambChildElementList.append(yMdlRot2Et)
 
-    zMdlRot2Lb = ttk.Label(xyzFrame, text=textSetting.textList["rsRail"]["ambModelRotZ"], font=textSetting.textList["font2"])
+    zMdlRot2Lb = ttkCustomWidget.CustomTtkLabel(xyzFrame, text=textSetting.textList["rsRail"]["ambModelRotZ"], font=textSetting.textList["font2"])
     zMdlRot2Lb.grid(row=3, column=4, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     v_zMdlRot2 = tkinter.DoubleVar()
     if flag:
         ambValList.append(v_zMdlRot2)
     else:
         ambChildValList.append(v_zMdlRot2)
-    zMdlRot2Et = ttk.Entry(xyzFrame, textvariable=v_zMdlRot2, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+    zMdlRot2Et = ttkCustomWidget.CustomTtkEntry(xyzFrame, textvariable=v_zMdlRot2, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
     zMdlRot2Et.grid(row=3, column=5, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     if flag:
         ambElementList.append(zMdlRot2Et)
     else:
         ambChildElementList.append(zMdlRot2Et)
 
-    perLb = ttk.Label(xyzFrame, text=textSetting.textList["rsRail"]["ambModelPer"], font=textSetting.textList["font2"])
+    perLb = ttkCustomWidget.CustomTtkLabel(xyzFrame, text=textSetting.textList["rsRail"]["ambModelPer"], font=textSetting.textList["font2"])
     perLb.grid(row=4, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     v_per = tkinter.DoubleVar()
     if flag:
         ambValList.append(v_per)
     else:
         ambChildValList.append(v_per)
-    perEt = ttk.Entry(xyzFrame, textvariable=v_per, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+    perEt = ttkCustomWidget.CustomTtkEntry(xyzFrame, textvariable=v_per, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
     perEt.grid(row=4, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
     if flag:
         ambElementList.append(perEt)
@@ -604,7 +606,7 @@ def updateAMBValue(valList):
     childIdx = 0
     for childValInfo in valList[-1]:
         setAmbModel(ambChildModelLf, False)
-        separator = ttk.Separator(ambChildModelLf, orient="horizontal")
+        separator = ttkCustomWidget.CustomTtkSeparator(ambChildModelLf, orient="horizontal")
         separator.pack(fill=tkinter.X)
 
         for i in range(10):
@@ -717,17 +719,19 @@ def openFile():
         createWidget()
 
 
-def call_rsRail(rootTk, programFrame):
+def call_rsRail(rootTk, appearance):
     global root
+    global rootFrameAppearance
     global v_railNo
     global v_fileName
     global contentsLf
 
     root = rootTk
+    rootFrameAppearance = appearance
 
     v_fileName = tkinter.StringVar()
-    fileNameEt = ttk.Entry(programFrame, textvariable=v_fileName, font=textSetting.textList["font2"], width=32, state="readonly", justify="center")
-    fileNameEt.place(relx=0.053, rely=0.03)
+    fileNameEt = ttkCustomWidget.CustomTtkEntry(root, textvariable=v_fileName, font=textSetting.textList["font2"], width=32, state="readonly", justify="center")
+    fileNameEt.pack(padx=(50, 0), pady=(10, 0), anchor=tkinter.NW)
 
-    contentsLf = ttk.LabelFrame(programFrame, text=textSetting.textList["rsRail"]["contents"])
-    contentsLf.place(relx=0.03, rely=0.07, relwidth=0.95, relheight=0.90)
+    contentsLf = ttkCustomWidget.CustomTtkLabelFrame(root, text=textSetting.textList["rsRail"]["contents"])
+    contentsLf.pack(expand=True, fill=tkinter.BOTH, padx=25, pady=(0, 25))

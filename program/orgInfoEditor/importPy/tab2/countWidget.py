@@ -1,21 +1,22 @@
 import tkinter
-from tkinter import ttk
-from tkinter import simpledialog as sd
 from tkinter import messagebox as mb
 import program.textSetting as textSetting
+import program.appearance.ttkCustomWidget as ttkCustomWidget
+from program.appearance.customSimpleDialog import CustomSimpleDialog, CustomAskstring
 
 import program.orgInfoEditor.importPy.gameDefine as gameDefine
 gameDefine.load()
 
 
 class CountWidget():
-    def __init__(self, root, trainIdx, game, frame, decryptFile, reloadFunc):
+    def __init__(self, root, trainIdx, game, frame, decryptFile, rootFrameAppearance, reloadFunc):
         self.root = root
         self.trainIdx = trainIdx
         self.game = game
         self.frame = frame
         self.decryptFile = decryptFile
         self.notchContentCnt = decryptFile.notchContentCnt
+        self.rootFrameAppearance = rootFrameAppearance
         self.reloadFunc = reloadFunc
 
         if self.game in [gameDefine.LS, gameDefine.BS, gameDefine.CS, gameDefine.RS]:
@@ -24,56 +25,57 @@ class CountWidget():
 
             modelInfo = self.decryptFile.trainModelList[self.trainIdx]
 
-            self.countFrame = ttk.Frame(self.frame)
+            self.countFrame = ttkCustomWidget.CustomTtkFrame(self.frame)
             self.countFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=15, pady=5)
 
-            self.notchLb = tkinter.Label(self.countFrame, text=textSetting.textList["orgInfoEditor"]["notchLabel"], font=textSetting.textList["font6"], width=7, borderwidth=1, relief="solid")
+            self.notchLb = ttkCustomWidget.CustomTtkLabel(self.countFrame, text=textSetting.textList["orgInfoEditor"]["notchLabel"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
             self.notchLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
             self.varNotch = tkinter.IntVar()
             self.varNotch.set(notchNum)
-            self.notchTextLb = tkinter.Label(self.countFrame, textvariable=self.varNotch, font=textSetting.textList["font6"], width=7, borderwidth=1, relief="solid")
+            self.notchTextLb = ttkCustomWidget.CustomTtkLabel(self.countFrame, textvariable=self.varNotch, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
             self.notchTextLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
-            self.notchBtn = tkinter.Button(self.countFrame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], font=textSetting.textList["font7"], command=lambda: self.editNotchVar())
+            self.notchBtn = ttkCustomWidget.CustomTtkButton(self.countFrame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=lambda: self.editNotchVar())
             self.notchBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
 
-            self.henseiLb = tkinter.Label(self.countFrame, text=textSetting.textList["orgInfoEditor"]["csvOrgNumTitle"], font=textSetting.textList["font6"], width=7, borderwidth=1, relief="solid")
+            self.henseiLb = ttkCustomWidget.CustomTtkLabel(self.countFrame, text=textSetting.textList["orgInfoEditor"]["csvOrgNumTitle"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
             self.henseiLb.grid(row=1, column=0, sticky=tkinter.W + tkinter.E)
             self.varHensei = tkinter.IntVar()
             self.varHensei.set(modelInfo["mdlCnt"])
-            self.henseiTextLb = tkinter.Label(self.countFrame, textvariable=self.varHensei, font=textSetting.textList["font6"], width=7, borderwidth=1, relief="solid")
+            self.henseiTextLb = ttkCustomWidget.CustomTtkLabel(self.countFrame, textvariable=self.varHensei, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
             self.henseiTextLb.grid(row=1, column=1, sticky=tkinter.W + tkinter.E)
-            self.henseiBtn = tkinter.Button(self.countFrame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], font=textSetting.textList["font7"], command=lambda: self.editHenseiVar(self.varHensei.get()))
+            self.henseiBtn = ttkCustomWidget.CustomTtkButton(self.countFrame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=lambda: self.editHenseiVar(self.varHensei.get()))
             self.henseiBtn.grid(row=1, column=2, sticky=tkinter.W + tkinter.E)
 
-            self.colorLb = tkinter.Label(self.countFrame, text=textSetting.textList["orgInfoEditor"]["colorCnt"], font=textSetting.textList["font6"], width=7, borderwidth=1, relief="solid")
+            self.colorLb = ttkCustomWidget.CustomTtkLabel(self.countFrame, text=textSetting.textList["orgInfoEditor"]["colorCnt"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
             self.colorLb.grid(row=2, column=0, sticky=tkinter.W + tkinter.E)
             self.varColor = tkinter.IntVar()
             self.varColor.set(modelInfo["colorCnt"])
-            self.colorTextLb = tkinter.Label(self.countFrame, textvariable=self.varColor, font=textSetting.textList["font6"], width=7, borderwidth=1, relief="solid")
+            self.colorTextLb = ttkCustomWidget.CustomTtkLabel(self.countFrame, textvariable=self.varColor, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
             self.colorTextLb.grid(row=2, column=1, sticky=tkinter.W + tkinter.E)
-            self.colorBtn = tkinter.Button(self.countFrame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], font=textSetting.textList["font7"], command=lambda: self.editVar(self.varColor.get()))
+            self.colorBtn = ttkCustomWidget.CustomTtkButton(self.countFrame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=lambda: self.editVar(self.varColor.get()))
             self.colorBtn.grid(row=2, column=2, sticky=tkinter.W + tkinter.E)
         else:
             trainOrgInfo = self.decryptFile.trainInfoList[self.trainIdx]
             speedList = trainOrgInfo[0]
             notchNum = len(speedList) // self.notchContentCnt
 
-            self.notchLb = tkinter.Label(self.frame, text=textSetting.textList["orgInfoEditor"]["notchLabel"], font=textSetting.textList["font6"], width=7, borderwidth=1, relief="solid")
+            self.notchLb = ttkCustomWidget.CustomTtkLabel(self.frame, text=textSetting.textList["orgInfoEditor"]["notchLabel"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
             self.notchLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
             self.varNotch = tkinter.IntVar()
             self.varNotch.set(notchNum)
-            self.notchTextLb = tkinter.Label(self.frame, textvariable=self.varNotch, font=textSetting.textList["font6"], width=7, borderwidth=1, relief="solid")
+            self.notchTextLb = ttkCustomWidget.CustomTtkLabel(self.frame, textvariable=self.varNotch, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
             self.notchTextLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
-            self.notchBtn = tkinter.Button(self.frame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], font=textSetting.textList["font7"], command=lambda: self.editNotchVar())
+            self.notchBtn = ttkCustomWidget.CustomTtkButton(self.frame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=lambda: self.editNotchVar())
             self.notchBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
 
     def editNotchVar(self):
-        result = EditNotchInfo(self.root, textSetting.textList["orgInfoEditor"]["editNotchLabel"], self.trainIdx, self.game, self.decryptFile, self.notchContentCnt)
+        result = EditNotchInfo(self.root, textSetting.textList["orgInfoEditor"]["editNotchLabel"], self.trainIdx, self.game, self.decryptFile, self.notchContentCnt, self.rootFrameAppearance)
         if result.reloadFlag:
             self.reloadFunc()
 
     def editHenseiVar(self, value):
-        resultValue = sd.askstring(title=textSetting.textList["orgInfoEditor"]["valueModify"], prompt=textSetting.textList["infoList"]["I44"], initialvalue=value)
+        resultObj = CustomAskstring(self.root, title=textSetting.textList["orgInfoEditor"]["valueModify"], prompt=textSetting.textList["infoList"]["I44"], initialvalue=value, bgColor=self.rootFrameAppearance.bgColor)
+        resultValue = resultObj.result
 
         if resultValue:
             try:
@@ -115,7 +117,8 @@ class CountWidget():
                 errorMsg = textSetting.textList["errorList"]["E66"]
             mb.showerror(title=textSetting.textList["error"], message=errorMsg)
             return
-        result = sd.askstring(title=textSetting.textList["orgInfoEditor"]["valueModify"], prompt=textSetting.textList["infoList"]["I44"], initialvalue=value)
+        resultObj = CustomAskstring(self.root, title=textSetting.textList["orgInfoEditor"]["valueModify"], prompt=textSetting.textList["infoList"]["I44"], initialvalue=value, bgColor=self.rootFrameAppearance.bgColor)
+        result = resultObj.result
 
         if result:
             try:
@@ -145,14 +148,14 @@ class CountWidget():
                 mb.showerror(title=textSetting.textList["error"], message=errorMsg)
 
 
-class EditNotchInfo(sd.Dialog):
-    def __init__(self, master, title, trainIdx, game, decryptFile, notchContentCnt):
+class EditNotchInfo(CustomSimpleDialog):
+    def __init__(self, master, title, trainIdx, game, decryptFile, notchContentCnt, rootFrameAppearance):
         self.trainIdx = trainIdx
         self.game = game
         self.decryptFile = decryptFile
         self.notchContentCnt = notchContentCnt
         self.reloadFlag = False
-        super(EditNotchInfo, self).__init__(parent=master, title=title)
+        super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, frame):
         if self.game in [gameDefine.LS, gameDefine.BS, gameDefine.CS, gameDefine.RS]:
@@ -170,12 +173,13 @@ class EditNotchInfo(sd.Dialog):
         elif notchNum == 12:
             notchIdx = 2
 
-        self.notchLb = tkinter.Label(frame, text=textSetting.textList["infoList"]["I57"], font=textSetting.textList["font2"])
+        self.notchLb = ttkCustomWidget.CustomTtkLabel(frame, text=textSetting.textList["infoList"]["I57"], font=textSetting.textList["font2"], anchor=tkinter.CENTER)
         self.notchLb.grid(row=0, column=0)
         notchList = textSetting.textList["orgInfoEditor"]["editNotchList"]
-        self.notchCb = ttk.Combobox(frame, width=12, value=notchList, state="readonly", font=textSetting.textList["font2"])
+        self.notchCb = ttkCustomWidget.CustomTtkCombobox(frame, width=12, value=notchList, state="readonly", font=textSetting.textList["font2"])
         self.notchCb.current(notchIdx)
         self.notchCb.grid(row=1, column=0)
+        super().body(frame)
 
     def validate(self):
         if self.game in [gameDefine.LS, gameDefine.BS]:

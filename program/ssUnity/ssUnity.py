@@ -4,10 +4,10 @@ import tkinter
 import json
 import sys
 import traceback
-from tkinter import ttk
 from tkinter import filedialog as fd
 from tkinter import messagebox as mb
 import program.textSetting as textSetting
+import program.appearance.ttkCustomWidget as ttkCustomWidget
 
 from program.ssUnity.importPy.tkinterScrollbarTreeviewSSUnity import ScrollbarTreeviewSSUnity
 from program.ssUnity.importPy.excelWidget import ExcelWidget
@@ -195,20 +195,20 @@ def changeButton():
         loadAndSaveBtn["text"] = textSetting.textList["ssUnity"]["saveFile"]
         loadAndSaveBtn["command"] = loadAndSave
         loadAndSaveBtn["state"] = "disabled"
-        monoCombo.place_forget()
-        assetsSaveBtn.place_forget()
+        monoCombo.grid_remove()
+        assetsSaveBtn.grid_remove()
     elif v_radio.get() == 1:
         monoCombo.set("")
         monoCombo["state"] = "disabled"
         monoCombo["values"] = ""
-        monoCombo.place(relx=0.30, rely=0.03)
+        monoCombo.grid(row=0, column=10, padx=25, pady=(0, 15))
         extractBtn["text"] = textSetting.textList["ssUnity"]["extractCsv"]
         extractBtn["command"] = csvExtract
         extractBtn["state"] = "disabled"
         loadAndSaveBtn["text"] = textSetting.textList["ssUnity"]["saveCsv"]
         loadAndSaveBtn["command"] = csvLoadAndSave
         loadAndSaveBtn["state"] = "disabled"
-        assetsSaveBtn.place(relx=0.78, rely=0.09)
+        assetsSaveBtn.grid(row=1, column=12, padx=25, pady=(0, 15))
         assetsSaveBtn["state"] = "disabled"
 
 
@@ -677,7 +677,7 @@ def filterData():
             frame.tree.detach(i)
 
 
-def call_ssUnity(rootTk, programFrame, config_ini_path):
+def call_ssUnity(rootTk, config_ini_path):
     global unityFlag
     global root
     global v_radio
@@ -704,38 +704,41 @@ def call_ssUnity(rootTk, programFrame, config_ini_path):
         return
 
     root = rootTk
+    headerFrame = ttkCustomWidget.CustomTtkFrame(root)
+    headerFrame.pack(fill=tkinter.BOTH, padx=40, pady=(20, 0))
+
     v_radio = tkinter.IntVar()
     v_radio.set(0)
 
     v_fileName = tkinter.StringVar()
-    fileNameEt = ttk.Entry(programFrame, textvariable=v_fileName, font=textSetting.textList["font2"], width=23, state="readonly", justify="center")
-    fileNameEt.place(relx=0.053, rely=0.03)
+    fileNameEt = ttkCustomWidget.CustomTtkEntry(headerFrame, textvariable=v_fileName, font=textSetting.textList["font2"], width=23, state="readonly", justify="center")
+    fileNameEt.grid(columnspan=10, row=0, column=0, pady=(0, 15), sticky=tkinter.EW)
 
-    selectLb = ttk.Label(programFrame, text=textSetting.textList["ssUnity"]["selectNum"], font=textSetting.textList["font2"])
-    selectLb.place(relx=0.05, rely=0.09)
+    selectLb = ttkCustomWidget.CustomTtkLabel(headerFrame, text=textSetting.textList["ssUnity"]["selectNum"], font=textSetting.textList["font2"])
+    selectLb.grid(columnspan=9, row=1, column=0, pady=(0, 15), sticky=tkinter.EW)
 
     v_select = tkinter.StringVar()
-    selectEt = ttk.Entry(programFrame, textvariable=v_select, font=textSetting.textList["font2"], width=6, state="readonly", justify="center")
-    selectEt.place(relx=0.22, rely=0.09)
+    selectEt = ttkCustomWidget.CustomTtkEntry(headerFrame, textvariable=v_select, font=textSetting.textList["font2"], width=6, state="readonly", justify="center")
+    selectEt.grid(row=1, column=9, pady=(0, 15), sticky=tkinter.E)
 
-    monoCombo = ttk.Combobox(programFrame, font=textSetting.textList["font2"], state="disabled")
-    monoCombo.place(relx=0.30, rely=0.03)
+    monoCombo = ttkCustomWidget.CustomTtkCombobox(headerFrame, font=textSetting.textList["font2"], state="disabled")
+    monoCombo.grid(row=0, column=10, padx=25, pady=(0, 15), sticky=tkinter.E)
     monoCombo.bind("<<ComboboxSelected>>", changeResourceMonoEvent)
-    monoCombo.place_forget()
+    monoCombo.grid_remove()
 
-    denRb = tkinter.Radiobutton(programFrame, text=textSetting.textList["ssUnity"]["editDenFile"], command=selectGame, variable=v_radio, value=0)
-    denRb.place(relx=0.60, rely=0.03)
-    resourcesRb = tkinter.Radiobutton(programFrame, text=textSetting.textList["ssUnity"]["editResourcesAssets"], command=selectGame, variable=v_radio, value=1)
-    resourcesRb.place(relx=0.78, rely=0.03)
+    denRb = ttkCustomWidget.CustomTtkRadiobutton(headerFrame, text=textSetting.textList["ssUnity"]["editDenFile"], command=selectGame, variable=v_radio, value=0)
+    denRb.grid(row=0, column=11, padx=25, pady=(0, 15))
+    resourcesRb = ttkCustomWidget.CustomTtkRadiobutton(headerFrame, text=textSetting.textList["ssUnity"]["editResourcesAssets"], command=selectGame, variable=v_radio, value=1)
+    resourcesRb.grid(row=0, column=12, padx=25, pady=(0, 15))
 
-    extractBtn = ttk.Button(programFrame, text=textSetting.textList["ssUnity"]["extractFileLabel"], width=25, state="disabled", command=extract)
-    extractBtn.place(relx=0.42, rely=0.09)
-    loadAndSaveBtn = ttk.Button(programFrame, text=textSetting.textList["ssUnity"]["saveFileLabel"], width=25, state="disabled", command=loadAndSave)
-    loadAndSaveBtn.place(relx=0.60, rely=0.09)
+    extractBtn = ttkCustomWidget.CustomTtkButton(headerFrame, text=textSetting.textList["ssUnity"]["extractFileLabel"], width=25, state="disabled", command=extract)
+    extractBtn.grid(row=1, column=10, padx=25, sticky=tkinter.E, pady=(0, 15))
+    loadAndSaveBtn = ttkCustomWidget.CustomTtkButton(headerFrame, text=textSetting.textList["ssUnity"]["saveFileLabel"], width=25, state="disabled", command=loadAndSave)
+    loadAndSaveBtn.grid(row=1, column=11, padx=25, pady=(0, 15))
 
-    assetsSaveBtn = ttk.Button(programFrame, text=textSetting.textList["ssUnity"]["saveResourcesAssets"], width=25, state="disabled", command=assetsSave)
-    assetsSaveBtn.place(relx=0.78, rely=0.09)
-    assetsSaveBtn.place_forget()
+    assetsSaveBtn = ttkCustomWidget.CustomTtkButton(headerFrame, text=textSetting.textList["ssUnity"]["saveResourcesAssets"], width=25, state="disabled", command=assetsSave)
+    assetsSaveBtn.grid(row=1, column=12, padx=25, pady=(0, 15))
+    assetsSaveBtn.grid_remove()
 
     v_btnList = [
         extractBtn,
@@ -743,13 +746,17 @@ def call_ssUnity(rootTk, programFrame, config_ini_path):
         assetsSaveBtn
     ]
 
-    searchLb = ttk.Label(programFrame, text=textSetting.textList["ssUnity"]["searchText"], font=textSetting.textList["font2"])
-    searchLb.place(relx=0.05, rely=0.15)
+    searchLb = ttkCustomWidget.CustomTtkLabel(headerFrame, text=textSetting.textList["ssUnity"]["searchText"], font=textSetting.textList["font2"])
+    searchLb.grid(row=2, column=0, sticky=tkinter.EW)
 
     v_search = tkinter.StringVar()
-    searchEt = ttk.Entry(programFrame, textvariable=v_search, font=textSetting.textList["font7"], width=23, state="readonly", justify="center")
-    searchEt.place(relx=0.10, rely=0.15)
+    searchEt = ttkCustomWidget.CustomTtkEntry(headerFrame, textvariable=v_search, font=textSetting.textList["font7"], state="readonly", justify="center")
+    searchEt.grid(columnspan=9, row=2, column=1, sticky=tkinter.EW)
     searchEt.bind("<KeyRelease>", filterList)
 
-    contentsLf = ttk.LabelFrame(programFrame, text=textSetting.textList["ssUnity"]["scriptLabel"])
-    contentsLf.place(relx=0.03, rely=0.20, relwidth=0.95, relheight=0.77)
+    contentsLf = ttkCustomWidget.CustomTtkLabelFrame(root, text=textSetting.textList["ssUnity"]["scriptLabel"])
+    contentsLf.pack(expand=True, fill=tkinter.BOTH, padx=25, pady=(0, 25))
+
+    headerFrame.grid_columnconfigure(10, weight=1)
+    headerFrame.grid_columnconfigure(11, weight=1)
+    headerFrame.grid_columnconfigure(12, weight=1)
