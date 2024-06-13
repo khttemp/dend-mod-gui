@@ -60,7 +60,7 @@ class SmfListWidget:
         self.pasteLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["railEditor"]["commonPasteLineLabel"], width=25, state="disabled", command=self.pasteLine)
         self.pasteLineBtn.grid(row=1, column=1, padx=10, pady=15)
 
-        if self.decryptFile.game in ["LS", "BS"]:
+        if self.decryptFile.game in ["LSTrial", "LS", "BS"]:
             listModifyBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["railEditor"]["editSmfElementListLabel"], width=25, state="disabled", command=self.listModify)
             listModifyBtn.grid(row=1, column=2, padx=10, pady=15)
 
@@ -70,7 +70,7 @@ class SmfListWidget:
             deleteLineBtn,
             copyLineBtn
         ]
-        if self.decryptFile.game in ["LS", "BS"]:
+        if self.decryptFile.game in ["LSTrial", "LS", "BS"]:
             btnList.append(listModifyBtn)
 
         useModelListObj = self.getUseModelList()
@@ -176,50 +176,90 @@ class SmfListWidget:
                 data += (smfInfo[0], smfInfo[1], smfInfo[2], smfInfo[3], len(smfInfo[4]))
                 self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data, tags=tags)
                 index += 1
-        else:
-            col_tuple = (
-                "treeNum",
-                "smfInfoName",
-                "smfInfoLength",
-                "smfInfoE1",
-                "smfInfoElementList"
-            )
+        elif self.decryptFile.game in ["LSTrial", "LS"]:
+            if self.decryptFile.readFlag:
+                col_tuple = (
+                    "treeNum",
+                    "smfInfoName",
+                    "smfInfoLength",
+                    "smfInfoE1",
+                    "smfInfoElementList"
+                )
+                self.treeviewFrame.tree["columns"] = col_tuple
+                self.treeviewFrame.tree.column("#0", width=0, stretch=False)
+                self.treeviewFrame.tree.column("treeNum", anchor=tkinter.CENTER, width=50, stretch=False)
+                self.treeviewFrame.tree.column("smfInfoName", anchor=tkinter.CENTER, width=130)
+                self.treeviewFrame.tree.column("smfInfoLength", anchor=tkinter.CENTER, width=50)
+                self.treeviewFrame.tree.column("smfInfoE1", anchor=tkinter.CENTER, width=50)
+                self.treeviewFrame.tree.column("smfInfoElementList", anchor=tkinter.CENTER, width=50)
 
-            self.treeviewFrame.tree["columns"] = col_tuple
-            self.treeviewFrame.tree.column("#0", width=0, stretch=False)
-            self.treeviewFrame.tree.column("treeNum", anchor=tkinter.CENTER, width=50, stretch=False)
-            self.treeviewFrame.tree.column("smfInfoName", anchor=tkinter.CENTER, width=130)
-            self.treeviewFrame.tree.column("smfInfoLength", anchor=tkinter.CENTER, width=50)
-            self.treeviewFrame.tree.column("smfInfoE1", anchor=tkinter.CENTER, width=50)
-            self.treeviewFrame.tree.column("smfInfoElementList", anchor=tkinter.CENTER, width=50)
+                self.treeviewFrame.tree.heading("treeNum", text=textSetting.textList["railEditor"]["smfInfoNum"], anchor=tkinter.CENTER)
+                self.treeviewFrame.tree.heading("smfInfoName", text=textSetting.textList["railEditor"]["smfInfoName"], anchor=tkinter.CENTER)
+                self.treeviewFrame.tree.heading("smfInfoLength", text=textSetting.textList["railEditor"]["smfInfoLength"], anchor=tkinter.CENTER)
+                self.treeviewFrame.tree.heading("smfInfoE1", text=textSetting.textList["railEditor"]["smfInfoE1"], anchor=tkinter.CENTER)
+                self.treeviewFrame.tree.heading("smfInfoElementList", text=textSetting.textList["railEditor"]["smfInfoElementList"], anchor=tkinter.CENTER)
 
-            self.treeviewFrame.tree.heading("treeNum", text=textSetting.textList["railEditor"]["smfInfoNum"], anchor=tkinter.CENTER)
-            self.treeviewFrame.tree.heading("smfInfoName", text=textSetting.textList["railEditor"]["smfInfoName"], anchor=tkinter.CENTER)
-            self.treeviewFrame.tree.heading("smfInfoLength", text=textSetting.textList["railEditor"]["smfInfoLength"], anchor=tkinter.CENTER)
-            self.treeviewFrame.tree.heading("smfInfoE1", text=textSetting.textList["railEditor"]["smfInfoE1"], anchor=tkinter.CENTER)
-            self.treeviewFrame.tree.heading("smfInfoElementList", text=textSetting.textList["railEditor"]["smfInfoElementList"], anchor=tkinter.CENTER)
+                self.treeviewFrame.tree["displaycolumns"] = col_tuple
 
-            self.treeviewFrame.tree["displaycolumns"] = col_tuple
+                index = 0
+                for smfInfo in self.smfList:
+                    data = (index,)
+                    tags = "used"
+                    if smfInfo[0] not in useModelListObj["rail"] and smfInfo[0] not in useModelListObj["amb"]:
+                        tags = "notUse"
+                    elif smfInfo[0] in useModelListObj["rail"] and smfInfo[0] in useModelListObj["amb"]:
+                        tags = "allUse"
+                    elif smfInfo[0] in useModelListObj["rail"]:
+                        tags = "rail"
+                    else:
+                        tags = "amb"
 
-            index = 0
-            for smfInfo in self.smfList:
-                data = (index,)
-                tags = "used"
-                if smfInfo[0] not in useModelListObj["rail"] and smfInfo[0] not in useModelListObj["amb"]:
-                    tags = "notUse"
-                elif smfInfo[0] in useModelListObj["rail"] and smfInfo[0] in useModelListObj["amb"]:
-                    tags = "allUse"
-                elif smfInfo[0] in useModelListObj["rail"]:
-                    tags = "rail"
-                else:
-                    tags = "amb"
+                    if len(smfInfo[3]) == 0:
+                        data += (smfInfo[0], smfInfo[1], smfInfo[2], -1)
+                    else:
+                        data += (smfInfo[0], smfInfo[1], smfInfo[2], len(smfInfo[3]))
+                    self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data, tags=tags)
+                    index += 1
+            else:
+                col_tuple = (
+                    "treeNum",
+                    "smfInfoName",
+                    "smfInfoLength",
+                    "smfInfoElementList"
+                )
+                self.treeviewFrame.tree["columns"] = col_tuple
+                self.treeviewFrame.tree.column("#0", width=0, stretch=False)
+                self.treeviewFrame.tree.column("treeNum", anchor=tkinter.CENTER, width=50, stretch=False)
+                self.treeviewFrame.tree.column("smfInfoName", anchor=tkinter.CENTER, width=130)
+                self.treeviewFrame.tree.column("smfInfoLength", anchor=tkinter.CENTER, width=50)
+                self.treeviewFrame.tree.column("smfInfoElementList", anchor=tkinter.CENTER, width=50)
 
-                if len(smfInfo[3]) == 0:
-                    data += (smfInfo[0], smfInfo[1], smfInfo[2], -1)
-                else:
-                    data += (smfInfo[0], smfInfo[1], smfInfo[2], len(smfInfo[3]))
-                self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data, tags=tags)
-                index += 1
+                self.treeviewFrame.tree.heading("treeNum", text=textSetting.textList["railEditor"]["smfInfoNum"], anchor=tkinter.CENTER)
+                self.treeviewFrame.tree.heading("smfInfoName", text=textSetting.textList["railEditor"]["smfInfoName"], anchor=tkinter.CENTER)
+                self.treeviewFrame.tree.heading("smfInfoLength", text=textSetting.textList["railEditor"]["smfInfoLength"], anchor=tkinter.CENTER)
+                self.treeviewFrame.tree.heading("smfInfoElementList", text=textSetting.textList["railEditor"]["smfInfoElementList"], anchor=tkinter.CENTER)
+
+                self.treeviewFrame.tree["displaycolumns"] = col_tuple
+
+                index = 0
+                for smfInfo in self.smfList:
+                    data = (index,)
+                    tags = "used"
+                    if smfInfo[0] not in useModelListObj["rail"] and smfInfo[0] not in useModelListObj["amb"]:
+                        tags = "notUse"
+                    elif smfInfo[0] in useModelListObj["rail"] and smfInfo[0] in useModelListObj["amb"]:
+                        tags = "allUse"
+                    elif smfInfo[0] in useModelListObj["rail"]:
+                        tags = "rail"
+                    else:
+                        tags = "amb"
+
+                    if len(smfInfo[2]) == 0:
+                        data += (smfInfo[0], smfInfo[1], -1)
+                    else:
+                        data += (smfInfo[0], smfInfo[1], len(smfInfo[2]))
+                    self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data, tags=tags)
+                    index += 1
 
         self.treeviewFrame.tree.tag_configure("notUse", background="#CCCCCC", foreground="black")
         self.treeviewFrame.tree.tag_configure("rail", background="#FFC8C8", foreground="black")
@@ -260,29 +300,58 @@ class SmfListWidget:
         railMdlSet = set()
         ambMdlSet = set()
 
-        mdlNo = None
-        kasenchuNo = None
-        kasenNo = None
+        # rail
         for rail in self.decryptFile.railList:
-            if len(rail) < 15:
+            if self.decryptFile.game != "LSTrial" and len(rail) < 15:
                 continue
 
-            if self.decryptFile.game == "LS":
+            if self.decryptFile.game == "LSTrial":
+                if self.decryptFile.oldFlag:
+                    mdlNo = rail[9]
+                    if len(self.decryptFile.smfList) > mdlNo:
+                        mdlName = self.decryptFile.smfList[mdlNo][0]
+                        railMdlSet.add(mdlName)
+
+                    kasenNo = rail[10]
+                    if kasenNo != -1:
+                        if len(self.decryptFile.smfList) > kasenNo:
+                            kasenName = self.decryptFile.smfList[kasenNo][0]
+                            railMdlSet.add(kasenName)
+                else:
+                    mdlNo = rail[7]
+                    if len(self.decryptFile.smfList) > mdlNo:
+                        mdlName = self.decryptFile.smfList[mdlNo][0]
+                        railMdlSet.add(mdlName)
+
+                    offset = 0
+                    if self.decryptFile.readFlag or self.decryptFile.filenameNum == 7:
+                        if rail[8] == -1:
+                            offset = 3
+                    kasenchuNo = rail[9 + offset]
+                    kasenNo = rail[10 + offset]
+                    fixAmbNo = rail[11 + offset]
+
+                    if kasenchuNo != -1:
+                        if len(self.decryptFile.smfList) > kasenchuNo:
+                            kasenchuName = self.decryptFile.smfList[kasenchuNo][0]
+                            railMdlSet.add(kasenchuName)
+                    if kasenNo != -1:
+                        if len(self.decryptFile.smfList) > kasenNo:
+                            kasenName = self.decryptFile.smfList[kasenNo][0]
+                            railMdlSet.add(kasenName)
+                    if fixAmbNo != -1:
+                        if len(self.decryptFile.smfList) > fixAmbNo:
+                            fixAmbName = self.decryptFile.smfList[fixAmbNo][0]
+                            ambMdlSet.add(fixAmbName)
+            elif self.decryptFile.game == "LS":
                 offset = 0
                 if self.decryptFile.ver == "DEND_MAP_VER0101":
                     offset = 2
                 mdlNo = rail[7 + offset]
-            else:
-                mdlNo = rail[6]
+                if len(self.decryptFile.smfList) > mdlNo:
+                    mdlName = self.decryptFile.smfList[mdlNo][0]
+                    railMdlSet.add(mdlName)
 
-            if len(self.decryptFile.smfList) > mdlNo:
-                mdlName = self.decryptFile.smfList[mdlNo][0]
-                railMdlSet.add(mdlName)
-
-            if self.decryptFile.game == "LS":
-                offset = 0
-                if self.decryptFile.ver == "DEND_MAP_VER0101":
-                    offset = 2
                 if rail[8 + offset] == -1:
                     kasenchuNo = rail[12 + offset]
                     kasenNo = rail[13 + offset]
@@ -305,6 +374,11 @@ class SmfListWidget:
                         fixAmbName = self.decryptFile.smfList[fixAmbNo][0]
                         ambMdlSet.add(fixAmbName)
             elif self.decryptFile.game == "BS":
+                mdlNo = rail[6]
+                if len(self.decryptFile.smfList) > mdlNo:
+                    mdlName = self.decryptFile.smfList[mdlNo][0]
+                    railMdlSet.add(mdlName)
+
                 kasenNo = rail[7]
                 kasenchuNo = rail[8]
                 if kasenchuNo != -1:
@@ -316,6 +390,11 @@ class SmfListWidget:
                         kasenName = self.decryptFile.smfList[kasenNo][0]
                         railMdlSet.add(kasenName)
             else:
+                mdlNo = rail[6]
+                if len(self.decryptFile.smfList) > mdlNo:
+                    mdlName = self.decryptFile.smfList[mdlNo][0]
+                    railMdlSet.add(mdlName)
+
                 kasenNo = rail[7]
                 if kasenNo != -1 and len(self.decryptFile.smfList) > kasenNo:
                     kasenName = self.decryptFile.smfList[kasenNo][0]
@@ -341,10 +420,42 @@ class SmfListWidget:
                     if len(self.decryptFile.smfList) > kasenchuNo:
                         kasenchuName = self.decryptFile.smfList[kasenchuNo][0]
                         railMdlSet.add(kasenchuName)
+        if self.decryptFile.game == "LSTrial" and self.decryptFile.oldFlag:
+            for amb in self.decryptFile.ambList:
+                kasenchuNo = amb[10]
+                if kasenchuNo != -1:
+                    if len(self.decryptFile.smfList) > kasenchuNo:
+                        kasenchuName = self.decryptFile.smfList[kasenchuNo][0]
+                        railMdlSet.add(kasenchuName)
         mdlInfoObj["rail"] = railMdlSet
 
+        # amb
         for amb in self.decryptFile.ambList:
-            if self.decryptFile.game == "LS":
+            if self.decryptFile.game == "LSTrial":
+                if self.decryptFile.oldFlag:
+                    leftAmbMdlNo = amb[8]
+                    rightAmbMdlNo = amb[9]
+                    fixAmbMdlNo = amb[11]
+                    if leftAmbMdlNo != -1:
+                        if len(self.decryptFile.smfList) > leftAmbMdlNo:
+                            kasenName = self.decryptFile.smfList[leftAmbMdlNo][0]
+                            ambMdlSet.add(kasenName)
+                    if rightAmbMdlNo != -1:
+                        if len(self.decryptFile.smfList) > rightAmbMdlNo:
+                            kasenName = self.decryptFile.smfList[rightAmbMdlNo][0]
+                            ambMdlSet.add(kasenName)
+                    if fixAmbMdlNo != -1:
+                        if len(self.decryptFile.smfList) > fixAmbMdlNo:
+                            kasenName = self.decryptFile.smfList[fixAmbMdlNo][0]
+                            ambMdlSet.add(kasenName)
+                else:
+                    if len(amb) > 3:
+                        ambMdlNo = amb[3]
+                        if ambMdlNo != 0:
+                            if len(self.decryptFile.smfList) > ambMdlNo:
+                                ambMdlName = self.decryptFile.smfList[ambMdlNo][0]
+                                ambMdlSet.add(ambMdlName)
+            elif self.decryptFile.game == "LS":
                 if len(amb) > 3:
                     ambMdlNo = amb[3]
                     if ambMdlNo != 0:
@@ -464,16 +575,25 @@ class SmfListWidget:
                 else:
                     tempInfo = self.smfList[int(selectId)][4]
                     copyList.append(tempInfo)
-        else:
+        elif self.decryptFile.game in ["LSTrial", "LS"]:
             for i in range(len(smfInfoKeyList)):
                 key = smfInfoKeyList[i]
-                if i == 0:
-                    copyList.append(selectItem[key])
-                elif i in [1, 2]:
-                    copyList.append(int(selectItem[key]))
+                if self.decryptFile.readFlag:
+                    if i == 0:
+                        copyList.append(selectItem[key])
+                    elif i in [1, 2]:
+                        copyList.append(int(selectItem[key]))
+                    else:
+                        tempInfo = self.smfList[int(selectId)][3]
+                        copyList.append(tempInfo)
                 else:
-                    tempInfo = self.smfList[int(selectId)][3]
-                    copyList.append(tempInfo)
+                    if i == 0:
+                        copyList.append(selectItem[key])
+                    elif i == 1:
+                        copyList.append(int(selectItem[key]))
+                    else:
+                        tempInfo = self.smfList[int(selectId)][2]
+                        copyList.append(tempInfo)
         self.copySmfInfo = copyList
         mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I12"])
         self.pasteLineBtn["state"] = "normal"
@@ -684,7 +804,7 @@ class EditSmfListWidget(CustomSimpleDialog):
                         errorMsg = textSetting.textList["errorList"]["E60"]
                         mb.showerror(title=textSetting.textList["numberError"], message=errorMsg)
                         return False
-                else:
+                elif self.decryptFile.game in ["LSTrial", "LS"]:
                     try:
                         for i in range(len(self.varList)):
                             if i == 0:
@@ -694,7 +814,10 @@ class EditSmfListWidget(CustomSimpleDialog):
                             self.resultValueList.append(res)
 
                         if self.mode == "modify":
-                            originTempList = self.decryptFile.smfList[self.num][3]
+                            if self.decryptFile.readFlag:
+                                originTempList = self.decryptFile.smfList[self.num][3]
+                            else:
+                                originTempList = self.decryptFile.smfList[self.num][2]
                             self.resultValueList.append(originTempList)
                         else:
                             self.resultValueList.append([])

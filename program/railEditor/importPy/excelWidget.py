@@ -68,7 +68,10 @@ class ExcelWidget:
         # BGM、配置情報
         if sheetIndex == 0:
             # ver
-            ws.cell(row, 1).value = self.decryptFile.ver
+            if self.decryptFile.game == "LSTrial" and self.decryptFile.oldFlag:
+                ws.cell(row, 1).value = "RAIL005"
+            else:
+                ws.cell(row, 1).value = self.decryptFile.ver
             row += 2
 
             # BGM
@@ -76,7 +79,7 @@ class ExcelWidget:
             if self.decryptFile.game in ["BS", "CS", "RS"]:
                 ws.cell(row, 2).value = self.decryptFile.musicCnt
             row += 1
-            if self.decryptFile.game in ["LS", "BS"]:
+            if self.decryptFile.game in ["LSTrial", "LS", "BS"]:
                 for musicInfo in self.decryptFile.musicList:
                     for idx, music in enumerate(musicInfo):
                         ws.cell(row, 1 + idx).value = music
@@ -135,13 +138,22 @@ class ExcelWidget:
                     row += 2
 
             # レール名
-            if self.decryptFile.game in ["LS", "BS"]:
+            if self.decryptFile.game in ["LSTrial", "LS", "BS"]:
                 ws.cell(row, 1).value = "railName"
                 ws.cell(row, 2).value = self.decryptFile.railStationName
         # 要素１
         elif sheetIndex == 1:
             # else1
-            if self.decryptFile.game == "LS":
+            if self.decryptFile.game == "LSTrial":
+                if self.decryptFile.readFlag or self.decryptFile.filenameNum == 7:
+                    ws.cell(row, 1).value = "else1"
+                    ws.cell(row, 2).value = len(self.decryptFile.else1List)
+                    row += 1
+
+                    for idx, else1 in enumerate(self.decryptFile.else1List):
+                        ws.cell(row, 1 + idx).value = else1
+                    row += 2
+            elif self.decryptFile.game == "LS":
                 ws.cell(row, 1).value = "else1"
                 ws.cell(row, 2).value = len(self.decryptFile.else1List)
                 row += 1
@@ -207,16 +219,19 @@ class ExcelWidget:
                 row += 1
 
             # bin ANIME
-            ws.cell(row, 1).value = "binAnime"
-            if self.decryptFile.game in ["BS", "CS", "RS"]:
-                ws.cell(row, 2).value = len(self.decryptFile.binAnimeList)
-            row += 1
-
-            for binAnimeInfo in self.decryptFile.binAnimeList:
-                for idx, binAnime in enumerate(binAnimeInfo):
-                    ws.cell(row, 1 + idx).value = binAnime
+            if self.decryptFile.game == "LSTrial" and not (self.decryptFile.readFlag or self.decryptFile.filenameNum == 7):
+                pass
+            else:
+                ws.cell(row, 1).value = "binAnime"
+                if self.decryptFile.game in ["BS", "CS", "RS"]:
+                    ws.cell(row, 2).value = len(self.decryptFile.binAnimeList)
                 row += 1
-            row += 1
+
+                for binAnimeInfo in self.decryptFile.binAnimeList:
+                    for idx, binAnime in enumerate(binAnimeInfo):
+                        ws.cell(row, 1 + idx).value = binAnime
+                    row += 1
+                row += 1
         # smf情報
         elif sheetIndex == 2:
             ws.cell(row, 1).value = "MdlCnt"
@@ -281,7 +296,33 @@ class ExcelWidget:
             for cpuIdx, cpuInfo in enumerate(self.decryptFile.cpuList):
                 ws.cell(row, 1).value = cpuIdx
                 for idx, cpu in enumerate(cpuInfo):
-                    if self.decryptFile.game == "LS":
+                    if self.decryptFile.game == "LSTrial":
+                        if self.decryptFile.readFlag:
+                            if idx == 0:
+                                ws.cell(row, 2 + idx).value = cpu
+                                row += 1
+                            elif idx == 1:
+                                for list1Idx, list1Info in enumerate(cpu):
+                                    ws.cell(row, 3 + list1Idx).value = list1Info
+                                row -= 1
+                            elif idx == 8:
+                                for list2Idx, list2Info in enumerate(cpu):
+                                    ws.cell(row, 3 + list2Idx).value = list2Info
+                            else:
+                                ws.cell(row, 1 + idx).value = cpu
+                                if idx == 7:
+                                    row += 2
+                        else:
+                            if idx == 0:
+                                row += 1
+                                for list1Idx, list1Info in enumerate(cpu):
+                                    ws.cell(row, 2 + list1Idx).value = list1Info
+                                row -= 1
+                            else:
+                                ws.cell(row, 1 + idx).value = cpu
+                                if idx == 2:
+                                    row += 1
+                    elif self.decryptFile.game == "LS":
                         if idx == 0:
                             ws.cell(row, 2 + idx).value = cpu
                             row += 1
@@ -302,13 +343,18 @@ class ExcelWidget:
             row += 1
         # Comic Script、土讃線
         elif sheetIndex == 6:
-            ws.cell(row, 1).value = "ComicScript"
-            ws.cell(row, 2).value = len(self.decryptFile.comicScriptList)
-            row += 1
+            writeFlag = True
+            if self.decryptFile.game == "LSTrial":
+                if not (self.decryptFile.readFlag or self.decryptFile.filenameNum == 7):
+                    writeFlag = False
+            if writeFlag:
+                ws.cell(row, 1).value = "ComicScript"
+                ws.cell(row, 2).value = len(self.decryptFile.comicScriptList)
+                row += 1
 
             for scriptIdx, comicScriptInfo in enumerate(self.decryptFile.comicScriptList):
                 ws.cell(row, 1).value = scriptIdx
-                if self.decryptFile.game == "LS":
+                if self.decryptFile.game in ["LSTrial", "LS"]:
                     for idx, comicScript in enumerate(comicScriptInfo[:-1]):
                         ws.cell(row, 2 + idx).value = comicScript
                     row += 1
@@ -366,7 +412,161 @@ class ExcelWidget:
             ]
             mdlList = [x[0] for x in self.decryptFile.smfList]
             readFlag = False
-            if self.decryptFile.game == "LS":
+            if self.decryptFile.game == "LSTrial":
+                if self.decryptFile.oldFlag:
+                    titleList = [
+                        "index",
+                        "pos_x",
+                        "pos_y",
+                        "pos_z",
+                        "next_rail",
+                        "prev_rail",
+                        "dir_x",
+                        "dir_y",
+                        "dir_z",
+                        "mdl_no",
+                        "mdl_kasen"
+                    ]
+                    idx = 0
+                    for title in titleList:
+                        ws.cell(row, 1 + idx).value = title
+                        idx += 1
+                    row += 1
+
+                    for railInfo in self.decryptFile.railList:
+                        idx = 0
+                        for railIdx, rail in enumerate(railInfo):
+                            if railIdx == 0:
+                                ws.cell(row, 1 + idx).value = rail
+                                idx += 1
+                            # mdl_no
+                            elif railIdx == 9:
+                                if self.modelNameMode == self.MODEL_NAME:
+                                    rail = self.getSmfModelName(rail, mdlList)
+                                ws.cell(row, 1 + idx).value = rail
+                                idx += 1
+                            # kasen
+                            elif railIdx == 10:
+                                if self.modelNameMode == self.MODEL_NAME:
+                                    rail = self.getSmfModelName(rail, mdlList)
+                                ws.cell(row, 1 + idx).value = rail
+                                idx += 1
+                            else:
+                                ws.cell(row, 1 + idx).value = rail
+                                idx += 1
+                        row += 1
+                else:
+                    for idx in range(3):
+                        titleList.pop(10)
+                    titleList.pop(2)
+                    titleList.insert(8, "fix_amb_mdl")
+                    if self.decryptFile.readFlag or self.decryptFile.filenameNum == 7:
+                        titleList.insert(8, "rot_z")
+                        titleList.insert(8, "rot_y")
+                        titleList.insert(8, "rot_x")
+                    titleList.insert(2, "pos_z")
+                    titleList.insert(2, "pos_y")
+                    titleList.insert(2, "pos_x")
+                    idx = 0
+                    for title in titleList:
+                        ws.cell(row, 1 + idx).value = title
+                        idx += 1
+                    row += 1
+
+                    for railInfo in self.decryptFile.railList:
+                        idx = 0
+                        prevRail = 0
+                        for railIdx, rail in enumerate(railInfo[:-1]):
+                            if self.decryptFile.readFlag or self.decryptFile.filenameNum == 7:
+                                if railIdx == 0:
+                                    ws.cell(row, 1 + idx).value = rail
+                                    idx += 1
+                                # mdl_no
+                                elif railIdx == 7:
+                                    if self.modelNameMode == self.MODEL_NAME:
+                                        rail = self.getSmfModelName(rail, mdlList)
+                                    ws.cell(row, 2 + idx).value = rail
+                                    idx += 1
+                                # prevRail
+                                elif railIdx == 8:
+                                    ws.cell(row, 2).value = rail
+                                    prevRail = rail
+                                    idx += 1
+                                # rot
+                                elif railIdx >= 9 and railIdx <= 11 and prevRail == -1:
+                                    ws.cell(row, 3 + idx).value = rail
+                                    idx += 1
+                                # kasenchu
+                                elif (railIdx == 12 and prevRail == -1) or (railIdx == 9 and prevRail != -1):
+                                    if self.modelNameMode == self.MODEL_NAME:
+                                        rail = self.getSmfModelName(rail, mdlList)
+                                    ws.cell(row, 11).value = rail
+                                    idx += 1
+                                # kasen
+                                elif (railIdx == 13 and prevRail == -1) or (railIdx == 10 and prevRail != -1):
+                                    if self.modelNameMode == self.MODEL_NAME:
+                                        rail = self.getSmfModelName(rail, mdlList)
+                                    ws.cell(row, 10).value = rail
+                                    if prevRail != -1:
+                                        idx += 3
+                                # fix_amb_mdl
+                                elif (railIdx == 14 and prevRail == -1) or (railIdx == 11 and prevRail != -1):
+                                    if self.modelNameMode == self.MODEL_NAME:
+                                        rail = self.getSmfModelName(rail, mdlList)
+                                    ws.cell(row, 2 + idx).value = rail
+                                    idx += 1
+                                # flg
+                                elif (railIdx == 16 and prevRail == -1) or (railIdx == 13 and prevRail != -1):
+                                    if self.flagHexMode == self.HEX_FLAG:
+                                        rail = self.toHex(rail)
+                                    ws.cell(row, 2 + idx).value = rail
+                                    idx += 1
+                                else:
+                                    ws.cell(row, 2 + idx).value = rail
+                                    idx += 1
+                            else:
+                                if railIdx == 0:
+                                    ws.cell(row, 1 + idx).value = rail
+                                    idx += 1
+                                # mdl_no
+                                elif railIdx == 7:
+                                    if self.modelNameMode == self.MODEL_NAME:
+                                        rail = self.getSmfModelName(rail, mdlList)
+                                    ws.cell(row, 2 + idx).value = rail
+                                    idx += 1
+                                # prevRail
+                                elif railIdx == 8:
+                                    ws.cell(row, 2).value = rail
+                                    prevRail = rail
+                                    idx += 1
+                                # kasenchu
+                                elif railIdx == 9:
+                                    if self.modelNameMode == self.MODEL_NAME:
+                                        rail = self.getSmfModelName(rail, mdlList)
+                                    ws.cell(row, 11).value = rail
+                                    idx += 1
+                                # kasen
+                                elif railIdx == 10:
+                                    if self.modelNameMode == self.MODEL_NAME:
+                                        rail = self.getSmfModelName(rail, mdlList)
+                                    ws.cell(row, 10).value = rail
+                                # fix_amb_mdl
+                                elif railIdx == 11:
+                                    if self.modelNameMode == self.MODEL_NAME:
+                                        rail = self.getSmfModelName(rail, mdlList)
+                                    ws.cell(row, 2 + idx).value = rail
+                                    idx += 1
+                                # flg
+                                elif railIdx == 13:
+                                    if self.flagHexMode == self.HEX_FLAG:
+                                        rail = self.toHex(rail)
+                                    ws.cell(row, 2 + idx).value = rail
+                                    idx += 1
+                                else:
+                                    ws.cell(row, 2 + idx).value = rail
+                                    idx += 1
+                        row += 1
+            elif self.decryptFile.game == "LS":
                 if self.decryptFile.ver == "DEND_MAP_VER0101":
                     readFlag = True
                 titleList.pop(2)
@@ -552,7 +752,84 @@ class ExcelWidget:
             row += 1
             mdlList = [x[0] for x in self.decryptFile.smfList]
 
-            if self.decryptFile.game == "LS":
+            if self.decryptFile.game == "LSTrial":
+                if self.decryptFile.oldFlag:
+                    titleList = [
+                        "index",
+                        "pos_x",
+                        "pos_y",
+                        "pos_z",
+                        "next_rail",
+                        "prev_rail",
+                        "dir_x",
+                        "dir_y",
+                        "dir_z",
+                        "left_mdl_no",
+                        "right_mdl_no",
+                        "mdl_kasenchu",
+                        "fix_amb_mdl",
+                        "cnt",
+                        "b1",
+                        "b2",
+                        "b3",
+                        "b4"
+                    ]
+                    idx = 0
+                    row += 1
+                    for title in titleList:
+                        ws.cell(row, 1 + idx).value = title
+                        idx += 1
+                    row += 1
+
+                    for ambNo, ambInfo in enumerate(self.decryptFile.ambList):
+                        idx = 0
+                        ws.cell(row, 1 + idx).value = ambNo
+                        idx += 1
+                        for ambIdx, amb in enumerate(ambInfo):
+                            # left_mdl_no
+                            if ambIdx == 8:
+                                if self.modelNameMode == self.MODEL_NAME:
+                                    amb = self.getSmfModelName(amb, mdlList)
+                                ws.cell(row, 1 + idx).value = amb
+                                idx += 1
+                            # right_mdl_no
+                            elif ambIdx == 9:
+                                if self.modelNameMode == self.MODEL_NAME:
+                                    amb = self.getSmfModelName(amb, mdlList)
+                                ws.cell(row, 1 + idx).value = amb
+                                idx += 1
+                            # kasenchu
+                            elif ambIdx == 10:
+                                if self.modelNameMode == self.MODEL_NAME:
+                                    amb = self.getSmfModelName(amb, mdlList)
+                                ws.cell(row, 1 + idx).value = amb
+                                idx += 1
+                            # fix_amb_mdl
+                            elif ambIdx == 11:
+                                if self.modelNameMode == self.MODEL_NAME:
+                                    amb = self.getSmfModelName(amb, mdlList)
+                                ws.cell(row, 1 + idx).value = amb
+                                idx += 1
+                            elif ambIdx == 12:
+                                ws.cell(row, 1 + idx).value = len(amb)
+                                idx += 1
+                                for ambCntInfo in amb:
+                                    for i in range(4):
+                                        ws.cell(row, 1 + idx).value = ambCntInfo[i]
+                                        idx += 1
+                            else:
+                                ws.cell(row, 1 + idx).value = amb
+                                idx += 1
+                        row += 1
+                else:
+                    for ambIdx, ambInfo in enumerate(self.decryptFile.ambList):
+                        ws.cell(row, 1).value = ambIdx
+                        for idx, amb in enumerate(ambInfo):
+                            ws.cell(row, 2 + idx).value = amb
+                            idx += 1
+                        row += 1
+                    row += 1
+            elif self.decryptFile.game == "LS":
                 for ambIdx, ambInfo in enumerate(self.decryptFile.ambList):
                     ws.cell(row, 1).value = ambIdx
                     for idx, amb in enumerate(ambInfo):
@@ -727,7 +1004,15 @@ class ExcelWidget:
 
         newByteArr = bytearray()
 
-        if self.decryptFile.game == "LS":
+        if self.decryptFile.game == "LSTrial":
+            if not self.lsTrialSave(wb, tabList, newByteArr):
+                if self.error == "":
+                    errMsg = textSetting.textList["errorList"]["E14"]
+                else:
+                    errMsg = self.error
+                mb.showerror(title=textSetting.textList["error"], message=errMsg)
+                return
+        elif self.decryptFile.game == "LS":
             if not self.lsSave(wb, tabList, newByteArr):
                 if self.error == "":
                     errMsg = textSetting.textList["errorList"]["E14"]
@@ -770,6 +1055,690 @@ class ExcelWidget:
         w.close()
         mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I114"])
         self.reloadFunc()
+
+    def lsTrialSave(self, wb, tabList, newByteArr):
+        try:
+            # ver
+            ws = wb[tabList[0]]
+            if self.decryptFile.oldFlag:
+                pass
+            else:
+                ver = ws.cell(1, 1).value
+                if ver is None:
+                    self.error = textSetting.textList["errorList"]["E99"]
+                    return False
+                bVer = ver.encode("shift-jis")
+                newByteArr.extend(bVer)
+
+            # smf情報
+            smfNameList = []
+
+            ws = wb[tabList[2]]
+            row = self.findLabel("MdlCnt", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[2], "MdlCnt")
+                return False
+
+            try:
+                smfCnt = ws.cell(row, 2).value
+                newByteArr.append(smfCnt)
+                row += 1
+
+                for i in range(smfCnt):
+                    if self.decryptFile.readFlag:
+                        smfName = ws.cell(row, 2).value
+                        smfNameList.append(smfName)
+
+                        bSmfName = smfName.encode("shift-jis")
+                        newByteArr.append(len(bSmfName))
+                        newByteArr.extend(bSmfName)
+
+                        newByteArr.append(ws.cell(row, 3).value)
+                        newByteArr.append(ws.cell(row, 4).value)
+                        cnt = ws.cell(row, 5).value
+                        if cnt == 0:
+                            newByteArr.append(0xFF)
+                            row += 1
+                        else:
+                            newByteArr.append(cnt)
+                            for j in range(cnt):
+                                tempH = struct.pack("<h", ws.cell(row, 6).value)
+                                newByteArr.extend(tempH)
+                                tempH = struct.pack("<h", ws.cell(row, 7).value)
+                                newByteArr.extend(tempH)
+                                row += 1
+                    else:
+                        smfName = ws.cell(row, 2).value
+                        smfNameList.append(smfName)
+
+                        bSmfName = smfName.encode("shift-jis")
+                        newByteArr.append(len(bSmfName))
+                        newByteArr.extend(bSmfName)
+
+                        newByteArr.append(ws.cell(row, 3).value)
+                        cnt = ws.cell(row, 4).value
+                        if cnt == 0:
+                            newByteArr.append(0xFF)
+                            row += 1
+                        else:
+                            newByteArr.append(cnt)
+                            for j in range(cnt):
+                                tempH = struct.pack("<h", ws.cell(row, 5).value)
+                                newByteArr.extend(tempH)
+                                tempH = struct.pack("<h", ws.cell(row, 6).value)
+                                newByteArr.extend(tempH)
+                                row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[2], row)
+                return False
+
+            # BGM
+            ws = wb[tabList[0]]
+            row = self.findLabel("BGM", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[0], "BGM")
+                return False
+
+            try:
+                row += 1
+                musicFile = ws.cell(row, 1).value
+                bMusicFile = musicFile.encode("shift-jis")
+                newByteArr.append(len(bMusicFile))
+                newByteArr.extend(bMusicFile)
+
+                musicName = ws.cell(row, 2).value
+                bMusicName = musicName.encode("shift-jis")
+                newByteArr.append(len(bMusicName))
+                newByteArr.extend(bMusicName)
+
+                start = ws.cell(row, 3).value
+                newByteArr.extend(struct.pack("<f", start))
+                loopStart = ws.cell(row, 4).value
+                newByteArr.extend(struct.pack("<f", loopStart))
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[0], row)
+                return False
+
+            # レール名
+            row = self.findLabel("railName", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[0], "railName")
+                return False
+
+            try:
+                railStationName = ws.cell(row, 2).value
+                bRailStationName = railStationName.encode("shift-jis")
+                newByteArr.append(len(bRailStationName))
+                newByteArr.extend(bRailStationName)
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[0], row)
+                return False
+
+            if self.decryptFile.readFlag or self.decryptFile.filenameNum == 7:
+                # SCENE 3D OBJ(bin ANIME)
+                ws = wb[tabList[1]]
+                row = self.findLabel("binAnime", ws["A"])
+                if row == -1:
+                    self.error = textSetting.textList["errorList"]["E100"].format(tabList[1], "binAnime")
+                    return False
+
+                try:
+                    row += 1
+                    for i in range(3):
+                        newByteArr.append(ws.cell(row, 1 + i).value)
+                except Exception:
+                    self.error = textSetting.textList["errorList"]["E101"].format(tabList[1], row)
+                    return False
+
+                row = self.findLabel("else1", ws["A"])
+                if row == -1:
+                    self.error = textSetting.textList["errorList"]["E100"].format(tabList[1], "else1")
+                    return False
+
+                try:
+                    cnt = ws.cell(row, 2).value
+                    newByteArr.append(cnt)
+                    row += 1
+                    for i in range(cnt):
+                        tempF = struct.pack("<f", ws.cell(row, 1 + i).value)
+                        newByteArr.extend(tempF)
+                except Exception:
+                    self.error = textSetting.textList["errorList"]["E101"].format(tabList[1], row)
+                    return False
+
+            if not self.decryptFile.oldFlag:
+                # 車両の初期レール位置
+                ws = wb[tabList[0]]
+                row = self.findLabel("RailPos", ws["A"])
+                if row == -1:
+                    self.error = textSetting.textList["errorList"]["E100"].format(tabList[0], "RailPos")
+                    return False
+
+                try:
+                    trainCnt = ws.cell(row, 2).value
+                    newByteArr.append(trainCnt)
+                    row += 1
+                    for i in range(trainCnt):
+                        railNo = ws.cell(row, 1).value
+                        hRailNo = struct.pack("<h", railNo)
+                        newByteArr.extend(hRailNo)
+                        railPos = ws.cell(row, 2).value
+                        hRailPos = struct.pack("<h", railPos)
+                        newByteArr.extend(hRailPos)
+                        newByteArr.append(ws.cell(row, 3).value)
+                        f1 = ws.cell(row, 4).value
+                        tempF = struct.pack("<f", f1)
+                        newByteArr.extend(tempF)
+                        row += 1
+                except Exception:
+                    self.error = textSetting.textList["errorList"]["E101"].format(tabList[0], row)
+                    return False
+
+            # レール情報
+            dupNum = -1
+            dupName = None
+
+            if self.decryptFile.oldFlag:
+                ws = wb[tabList[7]]
+                row = self.findLabel("RailCnt", ws["A"])
+                if row == -1:
+                    self.error = textSetting.textList["errorList"]["E100"].format(tabList[7], "RailCnt")
+                    return False
+
+                railCnt = ws.cell(row, 2).value
+                iRailCnt = struct.pack("<i", railCnt)
+                newByteArr.extend(iRailCnt)
+
+                # 車両の初期レール位置
+                ws = wb[tabList[0]]
+                row = self.findLabel("RailPos", ws["A"])
+                if row == -1:
+                    self.error = textSetting.textList["errorList"]["E100"].format(tabList[0], "RailPos")
+                    return False
+
+                try:
+                    trainCnt = ws.cell(row, 2).value
+                    row += 1
+                    for i in range(trainCnt):
+                        railNo = ws.cell(row, 1).value
+                        iRailNo = struct.pack("<i", railNo)
+                        newByteArr.extend(iRailNo)
+                        railPos = ws.cell(row, 2).value
+                        iRailPos = struct.pack("<i", railPos)
+                        newByteArr.extend(iRailPos)
+                        f1 = ws.cell(row, 3).value
+                        tempF = struct.pack("<i", f1)
+                        newByteArr.extend(tempF)
+                        row += 1
+                except Exception:
+                    self.error = textSetting.textList["errorList"]["E101"].format(tabList[0], row)
+                    return False
+
+                #
+                ws = wb[tabList[7]]
+                row = self.findLabel("index", ws["A"])
+                if row == -1:
+                    self.error = textSetting.textList["errorList"]["E100"].format(tabList[7], "index")
+                    return False
+
+                row += 1
+                try:
+                    for i in range(railCnt):
+                        # pos
+                        for j in range(3):
+                            tempF = struct.pack("<f", ws.cell(row, 2 + j).value)
+                            newByteArr.extend(tempF)
+
+                        # next, prev
+                        for j in range(2):
+                            temp = struct.pack("<i", ws.cell(row, 5 + j).value)
+                            newByteArr.extend(temp)
+
+                        # dir
+                        for j in range(3):
+                            tempF = struct.pack("<f", ws.cell(row, 7 + j).value)
+                            newByteArr.extend(tempF)
+
+                        # dummy
+                        for j in range(4):
+                            tempH = struct.pack("<h", -1)
+                            newByteArr.extend(tempH)
+
+                        # mdl_no
+                        mdl_no = ws.cell(row, 10).value
+                        if self.isModelNameDup(mdl_no, smfNameList) and dupNum == -1:
+                            dupNum = i
+                            dupName = ws.cell(row, 10).value
+                        mdl_no = self.getSmfModelIndex(i, mdl_no, smfNameList)
+                        newByteArr.append(mdl_no)
+
+                        # mdl_kasen
+                        kasen = ws.cell(row, 11).value
+                        if self.isModelNameDup(kasen, smfNameList) and dupNum == -1:
+                            dupNum = i
+                            dupName = ws.cell(row, 11).value
+                        kasen = self.getSmfModelIndex(i, kasen, smfNameList)
+                        if kasen > 127:
+                            bKasen = struct.pack("<B", kasen)
+                        else:
+                            bKasen = struct.pack("<b", kasen)
+                        newByteArr.extend(bKasen)
+
+                        row += 1
+                except Exception:
+                    self.error = textSetting.textList["errorList"]["E101"].format(tabList[7], row)
+                    return False
+
+                if dupNum != -1:
+                    warnMsg = textSetting.textList["infoList"]["I115"].format(dupNum, dupName)
+                    result = mb.askokcancel(title=textSetting.textList["warning"], message=warnMsg, icon="warning")
+                    if not result:
+                        self.error = textSetting.textList["errorList"]["E102"]
+                        return False
+
+                # AMB情報
+                ws = wb[tabList[10]]
+                row = self.findLabel("AmbCnt", ws["A"])
+                if row == -1:
+                    self.error = textSetting.textList["errorList"]["E100"].format(tabList[10], "AmbCnt")
+                    return False
+
+                ambCnt = ws.cell(row, 2).value
+                iAmbCnt = struct.pack("<i", ambCnt)
+                newByteArr.extend(iAmbCnt)
+
+                row = self.findLabel("index", ws["A"])
+                if row == -1:
+                    self.error = textSetting.textList["errorList"]["E100"].format(tabList[10], "index")
+                    return False
+
+                row += 1
+                try:
+                    for i in range(ambCnt):
+                        # pos
+                        for j in range(3):
+                            tempF = struct.pack("<f", ws.cell(row, 2 + j).value)
+                            newByteArr.extend(tempF)
+
+                        # next, prev
+                        for j in range(2):
+                            temp = struct.pack("<i", ws.cell(row, 5 + j).value)
+                            newByteArr.extend(temp)
+
+                        # dir
+                        for j in range(3):
+                            tempF = struct.pack("<f", ws.cell(row, 7 + j).value)
+                            newByteArr.extend(tempF)
+
+                        # mdl_no
+                        for j in range(4):
+                            mdl_no = ws.cell(row, 10 + j).value
+                            if self.isModelNameDup(mdl_no, smfNameList) and dupNum == -1:
+                                dupNum = i
+                                dupName = ws.cell(row, 10 + j).value
+                            mdl_no = self.getSmfModelIndex(i, mdl_no, smfNameList)
+                            if mdl_no > 127:
+                                bMdlNo = struct.pack("<B", mdl_no)
+                            else:
+                                bMdlNo = struct.pack("<b", mdl_no)
+                            newByteArr.extend(bMdlNo)
+
+                        cnt = ws.cell(row, 14).value
+                        newByteArr.append(cnt)
+                        idx = 15
+                        for j in range(cnt):
+                            for k in range(4):
+                                newByteArr.append(ws.cell(row, idx).value)
+                                idx += 1
+
+                        row += 1
+                except Exception:
+                    self.error = textSetting.textList["errorList"]["E101"].format(tabList[10], row)
+                    return False
+
+                if dupNum != -1:
+                    warnMsg = textSetting.textList["infoList"]["I115"].format(dupNum, dupName)
+                    result = mb.askokcancel(title=textSetting.textList["warning"], message=warnMsg, icon="warning")
+                    if not result:
+                        self.error = textSetting.textList["errorList"]["E102"]
+                        return False
+            else:
+                # AMB情報
+                ws = wb[tabList[10]]
+                row = self.findLabel("AmbCnt", ws["A"])
+                if row == -1:
+                    self.error = textSetting.textList["errorList"]["E100"].format(tabList[10], "AmbCnt")
+                    return False
+
+                try:
+                    ambCnt = ws.cell(row, 2).value
+                    row += 1
+                    ambDict = {}
+                    for i in range(ambCnt):
+                        railNo = ws.cell(row, 2).value
+                        if railNo not in ambDict:
+                            ambDict[railNo] = []
+                        ambInfo = []
+                        for j in range(4):
+                            ambInfo.append(ws.cell(row, 3 + j).value)
+                        ambDict[railNo].append(ambInfo)
+                        row += 1
+                except Exception:
+                    self.error = textSetting.textList["errorList"]["E101"].format(tabList[10], row)
+                    return False
+
+                # レール情報
+                ws = wb[tabList[7]]
+                row = self.findLabel("RailCnt", ws["A"])
+                if row == -1:
+                    self.error = textSetting.textList["errorList"]["E100"].format(tabList[7], "RailCnt")
+                    return False
+
+                try:
+                    railCnt = ws.cell(row, 2).value
+                    hRailCnt = struct.pack("<h", railCnt)
+                    newByteArr.extend(hRailCnt)
+                    row = self.findLabel("index", ws["A"])
+                    if row == -1:
+                        self.error = textSetting.textList["errorList"]["E100"].format(tabList[7], "index")
+                        return False
+
+                    row += 1
+                    for i in range(railCnt):
+                        # pos, dir
+                        for j in range(6):
+                            tempF = struct.pack("<f", ws.cell(row, 3 + j).value)
+                            newByteArr.extend(tempF)
+
+                        # mdl_no
+                        mdl_no = ws.cell(row, 9).value
+                        if self.isModelNameDup(mdl_no, smfNameList) and dupNum == -1:
+                            dupNum = i
+                            dupName = ws.cell(row, 9).value
+                        mdl_no = self.getSmfModelIndex(i, mdl_no, smfNameList)
+                        newByteArr.append(mdl_no)
+
+                        # prevRail
+                        prevRail = ws.cell(row, 2).value
+                        hPrevRail = struct.pack("<h", prevRail)
+                        newByteArr.extend(hPrevRail)
+
+                        # rot
+                        if prevRail == -1:
+                            if self.decryptFile.readFlag or self.decryptFile.filenameNum == 7:
+                                for j in range(3):
+                                    tempF = struct.pack("<f", ws.cell(row, 12 + j).value)
+                                    newByteArr.extend(tempF)
+
+                        # 架線柱
+                        kasenchu = ws.cell(row, 11).value
+                        if self.isModelNameDup(kasenchu, smfNameList) and dupNum == -1:
+                            dupNum = i
+                            dupName = ws.cell(row, 11).value
+                        kasenchu = self.getSmfModelIndex(i, kasenchu, smfNameList)
+                        if kasenchu > 127:
+                            bKasenchu = struct.pack("<B", kasenchu)
+                        else:
+                            bKasenchu = struct.pack("<b", kasenchu)
+                        newByteArr.extend(bKasenchu)
+
+                        # 架線
+                        kasen = ws.cell(row, 10).value
+                        if self.isModelNameDup(kasen, smfNameList) and dupNum == -1:
+                            dupNum = i
+                            dupName = ws.cell(row, 10).value
+                        kasen = self.getSmfModelIndex(i, kasen, smfNameList)
+                        if kasen > 127:
+                            bKasen = struct.pack("<B", kasen)
+                        else:
+                            bKasen = struct.pack("<b", kasen)
+                        newByteArr.extend(bKasen)
+
+                        # dummy?
+                        for j in range(2):
+                            newByteArr.append(0xFF)
+                            for k in range(3):
+                                tempF = struct.pack("<f", 0)
+                                newByteArr.extend(tempF)
+
+                        idx = 12
+                        if self.decryptFile.readFlag or self.decryptFile.filenameNum == 7:
+                            idx += 3
+                        # fix_amb_mdl
+                        fix_amb_mdl = ws.cell(row, idx).value
+                        if self.isModelNameDup(fix_amb_mdl, smfNameList) and dupNum == -1:
+                            dupNum = i
+                            dupName = ws.cell(row, idx).value
+                        fix_amb_mdl = self.getSmfModelIndex(i, fix_amb_mdl, smfNameList)
+                        if fix_amb_mdl > 127:
+                            bFixAmb = struct.pack("<B", fix_amb_mdl)
+                        else:
+                            bFixAmb = struct.pack("<b", fix_amb_mdl)
+                        newByteArr.extend(bFixAmb)
+
+                        idx += 1
+                        # per
+                        per = ws.cell(row, idx).value
+                        perF = struct.pack("<f", per)
+                        newByteArr.extend(perF)
+
+                        idx += 1
+                        # flg
+                        flg = ws.cell(row, idx).value
+                        if self.flagHexMode == self.HEX_FLAG:
+                            flg = int(flg, 16)
+                        newByteArr.append(flg)
+
+                        idx += 1
+                        # raildata
+                        raildata = ws.cell(row, idx).value
+                        newByteArr.append(raildata)
+
+                        idx += 1
+                        for j in range(raildata):
+                            nextRailNo = ws.cell(row, idx + 4*j).value
+                            hNextRailNo = struct.pack("<h", nextRailNo)
+                            newByteArr.extend(hNextRailNo)
+                            nextRailPos = ws.cell(row, idx + 1 + 4*j).value
+                            hNextRailPos = struct.pack("<h", nextRailPos)
+                            newByteArr.extend(hNextRailPos)
+                            prevRailNo = ws.cell(row, idx + 2 + 4*j).value
+                            hPrevRailNo = struct.pack("<h", prevRailNo)
+                            newByteArr.extend(hPrevRailNo)
+                            prevRailPos = ws.cell(row, idx + 3 + 4*j).value
+                            hPrevRailPos = struct.pack("<h", prevRailPos)
+                            newByteArr.extend(hPrevRailPos)
+
+                        # AMB情報
+                        if i in ambDict:
+                            ambList = ambDict[i]
+                            newByteArr.append(len(ambList))
+                            for ambInfo in ambList:
+                                pos = ambInfo[0]
+                                newByteArr.append(pos)
+
+                                railPos = ambInfo[1]
+                                railPosH = struct.pack("<h", railPos)
+                                newByteArr.extend(railPosH)
+
+                                anime1 = ambInfo[2]
+                                newByteArr.append(anime1)
+
+                                anime2 = ambInfo[3]
+                                bAnime2 = struct.pack("<b", anime2)
+                                newByteArr.extend(bAnime2)
+                        else:
+                            newByteArr.append(0)
+                        row += 1
+                except Exception:
+                    self.error = textSetting.textList["errorList"]["E101"].format(tabList[7], row)
+                    return False
+
+                if dupNum != -1:
+                    warnMsg = textSetting.textList["infoList"]["I115"].format(dupNum, dupName)
+                    result = mb.askokcancel(title=textSetting.textList["warning"], message=warnMsg, icon="warning")
+                    if not result:
+                        self.error = textSetting.textList["errorList"]["E102"]
+                        return False
+
+            # 駅名位置情報
+            ws = wb[tabList[3]]
+            row = self.findLabel("STCnt", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[3], "STCnt")
+                return False
+
+            try:
+                stCnt = ws.cell(row, 2).value
+                newByteArr.append(stCnt)
+                row += 1
+                for i in range(stCnt):
+                    stName = ws.cell(row, 2).value
+                    bStName = stName.encode("shift-jis")
+                    newByteArr.append(len(bStName))
+                    newByteArr.extend(bStName)
+
+                    stFlag = ws.cell(row, 3).value
+                    newByteArr.append(stFlag)
+                    if self.decryptFile.readFlag:
+                        railNo = ws.cell(row, 4).value
+                        hRailNo = struct.pack("<h", railNo)
+                        newByteArr.extend(hRailNo)
+                        for j in range(6):
+                            tempF = struct.pack("<f", ws.cell(row, 5 + j).value)
+                            newByteArr.extend(tempF)
+                    else:
+                        for j in range(6):
+                            tempF = struct.pack("<f", ws.cell(row, 4 + j).value)
+                            newByteArr.extend(tempF)
+                    row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[3], row)
+                return False
+
+            # Cam
+            ws = wb[tabList[8]]
+            row = self.findLabel("else3", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[8], "else3")
+                return False
+
+            try:
+                else3Cnt = ws.cell(row, 2).value
+                newByteArr.append(else3Cnt)
+                row += 1
+                for i in range(else3Cnt):
+                    for j in range(3):
+                        tempF = struct.pack("<f", ws.cell(row, 2 + j).value)
+                        newByteArr.extend(tempF)
+                    cnt = ws.cell(row, 5).value
+                    newByteArr.append(cnt)
+
+                    for j in range(cnt):
+                        for k in range(4):
+                            tempF = struct.pack("<f", ws.cell(row, 6 + k).value)
+                            newByteArr.extend(tempF)
+                        cameraNo = ws.cell(row, 10).value
+                        newByteArr.append(cameraNo)
+                        row += 1
+                    if cnt == 0:
+                        row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[8], row)
+                return False
+
+            # CPU情報
+            ws = wb[tabList[5]]
+            row = self.findLabel("CPU", ws["A"])
+            if row == -1:
+                self.error = textSetting.textList["errorList"]["E100"].format(tabList[5], "CPU")
+                return False
+
+            try:
+                cpuCnt = ws.cell(row, 2).value
+                newByteArr.append(cpuCnt)
+                row += 1
+                for i in range(cpuCnt):
+                    if self.decryptFile.readFlag:
+                        railNo = ws.cell(row, 2).value
+                        hRailNo = struct.pack("<h", railNo)
+                        newByteArr.extend(hRailNo)
+                        row += 1
+
+                        for j in range(6):
+                            tempF = struct.pack("<f", ws.cell(row, 3 + j).value)
+                            newByteArr.extend(tempF)
+
+                        row -= 1
+                        mode = ws.cell(row, 3).value
+                        newByteArr.append(mode)
+
+                        for j in range(5):
+                            tempF = struct.pack("<f", ws.cell(row, 4 + j).value)
+                            newByteArr.extend(tempF)
+                        row += 2
+
+                        for j in range(3):
+                            tempF = struct.pack("<f", ws.cell(row, 3 + j).value)
+                            newByteArr.extend(tempF)
+                    else:
+                        row += 1
+                        for j in range(6):
+                            tempF = struct.pack("<f", ws.cell(row, 2 + j).value)
+                            newByteArr.extend(tempF)
+
+                        row -= 1
+                        mode = ws.cell(row, 2).value
+                        newByteArr.append(mode)
+
+                        tempF = struct.pack("<f", ws.cell(row, 3).value)
+                        newByteArr.extend(tempF)
+                        row += 1
+                    row += 1
+            except Exception:
+                self.error = textSetting.textList["errorList"]["E101"].format(tabList[5], row)
+                return False
+
+            # Comic Script
+            if self.decryptFile.readFlag or self.decryptFile.filenameNum == 7:
+                ws = wb[tabList[6]]
+                row = self.findLabel("ComicScript", ws["A"])
+                if row == -1:
+                    self.error = textSetting.textList["errorList"]["E100"].format(tabList[6], "ComicScript")
+                    return False
+
+                try:
+                    comicbinCnt = ws.cell(row, 2).value
+                    newByteArr.append(comicbinCnt)
+                    row += 1
+                    for i in range(comicbinCnt):
+                        comicNum = ws.cell(row, 2).value
+                        hComicNum = struct.pack("<h", comicNum)
+                        newByteArr.extend(hComicNum)
+
+                        comicType = ws.cell(row, 3).value
+                        newByteArr.append(comicType)
+
+                        if self.decryptFile.readFlag:
+                            railNo = ws.cell(row, 4).value
+                            hRailNo = struct.pack("<h", railNo)
+                            newByteArr.extend(hRailNo)
+                        row += 1
+
+                        for j in range(9):
+                            tempF = struct.pack("<f", ws.cell(row, 2 + j).value)
+                            newByteArr.extend(tempF)
+                        row += 1
+                except Exception:
+                    self.error = textSetting.textList["errorList"]["E101"].format(tabList[6], row)
+                    return False
+            return True
+        except Exception:
+            w = codecs.open("error.log", "w", "utf-8", "strict")
+            w.write(traceback.format_exc())
+            w.close()
+            self.error = textSetting.textList["errorList"]["E14"]
+            return False
 
     def lsSave(self, wb, tabList, newByteArr):
         try:

@@ -31,8 +31,9 @@ class RailPosWidget:
         railPosHeaderLb.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
         b1HeaderLb = ttkCustomWidget.CustomTtkLabel(railPosLf, text=textSetting.textList["railEditor"]["railPosB1Label"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=5, borderwidth=1, relief="solid")
         b1HeaderLb.grid(row=0, column=3, sticky=tkinter.W + tkinter.E)
-        f1HeaderLb = ttkCustomWidget.CustomTtkLabel(railPosLf, text=textSetting.textList["railEditor"]["railPosF1Label"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=5, borderwidth=1, relief="solid")
-        f1HeaderLb.grid(row=0, column=4, sticky=tkinter.W + tkinter.E)
+        if not (self.decryptFile.game == "LSTrial" and self.decryptFile.oldFlag):
+            f1HeaderLb = ttkCustomWidget.CustomTtkLabel(railPosLf, text=textSetting.textList["railEditor"]["railPosF1Label"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=5, borderwidth=1, relief="solid")
+            f1HeaderLb.grid(row=0, column=4, sticky=tkinter.W + tkinter.E)
 
         for i in range(len(self.trainList)):
             trainInfo = self.trainList[i]
@@ -42,6 +43,8 @@ class RailPosWidget:
                 valLb = ttkCustomWidget.CustomTtkLabel(railPosLf, text=trainInfo[j], font=textSetting.textList["font6"], anchor=tkinter.CENTER, borderwidth=1, relief="solid")
                 valLb.grid(row=i + 1, column=j + 1, sticky=tkinter.W + tkinter.E)
 
+            if self.decryptFile.game == "LSTrial" and self.decryptFile.oldFlag and i == 2:
+                continue
             railBtn = ttkCustomWidget.CustomTtkButton(railPosLf, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=partial(self.editVar, i, trainInfo))
             railBtn.grid(row=i + 1, column=len(trainInfo) + 1, sticky=tkinter.W + tkinter.E)
 

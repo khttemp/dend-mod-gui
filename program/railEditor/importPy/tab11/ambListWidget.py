@@ -140,7 +140,7 @@ class AmbListWidget:
             self.v_fog = tkinter.IntVar()
             fogEt = ttkCustomWidget.CustomTtkEntry(ambInfo2Frame, textvariable=self.v_fog, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
             fogEt.grid(row=2, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
-        elif self.decryptFile.game == "LS":
+        elif self.decryptFile.game == "LS" or (self.decryptFile.game == "LSTrial" and not self.decryptFile.oldFlag):
             ambInfo2Frame = ttkCustomWidget.CustomTtkLabelFrame(sidePackFrame, text=textSetting.textList["railEditor"]["ambInfoLabel"])
             ambInfo2Frame.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=30, pady=15)
 
@@ -172,6 +172,90 @@ class AmbListWidget:
             self.v_animeNo = tkinter.IntVar()
             animeNoEt = ttkCustomWidget.CustomTtkEntry(ambInfo2Frame, textvariable=self.v_animeNo, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
             animeNoEt.grid(row=1, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+        elif self.decryptFile.game == "LSTrial" and self.decryptFile.oldFlag:
+            #
+            xyzFrame = ttkCustomWidget.CustomTtkLabelFrame(sidePackFrame, text=textSetting.textList["railEditor"]["railPosXyzInfo"])
+            xyzFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=25, pady=15)
+            xLb = ttkCustomWidget.CustomTtkLabel(xyzFrame, text=textSetting.textList["railEditor"]["railPosX"], font=textSetting.textList["font2"])
+            xLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            self.v_x_pos = tkinter.DoubleVar()
+            x_posEt = ttkCustomWidget.CustomTtkEntry(xyzFrame, textvariable=self.v_x_pos, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+            x_posEt.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+
+            yLb = ttkCustomWidget.CustomTtkLabel(xyzFrame, text=textSetting.textList["railEditor"]["railPosY"], font=textSetting.textList["font2"])
+            yLb.grid(row=1, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            self.v_y_pos = tkinter.DoubleVar()
+            y_posEt = ttkCustomWidget.CustomTtkEntry(xyzFrame, textvariable=self.v_y_pos, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+            y_posEt.grid(row=1, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+
+            zLb = ttkCustomWidget.CustomTtkLabel(xyzFrame, text=textSetting.textList["railEditor"]["railPosZ"], font=textSetting.textList["font2"])
+            zLb.grid(row=2, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            self.v_z_pos = tkinter.DoubleVar()
+            z_posEt = ttkCustomWidget.CustomTtkEntry(xyzFrame, textvariable=self.v_z_pos, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+            z_posEt.grid(row=2, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+
+            #
+            xLb = ttkCustomWidget.CustomTtkLabel(xyzFrame, text=textSetting.textList["railEditor"]["railDirX"], font=textSetting.textList["font2"])
+            xLb.grid(row=0, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            self.v_x_dir = tkinter.DoubleVar()
+            x_dirEt = ttkCustomWidget.CustomTtkEntry(xyzFrame, textvariable=self.v_x_dir, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+            x_dirEt.grid(row=0, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+
+            yLb = ttkCustomWidget.CustomTtkLabel(xyzFrame, text=textSetting.textList["railEditor"]["railDirY"], font=textSetting.textList["font2"])
+            yLb.grid(row=1, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            self.v_y_dir = tkinter.DoubleVar()
+            y_dirEt = ttkCustomWidget.CustomTtkEntry(xyzFrame, textvariable=self.v_y_dir, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+            y_dirEt.grid(row=1, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+
+            zLb = ttkCustomWidget.CustomTtkLabel(xyzFrame, text=textSetting.textList["railEditor"]["railDirZ"], font=textSetting.textList["font2"])
+            zLb.grid(row=2, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            self.v_z_dir = tkinter.DoubleVar()
+            z_dirEt = ttkCustomWidget.CustomTtkEntry(xyzFrame, textvariable=self.v_z_dir, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+            z_dirEt.grid(row=2, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+
+            ###
+            railFrame = ttkCustomWidget.CustomTtkLabelFrame(sidePackFrame, text=textSetting.textList["railEditor"]["railRailInfo"])
+            railFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=5, pady=15)
+            nextLb = ttkCustomWidget.CustomTtkLabel(railFrame, text=textSetting.textList["railEditor"]["railNextRail"], font=textSetting.textList["font2"])
+            nextLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            self.v_next = tkinter.StringVar()
+            nextEt = ttkCustomWidget.CustomTtkEntry(railFrame, textvariable=self.v_next, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+            nextEt.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+
+            prevLb = ttkCustomWidget.CustomTtkLabel(railFrame, text=textSetting.textList["railEditor"]["railPrevRail"], font=textSetting.textList["font2"])
+            prevLb.grid(row=1, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            self.v_prev = tkinter.StringVar()
+            prevEt = ttkCustomWidget.CustomTtkEntry(railFrame, textvariable=self.v_prev, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+            prevEt.grid(row=1, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+
+            ###
+            sidePackFrame2 = ttkCustomWidget.CustomTtkFrame(self.frame)
+            sidePackFrame2.pack(anchor=tkinter.NW, padx=20)
+
+            kasenFrame = ttkCustomWidget.CustomTtkLabelFrame(sidePackFrame2, text=textSetting.textList["railEditor"]["railModelKasenInfo"])
+            kasenFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=5, pady=15)
+            leftMdlNoLb = ttkCustomWidget.CustomTtkLabel(kasenFrame, text=textSetting.textList["railEditor"]["railModelLabel"], font=textSetting.textList["font2"])
+            leftMdlNoLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            self.leftMdlNoCb = ttkCustomWidget.CustomTtkCombobox(kasenFrame, width=25, font=textSetting.textList["font2"], values=self.smfList, state="disabled")
+            self.leftMdlNoCb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+
+            rightMdlNoLb = ttkCustomWidget.CustomTtkLabel(kasenFrame, text=textSetting.textList["railEditor"]["railModelLabel"], font=textSetting.textList["font2"])
+            rightMdlNoLb.grid(row=1, column=0, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            self.rightMdlNoCb = ttkCustomWidget.CustomTtkCombobox(kasenFrame, width=25, font=textSetting.textList["font2"], values=self.smfList, state="disabled")
+            self.rightMdlNoCb.grid(row=1, column=1, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+
+            mdlKasenchuLb = ttkCustomWidget.CustomTtkLabel(kasenFrame, text=textSetting.textList["railEditor"]["railKasenchuLabel"], font=textSetting.textList["font2"])
+            mdlKasenchuLb.grid(row=0, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            self.mdlKasenchuCb = ttkCustomWidget.CustomTtkCombobox(kasenFrame, width=25, font=textSetting.textList["font2"], values=self.smfList, state="disabled")
+            self.mdlKasenchuCb.grid(row=0, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+
+            fixAmbLb = ttkCustomWidget.CustomTtkLabel(kasenFrame, text=textSetting.textList["railEditor"]["railFixAmbLabel"], font=textSetting.textList["font2"])
+            fixAmbLb.grid(row=1, column=2, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+            self.fixAmbCb = ttkCustomWidget.CustomTtkCombobox(kasenFrame, width=25, font=textSetting.textList["font2"], values=self.smfList, state="disabled")
+            self.fixAmbCb.grid(row=1, column=3, sticky=tkinter.W + tkinter.E, padx=10, pady=10)
+
+            self.ambChildModelLf = ttkCustomWidget.CustomTtkLabelFrame(self.frame, text=textSetting.textList["railEditor"]["ambInfo2Label"])
+            self.ambChildModelLf.pack(anchor=tkinter.NW, padx=25, pady=15)
 
         #
         if self.decryptFile.game in ["BS", "CS", "RS"]:
@@ -371,13 +455,27 @@ class AmbListWidget:
             child.destroy()
 
         self.varChildList = []
-        childCount = ambInfo[23]
-        for i in range(childCount):
-            ambChildFrame = ttkCustomWidget.CustomTtkFrame(self.ambChildModelLf)
-            ambChildFrame.pack(anchor=tkinter.NW)
-            self.setAmbInfo(ambChildFrame, False)
-            separate = ttkCustomWidget.CustomTtkSeparator(self.ambChildModelLf, orient="horizontal")
-            separate.pack(fill=tkinter.X)
+        if self.decryptFile.game in ["CS", "RS"]:
+            childCount = ambInfo[23]
+            for i in range(childCount):
+                ambChildFrame = ttkCustomWidget.CustomTtkFrame(self.ambChildModelLf)
+                ambChildFrame.pack(anchor=tkinter.NW)
+                self.setAmbInfo(ambChildFrame, False)
+                separate = ttkCustomWidget.CustomTtkSeparator(self.ambChildModelLf, orient="horizontal")
+                separate.pack(fill=tkinter.X)
+        elif self.decryptFile.game == "LSTrial" and self.decryptFile.oldFlag:
+            ambList = ambInfo[-1]
+            for i in range(len(ambList)):
+                ambCntInfo = ambList[i]
+                bFrame = ttkCustomWidget.CustomTtkFrame(self.ambChildModelLf)
+                bFrame.pack(anchor=tkinter.NW)
+                for j in range(4):
+                    v_b = tkinter.IntVar()
+                    v_b.set(ambCntInfo[j])
+                    self.varChildList.append(v_b)
+                    bEt = ttkCustomWidget.CustomTtkEntry(bFrame, textvariable=v_b, font=textSetting.textList["font2"], width=7, justify="center", state="readonly")
+                    bEt.pack(side=tkinter.LEFT)
+
 
     def searchAmb(self, ambNo):
         if ambNo < 0 or ambNo >= len(self.ambList):
@@ -438,7 +536,7 @@ class AmbListWidget:
             self.varList[6].set(ambInfo[9])
             self.varList[7].set(ambInfo[10])
             self.varList[8].set(ambInfo[11])
-        elif self.decryptFile.game == "LS":
+        elif self.decryptFile.game == "LS" or (self.decryptFile.game == "LSTrial" and not self.decryptFile.oldFlag):
             self.v_railNo.set(ambInfo[0])
             self.v_pos.set(ambInfo[1])
             self.v_railPos.set(ambInfo[2])
@@ -447,6 +545,32 @@ class AmbListWidget:
             else:
                 self.mdlNoCb.current(ambInfo[3])
             self.v_animeNo.set(ambInfo[4])
+        elif self.decryptFile.game == "LSTrial" and self.decryptFile.oldFlag:
+            self.v_x_pos.set(ambInfo[0])
+            self.v_y_pos.set(ambInfo[1])
+            self.v_z_pos.set(ambInfo[2])
+            self.v_next.set(ambInfo[3])
+            self.v_prev.set(ambInfo[4])
+            self.v_x_dir.set(ambInfo[5])
+            self.v_y_dir.set(ambInfo[6])
+            self.v_z_dir.set(ambInfo[7])
+            if ambInfo[8] == -1:
+                self.leftMdlNoCb.set("なし")
+            else:
+                self.leftMdlNoCb.current(ambInfo[8])
+            if ambInfo[9] == -1:
+                self.rightMdlNoCb.set("なし")
+            else:
+                self.rightMdlNoCb.current(ambInfo[9])
+            if ambInfo[10] == -1:
+                self.mdlKasenchuCb.set("なし")
+            else:
+                self.mdlKasenchuCb.current(ambInfo[10])
+            if ambInfo[11] == -1:
+                self.fixAmbCb.set("なし")
+            else:
+                self.fixAmbCb.current(ambInfo[11])
+            self.setAmbChildInfo(ambInfo)
 
     def extractCsv(self):
         filename = self.decryptFile.filename + "_amb.csv"
@@ -558,7 +682,7 @@ class AmbListWidget:
                         ambInfo.append(tempF)
                     ambList.append(ambInfo)
                     count += 1
-                elif self.decryptFile.game == "LS":
+                elif self.decryptFile.game == "LS" or (self.decryptFile.game == "LSTrial" and not self.decryptFile.oldFlag):
                     ambInfo = []
                     if len(arr) < 5:
                         raise Exception
@@ -566,6 +690,41 @@ class AmbListWidget:
                     for i in range(5):
                         temp = int(arr[i])
                         ambInfo.append(temp)
+                    ambList.append(ambInfo)
+                    count += 1
+                elif self.decryptFile.game == "LSTrial" and self.decryptFile.oldFlag:
+                    ambInfo = []
+                    if len(arr) < 14:
+                        raise Exception
+
+                    ambIdx = 1
+                    for i in range(3):
+                        temp = float(arr[ambIdx])
+                        ambInfo.append(temp)
+                        ambIdx += 1
+                    for i in range(2):
+                        temp = int(arr[ambIdx])
+                        ambInfo.append(temp)
+                        ambIdx += 1
+                    for i in range(3):
+                        temp = float(arr[ambIdx])
+                        ambInfo.append(temp)
+                        ambIdx += 1
+                    for i in range(4):
+                        temp = int(arr[ambIdx])
+                        ambInfo.append(temp)
+                        ambIdx += 1
+                    cnt = int(arr[ambIdx])
+                    ambIdx += 1
+                    ambCntList = []
+                    for i in range(cnt):
+                        ambCntInfo = []
+                        for j in range(4):
+                            temp = int(arr[ambIdx])
+                            ambCntInfo.append(temp)
+                            ambIdx += 1
+                        ambCntList.append(ambCntInfo)
+                    ambInfo.append(ambCntList)
                     ambList.append(ambInfo)
                     count += 1
 

@@ -11,7 +11,9 @@ import program.railEditor.dendDecrypt.RSdecrypt as dendRs
 import program.railEditor.dendDecrypt.CSdecrypt as dendCs
 import program.railEditor.dendDecrypt.BSdecrypt as dendBs
 import program.railEditor.dendDecrypt.LSdecrypt as dendLs
+import program.railEditor.dendDecrypt.LSTrialDecrypt as dendLsTrial
 
+LSTrial = -1
 LS = 0
 BS = 1
 CS = 2
@@ -59,6 +61,8 @@ def openFile():
             decryptFile = dendBs.RailDecrypt(file_path)
         elif v_radio.get() == LS:
             decryptFile = dendLs.RailDecrypt(file_path)
+        elif v_radio.get() == LSTrial:
+            decryptFile = dendLsTrial.RailDecrypt(file_path)
 
         if not decryptFile.open():
             if decryptFile.error == "":
@@ -70,7 +74,7 @@ def openFile():
             return
 
         deleteAllWidget()
-        if v_radio.get() == LS:
+        if v_radio.get() in [LS, LSTrial]:
             cb["values"] = lsInfo
         else:
             cb["values"] = info
@@ -170,6 +174,8 @@ def call_railEditor(rootTk, config_ini_path, appearance):
 
     lsRb = ttkCustomWidget.CustomTtkRadiobutton(root, text="Lightning Stage", command=selectGame, variable=v_radio, value=LS)
     lsRb.place(relx=0.32, rely=0.02)
+    lsTrialRb = ttkCustomWidget.CustomTtkRadiobutton(root, text="Lightning Stage(体験版)", command=selectGame, variable=v_radio, value=LSTrial)
+    lsTrialRb.place(relx=0.32, rely=0.05)
     bsRb = ttkCustomWidget.CustomTtkRadiobutton(root, text="Burning Stage", command=selectGame, variable=v_radio, value=BS)
     bsRb.place(relx=0.50, rely=0.02)
     csRb = ttkCustomWidget.CustomTtkRadiobutton(root, text="Climax Stage", command=selectGame, variable=v_radio, value=CS)

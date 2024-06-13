@@ -21,10 +21,14 @@ class TrainCountWidget:
 
         self.varTrainCnt = tkinter.IntVar()
         self.varTrainCnt.set(self.decryptFile.trainCnt)
-        trainCntTextLb = ttkCustomWidget.CustomTtkLabel(txtFrame, textvariable=self.varTrainCnt, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
-        trainCntTextLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
-        trainCntBtn = ttkCustomWidget.CustomTtkButton(txtFrame, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=lambda: self.editVar(self.varTrainCnt.get()))
-        trainCntBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
+        if not (self.decryptFile.game == "LSTrial" and self.decryptFile.oldFlag):
+            trainCntTextLb = ttkCustomWidget.CustomTtkLabel(txtFrame, textvariable=self.varTrainCnt, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
+            trainCntTextLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
+            trainCntBtn = ttkCustomWidget.CustomTtkButton(txtFrame, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=lambda: self.editVar(self.varTrainCnt.get()))
+            trainCntBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
+        else:
+            trainCntTextLb = ttkCustomWidget.CustomTtkLabel(txtFrame, text=self.varTrainCnt.get(), font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
+            trainCntTextLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
 
     def editVar(self, value):
         result = EditTrainCountWidget(self.root, textSetting.textList["railEditor"]["editTrainCountLabel"], self.decryptFile, value, self.rootFrameAppearance)

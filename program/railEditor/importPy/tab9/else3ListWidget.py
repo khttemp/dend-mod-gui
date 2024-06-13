@@ -19,7 +19,7 @@ class Else3ListWidget:
         self.rootFrameAppearance = rootFrameAppearance
         self.reloadFunc = reloadFunc
 
-        if self.decryptFile.game == "LS":
+        if self.decryptFile.game in ["LSTrial", "LS"]:
             self.text = textSetting.textList["railEditor"]["camLabel"]
         elseLf = ttkCustomWidget.CustomTtkLabelFrame(self.frame, text=self.text)
         elseLf.pack(anchor=tkinter.NW, padx=10, expand=True, fill=tkinter.BOTH)
@@ -112,7 +112,7 @@ class Else3ListWidget:
                 self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data)
                 index += 1
 
-        else:
+        elif self.decryptFile.game in ["LSTrial", "LS"]:
             col_tuple = (
                 "treeNum",
                 "cameraF1",
@@ -162,7 +162,7 @@ class Else3ListWidget:
         if result.reloadFlag:
             if self.decryptFile.game in ["BS", "CS", "RS"]:
                 self.else3List[num][0] = result.resultValueList[0]
-            elif self.decryptFile.game == "LS":
+            elif self.decryptFile.game in ["LSTrial", "LS"]:
                 for j in range(3):
                     self.else3List[num][j] = result.resultValueList[j]
 
@@ -199,7 +199,7 @@ class Else3ListWidget:
             if self.decryptFile.game in ["BS", "CS", "RS"]:
                 insertInfo.append(result.resultValueList[0])
                 insertInfo.append([[0, 0, 0, 0, 0]])
-            elif self.decryptFile.game == "LS":
+            elif self.decryptFile.game in ["LSTrial", "LS"]:
                 for j in range(3):
                     insertInfo.append(result.resultValueList[j])
                 insertInfo.append([])
@@ -242,7 +242,7 @@ class Else3ListWidget:
             key = smfInfoKeyList[0]
             copyList.append(int(selectItem[key]))
             copyList.append(self.else3List[num][-1])
-        else:
+        elif self.decryptFile.game in ["LSTrial", "LS"]:
             for i in range(len(smfInfoKeyList)):
                 key = smfInfoKeyList[i]
                 if i < len(smfInfoKeyList)-1:
@@ -400,7 +400,7 @@ class EditElse3ListCntWidget(CustomSimpleDialog):
                 if i == 1:
                     else3Et["state"] = "disabled"
                     varElse3.set(1)
-        elif self.decryptFile.game == "LS":
+        elif self.decryptFile.game in ["LSTrial", "LS"]:
             else3InfoLbList = textSetting.textList["railEditor"]["editElse3LsLabelList"]
             for i in range(len(else3InfoKeyList)):
                 else3Lb = ttkCustomWidget.CustomTtkLabel(master, text=else3InfoLbList[i], font=textSetting.textList["font2"])
@@ -456,7 +456,7 @@ class EditElse3ListCntWidget(CustomSimpleDialog):
                     if self.mode == "insert":
                         self.insert = self.insertCb.current()
                     return True
-                elif self.decryptFile.game == "LS":
+                elif self.decryptFile.game in ["LSTrial", "LS"]:
                     for i in range(len(self.varList)):
                         try:
                             if i != 3:
@@ -579,7 +579,7 @@ class Else3ElementListWidget(CustomSimpleDialog):
                 data += (else3Info[0], else3Info[1], else3Info[2], else3Info[3], else3Info[4])
                 self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data)
                 index += 1
-        else:
+        elif self.decryptFile.game in ["LSTrial", "LS"]:
             col_tuple = (
                 "treeNum",
                 "listF1",
@@ -766,7 +766,7 @@ class EditElse3ListWidget(CustomSimpleDialog):
                     varElse3.set(self.selectItem[key])
                 else3Et = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
                 else3Et.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
-        elif self.decryptFile.game == "LS":
+        elif self.decryptFile.game in ["LSTrial", "LS"]:
             else3LsInfoLbList = textSetting.textList["railEditor"]["editElse3LsElementLabelList"]
             for i in range(len(else3LsInfoLbList)):
                 key = else3ElementListInfoKeyList[i]
@@ -815,7 +815,7 @@ class EditElse3ListWidget(CustomSimpleDialog):
                             return False
                         self.resultValueList.append(res)
                     return True
-                elif self.decryptFile.game == "LS":
+                elif self.decryptFile.game in ["LSTrial", "LS"]:
                     for i in range(len(self.varList)):
                         try:
                             if i == 4:
