@@ -143,3 +143,24 @@ perと同じく、それをどれほど伸ばすかの倍率である。
 ![kasenchu_per2](/program/ssUnity/image/kasenchu_per2.png)
 
 perで1.0より大きく設定すると、横に伸びる仕様になる。
+
+mKasenChuがあるAMBは、下記の通りである。
+
+| モデル名 |
+| --- |
+| AMB_BLACK_CHU |
+| AMB_BlackCube |
+| AMB_HQ_KasenLong0 |
+| AMB_Kaidan2 |
+| AMB_Kasenchu_Center |
+| AMB_Kasenchu_Left |
+| AMB_Kasenchu_Long0 |
+| AMB_Kasenchu_Long1 |
+| AMB_Kasenchu_Long2 |
+| AMB_Kasenchu_Short |
+| AMB_Mina_Wall2 |
+| AMB_SAKU |
+| AMB_Toyo_Kasenchu |
+| AMB_TQ_Kaidan3 |
+| TQ_Eda_Iron |
+| TQ_Eda_Yane |
