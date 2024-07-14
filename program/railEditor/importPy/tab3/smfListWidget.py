@@ -177,7 +177,7 @@ class SmfListWidget:
                 self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data, tags=tags)
                 index += 1
         elif self.decryptFile.game in ["LSTrial", "LS"]:
-            if self.decryptFile.readFlag:
+            if self.decryptFile.game == "LS" or (self.decryptFile.game == "LSTrial" and self.decryptFile.readFlag):
                 col_tuple = (
                     "treeNum",
                     "smfInfoName",
@@ -578,7 +578,7 @@ class SmfListWidget:
         elif self.decryptFile.game in ["LSTrial", "LS"]:
             for i in range(len(smfInfoKeyList)):
                 key = smfInfoKeyList[i]
-                if self.decryptFile.readFlag:
+                if self.decryptFile.game == "LS" or (self.decryptFile.game == "LSTrial" and self.decryptFile.readFlag):
                     if i == 0:
                         copyList.append(selectItem[key])
                     elif i in [1, 2]:
@@ -814,7 +814,7 @@ class EditSmfListWidget(CustomSimpleDialog):
                             self.resultValueList.append(res)
 
                         if self.mode == "modify":
-                            if self.decryptFile.readFlag:
+                            if self.decryptFile.game == "LS" or (self.decryptFile.game == "LSTrial" and self.decryptFile.readFlag):
                                 originTempList = self.decryptFile.smfList[self.num][3]
                             else:
                                 originTempList = self.decryptFile.smfList[self.num][2]
