@@ -25,11 +25,11 @@
 
 ![texDetail](image/texDetail.png)
 
-### モデルイメージの編集
+### モデルのタイプ編集【推定】
 
-![imgInfo](image/imgInfo.png)
+![typeInfo](image/imgInfo.png)
 
-モデルのイメージ編集ができる。イメージ数が変わると、MDLINFO内容表のイメージ数も変わる
+モデルのタイプ編集ができる。
 
 ### smf要素の編集
 

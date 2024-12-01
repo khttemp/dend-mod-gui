@@ -40,7 +40,7 @@ def openFile():
     global copyAnotherBtn
     global readSMFBtn
     global decryptFile
-    file_path = fd.askopenfilename(filetypes=[(textSetting.textList["mdlinfo"]["fileType"], "*.BIN")])
+    file_path = fd.askopenfilename(filetypes=[(textSetting.textList["mdlinfo"]["fileType"], "MDLINFO*.BIN")])
 
     errorMsg = textSetting.textList["errorList"]["E18"]
     if file_path:

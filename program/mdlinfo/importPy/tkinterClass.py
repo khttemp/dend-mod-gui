@@ -108,10 +108,7 @@ class TreeViewDialog(CustomSimpleDialog):
     def treeSelect(self, event):
         selectId = int(self.frame.tree.selection()[0])
         selectItem = self.frame.tree.set(selectId)
-        if selectItem["treeMesh"] == "0,0":
-            self.editColorBtn["state"] = "disabled"
-        else:
-            self.editColorBtn["state"] = "normal"
+        self.editColorBtn["state"] = "normal"
         self.editElementBtn["state"] = "normal"
         self.insertElementBtn["state"] = "normal"
         self.deleteElementBtn["state"] = "normal"
