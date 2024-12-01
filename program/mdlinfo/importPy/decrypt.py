@@ -51,69 +51,66 @@ class MdlDecrypt:
             index += smfLen
             mdlInfo["smfName"] = smfName
 
-            mdlInfo["mdlcntIndex"] = index
-            mdlcnt = line[index]
+            mdlInfo["meshMtrlCntIndex"] = index
+            meshMtrlCnt = line[index]
+            index += 1
+            smfType = struct.unpack("<b", line[index].to_bytes(1, "big"))[0]
+            mdlInfo["smfType"] = smfType
             index += 1
             mdlInfo["detailMdlList"] = []
-            for j in range(mdlcnt):
+            for j in range(meshMtrlCnt):
                 detailMdlInfo = {}
-                detailMdlInfo["detailImgIndex"] = index
+                detailMdlInfo["detailMtrlIndex"] = index
 
+                detailMdlInfo["materialList"] = []
+                meshNum = struct.unpack("<b", line[index].to_bytes(1, "big"))[0]
+                detailMdlInfo["materialList"].append(meshNum)
+                index += 1
+                mtrlNum = struct.unpack("<b", line[index].to_bytes(1, "big"))[0]
+                detailMdlInfo["materialList"].append(mtrlNum)
+                index += 1
+
+                for k in range(4):
+                    b = struct.unpack("<b", line[index].to_bytes(1, "big"))[0]
+                    detailMdlInfo["materialList"].append(b)
+                    index += 1
+
+                for k in range(4):
+                    diff = struct.unpack("<f", line[index:index + 4])[0]
+                    diff = round(diff, 5)
+                    detailMdlInfo["materialList"].append(diff)
+                    index += 4
+
+                detailMdlInfo["materialList"].append(line[index])
+                index += 1
+
+                for k in range(3):
+                    emis = struct.unpack("<f", line[index:index + 4])[0]
+                    emis = round(emis, 5)
+                    detailMdlInfo["materialList"].append(emis)
+                    index += 4
+
+                b = struct.unpack("<b", line[index].to_bytes(1, "big"))[0]
+                detailMdlInfo["materialList"].append(b)
+                index += 1
+
+                h = struct.unpack("<h", line[index:index + 2])[0]
+                detailMdlInfo["materialList"].append(h)
+                index += 2
+
+                detailMdlInfo["detailImgIndex"] = index
                 b = struct.unpack("<b", line[index].to_bytes(1, "big"))[0]
                 detailMdlInfo["colorCnt"] = b
                 index += 1
                 detailMdlInfo["textureImgList"] = []
-                if j > 0 and b > 0:
-                    for k in range(b):
-                        imgLen = line[index]
-                        index += 1
-                        imgName = line[index:index + imgLen].decode("shift-jis")
-                        index += imgLen
-                        detailMdlInfo["textureImgList"].append(imgName)
-
-                detailMdlInfo["detailTexIndex"] = index
-                detailMdlInfo["textureList"] = []
-                for k in range(6):
-                    b = struct.unpack("<b", line[index].to_bytes(1, "big"))[0]
-                    detailMdlInfo["textureList"].append(b)
-                    index += 1
-
-                for k in range(4):
-                    f = struct.unpack("<f", line[index:index + 4])[0]
-                    f = round(f, 5)
-                    detailMdlInfo["textureList"].append(f)
-                    index += 4
-
-                detailMdlInfo["textureList"].append(line[index])
-                index += 1
-
-                for k in range(3):
-                    f = struct.unpack("<f", line[index:index + 4])[0]
-                    f = round(f, 5)
-                    detailMdlInfo["textureList"].append(f)
-                    index += 4
-
-                b = struct.unpack("<b", line[index].to_bytes(1, "big"))[0]
-                detailMdlInfo["textureList"].append(b)
-                index += 1
-
-                h = struct.unpack("<h", line[index:index + 2])[0]
-                detailMdlInfo["textureList"].append(h)
-                index += 2
-
-                mdlInfo["detailMdlList"].append(detailMdlInfo)
-
-            mdlInfo["imgList"] = []
-            mdlInfo["imgIndex"] = index
-            imgCnt = struct.unpack("<b", line[index].to_bytes(1, "big"))[0]
-            index += 1
-            if imgCnt > 0:
-                for j in range(imgCnt):
+                for k in range(b):
                     imgLen = line[index]
                     index += 1
                     imgName = line[index:index + imgLen].decode("shift-jis")
                     index += imgLen
-                    mdlInfo["imgList"].append(imgName)
+                    detailMdlInfo["textureImgList"].append(imgName)
+
+                mdlInfo["detailMdlList"].append(detailMdlInfo)
 
             mdlInfo["smfDetailList"] = []
             mdlInfo["smfDetailListIndex"] = index
@@ -179,29 +176,22 @@ class MdlDecrypt:
 
     def updateTex(self, smfNum, detailInfoNum, varList, mode):
         try:
-            mdlcntIndex = self.allInfoList[smfNum]["mdlcntIndex"]
-            mdlcnt = self.byteArr[mdlcntIndex]
+            meshMtrlCntIndex = self.allInfoList[smfNum]["meshMtrlCntIndex"]
+            meshMtrlCnt = self.byteArr[meshMtrlCntIndex]
             if mode == "insert":
-                mdlcnt += 1
+                meshMtrlCnt += 1
             elif mode == "delete":
-                mdlcnt -= 1
-            self.byteArr[mdlcntIndex] = mdlcnt
+                meshMtrlCnt -= 1
+            self.byteArr[meshMtrlCntIndex] = meshMtrlCnt
 
-            if mode == "edit":
-                index = self.allInfoList[smfNum]["detailMdlList"][detailInfoNum]["detailTexIndex"]
+            if mode == "edit" or mode == "delete":
+                index = self.allInfoList[smfNum]["detailMdlList"][detailInfoNum]["detailMtrlIndex"]
                 newByteArr = self.byteArr[0:index]
             elif mode == "insert":
                 if detailInfoNum >= len(self.allInfoList[smfNum]["detailMdlList"]) - 1:
-                    index = self.allInfoList[smfNum]["imgIndex"]
+                    index = self.allInfoList[smfNum]["smfDetailListIndex"]
                 else:
-                    index = self.allInfoList[smfNum]["detailMdlList"][detailInfoNum + 1]["detailImgIndex"]
-                newByteArr = self.byteArr[0:index]
-                if varList[0] == 0 and varList[1] == 0:
-                    newByteArr.append(0xFF)
-                else:
-                    newByteArr.append(0)
-            elif mode == "delete":
-                index = self.allInfoList[smfNum]["detailMdlList"][detailInfoNum]["detailImgIndex"]
+                    index = self.allInfoList[smfNum]["detailMdlList"][detailInfoNum + 1]["detailMtrlIndex"]
                 newByteArr = self.byteArr[0:index]
 
             if mode == "edit" or mode == "insert":
@@ -244,11 +234,14 @@ class MdlDecrypt:
                 varIdx += 1
                 if mode == "edit":
                     index += 2
+
+                if mode == "insert":
+                    newByteArr.append(0)
             elif mode == "delete":
                 if detailInfoNum >= len(self.allInfoList[smfNum]["detailMdlList"]) - 1:
-                    index = self.allInfoList[smfNum]["imgIndex"]
+                    index = self.allInfoList[smfNum]["smfDetailListIndex"]
                 else:
-                    index = self.allInfoList[smfNum]["detailMdlList"][detailInfoNum + 1]["detailImgIndex"]
+                    index = self.allInfoList[smfNum]["detailMdlList"][detailInfoNum + 1]["detailMtrlIndex"]
 
             newByteArr.extend(self.byteArr[index:])
             self.save(newByteArr)
@@ -257,25 +250,16 @@ class MdlDecrypt:
             self.error = traceback.format_exc()
             return False
 
-    def updateImage(self, smfNum, imgList):
+    def updateType(self, smfNum, smfType):
         try:
-            index = self.allInfoList[smfNum]["imgIndex"]
+            index = self.allInfoList[smfNum]["meshMtrlCntIndex"]
+            index += 1
             newByteArr = self.byteArr[0:index]
 
-            newByteArr.append(len(imgList))
-            for img in imgList:
-                newByteArr.append(len(img))
-                newByteArr.extend(img.encode("shift-jis"))
-
-            oldImgCnt = self.byteArr[index]
+            newByteArr.extend(struct.pack("<b", smfType))
             index += 1
-            for i in range(oldImgCnt):
-                imgLen = self.byteArr[index]
-                index += 1
-                index += imgLen
 
             newByteArr.extend(self.byteArr[index:])
-
             self.save(newByteArr)
             return True
         except Exception:

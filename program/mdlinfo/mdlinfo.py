@@ -10,7 +10,7 @@ import program.appearance.ttkCustomWidget as ttkCustomWidget
 
 from program.mdlinfo.importPy.decrypt import MdlDecrypt
 from program.mdlinfo.importPy.tkinterScrollbarTreeviewMdlinfo import ScrollbarTreeviewMdlinfo
-from program.mdlinfo.importPy.tkinterClass import TreeViewDialog, ImageDialog, SmfDetailDialog, BinFileOrFlagEditDialog, CopyMdlDialog, PasteDialog
+from program.mdlinfo.importPy.tkinterClass import TreeViewDialog, SmfTypeDialog, SmfDetailDialog, BinFileOrFlagEditDialog, CopyMdlDialog, PasteDialog
 
 from program.smf.importPy.decrypt import SmfDecrypt
 
@@ -22,7 +22,7 @@ v_search = None
 searchEt = None
 mdlInfoLf = None
 getMdlDetailBtn = None
-getMdlImageBtn = None
+getMdlTypeBtn = None
 getSmfDetailBtn = None
 getBinOrFlagBtn = None
 copyAnotherBtn = None
@@ -85,7 +85,7 @@ def createWidget():
     global searchEt
     global mdlInfoLf
     global getMdlDetailBtn
-    global getMdlImageBtn
+    global getMdlTypeBtn
     global getSmfDetailBtn
     global getBinOrFlagBtn
     global deleteMdlInfoBtn
@@ -97,7 +97,7 @@ def createWidget():
 
     btnList = [
         getMdlDetailBtn,
-        getMdlImageBtn,
+        getMdlTypeBtn,
         getSmfDetailBtn,
         getBinOrFlagBtn,
         deleteMdlInfoBtn,
@@ -109,7 +109,7 @@ def createWidget():
     col_tuple = (
         "treeNum",
         "treeSmf",
-        "treeImageNum",
+        "treeSmfType",
         "treeSmfEleNum",
         "binFileLabel",
         "binFileFlag"
@@ -119,14 +119,14 @@ def createWidget():
     frame.tree.column("#0", width=0, stretch=False)
     frame.tree.column("treeNum", anchor=tkinter.CENTER, width=60, stretch=False)
     frame.tree.column("treeSmf", anchor=tkinter.CENTER)
-    frame.tree.column("treeImageNum", anchor=tkinter.CENTER, width=60, stretch=False)
+    frame.tree.column("treeSmfType", anchor=tkinter.CENTER, width=60, stretch=False)
     frame.tree.column("treeSmfEleNum", anchor=tkinter.CENTER, width=80, stretch=False)
     frame.tree.column("binFileLabel", anchor=tkinter.CENTER)
     frame.tree.column("binFileFlag", anchor=tkinter.CENTER, width=60, stretch=False)
 
     frame.tree.heading("treeNum", text=textSetting.textList["mdlinfo"]["treeNum"], anchor=tkinter.CENTER)
     frame.tree.heading("treeSmf", text=textSetting.textList["mdlinfo"]["treeSmf"], anchor=tkinter.CENTER)
-    frame.tree.heading("treeImageNum", text=textSetting.textList["mdlinfo"]["treeImageNum"], anchor=tkinter.CENTER)
+    frame.tree.heading("treeSmfType", text=textSetting.textList["mdlinfo"]["treeSmfType"], anchor=tkinter.CENTER)
     frame.tree.heading("treeSmfEleNum", text=textSetting.textList["mdlinfo"]["treeSmfEleNum"], anchor=tkinter.CENTER)
     frame.tree.heading("binFileLabel", text=textSetting.textList["mdlinfo"]["binFileLabel"], anchor=tkinter.CENTER)
     frame.tree.heading("binFileFlag", text=textSetting.textList["mdlinfo"]["binFileFlag"], anchor=tkinter.CENTER)
@@ -141,7 +141,7 @@ def viewData(allInfoList):
         if mdlInfo["binInfo"][0]:
             binName = mdlInfo["binInfo"][0]
         data = (index + 1, mdlInfo["smfName"])
-        data += (len(mdlInfo["imgList"]),)
+        data += (mdlInfo["smfType"],)
         data += (len(mdlInfo["smfDetailList"]),)
         data += (binName, mdlInfo["binInfo"][1])
         frame.tree.insert(parent="", index="end", iid=index, values=data)
@@ -194,14 +194,14 @@ def getMdlDetail():
     TreeViewDialog(root, textSetting.textList["mdlinfo"]["detailModelInfo"], num, decryptFile, rootFrameAppearance)
 
 
-def getMdlImage():
+def getMdlType():
     global rootFrameAppearance
     global frame
     global decryptFile
     selectId = int(frame.tree.selection()[0])
     selectItem = frame.tree.set(selectId)
     num = int(selectItem["treeNum"]) - 1
-    ImageDialog(root, textSetting.textList["mdlinfo"]["detailModelImageInfo"], num, decryptFile, rootFrameAppearance)
+    SmfTypeDialog(root, textSetting.textList["mdlinfo"]["detailModelTypeInfo"], num, decryptFile, rootFrameAppearance)
 
     allDeleteTreeview()
     decryptFile = decryptFile.reload()
@@ -374,7 +374,7 @@ def call_mdlinfo(rootTk, appearance):
     global searchEt
     global mdlInfoLf
     global getMdlDetailBtn
-    global getMdlImageBtn
+    global getMdlTypeBtn
     global getSmfDetailBtn
     global getBinOrFlagBtn
     global copyAnotherBtn
@@ -417,8 +417,8 @@ def call_mdlinfo(rootTk, appearance):
     getMdlDetailBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["mdlinfo"]["mdlDetailLabel"], width=25, state="disabled", command=getMdlDetail)
     getMdlDetailBtn.grid(row=0, column=0, padx=10, pady=(0, 20))
 
-    getMdlImageBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["mdlinfo"]["mdlImageLabel"], width=25, state="disabled", command=getMdlImage)
-    getMdlImageBtn.grid(row=0, column=1, padx=10, pady=(0, 20))
+    getMdlTypeBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["mdlinfo"]["mdlTypeLabel"], width=25, state="disabled", command=getMdlType)
+    getMdlTypeBtn.grid(row=0, column=1, padx=10, pady=(0, 20))
 
     getSmfDetailBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["mdlinfo"]["mdlSmfEleLabel"], width=25, state="disabled", command=getSmfDetail)
     getSmfDetailBtn.grid(row=0, column=2, padx=10, pady=(0, 20))
