@@ -25,9 +25,19 @@
 
 ![texDetail](image/texDetail.png)
 
+* DRAW：マテリアルの描画設定。1にするとAlpha値も操作出来る
+
+* TRAN：Alpha値を操作できる場合、透明の設定。0にすると完全透明、1にすると半透明になる
+
+* SEPC：鏡面反射設定。1にすると反射しているように設定できる
+
+* DIFF：マテリアルの色
+
+* EMIS：自己発光の色
+
 ### モデルのタイプ編集【推定】
 
-![typeInfo](image/imgInfo.png)
+![typeInfo](image/typeInfo.png)
 
 モデルのタイプ編集ができる。
 

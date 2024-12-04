@@ -309,8 +309,9 @@ class DetailDialog(CustomSimpleDialog):
                 self.varCnt += 1
                 index += 1
             elif colIdName == "treeEle1-3":
+                eleLabelList = ["DRAW", "TRAN", "SPEC"]
                 for i in range(3):
-                    eleLb = ttkCustomWidget.CustomTtkLabel(master, font=textSetting.textList["font2"], text=textSetting.textList["mdlinfo"]["detailModelEleNum"].format(i + 1))
+                    eleLb = ttkCustomWidget.CustomTtkLabel(master, font=textSetting.textList["font2"], text=eleLabelList[i])
                     eleLb.grid(row=index, column=0, sticky=tkinter.W + tkinter.E)
                     self.varList.append(tkinter.IntVar(value=self.materialList[index]))
                     eleEt = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.varList[self.varCnt], width=self.entryWidth)
