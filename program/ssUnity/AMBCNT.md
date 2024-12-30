@@ -164,3 +164,37 @@ mKasenChuがあるAMBは、下記の通りである。
 | AMB_TQ_Kaidan3 |
 | TQ_Eda_Iron |
 | TQ_Eda_Yane |
+
+## ※ぶつけ判定があるAMBのモデル
+
+### ドリフトした場合、自走不能
+
+| モデル名 |
+| --- |
+| AMB_Bridgh_W_Hashira |
+| AMB_CHIKA_IN |
+| AMB_MetalBox |
+| AMB_MetalBox_50 |
+| AMB_UNDER_HASHIRA |
+| AMB_UNDER_HASHIRA2 |
+| AMB_UNDER_HASHIRA4 |
+| AMB_UNDER_IN |
+| TQ_Obj0 |
+
+### 突っ込む場合、自走不能
+
+| モデル名 |
+| --- |
+| AMB_3300Body |
+| AMB_Stop |
+| RailEnd |
+| UmedaStop |
+
+### ドリフト状態を強制的に解除
+
+| モデル名 |
+| --- |
+| AMB_1RAIL_UNDER_IN |
+| AMB_DriftBlock |
+| AMB_TQ_Wall0 |
+| AMB_TrackMdl |
