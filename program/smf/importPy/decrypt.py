@@ -3,6 +3,7 @@ import struct
 import codecs
 import copy
 import traceback
+import math
 import program.textSetting as textSetting
 
 
@@ -25,7 +26,6 @@ class SmfDecrypt:
         self.frameStartIdx = 0
         self.meshStartIdx = 0
         self.frameList = []
-        self.meshInfo = []
         self.meshList = []
         self.frameFormatList = [
             "OBB"
@@ -231,7 +231,7 @@ class SmfDecrypt:
     def readFRM(self, frame, length):
         index = self.index
         startIndex = self.index
-        frameInfo = []
+        frameObj = {}
 
         if self.printFRM:
             self.writeInfo(textSetting.textList["smf"]["frameNumFormat"].format(frame, self.frameCount-1))
@@ -249,13 +249,13 @@ class SmfDecrypt:
             matrix.append(rowList)
             if self.printFRM:
                 self.writeInfo()
-        frameInfo.append(matrix)
+        frameObj["matrix"] = matrix
 
         if self.printFRM:
             self.writeInfo(textSetting.textList["smf"]["frameName"], end=", ")
         fName = struct.unpack("<64s", self.byteArr[index:index+self.MAX_NAME_SIZE])[0]
         fName = fName.decode("shift-jis").rstrip("\x00")
-        frameInfo.append(fName)
+        frameObj["name"] = fName
         index += self.MAX_NAME_SIZE
         if self.printFRM:
             self.writeInfo(fName)
@@ -263,7 +263,7 @@ class SmfDecrypt:
         if self.printFRM:
             self.writeInfo(textSetting.textList["smf"]["frameMeshIndex"], end=", ")
         meshNo = struct.unpack("<l", self.byteArr[index:index+4])[0]
-        frameInfo.append(meshNo)
+        frameObj["meshNo"] = meshNo
         index += 4
         if self.printFRM:
             self.writeInfo(meshNo)
@@ -271,7 +271,7 @@ class SmfDecrypt:
         if self.printFRM:
             self.writeInfo(textSetting.textList["smf"]["parentFrameIndex"], end=", ")
         parentFrameNo = struct.unpack("<l", self.byteArr[index:index+4])[0]
-        frameInfo.append(parentFrameNo)
+        frameObj["parentFrameNo"] = parentFrameNo
         index += 4
         if self.printFRM:
             self.writeInfo(parentFrameNo)
@@ -313,8 +313,8 @@ class SmfDecrypt:
             if self.printFRM:
                 self.writeInfo(textSetting.textList["smf"]["fLengthLabel"].format(fLength))
             obbInfo.append(fLength)
-        frameInfo.append(obbInfo)
-        self.frameList.append(frameInfo)
+        frameObj["obbInfo"] = obbInfo
+        self.frameList.append(frameObj)
 
         if startIndex + length == index:
             self.index = index
@@ -423,7 +423,7 @@ class SmfDecrypt:
         index = self.index
         startIndex = self.index
         subName = ""
-        self.meshInfo = []
+        self.meshInfo = {}
 
         if self.printMESH:
             self.writeInfo(textSetting.textList["smf"]["meshNumFormat"].format(mesh, self.meshCount-1))
@@ -432,7 +432,6 @@ class SmfDecrypt:
             self.writeInfo(textSetting.textList["smf"]["meshName"], end=", ")
         mName = struct.unpack("<64s", self.byteArr[index:index+self.MAX_NAME_SIZE])[0]
         mName = mName.decode("shift-jis").rstrip("\x00")
-        self.meshInfo.append(mName)
         index += self.MAX_NAME_SIZE
         if self.printMESH:
             self.writeInfo(mName)
@@ -440,7 +439,6 @@ class SmfDecrypt:
         if self.printMESH:
             self.writeInfo(textSetting.textList["smf"]["meshMtrlNum"], end=", ")
         materialCount = struct.unpack("<l", self.byteArr[index:index+4])[0]
-        self.meshInfo.append(materialCount)
         index += 4
         if self.printMESH:
             self.writeInfo(materialCount)
@@ -490,7 +488,6 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        self.meshInfo.append(obbInfo)
         if self.processFlag:
             v_process += (meshCountRatio / len(self.meshFormatList))
             self.v_process.set(round(v_process))
@@ -538,7 +535,6 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        self.meshInfo.append(boneInfo)
         if self.processFlag:
             v_process += (meshCountRatio / len(self.meshFormatList))
             self.v_process.set(round(v_process))
@@ -551,7 +547,7 @@ class SmfDecrypt:
         if nextNameAndLength[0] in self.meshFormatList:
             subName = nextNameAndLength[0]
 
-        vPCInfo = []
+        coordList = []
         if subName == "V_PC":
             index = self.index
 
@@ -569,7 +565,7 @@ class SmfDecrypt:
                     self.writeInfo(textSetting.textList["smf"]["vPCColor"], end=", ")
                 vPCcolor = struct.unpack("<l", self.byteArr[index:index+4])[0]
                 index += 4
-                vPCInfo.append(vPC)
+                coordList.append(vPC)
                 if self.printMESH and self.printXYZ:
                     self.writeInfo(vPCcolor)
             if self.printMESH and self.printXYZ:
@@ -577,7 +573,7 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        self.meshInfo.append(vPCInfo)
+        self.meshInfo["coordList"] = coordList
         if self.processFlag:
             v_process += (meshCountRatio / len(self.meshFormatList))
             self.v_process.set(round(v_process))
@@ -609,7 +605,6 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        self.meshInfo.append(vNInfo)
         if self.processFlag:
             v_process += (meshCountRatio / len(self.meshFormatList))
             self.v_process.set(round(v_process))
@@ -641,7 +636,6 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        self.meshInfo.append(vBInfo)
         if self.processFlag:
             v_process += (meshCountRatio / len(self.meshFormatList))
             self.v_process.set(round(v_process))
@@ -677,7 +671,6 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        self.meshInfo.append(vAInfo)
         if self.processFlag:
             v_process += (meshCountRatio / len(self.meshFormatList))
             self.v_process.set(round(v_process))
@@ -703,6 +696,7 @@ class SmfDecrypt:
                     f = struct.unpack("<f", self.byteArr[index:index+4])[0]
                     index += 4
                     list1.append(f)
+                vUVInfo.append(list1)
                 if self.printMESH and self.printXYZ:
                     self.writeInfo(list1)
 
@@ -715,14 +709,13 @@ class SmfDecrypt:
                     list2.append(f)
                 if self.printMESH and self.printXYZ:
                     self.writeInfo(list2)
-                vUVInfo.append([list1, list2])
 
             if self.printMESH and self.printXYZ:
                 self.writeInfo()
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        self.meshInfo.append(vUVInfo)
+        self.meshInfo["uvList"] = vUVInfo
         if self.processFlag:
             v_process += (meshCountRatio / len(self.meshFormatList))
             self.v_process.set(round(v_process))
@@ -735,6 +728,7 @@ class SmfDecrypt:
         if nextNameAndLength[0] in self.meshFormatList:
             subName = nextNameAndLength[0]
 
+        coordIndexList = []
         idx2Info = []
         if subName == "IDX2":
             index = self.index
@@ -754,7 +748,9 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        self.meshInfo.append(idx2Info)
+        if len(idx2Info) > 0:
+            coordIndexList.extend(idx2Info)
+
         if self.processFlag:
             v_process += (meshCountRatio / len(self.meshFormatList))
             self.v_process.set(round(v_process))
@@ -785,7 +781,9 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        self.meshInfo.append(idx4Info)
+        if len(idx4Info) > 0:
+            coordIndexList.extend(idx4Info)
+        self.meshInfo["coordIndexList"] = coordIndexList
         if self.processFlag:
             v_process += (meshCountRatio / len(self.meshFormatList))
             self.v_process.set(round(v_process))
@@ -811,7 +809,7 @@ class SmfDecrypt:
             if materialCount > 1 and i < materialCount - 1:
                 if self.printMTRL:
                     self.writeInfo()
-        self.meshInfo.append(mtrlList)
+        self.meshInfo["mtrlList"] = mtrlList
         if self.processFlag:
             v_process += (meshCountRatio / len(self.meshFormatList))
             self.v_process.set(round(v_process))
@@ -854,7 +852,6 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        self.meshInfo.append(cATInfo)
         if self.processFlag:
             v_process += (meshCountRatio / len(self.meshFormatList))
             self.v_process.set(round(v_process))
@@ -903,7 +900,6 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        self.meshInfo.append(cFCInfo)
         if self.processFlag:
             v_process += (meshCountRatio / len(self.meshFormatList))
             self.v_process.set(round(v_process))
@@ -952,7 +948,6 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        self.meshInfo.append(cVXInfo)
         if self.processFlag:
             v_process += (meshCountRatio / len(self.meshFormatList))
             self.v_process.set(round(v_process))
@@ -969,14 +964,14 @@ class SmfDecrypt:
         index = self.index
         startIndex = self.index
         subName = ""
-        mtrlInfo = []
+        mtrlInfo = {}
 
         if self.printMTRL:
             self.writeInfo("MESH, MTRL:{0}-{1}".format(mesh, mtrl))
             self.writeInfo(textSetting.textList["smf"]["mtrlName"], end=", ")
         mName = struct.unpack("<64s", self.byteArr[index:index+self.MAX_NAME_SIZE])[0]
         mName = mName.decode("shift-jis").rstrip("\x00")
-        mtrlInfo.append(mName)
+        mtrlInfo["name"] = mName
         index += self.MAX_NAME_SIZE
         if self.printMTRL:
             self.writeInfo(mName)
@@ -984,7 +979,7 @@ class SmfDecrypt:
         if self.printMTRL:
             self.writeInfo(textSetting.textList["smf"]["polyStart"], end=", ")
         long = struct.unpack("<l", self.byteArr[index:index+4])[0]
-        mtrlInfo.append(long)
+        mtrlInfo["polyIndexStart"] = long
         index += 4
         if self.printMTRL:
             self.writeInfo(long)
@@ -992,7 +987,7 @@ class SmfDecrypt:
         if self.printMTRL:
             self.writeInfo(textSetting.textList["smf"]["polyCount"], end=", ")
         long = struct.unpack("<l", self.byteArr[index:index+4])[0]
-        mtrlInfo.append(long)
+        mtrlInfo["polyCount"] = long
         index += 4
         if self.printMTRL:
             self.writeInfo(long)
@@ -1000,7 +995,7 @@ class SmfDecrypt:
         if self.printMTRL:
             self.writeInfo(textSetting.textList["smf"]["mtrlPStart"], end=", ")
         long = struct.unpack("<l", self.byteArr[index:index+4])[0]
-        mtrlInfo.append(long)
+        mtrlInfo["coordIndexStart"] = long
         index += 4
         if self.printMTRL:
             self.writeInfo(long)
@@ -1008,7 +1003,7 @@ class SmfDecrypt:
         if self.printMTRL:
             self.writeInfo(textSetting.textList["smf"]["mtrlPCount"], end=", ")
         long = struct.unpack("<l", self.byteArr[index:index+4])[0]
-        mtrlInfo.append(long)
+        mtrlInfo["coordCount"] = long
         index += 4
         if self.printMTRL:
             self.writeInfo(long)
@@ -1028,6 +1023,7 @@ class SmfDecrypt:
                 self.writeInfo(textSetting.textList["smf"]["texCommon"], end=", ")
             mName = struct.unpack("<64s", self.byteArr[index:index+self.MAX_NAME_SIZE])[0]
             mName = mName.decode("shift-jis").rstrip("\x00")
+            mtrlInfo["texc"] = mName
             texcInfo.append(mName)
             index += self.MAX_NAME_SIZE
             if self.printMTRL:
@@ -1035,7 +1031,6 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        mtrlInfo.append(texcInfo)
         self.texList |= set(texcInfo)
 
         self.index = index
@@ -1054,13 +1049,13 @@ class SmfDecrypt:
             mName = struct.unpack("<64s", self.byteArr[index:index+self.MAX_NAME_SIZE])[0]
             mName = mName.decode("shift-jis").rstrip("\x00")
             texlInfo.append(mName)
+            mtrlInfo["texl"] = mName
             index += self.MAX_NAME_SIZE
             if self.printMTRL:
                 self.writeInfo(mName)
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        mtrlInfo.append(texlInfo)
         self.texList |= set(texlInfo)
 
         self.index = index
@@ -1085,7 +1080,6 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        mtrlInfo.append(texeInfo)
         self.texList |= set(texeInfo)
 
         self.index = index
@@ -1110,7 +1104,6 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        mtrlInfo.append(texsInfo)
         self.texList |= set(texsInfo)
 
         self.index = index
@@ -1135,7 +1128,6 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        mtrlInfo.append(texnInfo)
         self.texList |= set(texnInfo)
 
         self.index = index
@@ -1159,7 +1151,6 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        mtrlInfo.append(drawInfo)
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -1182,7 +1173,6 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        mtrlInfo.append(ztesInfo)
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -1205,7 +1195,6 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        mtrlInfo.append(zwriInfo)
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -1228,7 +1217,6 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        mtrlInfo.append(atesInfo)
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -1251,7 +1239,6 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        mtrlInfo.append(abndInfo)
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -1274,7 +1261,6 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        mtrlInfo.append(cullInfo)
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -1297,7 +1283,6 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        mtrlInfo.append(lgtInfo)
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -1319,13 +1304,13 @@ class SmfDecrypt:
                 index += 4
                 if self.printMTRL:
                     self.writeInfo(vec, end=", ")
+            mtrlInfo["diff"] = vecList
             diffInfo.append(vecList)
             if self.printMTRL:
                 self.writeInfo()
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        mtrlInfo.append(diffInfo)
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -1347,13 +1332,13 @@ class SmfDecrypt:
                 index += 4
                 if self.printMTRL:
                     self.writeInfo(vec, end=", ")
+            mtrlInfo["emis"] = vecList
             emisInfo.append(vecList)
             if self.printMTRL:
                 self.writeInfo()
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        mtrlInfo.append(emisInfo)
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -1375,6 +1360,7 @@ class SmfDecrypt:
                 index += 4
                 if self.printMTRL:
                     self.writeInfo(vec, end=", ")
+            mtrlInfo["spec"] = vecList
             if self.printMTRL:
                 self.writeInfo()
 
@@ -1395,7 +1381,6 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        mtrlInfo.append(specList)
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -1418,7 +1403,6 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
-        mtrlInfo.append(bumpInfo)
 
         if startIndex + length != index:
             return None
@@ -1738,3 +1722,41 @@ class SmfDecrypt:
         w.write(newByteArr)
         w.close()
         return True
+
+    def getQuaternion(self, m):
+        tr = m[0][0] + m[1][1] + m[2][2]
+        q = [0.0, 0.0, 0.0, 0.0]
+
+        if tr > 0:
+            s = math.sqrt(tr + 1.0) * 2 # S=4*qw
+            q[3] = 0.25 * s
+            q[0] = m[2][1] - m[1][2]
+            q[1] = m[0][2] - m[2][0]
+            q[2] = m[1][0] - m[0][1]
+        elif (m[0][0] > m[1][1]) and (m[0][0] > m[2][2]):
+            s = math.sqrt(1.0 + m[0][0] - m[1][1] - m[2][2]) * 2 # S=4*qx
+            q[3] = m[2][1] - m[1][2]
+            q[0] = 0.25 * s
+            q[1] = m[0][1] + m[1][0]
+            q[2] = m[0][2] + m[2][0]
+        elif m[1][1] > m[2][2]:
+            s = math.sqrt(1.0 + m[1][1] - m[0][0] - m[2][2]) * 2 # S=4*qy
+            q[3] = m[0][2] - m[2][0]
+            q[0] = m[0][1] + m[1][0]
+            q[1] = 0.25 * s
+            q[2] = m[1][2] + m[2][1]
+        else:
+            s = math.sqrt(1.0 + m[2][2] - m[0][0] - m[1][1]) * 2 # S=4*qz
+            q[3] = m[1][0] - m[0][1]
+            q[0] = m[0][2] + m[2][0]
+            q[1] = m[1][2] + m[2][1]
+            q[2] = 0.25 * s
+
+        return q
+
+    def matrixToPos(self, inMat):
+        return "{0} {1} {2}".format(inMat[3][0], inMat[3][1], inMat[3][2])
+
+    def matrixToRot(self, inMat):
+        q = self.getQuaternion(inMat)
+        return "{0} {1} {2} {3}".format(q[0], q[1], q[2], q[3])

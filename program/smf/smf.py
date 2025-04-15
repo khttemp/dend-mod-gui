@@ -14,6 +14,7 @@ import program.appearance.ttkCustomWidget as ttkCustomWidget
 from program.smf.importPy.decrypt import SmfDecrypt
 from program.smf.importPy.tkinterEditClass import SwapDialog
 from program.smf.importPy.tkinterScrollbarTreeviewSmf import ScrollbarTreeviewSmf
+from program.smf.importPy.extractX3d import X3dObject
 
 root = None
 rootFrameAppearance = None
@@ -24,6 +25,16 @@ scriptLf = None
 standardButton = None
 swapFrameButton = None
 deleteFrameButton = None
+extractX3dButton = None
+
+v_framePosX = None
+v_framePosY = None
+v_framePosZ = None
+v_frameRotX = None
+v_frameRotY = None
+v_frameRotZ = None
+v_frameRotW = None
+
 scanSmfImageButton = None
 v_modelCount = None
 noImageListbox = None
@@ -96,6 +107,7 @@ def createWidget():
     global standardButton
     global swapFrameButton
     global deleteFrameButton
+    global extractX3dButton
     global decryptFile
 
     btnList = [
@@ -103,20 +115,21 @@ def createWidget():
         deleteFrameButton
     ]
 
-    frame = ScrollbarTreeviewSmf(scriptLf, btnList)
+    frame = ScrollbarTreeviewSmf(scriptLf, btnList, getFrameInfo)
     frame.tree.heading("#0", text=decryptFile.filename, anchor=tkinter.CENTER)
 
-    for idx, frameInfo in enumerate(decryptFile.frameList):
-        fName = frameInfo[1].rstrip("\x00")
-        meshNo = frameInfo[2]
+    for idx, frameObj in enumerate(decryptFile.frameList):
+        fName = frameObj["name"]
+        meshNo = frameObj["meshNo"]
         if meshNo != -1:
             fName += textSetting.textList["smf"]["treeMeshNumFormat"].format(meshNo)
-        parentFrameNo = frameInfo[3]
+        parentFrameNo = frameObj["parentFrameNo"]
         frame.tree.insert("", str(idx), "item{0}".format(idx), text=fName, open=True)
         if parentFrameNo != -1:
             frame.tree.move("item{0}".format(idx), "item{0}".format(parentFrameNo), "end")
 
     standardButton["state"] = "normal"
+    extractX3dButton["state"] = "normal"
 
 
 def reloadWidget():
@@ -202,8 +215,50 @@ def deleteFrame():
         if not decryptFile.deleteFrame(frameIdx, -1):
             decryptFile.printError()
             mb.showerror(title=textSetting.textList["saveError"], message=errorMsg)
+            return
         mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I104"])
         reloadWidget()
+
+
+def extractX3d():
+    global decryptFile
+    saveName = os.path.splitext(os.path.basename(decryptFile.filename))[0] + ".x3d"
+    file_path = fd.asksaveasfilename(initialfile=saveName, filetypes=[(textSetting.textList["smf"]["x3dFile"], "*.x3d")])
+
+    if file_path:
+        errorMsg = textSetting.textList["errorList"]["E4"]
+        x3dObj = X3dObject(file_path, decryptFile)
+        if not x3dObj.makeX3d():
+            x3dObj.printError()
+            mb.showerror(title=textSetting.textList["saveError"], message=errorMsg)
+            return
+        mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I121"])
+
+
+def getFrameInfo():
+    global v_framePosX
+    global v_framePosY
+    global v_framePosZ
+    global v_frameRotX
+    global v_frameRotY
+    global v_frameRotZ
+    global v_frameRotW
+    global frame
+    global decryptFile
+
+    selectId = frame.tree.selection()[0]
+    idx = int(selectId.strip("item"))
+    frameObj = decryptFile.frameList[idx]
+    matrix = frameObj["matrix"]
+    pos = decryptFile.matrixToPos(matrix).split()
+    v_framePosX.set(round(float(pos[0]), 5))
+    v_framePosY.set(round(float(pos[1]), 5))
+    v_framePosZ.set(round(float(pos[2]), 5))
+    q = decryptFile.matrixToRot(matrix).split()
+    v_frameRotX.set(round(float(q[0]), 5))
+    v_frameRotY.set(round(float(q[1]), 5))
+    v_frameRotZ.set(round(float(q[2]), 5))
+    v_frameRotW.set(round(float(q[3]), 5))
 
 
 def scanSmfImage():
@@ -288,6 +343,16 @@ def call_smf(rootTk, appearance):
     global standardButton
     global swapFrameButton
     global deleteFrameButton
+    global extractX3dButton
+
+    global v_framePosX
+    global v_framePosY
+    global v_framePosZ
+    global v_frameRotX
+    global v_frameRotY
+    global v_frameRotZ
+    global v_frameRotW
+
     global scanSmfImageButton
     global v_modelCount
     global noImageListbox
@@ -321,19 +386,58 @@ def call_smf(rootTk, appearance):
     deleteFrameButton = ttkCustomWidget.CustomTtkButton(buttonListFrame, text=textSetting.textList["smf"]["deleteFrameLabel"], width=25, command=deleteFrame, state="disabled")
     deleteFrameButton.grid(row=1, column=0, padx=30, pady=5)
 
+    extractX3dButton = ttkCustomWidget.CustomTtkButton(buttonListFrame, text=textSetting.textList["smf"]["extractX3dLabel"], width=25, command=extractX3d, state="disabled")
+    extractX3dButton.grid(row=1, column=1, padx=30, pady=5)
+
+    framePosInfoLf = ttkCustomWidget.CustomTtkLabelFrame(buttonListFrame, text=textSetting.textList["smf"]["framePosInfoLabel"])
+    framePosInfoLf.grid(row=2, column=0, columnspan=4, sticky=tkinter.EW, padx=30, pady=5)
+
+    v_framePosX = tkinter.DoubleVar()
+    framePosXEt = ttkCustomWidget.CustomTtkEntry(framePosInfoLf, font=textSetting.textList["font2"], textvariable=v_framePosX, width=10, state="readonly")
+    framePosXEt.grid(row=0, column=0, padx=10, pady=5)
+
+    v_framePosY = tkinter.DoubleVar()
+    framePosYEt = ttkCustomWidget.CustomTtkEntry(framePosInfoLf, font=textSetting.textList["font2"], textvariable=v_framePosY, width=10, state="readonly")
+    framePosYEt.grid(row=0, column=1, padx=10, pady=5)
+
+    v_framePosZ = tkinter.DoubleVar()
+    framePosZEt = ttkCustomWidget.CustomTtkEntry(framePosInfoLf, font=textSetting.textList["font2"], textvariable=v_framePosZ, width=10, state="readonly")
+    framePosZEt.grid(row=0, column=2, padx=10, pady=5)
+
+
+    frameRotInfoLf = ttkCustomWidget.CustomTtkLabelFrame(buttonListFrame, text=textSetting.textList["smf"]["frameRotInfoLabel"])
+    frameRotInfoLf.grid(row=3, column=0, columnspan=4, sticky=tkinter.EW, padx=30, pady=5)
+
+    v_frameRotX = tkinter.DoubleVar()
+    frameRotXEt = ttkCustomWidget.CustomTtkEntry(frameRotInfoLf, font=textSetting.textList["font2"], textvariable=v_frameRotX, width=10, state="readonly")
+    frameRotXEt.grid(row=0, column=0, padx=10, pady=5)
+
+    v_frameRotY = tkinter.DoubleVar()
+    frameRotYEt = ttkCustomWidget.CustomTtkEntry(frameRotInfoLf, font=textSetting.textList["font2"], textvariable=v_frameRotY, width=10, state="readonly")
+    frameRotYEt.grid(row=0, column=1, padx=10, pady=5)
+
+    v_frameRotZ = tkinter.DoubleVar()
+    frameRotZEt = ttkCustomWidget.CustomTtkEntry(frameRotInfoLf, font=textSetting.textList["font2"], textvariable=v_frameRotZ, width=10, state="readonly")
+    frameRotZEt.grid(row=0, column=2, padx=10, pady=5)
+
+    v_frameRotW = tkinter.DoubleVar()
+    frameRotWEt = ttkCustomWidget.CustomTtkEntry(frameRotInfoLf, font=textSetting.textList["font2"], textvariable=v_frameRotW, width=10, state="readonly")
+    frameRotWEt.grid(row=1, column=0, padx=10, pady=5)
+
+
     scanSmfImageButton = ttkCustomWidget.CustomTtkButton(buttonListFrame, text=textSetting.textList["smf"]["scanSmfImageLabel"], width=50, command=scanSmfImage)
-    scanSmfImageButton.grid(row=2, column=0, columnspan=4, sticky=tkinter.EW, padx=30, pady=5)
+    scanSmfImageButton.grid(row=4, column=0, columnspan=4, sticky=tkinter.EW, padx=30, pady=5)
 
     v_modelCount = tkinter.StringVar()
     modelCountEntry = ttkCustomWidget.CustomTtkEntry(buttonListFrame, textvariable=v_modelCount, font=textSetting.textList["defaultFont"], justify="center", state="readonly")
-    modelCountEntry.grid(row=3, column=0, columnspan=2, sticky=tkinter.EW, padx=30, pady=5)
+    modelCountEntry.grid(row=5, column=0, columnspan=2, sticky=tkinter.EW, padx=30, pady=5)
 
     noImageListbox = tkinter.Listbox(buttonListFrame, selectmode="single", font=textSetting.textList["font2"], bg=rootFrameAppearance.bgColor, fg=rootFrameAppearance.fgColor)
-    noImageListbox.grid(row=4, column=0, columnspan=2, sticky=tkinter.EW, padx=30, pady=5)
+    noImageListbox.grid(row=6, column=0, columnspan=2, sticky=tkinter.EW, padx=30, pady=5)
 
     v_modelPath = tkinter.StringVar()
     modelPathEntry = ttkCustomWidget.CustomTtkEntry(buttonListFrame, textvariable=v_modelPath, font=textSetting.textList["defaultFont"], state="readonly")
-    modelPathEntry.grid(row=5, column=0, columnspan=2, sticky=tkinter.EW, padx=30, pady=5)
+    modelPathEntry.grid(row=7, column=0, columnspan=2, sticky=tkinter.EW, padx=30, pady=5)
 
     copyImageButton = ttkCustomWidget.CustomTtkButton(buttonListFrame, text=textSetting.textList["smf"]["copyImageLabel"], width=50, command=copyImage, state="disabled")
-    copyImageButton.grid(row=6, column=0, columnspan=2, sticky=tkinter.EW, padx=30, pady=5)
+    copyImageButton.grid(row=8, column=0, columnspan=2, sticky=tkinter.EW, padx=30, pady=5)

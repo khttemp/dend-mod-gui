@@ -2,9 +2,10 @@ from program.tkinterScrollbarTreeviewClass import ScrollbarTreeview
 
 
 class ScrollbarTreeviewSmf(ScrollbarTreeview):
-    def __init__(self, parent, btnList):
+    def __init__(self, parent, btnList, frameInfoFunc=None):
         super().__init__(parent, None)
         self.btnList = btnList
+        self.frameInfoFunc = frameInfoFunc
 
     def treeSelect(self, event):
         super().treeSelect(event)
@@ -15,3 +16,6 @@ class ScrollbarTreeviewSmf(ScrollbarTreeview):
         else:
             for btn in self.btnList:
                 btn["state"] = "normal"
+
+        if not self.frameInfoFunc is None:
+            self.frameInfoFunc()
