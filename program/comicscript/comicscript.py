@@ -2,6 +2,10 @@ import os
 import copy
 import codecs
 import traceback
+import sys
+import requests
+import json
+import re
 
 import tkinter
 from tkinter import filedialog as fd
@@ -26,7 +30,12 @@ rootFrameAppearance = None
 copyComicData = None
 
 
-def openFile():
+def resource_path(relative_path):
+    bundle_dir = getattr(sys, "_MEIPASS", os.path.join(os.path.abspath(os.path.dirname(__file__)), "importPy"))
+    return os.path.join(bundle_dir, relative_path)
+
+
+def openFile(comicCheck):
     global v_fileName
     global decryptFile
     file_path = fd.askopenfilename(filetypes=[(textSetting.textList["comicscript"]["fileType"], "*.BIN")])
@@ -43,7 +52,7 @@ def openFile():
                 mb.showerror(title=textSetting.textList["error"], message=errorMsg)
                 return
             deleteWidget()
-            createWidget()
+            createWidget(comicCheck)
         except Exception:
             w = codecs.open("error.log", "a", "utf-8", "strict")
             w.write(traceback.format_exc())
@@ -51,12 +60,27 @@ def openFile():
             mb.showerror(title=textSetting.textList["error"], message=errorMsg)
 
 
-def createWidget():
+def createWidget(comicCheck):
     global v_select
     global v_btnList
     global scriptLf
     global decryptFile
     global frame
+
+    game = textSetting.textList["menu"]["comicscript"]["gameList"][comicCheck]
+    cmdJsonInfo = None
+    try:
+        url = "https://raw.githubusercontent.com/khttemp/dendData/refs/heads/main/comicscript/js/cmd.json"
+        response = requests.get(url)
+        if response.status_code == requests.codes.ok:
+            cmdJsonInfo = json.loads(response.text)
+    except Exception:
+        pass
+
+    if cmdJsonInfo is None:
+        f = codecs.open(resource_path("cmd.json"), "r", "utf-8", "strict")
+        cmdJsonInfo = json.load(f)
+        f.close()
 
     btnList = [
         v_btnList[0],
@@ -99,8 +123,18 @@ def createWidget():
         for i in range(paramCnt):
             paramList.append(comicData[2+i])
         data = data + tuple(paramList)
-        frame.tree.insert(parent="", index="end", iid=num, values=data)
+
+        description = cmdJsonInfo[comicData[0]]["description"]
+        availableList = re.findall(r"【.*?】", description)[0]
+        if game not in availableList:
+            tags = "notAvailable"
+        else:
+            tags = "available"
+        frame.tree.insert(parent="", index="end", iid=num, values=data, tags=tags)
         num += 1
+
+    frame.tree.tag_configure("notAvailable", background="#666666", foreground="red")
+
     return num
 
 

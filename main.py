@@ -33,6 +33,7 @@ import program.appearance.rootFrameWidget as rootFrameWidget
 root = None
 style = None
 config_ini_path = None
+v_comicscriptCheck = None
 v_frameCheck = None
 v_meshCheck = None
 v_XYZCheck = None
@@ -111,13 +112,16 @@ def callProgram(programName):
         rsRailProgram.call_rsRail(root, rootFrameAppearance)
 
     delete_OptionMenu()
-    if selectedProgram == "smf":
+    if selectedProgram == "comicscript":
+        add_comicscriptOptionMenu()
+    elif selectedProgram == "smf":
         add_smfWriteOptionMenu()
     elif selectedProgram == "SSUnity" or selectedProgram == "railEditor":
         add_xlsxWriteOptionMenu()
 
 
 def loadFile():
+    global v_comicscriptCheck
     global v_frameCheck
     global v_meshCheck
     global v_XYZCheck
@@ -131,7 +135,7 @@ def loadFile():
     elif selectedProgram == "mdlinfo":
         mdlinfoProgram.openFile()
     elif selectedProgram == "comicscript":
-        comicscriptProgram.openFile()
+        comicscriptProgram.openFile(v_comicscriptCheck.get())
     elif selectedProgram == "musicEditor":
         musicEditorProgram.openFile()
     elif selectedProgram == "fvtMaker":
@@ -168,6 +172,33 @@ def configCheckOption(section, options, defaultValue="0"):
 
         return True
     return False
+
+
+def add_comicscriptOptionMenu():
+    global config_ini_path
+    global v_comicscriptCheck
+
+    if not os.path.exists(config_ini_path):
+        writeDefaultConfig()
+
+    configRead = configparser.ConfigParser()
+    configRead.read(config_ini_path, encoding="utf-8")
+
+    readErrorFlag = False
+    if configCheckOption("COMICSCRIPT_GAME", "mode"):
+        readErrorFlag = True
+
+    if readErrorFlag:
+        configRead.read(config_ini_path, encoding="utf-8")
+
+    if menubar.entryconfig(tkinter.END) == menubar.entryconfig(maxMenubarLen):
+        v_comicscriptCheck = tkinter.IntVar()
+        v_comicscriptCheck.set(int(configRead.get("COMICSCRIPT_GAME", "mode")))
+        comicscriptOptionMenu = tkinter.Menu(menubar, tearoff=False)
+        gameList = textSetting.textList["menu"]["comicscript"]["gameList"]
+        for gidx, game in enumerate(gameList):
+            comicscriptOptionMenu.add_radiobutton(label=game, value=gidx, variable=v_comicscriptCheck, command=writeComicscriptConfig)
+        menubar.add_cascade(label=textSetting.textList["menu"]["comicscript"]["name"], menu=comicscriptOptionMenu)
 
 
 def add_smfWriteOptionMenu():
@@ -278,6 +309,9 @@ def writeDefaultConfig():
                 os.makedirs(config_ini_folder)
 
             config = configparser.RawConfigParser()
+            config.add_section("COMICSCRIPT_GAME")
+            config.set("COMICSCRIPT_GAME", "mode", 0)
+
             config.add_section("SMF_FRAME")
             config.set("SMF_FRAME", "mode", 0)
             config.add_section("SMF_MESH")
@@ -302,6 +336,23 @@ def writeDefaultConfig():
             f.close()
         except PermissionError:
             errorLog(traceback.format_exc())
+
+
+def writeComicscriptConfig():
+    global v_comicscriptCheck
+    global config_ini_path
+
+    configRead = configparser.ConfigParser()
+    configRead.read(config_ini_path, encoding="utf-8")
+
+    configRead.set("COMICSCRIPT_GAME", "mode", str(v_comicscriptCheck.get()))
+
+    try:
+        f = codecs.open(config_ini_path, "w", "utf-8", "strict")
+        configRead.write(f)
+        f.close()
+    except PermissionError:
+        errorLog(traceback.format_exc())
 
 
 def writeSmfConfig():

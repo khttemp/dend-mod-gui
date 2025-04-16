@@ -1149,6 +1149,10 @@ textList = {
                 "opt3": "AMBのCSVを上書きしない",
             }
         },
+        "comicscript": {
+            "gameList": ["SS", "RS", "CS", "BS", "LS"],
+            "name": "スクリプトを読込むゲーム"
+        },
         "smf": {
             "name": "SMF書込みオプション",
             "write": {
