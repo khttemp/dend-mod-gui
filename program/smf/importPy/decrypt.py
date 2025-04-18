@@ -432,6 +432,7 @@ class SmfDecrypt:
             self.writeInfo(textSetting.textList["smf"]["meshName"], end=", ")
         mName = struct.unpack("<64s", self.byteArr[index:index+self.MAX_NAME_SIZE])[0]
         mName = mName.decode("shift-jis").rstrip("\x00")
+        self.meshInfo["name"] = mName
         index += self.MAX_NAME_SIZE
         if self.printMESH:
             self.writeInfo(mName)
@@ -500,12 +501,13 @@ class SmfDecrypt:
         if nextNameAndLength[0] in self.meshFormatList:
             subName = nextNameAndLength[0]
 
-        boneInfo = []
+        boneList = []
         if subName == "BONE":
             index = self.index
 
             count = nextNameAndLength[1] // 68
             for i in range(count):
+                boneObj = {}
                 matrix = []
                 if self.printMESH:
                     self.writeInfo(textSetting.textList["smf"]["boneLocalMatrix"])
@@ -520,7 +522,7 @@ class SmfDecrypt:
                     matrix.append(rows)
                     if self.printMESH:
                         self.writeInfo()
-                boneInfo.append(matrix)
+                boneObj["matrixOffset"] = matrix
                 if self.printMESH:
                     self.writeInfo()
 
@@ -528,13 +530,15 @@ class SmfDecrypt:
                     self.writeInfo(textSetting.textList["smf"]["boneFrameIndex"], end=", ")
                 frameNo = struct.unpack("<l", self.byteArr[index:index+4])[0]
                 index += 4
-                boneInfo.append(frameNo)
+                boneObj["frameNo"] = frameNo
                 if self.printMESH:
                     self.writeInfo(frameNo)
                     self.writeInfo()
+                boneList.append(boneObj)
 
             if self.index + nextNameAndLength[1] != index:
                 return False
+        self.meshInfo["boneList"] = boneList
         if self.processFlag:
             v_process += (meshCountRatio / len(self.meshFormatList))
             self.v_process.set(round(v_process))
@@ -605,6 +609,7 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
+        self.meshInfo["normalList"] = vNInfo
         if self.processFlag:
             v_process += (meshCountRatio / len(self.meshFormatList))
             self.v_process.set(round(v_process))
@@ -671,6 +676,7 @@ class SmfDecrypt:
 
             if self.index + nextNameAndLength[1] != index:
                 return False
+        self.meshInfo["boneWeightList"] = vAInfo
         if self.processFlag:
             v_process += (meshCountRatio / len(self.meshFormatList))
             self.v_process.set(round(v_process))

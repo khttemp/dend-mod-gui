@@ -14,6 +14,7 @@ import program.appearance.ttkCustomWidget as ttkCustomWidget
 from program.smf.importPy.decrypt import SmfDecrypt
 from program.smf.importPy.tkinterEditClass import SwapDialog
 from program.smf.importPy.tkinterScrollbarTreeviewSmf import ScrollbarTreeviewSmf
+from program.smf.importPy.extractX import XObject
 from program.smf.importPy.extractX3d import X3dObject
 
 root = None
@@ -25,7 +26,7 @@ scriptLf = None
 standardButton = None
 swapFrameButton = None
 deleteFrameButton = None
-extractX3dButton = None
+extract3dObjButton = None
 
 v_framePosX = None
 v_framePosY = None
@@ -107,7 +108,7 @@ def createWidget():
     global standardButton
     global swapFrameButton
     global deleteFrameButton
-    global extractX3dButton
+    global extract3dObjButton
     global decryptFile
 
     btnList = [
@@ -129,7 +130,7 @@ def createWidget():
             frame.tree.move("item{0}".format(idx), "item{0}".format(parentFrameNo), "end")
 
     standardButton["state"] = "normal"
-    extractX3dButton["state"] = "normal"
+    extract3dObjButton["state"] = "normal"
 
 
 def reloadWidget():
@@ -220,19 +221,28 @@ def deleteFrame():
         reloadWidget()
 
 
-def extractX3d():
+def extract3d():
     global decryptFile
-    saveName = os.path.splitext(os.path.basename(decryptFile.filename))[0] + ".x3d"
-    file_path = fd.asksaveasfilename(initialfile=saveName, filetypes=[(textSetting.textList["smf"]["x3dFile"], "*.x3d")])
+    saveName = os.path.splitext(os.path.basename(decryptFile.filename))[0]
+    file_path = fd.asksaveasfilename(initialfile=saveName, filetypes=[(textSetting.textList["smf"]["xFile"], "*.x"), (textSetting.textList["smf"]["x3dFile"], "*.x3d")], defaultextension=".x")
 
     if file_path:
         errorMsg = textSetting.textList["errorList"]["E4"]
-        x3dObj = X3dObject(file_path, decryptFile)
-        if not x3dObj.makeX3d():
-            x3dObj.printError()
-            mb.showerror(title=textSetting.textList["saveError"], message=errorMsg)
-            return
-        mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I121"])
+        ext = os.path.splitext(os.path.basename(file_path))[1].lower()
+        if ext == ".x":
+            xObj = XObject(file_path, decryptFile)
+            if not xObj.makeXFile():
+                xObj.printError()
+                mb.showerror(title=textSetting.textList["saveError"], message=errorMsg)
+                return
+            mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I122"])
+        elif ext == ".x3d":
+            x3dObj = X3dObject(file_path, decryptFile)
+            if not x3dObj.makeX3d():
+                x3dObj.printError()
+                mb.showerror(title=textSetting.textList["saveError"], message=errorMsg)
+                return
+            mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I121"])
 
 
 def getFrameInfo():
@@ -343,7 +353,7 @@ def call_smf(rootTk, appearance):
     global standardButton
     global swapFrameButton
     global deleteFrameButton
-    global extractX3dButton
+    global extract3dObjButton
 
     global v_framePosX
     global v_framePosY
@@ -386,8 +396,8 @@ def call_smf(rootTk, appearance):
     deleteFrameButton = ttkCustomWidget.CustomTtkButton(buttonListFrame, text=textSetting.textList["smf"]["deleteFrameLabel"], width=25, command=deleteFrame, state="disabled")
     deleteFrameButton.grid(row=1, column=0, padx=30, pady=5)
 
-    extractX3dButton = ttkCustomWidget.CustomTtkButton(buttonListFrame, text=textSetting.textList["smf"]["extractX3dLabel"], width=25, command=extractX3d, state="disabled")
-    extractX3dButton.grid(row=1, column=1, padx=30, pady=5)
+    extract3dObjButton = ttkCustomWidget.CustomTtkButton(buttonListFrame, text=textSetting.textList["smf"]["extract3dLabel"], width=25, command=extract3d, state="disabled")
+    extract3dObjButton.grid(row=1, column=1, padx=30, pady=5)
 
     framePosInfoLf = ttkCustomWidget.CustomTtkLabelFrame(buttonListFrame, text=textSetting.textList["smf"]["framePosInfoLabel"])
     framePosInfoLf.grid(row=2, column=0, columnspan=4, sticky=tkinter.EW, padx=30, pady=5)
