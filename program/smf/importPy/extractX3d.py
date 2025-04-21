@@ -35,7 +35,7 @@ class X3dObject():
         except Exception:
             self.error = traceback.format_exc()
             return False
-    
+
     def printError(self):
         w = codecs.open("error.log", "w", "utf-8", "strict")
         w.write(self.error)
@@ -58,7 +58,7 @@ class X3dObject():
                 meshElem.attrib["DEF"] = "Mesh_No.{0}".format(trans["meshNo"])
                 self.meshElementList.append(meshElem)
             self.elementList.append(addElem)
-    
+
     def makeMeshAndMtrl(self):
         for midx, mesh in enumerate(self.decryptFile.meshList):
             for mtrl in mesh["mtrlList"]:
@@ -81,7 +81,7 @@ class X3dObject():
                     meterialElem.attrib["emissiveColor"] = "{0} {1} {2}".format(mtrl["emis"][0], mtrl["emis"][1], mtrl["emis"][2])
                 if "spec" in mtrl:
                     meterialElem.attrib["specularColor"] = "{0} {1} {2}".format(mtrl["spec"][0], mtrl["spec"][1], mtrl["spec"][2])
-                
+
                 indexedFaceSetElem = ET.SubElement(shapeElem, "IndexedFaceSet")
                 indexedFaceSetElem.attrib["solid"] = "false"
                 polyStartIndex = mtrl["polyIndexStart"] * 3
@@ -103,6 +103,18 @@ class X3dObject():
                     coordValue += "{0} {1} {2} ".format(coord[0], coord[2], coord[1])
                 coordinateElem.attrib["point"] = coordValue
 
+                colorRGBAElem = ET.SubElement(indexedFaceSetElem, "ColorRGBA")
+                colorRGBAStartIndex = mtrl["coordIndexStart"]
+                colorRGBAEndIndex = colorRGBAStartIndex + mtrl["coordCount"]
+                splitColorInfoList = mesh["colorInfoList"][colorRGBAStartIndex:colorRGBAEndIndex]
+                colorValue = ""
+                for colorInfo in splitColorInfoList:
+                    colorValue += "{0} ".format(colorInfo[2] / 255.0)
+                    colorValue += "{0} ".format(colorInfo[1] / 255.0)
+                    colorValue += "{0} ".format(colorInfo[0] / 255.0)
+                    colorValue += "{0} ".format(colorInfo[3] / 255.0)
+                colorRGBAElem.attrib["color"] = colorValue
+
                 textureCoordinateElem = ET.SubElement(indexedFaceSetElem, "TextureCoordinate")
                 texCoordStartIndex = mtrl["coordIndexStart"]
                 texCoordEndIndex = texCoordStartIndex + mtrl["coordCount"]
@@ -111,6 +123,3 @@ class X3dObject():
                 for uv in splitTexCoordList:
                     texCoordValue += "{0} {1} ".format(uv[1], uv[0])
                 textureCoordinateElem.attrib["point"] = texCoordValue
-
-                    
-                

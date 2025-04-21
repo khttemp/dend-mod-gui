@@ -552,12 +552,14 @@ class SmfDecrypt:
             subName = nextNameAndLength[0]
 
         coordList = []
+        colorInfoList = []
         if subName == "V_PC":
             index = self.index
 
             count = nextNameAndLength[1] // 16
             for i in range(count):
                 vPC = []
+                colorInfo = []
                 for i in range(3):
                     vec = struct.unpack("<f", self.byteArr[index:index+4])[0]
                     index += 4
@@ -567,17 +569,21 @@ class SmfDecrypt:
 
                 if self.printMESH and self.printXYZ:
                     self.writeInfo(textSetting.textList["smf"]["vPCColor"], end=", ")
-                vPCcolor = struct.unpack("<l", self.byteArr[index:index+4])[0]
-                index += 4
+                for i in range(4):
+                    vPCcolor = struct.unpack("<B", self.byteArr[index].to_bytes(1, "little"))[0]
+                    colorInfo.append(vPCcolor)
+                    index += 1
                 coordList.append(vPC)
+                colorInfoList.append(colorInfo)
                 if self.printMESH and self.printXYZ:
-                    self.writeInfo(vPCcolor)
+                    self.writeInfo(colorInfo)
             if self.printMESH and self.printXYZ:
                 self.writeInfo()
 
             if self.index + nextNameAndLength[1] != index:
                 return False
         self.meshInfo["coordList"] = coordList
+        self.meshInfo["colorInfoList"] = colorInfoList
         if self.processFlag:
             v_process += (meshCountRatio / len(self.meshFormatList))
             self.v_process.set(round(v_process))

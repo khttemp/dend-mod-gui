@@ -23,7 +23,7 @@ class XObject():
         except Exception:
             self.error = traceback.format_exc()
             return False
-    
+
     def printError(self):
         w = codecs.open("error.log", "w", "utf-8", "strict")
         w.write(self.error)
@@ -33,16 +33,16 @@ class XObject():
         frameObjList = []
         for trans in self.decryptFile.frameList:
             frameObj = {"name": trans["name"], "matrix": trans["matrix"], "mesh":{}, "child":[]}
-            
+
             if trans["parentFrameNo"] != -1:
                 frameObjList[trans["parentFrameNo"]]["child"].append(frameObj)
             else:
                 self.xFileObj = frameObj
-            
+
             if trans["meshNo"] != -1:
                 frameObj["mesh"] = self.decryptFile.meshList[trans["meshNo"]]
             frameObjList.append(frameObj)
-    
+
     def writeFrameAndMesh(self, frameObj, indent=""):
         self.w.write(indent)
         self.w.write("Frame {0} {{\n".format(frameObj["name"]))
@@ -100,7 +100,7 @@ class XObject():
                     self.w.write(";\n")
                 else:
                     self.w.write(",\n")
-            
+
             self.w.write((indent + "   {0};\n".format(len(meshObj["coordIndexList"] ) // 3)))
             for idx, coordIdx in enumerate(meshObj["coordIndexList"]):
                 if idx % 3 == 0:
@@ -116,6 +116,22 @@ class XObject():
                     self.w.write(",")
             self.w.write((indent + "  }\n\n"))
             # normalList End
+
+            # colorInfoList Start
+            self.w.write((indent + "  MeshVertexColors {\n"))
+            self.w.write((indent + "   {0};\n".format(len(meshObj["colorInfoList"]))))
+            for idx, colorInfo in enumerate(meshObj["colorInfoList"]):
+                self.w.write((indent + "   {0};".format(idx)))
+                self.w.write("{0};".format(colorInfo[2] / 255.0))
+                self.w.write("{0};".format(colorInfo[1] / 255.0))
+                self.w.write("{0};".format(colorInfo[0] / 255.0))
+                self.w.write("{0};".format(colorInfo[3] / 255.0))
+                if idx == len(meshObj["coordList"]) - 1:
+                    self.w.write(";\n")
+                else:
+                    self.w.write(",\n")
+            self.w.write((indent + "  }\n\n"))
+            # colorInfoList End
 
             # uvList Start
             self.w.write((indent + "  MeshTextureCoords {\n"))
@@ -169,7 +185,6 @@ class XObject():
                 # Material End
             self.w.write((indent + "  }\n"))
             # mtrl End
-
             self.w.write((indent + " }\n\n"))
             # Mesh End
 
