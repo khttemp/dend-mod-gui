@@ -20,6 +20,7 @@ from program.comicscript.importPy.tkinterEditClass import InputDialog, PasteDial
 from program.comicscript.importPy.decrypt import ComicDecrypt
 
 root = None
+comicCheck = None
 v_fileName = None
 v_select = None
 v_btnList = []
@@ -35,8 +36,9 @@ def resource_path(relative_path):
     return os.path.join(bundle_dir, relative_path)
 
 
-def openFile(comicCheck):
+def openFile(pComicCheck):
     global v_fileName
+    global comicCheck
     global decryptFile
     file_path = fd.askopenfilename(filetypes=[(textSetting.textList["comicscript"]["fileType"], "*.BIN")])
 
@@ -52,7 +54,7 @@ def openFile(comicCheck):
                 mb.showerror(title=textSetting.textList["error"], message=errorMsg)
                 return
             deleteWidget()
-            createWidget(comicCheck)
+            createWidget(pComicCheck)
         except Exception:
             w = codecs.open("error.log", "a", "utf-8", "strict")
             w.write(traceback.format_exc())
@@ -60,13 +62,15 @@ def openFile(comicCheck):
             mb.showerror(title=textSetting.textList["error"], message=errorMsg)
 
 
-def createWidget(comicCheck):
+def createWidget(pComicCheck):
+    global comicCheck
     global v_select
     global v_btnList
     global scriptLf
     global decryptFile
     global frame
 
+    comicCheck = pComicCheck
     game = textSetting.textList["menu"]["comicscript"]["gameList"][comicCheck]
     cmdJsonInfo = None
     try:
@@ -226,6 +230,7 @@ def pasteLine():
 
 
 def reloadFile():
+    global comicCheck
     global v_select
     global decryptFile
     global frame
@@ -243,7 +248,7 @@ def reloadFile():
                 selectId = int(v_select.get())
 
             deleteWidget()
-            maxIndex = createWidget()
+            maxIndex = createWidget(comicCheck)
             if selectId is not None:
                 if selectId >= maxIndex:
                     selectId = maxIndex - 1
