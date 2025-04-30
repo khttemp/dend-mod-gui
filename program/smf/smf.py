@@ -14,6 +14,7 @@ import program.appearance.ttkCustomWidget as ttkCustomWidget
 from program.smf.importPy.decrypt import SmfDecrypt
 from program.smf.importPy.tkinterEditClass import SwapDialog
 from program.smf.importPy.tkinterScrollbarTreeviewSmf import ScrollbarTreeviewSmf
+from program.smf.importPy.extractFbx import FbxObject
 from program.smf.importPy.extractX import XObject
 from program.smf.importPy.extractX3d import X3dObject
 
@@ -224,12 +225,26 @@ def deleteFrame():
 def extract3d():
     global decryptFile
     saveName = os.path.splitext(os.path.basename(decryptFile.filename))[0]
-    file_path = fd.asksaveasfilename(initialfile=saveName, filetypes=[(textSetting.textList["smf"]["xFile"], "*.x"), (textSetting.textList["smf"]["x3dFile"], "*.x3d")], defaultextension=".x")
+    file_path = fd.asksaveasfilename(
+        initialfile=saveName,
+        filetypes=[
+            (textSetting.textList["smf"]["fbxFile"], "*.fbx"),
+            (textSetting.textList["smf"]["xFile"], "*.x"),
+            (textSetting.textList["smf"]["x3dFile"], "*.x3d")
+        ],
+        defaultextension=".fbx")
 
     if file_path:
         errorMsg = textSetting.textList["errorList"]["E4"]
         ext = os.path.splitext(os.path.basename(file_path))[1].lower()
-        if ext == ".x":
+        if ext == ".fbx":
+            fbxObj = FbxObject(file_path, decryptFile)
+            if not fbxObj.makeFbxFile():
+                fbxObj.printError()
+                mb.showerror(title=textSetting.textList["saveError"], message=errorMsg)
+                return
+            mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I123"])
+        elif ext == ".x":
             xObj = XObject(file_path, decryptFile)
             if not xObj.makeXFile():
                 xObj.printError()

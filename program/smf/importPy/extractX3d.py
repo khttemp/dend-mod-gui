@@ -59,6 +59,10 @@ class X3dObject():
                 self.meshElementList.append(meshElem)
             self.elementList.append(addElem)
 
+    def chunks(self, list, num):
+        for i in range(0, len(list), num):
+            yield list[i:i+num]
+
     def makeMeshAndMtrl(self):
         for midx, mesh in enumerate(self.decryptFile.meshList):
             for mtrl in mesh["mtrlList"]:
@@ -68,8 +72,6 @@ class X3dObject():
                 meterialElem = ET.SubElement(appearanceElem, "Material")
                 if "texc" in mtrl or "texl" in mtrl:
                     imageTextureElem = ET.SubElement(appearanceElem, "ImageTexture")
-                    textureTransform = ET.SubElement(appearanceElem, "TextureTransform")
-                    textureTransform.attrib["rotation"] = str(1/2*math.pi)
                     if "texc" in mtrl:
                         imageTextureElem.attrib["url"] = mtrl["texc"]
                     else:
@@ -87,11 +89,12 @@ class X3dObject():
                 polyStartIndex = mtrl["polyIndexStart"] * 3
                 polyEndIndex = polyStartIndex + mtrl["polyCount"] * 3
                 splitCoordIndexList = mesh["coordIndexList"][polyStartIndex:polyEndIndex]
+                chunkCoordIndexList = list(self.chunks(splitCoordIndexList, 3))
                 coordIndexValue = ""
-                for cIdx, coordIndex in enumerate(splitCoordIndexList):
-                    coordIndexValue += "{0} ".format(coordIndex - mtrl["coordIndexStart"])
-                    if cIdx % 3 == 2:
-                        coordIndexValue += "-1 "
+                for chunkCoordIndexInfo in chunkCoordIndexList:
+                    for coordIndex in reversed(chunkCoordIndexInfo):
+                        coordIndexValue += "{0} ".format(coordIndex - mtrl["coordIndexStart"])
+                    coordIndexValue += "-1 "
                 indexedFaceSetElem.attrib["coordIndex"] = coordIndexValue
 
                 coordinateElem = ET.SubElement(indexedFaceSetElem, "Coordinate")
@@ -100,7 +103,7 @@ class X3dObject():
                 splitCoordList = mesh["coordList"][coordStartIndex:coordEndIndex]
                 coordValue = ""
                 for coord in splitCoordList:
-                    coordValue += "{0} {1} {2} ".format(coord[0], coord[2], coord[1])
+                    coordValue += "{0} {1} {2} ".format(-coord[0], coord[1], coord[2])
                 coordinateElem.attrib["point"] = coordValue
 
                 colorRGBAElem = ET.SubElement(indexedFaceSetElem, "ColorRGBA")
@@ -121,5 +124,5 @@ class X3dObject():
                 splitTexCoordList = mesh["uvList"][texCoordStartIndex:texCoordEndIndex]
                 texCoordValue = ""
                 for uv in splitTexCoordList:
-                    texCoordValue += "{0} {1} ".format(uv[1], uv[0])
+                    texCoordValue += "{0} {1} ".format(uv[0], -uv[1])
                 textureCoordinateElem.attrib["point"] = texCoordValue

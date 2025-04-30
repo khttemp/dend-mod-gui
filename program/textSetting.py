@@ -806,6 +806,7 @@ textList = {
         "locationParentFrame": "移動先親フレーム",
         "treeMeshNumFormat": "(Mesh No.{0})",
         "smfFile": "ファイル",
+        "fbxFile": "fbxファイル",
         "xFile": "xファイル",
         "x3dFile": "x3dファイル",
         "swapFrame": "フレーム入れ替え",
@@ -976,7 +977,8 @@ textList = {
         "I119": "タイプ情報を修正しますか？",
         "I120": "タイプ情報を修正しました",
         "I121": "x3dで抽出しました",
-        "I122": "xで抽出しました"
+        "I122": "xで抽出しました",
+        "I123": "fbxで抽出しました"
     },
     "modify": "修正",
     "insert": "挿入",
