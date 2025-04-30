@@ -34,6 +34,7 @@ class FbxObject():
         self.scene = None
         self.rootNode = None
         self.skeletonNodeList = []
+        self.meshNodeList = []
         self.currentMaterialCount = 0
         self.imageFileList = []
         self.exporter = None
@@ -46,6 +47,7 @@ class FbxObject():
 
             self.makeStructure()
             self.makeNode(self.frameObj, self.rootNode)
+            self.makeBone()
             self.exportFbx()
             self.manager.Destroy()
             return True
@@ -99,6 +101,7 @@ class FbxObject():
             self.skeletonNodeList.append(newNode)
         elif len(frameObj["mesh"]) > 0:
             newNodeAttr = self.makeMesh(newNode, frameObj["meshNo"], frameObj["mesh"])
+            self.meshNodeList.append(newNode)
         else:
             newNodeAttr = FbxNull.Create(self.manager, frameObj["name"])
         newNode.SetNodeAttribute(newNodeAttr)
@@ -203,26 +206,33 @@ class FbxObject():
         for materialIndex in materialIndexList:
             mtrlIndexArray.Add(materialIndex)
 
-        if len(meshObj["boneList"]) > 0:
-            skin = FbxSkin.Create(self.manager, "")
-            mesh.AddDeformer(skin)
-
-            clusterList = []
-            for boneIdx in range(len(meshObj["boneList"])):
-                cluster = FbxCluster.Create(self.manager, "")
-                cluster.SetLink(self.skeletonNodeList[boneIdx])
-                cluster.SetLinkMode(FbxCluster.ELinkMode.eTotalOne)
-                transformMatrix = FbxAMatrix()
-                cluster.SetTransformMatrix(transformMatrix)
-                cluster.SetTransformLinkMatrix(self.skeletonNodeList[boneIdx].EvaluateGlobalTransform())
-                skin.AddCluster(cluster)
-                clusterList.append(cluster)
-
-            for vertexIndex, boneWeightInfo in enumerate(meshObj["boneWeightList"]):
-                for idx in boneWeightInfo[1]:
-                    cluster = clusterList[idx]
-                    cluster.AddControlPointIndex(vertexIndex, boneWeightInfo[0])
         return mesh
+
+    def makeBone(self):
+        for meshIdx in range(len(self.decryptFile.meshList)):
+            meshObj = self.decryptFile.meshList[meshIdx]
+            if len(meshObj["boneList"]) > 0:
+                meshNode = self.meshNodeList[meshIdx]
+                mesh = meshNode.GetNodeAttribute()
+
+                skin = FbxSkin.Create(self.manager, "")
+                mesh.AddDeformer(skin)
+
+                clusterList = []
+                for boneIdx in range(len(meshObj["boneList"])):
+                    cluster = FbxCluster.Create(self.manager, "")
+                    cluster.SetLink(self.skeletonNodeList[boneIdx])
+                    cluster.SetLinkMode(FbxCluster.ELinkMode.eTotalOne)
+                    transformMatrix = FbxAMatrix()
+                    cluster.SetTransformMatrix(transformMatrix)
+                    cluster.SetTransformLinkMatrix(self.skeletonNodeList[boneIdx].EvaluateGlobalTransform())
+                    skin.AddCluster(cluster)
+                    clusterList.append(cluster)
+
+                for vertexIndex, boneWeightInfo in enumerate(meshObj["boneWeightList"]):
+                    for idx in boneWeightInfo[1]:
+                        cluster = clusterList[idx]
+                        cluster.AddControlPointIndex(vertexIndex, boneWeightInfo[0])
 
     def exportFbx(self):
         dirname = os.path.splitext(self.filePath)[0]
