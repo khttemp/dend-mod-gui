@@ -815,6 +815,7 @@ textList = {
         "swapFrameLabel": "フレームの位置を入れ替える",
         "deleteFrameLabel": "フレームを消す",
         "extract3dLabel": "SMFを別の3dファイルで出力",
+        "turnModelMeshLabel": "選択したメッシュを180度回転",
         "scanSmfImageLabel": "SMFファイルリストで イメージファイル検索",
         "copyImageLabel": "上記のパスに、イメージファイルをコピーするフォルダー指定",
         "framePosInfoLabel": "Frameの座標情報(x, y, z)",
@@ -978,7 +979,9 @@ textList = {
         "I120": "タイプ情報を修正しました",
         "I121": "x3dで抽出しました",
         "I122": "xで抽出しました",
-        "I123": "fbxで抽出しました"
+        "I123": "fbxで抽出しました",
+        "I124": "選択したメッシュを180度回転しますか？\n回転する場合上書きします",
+        "I125": "回転しました"
     },
     "modify": "修正",
     "insert": "挿入",

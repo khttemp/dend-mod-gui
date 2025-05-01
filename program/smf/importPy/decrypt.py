@@ -1772,3 +1772,41 @@ class SmfDecrypt:
     def matrixToRot(self, inMat):
         q = self.getQuaternion(inMat)
         return "{0} {1} {2} {3}".format(q[0], q[1], q[2], q[3])
+
+    def turnModelMesh(self, meshNo):
+        self.index = self.meshStartIdx
+        newByteArr = bytearray(self.byteArr)
+        for mesh in range(self.meshCount):
+            if mesh == meshNo:
+                break
+            nameAndLength = self.getStructNameAndLength()
+            if not self.readMESH(mesh, nameAndLength[1], int(50 / self.meshCount)):
+                return False
+        searchIdx = newByteArr.find("CP_V".encode("shift-jis"))
+        if searchIdx == -1:
+            return False
+        self.index = searchIdx
+
+        nextNameAndLength = self.getStructNameAndLength()
+        count = nextNameAndLength[1] // 16
+        index = self.index
+        for i in range(count):
+            for j in range(3):
+                # x座標とz座標のみマイナスを付ける
+                if j == 0 or j == 2:
+                    b = newByteArr[index+3]
+                    # 正の数の場合
+                    if b & 0x80 == 0x00:
+                        newByteArr[index+3] |= 0x80
+                    # 負の数の場合
+                    elif b & 0x80 == 0x80:
+                        newByteArr[index+3] &= 0x7F
+                index += 4
+            index += 4
+
+        if self.index + nextNameAndLength[1] != index:
+            return False
+        w = open(self.filePath, "wb")
+        w.write(newByteArr)
+        w.close()
+        return True

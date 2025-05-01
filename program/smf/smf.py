@@ -2,6 +2,7 @@ import os
 import codecs
 import shutil
 import copy
+import re
 import traceback
 
 import tkinter
@@ -28,6 +29,7 @@ standardButton = None
 swapFrameButton = None
 deleteFrameButton = None
 extract3dObjButton = None
+turnModelMeshButton = None
 
 v_framePosX = None
 v_framePosY = None
@@ -110,23 +112,29 @@ def createWidget():
     global swapFrameButton
     global deleteFrameButton
     global extract3dObjButton
+    global turnModelMeshButton
     global decryptFile
 
     btnList = [
         swapFrameButton,
         deleteFrameButton
     ]
+    meshBtnList = [
+        turnModelMeshButton
+    ]
 
-    frame = ScrollbarTreeviewSmf(scriptLf, btnList, getFrameInfo)
+    frame = ScrollbarTreeviewSmf(scriptLf, btnList, meshBtnList, getFrameInfo)
     frame.tree.heading("#0", text=decryptFile.filename, anchor=tkinter.CENTER)
 
     for idx, frameObj in enumerate(decryptFile.frameList):
         fName = frameObj["name"]
         meshNo = frameObj["meshNo"]
+        tags = ""
         if meshNo != -1:
             fName += textSetting.textList["smf"]["treeMeshNumFormat"].format(meshNo)
+            tags = "mesh"
         parentFrameNo = frameObj["parentFrameNo"]
-        frame.tree.insert("", str(idx), "item{0}".format(idx), text=fName, open=True)
+        frame.tree.insert("", str(idx), "item{0}".format(idx), text=fName, tags=tags, open=True)
         if parentFrameNo != -1:
             frame.tree.move("item{0}".format(idx), "item{0}".format(parentFrameNo), "end")
 
@@ -211,7 +219,7 @@ def deleteFrame():
     selectName = frame.tree.item(selectId)["text"]
     warnMsg = textSetting.textList["infoList"]["I109"].format(selectName)
 
-    result = mb.askokcancel(title=textSetting.textList["confirm"], message=warnMsg, parent=root)
+    result = mb.askokcancel(title=textSetting.textList["confirm"], message=warnMsg, icon="warning", parent=root)
     if result:
         errorMsg = textSetting.textList["errorList"]["E4"]
         if not decryptFile.deleteFrame(frameIdx, -1):
@@ -258,6 +266,25 @@ def extract3d():
                 mb.showerror(title=textSetting.textList["saveError"], message=errorMsg)
                 return
             mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I121"])
+
+
+def turnModelMesh():
+    global decryptFile
+    global frame
+
+    warnMsg = textSetting.textList["infoList"]["I124"]
+    result = mb.askokcancel(title=textSetting.textList["confirm"], message=warnMsg, icon="warning", parent=root)
+    if result:
+        errorMsg = textSetting.textList["errorList"]["E4"]
+        selectId = frame.tree.selection()[0]
+        selectName = frame.tree.item(selectId)["text"]
+        meshNo = re.findall("Mesh No.(\d)", selectName)[0]
+        if not decryptFile.turnModelMesh(meshNo):
+            decryptFile.printError()
+            mb.showerror(title=textSetting.textList["saveError"], message=errorMsg)
+            return
+        mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I125"])
+        reloadWidget()
 
 
 def getFrameInfo():
@@ -369,6 +396,7 @@ def call_smf(rootTk, appearance):
     global swapFrameButton
     global deleteFrameButton
     global extract3dObjButton
+    global turnModelMeshButton
 
     global v_framePosX
     global v_framePosY
@@ -400,7 +428,7 @@ def call_smf(rootTk, appearance):
 
     scriptLf = ttkCustomWidget.CustomTtkLabelFrame(processScriptFrame, text=textSetting.textList["smf"]["scriptLabel"])
     scriptLf.pack(expand=True, fill=tkinter.BOTH, pady=15)
-    frame = ScrollbarTreeviewSmf(scriptLf, None)
+    frame = ScrollbarTreeviewSmf(scriptLf, None, None)
 
     standardButton = ttkCustomWidget.CustomTtkButton(buttonListFrame, text=textSetting.textList["smf"]["createStandardLabel"], width=25, command=createStandardGaugeButton, state="disabled")
     standardButton.grid(row=0, column=0, padx=30, pady=5)
@@ -414,8 +442,11 @@ def call_smf(rootTk, appearance):
     extract3dObjButton = ttkCustomWidget.CustomTtkButton(buttonListFrame, text=textSetting.textList["smf"]["extract3dLabel"], width=25, command=extract3d, state="disabled")
     extract3dObjButton.grid(row=1, column=1, padx=30, pady=5)
 
+    turnModelMeshButton = ttkCustomWidget.CustomTtkButton(buttonListFrame, text=textSetting.textList["smf"]["turnModelMeshLabel"], width=25, command=turnModelMesh, state="disabled")
+    turnModelMeshButton.grid(row=2, column=0, padx=30, pady=5)
+
     framePosInfoLf = ttkCustomWidget.CustomTtkLabelFrame(buttonListFrame, text=textSetting.textList["smf"]["framePosInfoLabel"])
-    framePosInfoLf.grid(row=2, column=0, columnspan=4, sticky=tkinter.EW, padx=30, pady=5)
+    framePosInfoLf.grid(row=3, column=0, columnspan=4, sticky=tkinter.EW, padx=30, pady=5)
 
     v_framePosX = tkinter.DoubleVar()
     framePosXEt = ttkCustomWidget.CustomTtkEntry(framePosInfoLf, font=textSetting.textList["font2"], textvariable=v_framePosX, width=10, state="readonly")
@@ -431,7 +462,7 @@ def call_smf(rootTk, appearance):
 
 
     frameRotInfoLf = ttkCustomWidget.CustomTtkLabelFrame(buttonListFrame, text=textSetting.textList["smf"]["frameRotInfoLabel"])
-    frameRotInfoLf.grid(row=3, column=0, columnspan=4, sticky=tkinter.EW, padx=30, pady=5)
+    frameRotInfoLf.grid(row=4, column=0, columnspan=4, sticky=tkinter.EW, padx=30, pady=5)
 
     v_frameRotX = tkinter.DoubleVar()
     frameRotXEt = ttkCustomWidget.CustomTtkEntry(frameRotInfoLf, font=textSetting.textList["font2"], textvariable=v_frameRotX, width=10, state="readonly")
@@ -451,18 +482,18 @@ def call_smf(rootTk, appearance):
 
 
     scanSmfImageButton = ttkCustomWidget.CustomTtkButton(buttonListFrame, text=textSetting.textList["smf"]["scanSmfImageLabel"], width=50, command=scanSmfImage)
-    scanSmfImageButton.grid(row=4, column=0, columnspan=4, sticky=tkinter.EW, padx=30, pady=5)
+    scanSmfImageButton.grid(row=5, column=0, columnspan=4, sticky=tkinter.EW, padx=30, pady=5)
 
     v_modelCount = tkinter.StringVar()
     modelCountEntry = ttkCustomWidget.CustomTtkEntry(buttonListFrame, textvariable=v_modelCount, font=textSetting.textList["defaultFont"], justify="center", state="readonly")
-    modelCountEntry.grid(row=5, column=0, columnspan=2, sticky=tkinter.EW, padx=30, pady=5)
+    modelCountEntry.grid(row=6, column=0, columnspan=2, sticky=tkinter.EW, padx=30, pady=5)
 
     noImageListbox = tkinter.Listbox(buttonListFrame, selectmode="single", font=textSetting.textList["font2"], bg=rootFrameAppearance.bgColor, fg=rootFrameAppearance.fgColor)
-    noImageListbox.grid(row=6, column=0, columnspan=2, sticky=tkinter.EW, padx=30, pady=5)
+    noImageListbox.grid(row=7, column=0, columnspan=2, sticky=tkinter.EW, padx=30, pady=5)
 
     v_modelPath = tkinter.StringVar()
     modelPathEntry = ttkCustomWidget.CustomTtkEntry(buttonListFrame, textvariable=v_modelPath, font=textSetting.textList["defaultFont"], state="readonly")
-    modelPathEntry.grid(row=7, column=0, columnspan=2, sticky=tkinter.EW, padx=30, pady=5)
+    modelPathEntry.grid(row=8, column=0, columnspan=2, sticky=tkinter.EW, padx=30, pady=5)
 
     copyImageButton = ttkCustomWidget.CustomTtkButton(buttonListFrame, text=textSetting.textList["smf"]["copyImageLabel"], width=50, command=copyImage, state="disabled")
-    copyImageButton.grid(row=8, column=0, columnspan=2, sticky=tkinter.EW, padx=30, pady=5)
+    copyImageButton.grid(row=9, column=0, columnspan=2, sticky=tkinter.EW, padx=30, pady=5)
