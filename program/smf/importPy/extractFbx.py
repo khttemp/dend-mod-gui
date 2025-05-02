@@ -9,6 +9,8 @@ from fbx import FbxScene
 from fbx import FbxExporter
 from fbx import FbxSkeleton
 from fbx import FbxMesh
+from fbx import FbxLayerElementVertexColor
+from fbx import FbxColor
 from fbx import FbxLayerElementNormal
 from fbx import FbxSkin
 from fbx import FbxCluster
@@ -147,6 +149,15 @@ class FbxObject():
         if not layer:
             mesh.CreateLayer()
             layer = mesh.GetLayer(0)
+
+        # 頂点カラー
+        colorElement = FbxLayerElementVertexColor.Create(mesh, "")
+        colorElement.SetMappingMode(FbxLayerElement.EMappingMode.eByControlPoint)
+        colorElement.SetReferenceMode(FbxLayerElement.EReferenceMode.eDirect)
+        colorArray = colorElement.GetDirectArray()
+        for colorInfo in meshObj["colorInfoList"]:
+            colorArray.Add(FbxColor(colorInfo[2] / 255.0, colorInfo[1] / 255.0, colorInfo[0] / 255.0, colorInfo[3] / 255.0))
+        layer.SetVertexColors(colorElement)
 
         # 法線（鏡反転対応）
         normalElement = FbxLayerElementNormal.Create(mesh, "{0}_normals".format(self.fileName))
