@@ -1,3 +1,4 @@
+import os
 import struct
 import codecs
 import traceback
@@ -417,17 +418,20 @@ class MdlDecrypt:
     def readSMFSave(self, filename, meshInfoList):
         try:
             smfByteArr = bytearray()
+            # 小文字の「.smf」にする
+            ext = os.path.splitext(filename)[1]
+            filename = os.path.splitext(filename)[0] + ext.lower()
             bFilename = filename.encode("shift-jis")
             smfByteArr.append(len(bFilename))
             smfByteArr.extend(bFilename)
             allCount = 0
             for meshInfo in meshInfoList:
-                allCount += meshInfo[1]
+                allCount += len(meshInfo["mtrlList"])
             smfByteArr.append(allCount)
             smfByteArr.append(0xFF)
 
             for index, meshInfo in enumerate(meshInfoList):
-                mtrlList = meshInfo[11]
+                mtrlList = meshInfo["mtrlList"]
                 for midx, mtrl in enumerate(mtrlList):
                     smfByteArr.append(index)
                     smfByteArr.append(midx)
@@ -436,12 +440,12 @@ class MdlDecrypt:
                     smfByteArr.append(0)
                     smfByteArr.append(1)
 
-                    diffList = mtrl[17][0]
+                    diffList = mtrl["diff"]
                     for diff in diffList:
                         fDiff = struct.pack("<f", diff)
                         smfByteArr.extend(fDiff)
                     smfByteArr.append(0)
-                    emisList = mtrl[18][0]
+                    emisList = mtrl["emis"]
                     for emis in emisList:
                         fEmis = struct.pack("<f", emis)
                         smfByteArr.extend(fEmis)

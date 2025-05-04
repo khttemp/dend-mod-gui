@@ -1441,10 +1441,10 @@ class SmfDecrypt:
             if not self.readFRM(frame, nameAndLength[1]):
                 return False
             frameInfo = self.frameList[0]
-            frameName = frameInfo[1]
+            frameName = frameInfo["name"]
             insertByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
             if frameName in ["Fire0_R_1", "Fire1_R_1", "Fire0_L_1", "Fire1_L_1"]:
-                originMeshIndexList.append(frameInfo[2])
+                originMeshIndexList.append(frameInfo["meshNo"])
                 deleteMeshCount += 1
                 continue
             elif frameName in ["Fire0_R_0", "Fire1_R_0", "Fire0_L_0", "Fire1_L_0"]:
@@ -1490,10 +1490,10 @@ class SmfDecrypt:
                         startIdx += 1
 
             if deleteMeshCount > 0:
-                meshNo = frameInfo[2]
+                meshNo = frameInfo["meshNo"]
                 if meshNo != -1:
                     meshNo -= deleteMeshCount
-                parentNo = frameInfo[3]
+                parentNo = frameInfo["parentFrameNo"]
                 if parentNo >= 15:
                     parentNo -= deleteMeshCount
                 startIdx = 8
@@ -1557,7 +1557,7 @@ class SmfDecrypt:
                     newByteArr.extend(insertByteArr)
 
         newFilename = self.d4StandardGuageList[self.standardGuageList.index(self.filename)]
-        w = open(newFilename, "wb")
+        w = open(os.path.join(self.directory, newFilename), "wb")
         w.write(newByteArr)
         w.close()
         return True
@@ -1592,7 +1592,7 @@ class SmfDecrypt:
             frameInfo = self.frameList[0]
             if frame == frameIdx:
                 self.popFrameByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
-                meshNo = frameInfo[2]
+                meshNo = frameInfo["meshNo"]
                 if meshNo != -1:
                     deleteMeshCount += 1
                     deleteMeshNo = meshNo
@@ -1600,10 +1600,10 @@ class SmfDecrypt:
                 deleteFrameNo = frameIdx
                 continue
             insertByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
-            meshNo = frameInfo[2]
+            meshNo = frameInfo["meshNo"]
             if meshNo != -1 and meshNo >= deleteMeshNo:
                 meshNo -= deleteMeshCount
-            parentNo = frameInfo[3]
+            parentNo = frameInfo["parentFrameNo"]
             if parentNo == parentIdx:
                 self.lastParentIdx = frame
             if parentNo >= deleteFrameNo:
@@ -1665,12 +1665,12 @@ class SmfDecrypt:
                 return False
             insertByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
             frameInfo = self.frameList[0]
-            meshNo = frameInfo[2]
+            meshNo = frameInfo["meshNo"]
             if meshNo != -1 and meshNo >= addMeshNo:
                 meshNo += addMeshCount
             if meshNo != -1:
                 currentMeshNo = meshNo
-            parentNo = frameInfo[3]
+            parentNo = frameInfo["parentFrameNo"]
             if parentNo >= addFrameNo:
                 parentNo += addFrameCount
             startIdx = 8
@@ -1806,6 +1806,31 @@ class SmfDecrypt:
 
         if self.index + nextNameAndLength[1] != index:
             return False
+        w = open(self.filePath, "wb")
+        w.write(newByteArr)
+        w.close()
+        return True
+
+    def saveSwapMesh(self, meshNo, swapMeshByteArr):
+        self.index = self.meshStartIdx
+        meshStartIdx = -1
+        meshEndIdx = -1
+        self.index = self.meshStartIdx
+        for mesh in range(self.meshCount):
+            if mesh == meshNo:
+                meshStartIdx = self.index
+            nameAndLength = self.getStructNameAndLength()
+            if not self.readMESH(mesh, nameAndLength[1], int(50 / self.meshCount)):
+                return False
+            if mesh == meshNo:
+                meshEndIdx = self.index
+                break
+        if meshStartIdx == -1 or meshEndIdx == -1:
+            return False
+        newByteArr = bytearray(self.byteArr[:meshStartIdx])
+        newByteArr.extend(swapMeshByteArr)
+        newByteArr.extend(self.byteArr[meshEndIdx:])
+
         w = open(self.filePath, "wb")
         w.write(newByteArr)
         w.close()

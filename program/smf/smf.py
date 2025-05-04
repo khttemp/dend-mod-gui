@@ -13,7 +13,7 @@ import program.textSetting as textSetting
 import program.appearance.ttkCustomWidget as ttkCustomWidget
 
 from program.smf.importPy.decrypt import SmfDecrypt
-from program.smf.importPy.tkinterEditClass import SwapDialog
+from program.smf.importPy.tkinterEditClass import SwapDialog, SwapMeshDialog
 from program.smf.importPy.tkinterScrollbarTreeviewSmf import ScrollbarTreeviewSmf
 from program.smf.importPy.extractFbx import FbxObject
 from program.smf.importPy.extractX import XObject
@@ -30,6 +30,7 @@ swapFrameButton = None
 deleteFrameButton = None
 extract3dObjButton = None
 turnModelMeshButton = None
+swapModelMeshButton = None
 
 v_framePosX = None
 v_framePosY = None
@@ -113,6 +114,7 @@ def createWidget():
     global deleteFrameButton
     global extract3dObjButton
     global turnModelMeshButton
+    global swapModelMeshButton
     global decryptFile
 
     btnList = [
@@ -120,7 +122,8 @@ def createWidget():
         deleteFrameButton
     ]
     meshBtnList = [
-        turnModelMeshButton
+        turnModelMeshButton,
+        swapModelMeshButton
     ]
 
     frame = ScrollbarTreeviewSmf(scriptLf, btnList, meshBtnList, getFrameInfo)
@@ -140,6 +143,8 @@ def createWidget():
 
     standardButton["state"] = "normal"
     extract3dObjButton["state"] = "normal"
+    turnModelMeshButton["state"] = "disabled"
+    swapModelMeshButton["state"] = "disabled"
 
 
 def reloadWidget():
@@ -287,6 +292,27 @@ def turnModelMesh():
         reloadWidget()
 
 
+def swapModelMesh():
+    global root
+    global rootFrameAppearance
+    global frame
+    global decryptFile
+
+    file_path = fd.askopenfilename(filetypes=[(textSetting.textList["smf"]["fileType"], "*.SMF")])
+    if file_path:
+        swapDecryptFile = SmfDecrypt(file_path, False, False, False, False, v_process, processBar, False)
+        if not swapDecryptFile.open():
+            swapDecryptFile.printError()
+            mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E74"])
+            return
+        selectId = frame.tree.selection()[0]
+        selectName = frame.tree.item(selectId)["text"]
+        meshNo = re.findall("Mesh No.(\d)", selectName)[0]
+        result = SwapMeshDialog(root, textSetting.textList["smf"]["swapFrame"], decryptFile, swapDecryptFile, rootFrameAppearance, int(meshNo))
+        if result.reloadFlag:
+            reloadWidget()
+
+
 def getFrameInfo():
     global v_framePosX
     global v_framePosY
@@ -397,6 +423,7 @@ def call_smf(rootTk, appearance):
     global deleteFrameButton
     global extract3dObjButton
     global turnModelMeshButton
+    global swapModelMeshButton
 
     global v_framePosX
     global v_framePosY
@@ -444,6 +471,9 @@ def call_smf(rootTk, appearance):
 
     turnModelMeshButton = ttkCustomWidget.CustomTtkButton(buttonListFrame, text=textSetting.textList["smf"]["turnModelMeshLabel"], width=25, command=turnModelMesh, state="disabled")
     turnModelMeshButton.grid(row=2, column=0, padx=30, pady=5)
+
+    swapModelMeshButton = ttkCustomWidget.CustomTtkButton(buttonListFrame, text=textSetting.textList["smf"]["swapModelMeshLabel"], width=25, command=swapModelMesh, state="disabled")
+    swapModelMeshButton.grid(row=2, column=1, padx=30, pady=5)
 
     framePosInfoLf = ttkCustomWidget.CustomTtkLabelFrame(buttonListFrame, text=textSetting.textList["smf"]["framePosInfoLabel"])
     framePosInfoLf.grid(row=3, column=0, columnspan=4, sticky=tkinter.EW, padx=30, pady=5)
