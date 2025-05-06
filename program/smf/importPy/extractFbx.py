@@ -241,9 +241,14 @@ class FbxObject():
                     clusterList.append(cluster)
 
                 for vertexIndex, boneWeightInfo in enumerate(meshObj["boneWeightList"]):
-                    for idx in boneWeightInfo[1]:
-                        cluster = clusterList[idx]
-                        cluster.AddControlPointIndex(vertexIndex, boneWeightInfo[0])
+                    cluster1 = clusterList[boneWeightInfo[1][0]]
+                    cluster1.AddControlPointIndex(vertexIndex, boneWeightInfo[0])
+                    cluster2 = clusterList[boneWeightInfo[1][1]]
+                    cluster2.AddControlPointIndex(vertexIndex, 1.0 - boneWeightInfo[0])
+                    cluster3 = clusterList[boneWeightInfo[1][2]]
+                    cluster3.AddControlPointIndex(vertexIndex, 0.0)
+                    cluster4 = clusterList[boneWeightInfo[1][3]]
+                    cluster4.AddControlPointIndex(vertexIndex, 0.0)
 
     def exportFbx(self):
         dirname = os.path.splitext(self.filePath)[0]

@@ -436,7 +436,7 @@ class MdlDecrypt:
                     smfByteArr.append(index)
                     smfByteArr.append(midx)
                     smfByteArr.append(1)
-                    smfByteArr.append(0)
+                    smfByteArr.append(1)
                     smfByteArr.append(0)
                     smfByteArr.append(1)
 

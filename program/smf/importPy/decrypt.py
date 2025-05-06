@@ -1567,7 +1567,7 @@ class SmfDecrypt:
             return False
         if not self.open():
             return False
-        if not self.addFrame(self.lastParentIdx, parentIdx):
+        if not self.deleteAfterAddFrame(self.lastParentIdx, parentIdx):
             return False
         return True
 
@@ -1647,7 +1647,7 @@ class SmfDecrypt:
         w.close()
         return True
 
-    def addFrame(self, frameIdx, parentIdx):
+    def deleteAfterAddFrame(self, frameIdx, parentIdx):
         newByteArr = bytearray()
         self.index = self.frameStartIdx
         newByteArr.extend(self.byteArr[0:self.index])
@@ -1735,34 +1735,96 @@ class SmfDecrypt:
         w.close()
         return True
 
+    def addFrame(self, frameIdx, parentIdx):
+        newByteArr = bytearray()
+        self.index = self.frameStartIdx
+        newByteArr.extend(self.byteArr[0:self.index])
+
+        addFrameNo = self.frameCount + 1
+        addFrameCount = 0
+        for frame in range(self.frameCount):
+            self.frameList = []
+            startIdx = self.index
+            nameAndLength = self.getStructNameAndLength()
+            if not self.readFRM(frame, nameAndLength[1]):
+                return False
+            insertByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
+            frameInfo = self.frameList[0]
+            meshNo = frameInfo["meshNo"]
+            parentNo = frameInfo["parentFrameNo"]
+            if parentNo >= addFrameNo:
+                parentNo += addFrameCount
+            startIdx = 8
+            startIdx += (64 + 64)
+            iMeshNo = struct.pack("<i", meshNo)
+            for iM in iMeshNo:
+                insertByteArr[startIdx] = iM
+                startIdx += 1
+            iParentNo = struct.pack("<i", parentNo)
+            for iP in iParentNo:
+                insertByteArr[startIdx] = iP
+                startIdx += 1
+            newByteArr.extend(insertByteArr)
+            if frame == frameIdx:
+                startIdx = 8
+                startIdx += (64 + 64)
+                meshNo = -1
+                parentNo = parentIdx
+                addFrameNo = frameIdx + 1
+                addFrameCount += 1
+
+                iMeshNo = struct.pack("<i", meshNo)
+                for iM in iMeshNo:
+                    insertByteArr[startIdx] = iM
+                    startIdx += 1
+                iParentNo = struct.pack("<i", parentNo)
+                for iP in iParentNo:
+                    insertByteArr[startIdx] = iP
+                    startIdx += 1
+                newByteArr.extend(insertByteArr)
+
+        startIdx = 16
+        newAllFrameCount = self.frameCount + addFrameCount
+        iNewAllFrameCount = struct.pack("<i", newAllFrameCount)
+        for iN in iNewAllFrameCount:
+            newByteArr[startIdx] = iN
+            startIdx += 1
+
+        newByteArr.extend(self.byteArr[self.meshStartIdx:])
+        w = open(self.filePath, "wb")
+        w.write(newByteArr)
+        w.close()
+        return True
+
     def getQuaternion(self, m):
         tr = m[0][0] + m[1][1] + m[2][2]
         q = [0.0, 0.0, 0.0, 0.0]
 
         if tr > 0:
-            s = math.sqrt(tr + 1.0) * 2 # S=4*qw
-            q[3] = 0.25 * s
-            q[0] = m[2][1] - m[1][2]
-            q[1] = m[0][2] - m[2][0]
-            q[2] = m[1][0] - m[0][1]
-        elif (m[0][0] > m[1][1]) and (m[0][0] > m[2][2]):
-            s = math.sqrt(1.0 + m[0][0] - m[1][1] - m[2][2]) * 2 # S=4*qx
-            q[3] = m[2][1] - m[1][2]
-            q[0] = 0.25 * s
-            q[1] = m[0][1] + m[1][0]
-            q[2] = m[0][2] + m[2][0]
-        elif m[1][1] > m[2][2]:
-            s = math.sqrt(1.0 + m[1][1] - m[0][0] - m[2][2]) * 2 # S=4*qy
-            q[3] = m[0][2] - m[2][0]
-            q[0] = m[0][1] + m[1][0]
-            q[1] = 0.25 * s
-            q[2] = m[1][2] + m[2][1]
+            s = 0.5 / math.sqrt(tr + 1.0)
+            q[3] = 0.25 / s
+            q[0] = (m[2][1] - m[1][2]) * s
+            q[1] = (m[0][2] - m[2][0]) * s
+            q[2] = (m[1][0] - m[0][1]) * s
         else:
-            s = math.sqrt(1.0 + m[2][2] - m[0][0] - m[1][1]) * 2 # S=4*qz
-            q[3] = m[1][0] - m[0][1]
-            q[0] = m[0][2] + m[2][0]
-            q[1] = m[1][2] + m[2][1]
-            q[2] = 0.25 * s
+            if (m[0][0] > m[1][1]) and (m[0][0] > m[2][2]):
+                s = 2 * math.sqrt(1.0 + m[0][0] - m[1][1] - m[2][2])
+                q[3] = (m[2][1] - m[1][2]) / s
+                q[0] = 0.25 * s
+                q[1] = (m[0][1] + m[1][0]) / s
+                q[2] = (m[0][2] + m[2][0]) / s
+            elif m[1][1] > m[2][2]:
+                s = 2 * math.sqrt(1.0 + m[1][1] - m[0][0] - m[2][2])
+                q[3] = (m[0][2] - m[2][0]) / s
+                q[0] = (m[0][1] + m[1][0]) / s
+                q[1] = 0.25 * s
+                q[2] = (m[1][2] + m[2][1]) / s
+            else:
+                s = 2 * math.sqrt(1.0 + m[2][2] - m[0][0] - m[1][1])
+                q[3] = (m[1][0] - m[0][1]) / s
+                q[0] = (m[0][2] + m[2][0]) / s
+                q[1] = (m[1][2] + m[2][1]) / s
+                q[2] = 0.25 * s
 
         return q
 
@@ -1782,7 +1844,7 @@ class SmfDecrypt:
             nameAndLength = self.getStructNameAndLength()
             if not self.readMESH(mesh, nameAndLength[1], int(50 / self.meshCount)):
                 return False
-        searchIdx = newByteArr.find("CP_V".encode("shift-jis"))
+        searchIdx = newByteArr.find("CP_V".encode("shift-jis"), self.index)
         if searchIdx == -1:
             return False
         self.index = searchIdx
@@ -1831,6 +1893,148 @@ class SmfDecrypt:
         newByteArr.extend(swapMeshByteArr)
         newByteArr.extend(self.byteArr[meshEndIdx:])
 
+        w = open(self.filePath, "wb")
+        w.write(newByteArr)
+        w.close()
+        return True
+
+    def saveSwapFbxMesh(self, meshNo, meshObj):
+        self.index = self.meshStartIdx
+        meshStartIdx = -1
+        meshEndIdx = -1
+        self.index = self.meshStartIdx
+        for mesh in range(self.meshCount):
+            if mesh == meshNo:
+                meshStartIdx = self.index
+            nameAndLength = self.getStructNameAndLength()
+            if not self.readMESH(mesh, nameAndLength[1], int(50 / self.meshCount)):
+                return False
+            if mesh == meshNo:
+                meshEndIdx = self.index
+                break
+        if meshStartIdx == -1 or meshEndIdx == -1:
+            return False
+        newByteArr = bytearray(self.byteArr[:meshStartIdx])
+
+        # FbxMesh start
+        index = meshStartIdx
+        index += 4
+        meshAllLengthIndex = index
+        index += 4
+        index += 64
+        materialCountIndex = index
+        index += 4
+
+        nameChar4 = str(hex(struct.unpack("<l", self.byteArr[index:index+4])[0]))[2:]
+        nameList = [int(nameChar4[x:x+2], 16) for x in range(0, len(nameChar4), 2)]
+        name = ""
+        for n in nameList:
+            name += chr(n)
+        if name == "OBB":
+            index += 4
+            index += 4
+            index += 0x3c
+        newByteArr.extend(self.byteArr[meshStartIdx:index])
+
+        iMaterialCount = struct.pack("<i", len(meshObj["mtrlList"]))
+        for i in range(4):
+            newByteArr[materialCountIndex + i] = iMaterialCount[i]
+
+        # V_CP
+        newByteArr.extend(bytearray([0x43, 0x50, 0x5F, 0x56]))
+        newByteArr.extend(struct.pack("<i", len(meshObj["coordList"]) * 16))
+        for coord in meshObj["coordList"]:
+            for i in range(3):
+                newByteArr.extend(struct.pack("<f", coord[i]))
+            newByteArr.extend(struct.pack("<i", -1))
+
+        # V_N
+        newByteArr.extend(bytearray([0x4E, 0x5F, 0x56, 0x00]))
+        newByteArr.extend(struct.pack("<i", len(meshObj["normalList"]) * 12))
+        for normal in meshObj["normalList"]:
+            for i in range(3):
+                newByteArr.extend(struct.pack("<f", normal[i]))
+
+        # V_UV
+        newByteArr.extend(bytearray([0x56, 0x55, 0x5F, 0x56]))
+        newByteArr.extend(struct.pack("<i", len(meshObj["uvList"]) * 16))
+        for uv in meshObj["uvList"]:
+            for i in range(2):
+                for j in range(2):
+                    newByteArr.extend(struct.pack("<f", uv[j]))
+
+        # IDX2
+        newByteArr.extend(bytearray([0x32, 0x58, 0x44, 0x49]))
+        newByteArr.extend(struct.pack("<i", len(meshObj["coordIndexList"]) * 6))
+        for indexList in meshObj["coordIndexList"]:
+            for coordIndex in indexList:
+                newByteArr.extend(struct.pack("<h", coordIndex))
+
+        # MTRL
+        for mtrl in meshObj["mtrlList"]:
+            newByteArr.extend(bytearray([0x4C, 0x52, 0x54, 0x4D]))
+            mtrlLengthIndex = len(newByteArr)
+            newByteArr.extend(struct.pack("<i", 0))
+            newByteArr.extend("Material".encode("shift-jis"))
+            newByteArr.extend(bytearray([0x00]*56))
+            newByteArr.extend(struct.pack("<i", mtrl["polyIndexStart"]))
+            newByteArr.extend(struct.pack("<i", mtrl["polyCount"]))
+            newByteArr.extend(struct.pack("<i", 0))
+            newByteArr.extend(struct.pack("<i", 0))
+            # TEXC
+            newByteArr.extend(bytearray([0x43, 0x58, 0x45, 0x54]))
+            newByteArr.extend(struct.pack("<i", 64))
+            newByteArr.extend(mtrl["texc"].encode("shift-jis"))
+            newByteArr.extend(bytearray([0x00] * (64 - len(mtrl["texc"].encode("shift-jis")))))
+            # DRAW
+            newByteArr.extend(bytearray([0x57, 0x41, 0x52, 0x44]))
+            newByteArr.extend(struct.pack("<i", 4))
+            newByteArr.extend(struct.pack("<i", 0))
+            # ZTES
+            newByteArr.extend(bytearray([0x53, 0x45, 0x54, 0x5A]))
+            newByteArr.extend(struct.pack("<i", 4))
+            newByteArr.extend(struct.pack("<i", 1))
+            # ZWRI
+            newByteArr.extend(bytearray([0x49, 0x52, 0x57, 0x5A]))
+            newByteArr.extend(struct.pack("<i", 4))
+            newByteArr.extend(struct.pack("<i", 1))
+            # ATES
+            newByteArr.extend(bytearray([0x53, 0x45, 0x54, 0x41]))
+            newByteArr.extend(struct.pack("<i", 4))
+            newByteArr.extend(struct.pack("<i", 1))
+            # ABND
+            newByteArr.extend(bytearray([0x44, 0x4E, 0x42, 0x41]))
+            newByteArr.extend(struct.pack("<i", 4))
+            newByteArr.extend(struct.pack("<i", 0))
+            # CULL
+            newByteArr.extend(bytearray([0x4C, 0x4C, 0x55, 0x43]))
+            newByteArr.extend(struct.pack("<i", 4))
+            newByteArr.extend(struct.pack("<i", 1))
+            # LGT
+            newByteArr.extend(bytearray([0x54, 0x47, 0x4C, 0x00]))
+            newByteArr.extend(struct.pack("<i", 4))
+            newByteArr.extend(struct.pack("<i", 1))
+            # DIFF
+            newByteArr.extend(bytearray([0x46, 0x46, 0x49, 0x44]))
+            newByteArr.extend(struct.pack("<i", 16))
+            for diff in mtrl["diff"]:
+                newByteArr.extend(struct.pack("<f", diff))
+            newByteArr.extend(struct.pack("<f", 1.0))
+            # EMIS
+            newByteArr.extend(bytearray([0x53, 0x49, 0x4D, 0x45]))
+            newByteArr.extend(struct.pack("<i", 12))
+            for emis in mtrl["emis"]:
+                newByteArr.extend(struct.pack("<f", emis))
+            mtrlLength = len(newByteArr) - mtrlLengthIndex - 4
+            iMtrlLength = struct.pack("<i", mtrlLength)
+            for i in range(4):
+                newByteArr[mtrlLengthIndex + i] = iMtrlLength[i]
+        meshLength = len(newByteArr) - meshAllLengthIndex - 4
+        iMeshLength = struct.pack("<i", meshLength)
+        for i in range(4):
+            newByteArr[meshAllLengthIndex + i] = iMeshLength[i]
+        # FbxMesh end
+        newByteArr.extend(self.byteArr[meshEndIdx:])
         w = open(self.filePath, "wb")
         w.write(newByteArr)
         w.close()
