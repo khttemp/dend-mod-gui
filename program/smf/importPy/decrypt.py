@@ -101,7 +101,6 @@ class SmfDecrypt:
         self.texList = set()
         self.lastParentIdx = 0
         self.popFrameByteArr = bytearray()
-        self.popMeshByteArr = bytearray()
         self.error = ""
 
     def open(self):
@@ -1563,7 +1562,7 @@ class SmfDecrypt:
         return True
 
     def saveSwap(self, frameIdx, parentIdx):
-        if not self.deleteFrame(frameIdx, parentIdx):
+        if not self.deleteFrame(frameIdx, parentIdx, False):
             return False
         if not self.open():
             return False
@@ -1571,18 +1570,19 @@ class SmfDecrypt:
             return False
         return True
 
-    def deleteFrame(self, frameIdx, parentIdx):
+    def deleteFrame(self, frameIdx, parentIdx, flag=True):
         newByteArr = bytearray()
         self.lastParentIdx = parentIdx
         self.index = self.frameStartIdx
         newByteArr.extend(self.byteArr[0:self.index])
 
-        deleteMeshNo = -1
-        deleteFrameNo = -1
+        deleteMeshNo = self.frameList[frameIdx]["meshNo"]
+        deleteFrameNo = frameIdx
         deleteMeshCount = 0
-        deleteFrameCount = 0
+        if deleteMeshNo != -1 and flag:
+            deleteMeshCount = 1
+        deleteFrameCount = 1
         self.popFrameByteArr = bytearray()
-        self.popMeshByteArr = bytearray()
         for frame in range(self.frameCount):
             self.frameList = []
             startIdx = self.index
@@ -1592,16 +1592,10 @@ class SmfDecrypt:
             frameInfo = self.frameList[0]
             if frame == frameIdx:
                 self.popFrameByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
-                meshNo = frameInfo["meshNo"]
-                if meshNo != -1:
-                    deleteMeshCount += 1
-                    deleteMeshNo = meshNo
-                deleteFrameCount += 1
-                deleteFrameNo = frameIdx
                 continue
             insertByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
             meshNo = frameInfo["meshNo"]
-            if meshNo != -1 and meshNo >= deleteMeshNo:
+            if meshNo != -1 and meshNo >= deleteMeshNo and flag:
                 meshNo -= deleteMeshCount
             parentNo = frameInfo["parentFrameNo"]
             if parentNo == parentIdx:
@@ -1637,8 +1631,7 @@ class SmfDecrypt:
             nameAndLength = self.getStructNameAndLength()
             if not self.readMESH(mesh, nameAndLength[1], int(50 / self.meshCount)):
                 return False
-            if mesh == deleteMeshNo:
-                self.popMeshByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
+            if mesh == deleteMeshNo and flag:
                 continue
             insertByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
             newByteArr.extend(insertByteArr)
@@ -1652,10 +1645,7 @@ class SmfDecrypt:
         self.index = self.frameStartIdx
         newByteArr.extend(self.byteArr[0:self.index])
 
-        currentMeshNo = -1
-        addMeshNo = self.meshCount + 1
         addFrameNo = self.frameCount + 1
-        addMeshCount = 0
         addFrameCount = 0
         for frame in range(self.frameCount):
             self.frameList = []
@@ -1666,10 +1656,6 @@ class SmfDecrypt:
             insertByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
             frameInfo = self.frameList[0]
             meshNo = frameInfo["meshNo"]
-            if meshNo != -1 and meshNo >= addMeshNo:
-                meshNo += addMeshCount
-            if meshNo != -1:
-                currentMeshNo = meshNo
             parentNo = frameInfo["parentFrameNo"]
             if parentNo >= addFrameNo:
                 parentNo += addFrameCount
@@ -1689,10 +1675,6 @@ class SmfDecrypt:
                 startIdx += (64 + 64)
                 meshNo = struct.unpack("<i", self.popFrameByteArr[startIdx:startIdx + 4])[0]
                 parentNo = parentIdx
-                if meshNo != -1:
-                    meshNo = currentMeshNo + 1
-                    addMeshNo = meshNo
-                    addMeshCount += 1
                 addFrameNo = frameIdx + 1
                 addFrameCount += 1
 
@@ -1707,8 +1689,7 @@ class SmfDecrypt:
                 newByteArr.extend(self.popFrameByteArr)
 
         startIdx = 12
-        newAllMeshCount = self.meshCount + addMeshCount
-        iNewAllMeshCount = struct.pack("<i", newAllMeshCount)
+        iNewAllMeshCount = struct.pack("<i", self.meshCount)
         for iN in iNewAllMeshCount:
             newByteArr[startIdx] = iN
             startIdx += 1
@@ -1718,18 +1699,13 @@ class SmfDecrypt:
             newByteArr[startIdx] = iN
             startIdx += 1
 
-        if self.meshCount == 0:
-            newByteArr.extend(self.popMeshByteArr)
-        else:
-            for mesh in range(self.meshCount):
-                startIdx = self.index
-                nameAndLength = self.getStructNameAndLength()
-                if not self.readMESH(mesh, nameAndLength[1], int(50 / self.meshCount)):
-                    return False
-                insertByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
-                newByteArr.extend(insertByteArr)
-                if mesh == currentMeshNo:
-                    newByteArr.extend(self.popMeshByteArr)
+        for mesh in range(self.meshCount):
+            startIdx = self.index
+            nameAndLength = self.getStructNameAndLength()
+            if not self.readMESH(mesh, nameAndLength[1], int(50 / self.meshCount)):
+                return False
+            insertByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
+            newByteArr.extend(insertByteArr)
         w = open(self.filePath, "wb")
         w.write(newByteArr)
         w.close()
@@ -1898,6 +1874,29 @@ class SmfDecrypt:
         w.close()
         return True
 
+    def getBoxInfo(self, coordList):
+        if len(coordList) == 0:
+            return [[0, 0, 0], [0, 0, 0]]
+
+        minX = coordList[0][0]
+        minY = coordList[0][1]
+        minZ = coordList[0][2]
+        maxX = coordList[0][0]
+        maxY = coordList[0][1]
+        maxZ = coordList[0][2]
+
+        for coord in coordList:
+            minX = min(minX, coord[0])
+            minY = min(minY, coord[1])
+            minZ = min(minZ, coord[2])
+            maxX = max(maxX, coord[0])
+            maxY = max(maxY, coord[1])
+            maxZ = max(maxZ, coord[2])
+
+        center = [(minX + maxX)/2, (minY + maxY)/2, (minZ + maxZ)/2]
+        boxSize = [(maxX - minX), (maxY - minY), (maxZ - minZ)]
+        return [center, boxSize]
+
     def saveSwapFbxMesh(self, meshNo, meshObj):
         self.index = self.meshStartIdx
         meshStartIdx = -1
@@ -1925,16 +1924,28 @@ class SmfDecrypt:
         materialCountIndex = index
         index += 4
 
-        nameChar4 = str(hex(struct.unpack("<l", self.byteArr[index:index+4])[0]))[2:]
-        nameList = [int(nameChar4[x:x+2], 16) for x in range(0, len(nameChar4), 2)]
-        name = ""
-        for n in nameList:
-            name += chr(n)
-        if name == "OBB":
-            index += 4
-            index += 4
-            index += 0x3c
         newByteArr.extend(self.byteArr[meshStartIdx:index])
+        # OBB
+        newByteArr.extend(bytearray([0x42, 0x42, 0x4F, 0x00]))
+        newByteArr.extend(struct.pack("<i", 60))
+        boxInfo = self.getBoxInfo(meshObj["coordList"])
+        center = boxInfo[0]
+        for i in range(3):
+            newByteArr.extend(struct.pack("<f", center[i]))
+
+        # XYZ Axis (size 1)
+        axisList = [
+            [1.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.0, 0.0, 1.0]
+        ]
+        for axis in axisList:
+            for i in range(3):
+                newByteArr.extend(struct.pack("<f", axis[i]))
+
+        boxSize = boxInfo[1]
+        for i in range(3):
+            newByteArr.extend(struct.pack("<f", boxSize[i]))
 
         iMaterialCount = struct.pack("<i", len(meshObj["mtrlList"]))
         for i in range(4):

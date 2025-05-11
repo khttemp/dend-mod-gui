@@ -308,7 +308,7 @@ def turnModelMesh():
         errorMsg = textSetting.textList["errorList"]["E4"]
         selectId = frame.tree.selection()[0]
         selectName = frame.tree.item(selectId)["text"]
-        meshNo = re.findall("Mesh No.(\d)", selectName)[0]
+        meshNo = re.findall("Mesh No.(\d+)", selectName)[0]
         if not decryptFile.turnModelMesh(int(meshNo)):
             decryptFile.printError()
             mb.showerror(title=textSetting.textList["saveError"], message=errorMsg)
@@ -339,14 +339,14 @@ def swapModelMesh():
                 return
             selectId = frame.tree.selection()[0]
             selectName = frame.tree.item(selectId)["text"]
-            meshNo = re.findall("Mesh No.(\d)", selectName)[0]
+            meshNo = re.findall("Mesh No.(\d+)", selectName)[0]
             result = SwapMeshDialog(root, textSetting.textList["smf"]["swapMesh"], decryptFile, swapDecryptFile, rootFrameAppearance, int(meshNo))
             if result.reloadFlag:
                 reloadWidget()
         elif ext == ".fbx":
             selectId = frame.tree.selection()[0]
             selectName = frame.tree.item(selectId)["text"]
-            meshNo = re.findall("Mesh No.(\d)", selectName)[0]
+            meshNo = re.findall("Mesh No.(\d+)", selectName)[0]
             result = SwapFbxMeshDialog(root, textSetting.textList["smf"]["swapMesh"], decryptFile, file_path, rootFrameAppearance, int(meshNo))
             if result.reloadFlag:
                 reloadWidget()

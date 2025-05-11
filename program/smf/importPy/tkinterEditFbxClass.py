@@ -123,7 +123,11 @@ class SwapFbxMeshDialog(CustomSimpleDialog):
                 mtrlObj["emis"] = [emis[0], emis[1], emis[2]]
                 spec = material.Specular.Get()
                 mtrlObj["spec"] = [spec[0], spec[1], spec[2]]
-                texc = os.path.basename(material.Diffuse.GetSrcObject().GetFileName())
+                obj = material.Diffuse.GetSrcObject()
+                if obj is not None:
+                    texc = os.path.basename(material.Diffuse.GetSrcObject().GetFileName())
+                else:
+                    texc = ""
                 mtrlObj["texc"] = texc
                 swapMeshObj["mtrlList"].append(mtrlObj)
 

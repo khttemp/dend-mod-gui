@@ -455,7 +455,7 @@ class MdlDecrypt:
                     smfByteArr.append(0)
             smfByteArr.append(0)
             smfByteArr.append(0)
-            bFlag = struct.pack("<h", -1)
+            bFlag = struct.pack("<h", 0)
             smfByteArr.extend(bFlag)
 
             index = 16
