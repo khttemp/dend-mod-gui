@@ -251,6 +251,56 @@ class MdlDecrypt:
             self.error = traceback.format_exc()
             return False
 
+    def updateTexList(self, smfNum, firstDetailInfoNum, materialList):
+        try:
+            newByteArr = bytearray(self.byteArr)
+            for mIdx, materialInfo in enumerate(materialList):
+                index = self.allInfoList[smfNum]["detailMdlList"][firstDetailInfoNum + mIdx]["detailMtrlIndex"]
+                varIdx = 0
+                for i in range(6):
+                    bValue = struct.pack("<b", materialInfo[varIdx])
+                    for b in bValue:
+                        newByteArr[index] = b
+                        index += 1
+                    varIdx += 1
+
+                for i in range(4):
+                    fValue = struct.pack("<f", materialInfo[varIdx])
+                    for f in fValue:
+                        newByteArr[index] = f
+                        index += 1
+                    varIdx += 1
+
+                bValue = struct.pack("<b", materialInfo[varIdx])
+                for b in bValue:
+                    newByteArr[index] = b
+                    index += 1
+                varIdx += 1
+
+                for i in range(3):
+                    fValue = struct.pack("<f", materialInfo[varIdx])
+                    for f in fValue:
+                        newByteArr[index] = f
+                        index += 1
+                    varIdx += 1
+
+                bValue = struct.pack("<b", materialInfo[varIdx])
+                for b in bValue:
+                    newByteArr[index] = b
+                    index += 1
+                varIdx += 1
+
+                hValue = struct.pack("<h", materialInfo[varIdx])
+                for h in hValue:
+                    newByteArr[index] = h
+                    index += 1
+
+            self.save(newByteArr)
+            return True
+        except Exception:
+            self.error = traceback.format_exc()
+            return False
+
     def updateType(self, smfNum, smfType):
         try:
             index = self.allInfoList[smfNum]["meshMtrlCntIndex"]

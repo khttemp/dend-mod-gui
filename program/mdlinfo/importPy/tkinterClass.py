@@ -1,3 +1,4 @@
+import copy
 import tkinter
 from tkinter import messagebox as mb
 import program.textSetting as textSetting
@@ -41,6 +42,9 @@ class TreeViewDialog(CustomSimpleDialog):
 
         self.deleteElementBtn = ttkCustomWidget.CustomTtkButton(mainFrame, text=textSetting.textList["mdlinfo"]["elementDeleteLabel"], width=25, state="disabled", command=self.deleteElement)
         self.deleteElementBtn.place(relx=0.74, rely=0.13)
+
+        self.allEditElementBtn = ttkCustomWidget.CustomTtkButton(mainFrame, text=textSetting.textList["mdlinfo"]["allElementModifyLabel"], width=25, state="disabled", command=self.allEditElement)
+        self.allEditElementBtn.place(relx=0.74, rely=0.03)
 
         self.frame = ScrollbarTreeviewMdlinfo(mdlInfoLf, None, [])
 
@@ -92,26 +96,24 @@ class TreeViewDialog(CustomSimpleDialog):
     def viewData(self, detailMdlList):
         index = 0
         for detailMdlInfo in detailMdlList:
-            for i in range(len(self.colIdTuple)):
-                data = (index + 1, detailMdlInfo["colorCnt"])
-                data += (",".join(str(n) for n in detailMdlInfo["materialList"][0:2]),)
-                data += (detailMdlInfo["materialList"][2],)
-                data += (",".join(str(n) for n in detailMdlInfo["materialList"][3:6]),)
-                data += (",".join(str(n) for n in detailMdlInfo["materialList"][6:10]),)
-                data += (detailMdlInfo["materialList"][10],)
-                data += (",".join(str(n) for n in detailMdlInfo["materialList"][11:14]),)
-                data += (detailMdlInfo["materialList"][14],)
-                data += (detailMdlInfo["materialList"][15],)
+            data = (index + 1, detailMdlInfo["colorCnt"])
+            data += (",".join(str(n) for n in detailMdlInfo["materialList"][0:2]),)
+            data += (detailMdlInfo["materialList"][2],)
+            data += (",".join(str(n) for n in detailMdlInfo["materialList"][3:6]),)
+            data += (",".join(str(n) for n in detailMdlInfo["materialList"][6:10]),)
+            data += (detailMdlInfo["materialList"][10],)
+            data += (",".join(str(n) for n in detailMdlInfo["materialList"][11:14]),)
+            data += (detailMdlInfo["materialList"][14],)
+            data += (detailMdlInfo["materialList"][15],)
             self.frame.tree.insert(parent="", index="end", iid=index, values=data)
             index += 1
 
     def treeSelect(self, event):
-        selectId = int(self.frame.tree.selection()[0])
-        selectItem = self.frame.tree.set(selectId)
         self.editColorBtn["state"] = "normal"
         self.editElementBtn["state"] = "normal"
         self.insertElementBtn["state"] = "normal"
         self.deleteElementBtn["state"] = "normal"
+        self.allEditElementBtn["state"] = "normal"
 
     def reload(self):
         self.decryptFile = self.decryptFile.reload()
@@ -135,7 +137,7 @@ class TreeViewDialog(CustomSimpleDialog):
         selectItem = self.frame.tree.set(selectId)
         detailNum = int(selectItem["treeNum"]) - 1
         result = DetailDialog(self.master, textSetting.textList["mdlinfo"]["detailModelLabel"], "edit", self.num, detailNum, self.decryptFile, self.colIdTuple, self.colTuple, self.detailMdlList, self.rootFrameAppearance)
-        if result.cancelFlag:
+        if result.reloadFlag:
             self.reload()
             self.frame.tree.selection_set(selectId)
 
@@ -144,7 +146,7 @@ class TreeViewDialog(CustomSimpleDialog):
         selectItem = self.frame.tree.set(selectId)
         detailNum = int(selectItem["treeNum"]) - 1
         result = DetailDialog(self.master, textSetting.textList["mdlinfo"]["detailModelLabel"], "insert", self.num, detailNum, self.decryptFile, self.colIdTuple, self.colTuple, self.detailMdlList, self.rootFrameAppearance)
-        if result.cancelFlag:
+        if result.reloadFlag:
             self.reload()
             self.frame.tree.selection_set(selectId)
 
@@ -164,6 +166,15 @@ class TreeViewDialog(CustomSimpleDialog):
             selectId -= 1
             if selectId < 0:
                 selectId = 0
+            self.reload()
+            self.frame.tree.selection_set(selectId)
+
+    def allEditElement(self):
+        selectId = int(self.frame.tree.selection()[0])
+        selectItem = self.frame.tree.set(selectId)
+        detailNum = int(selectItem["treeNum"]) - 1
+        result = DetailDialog(self.master, textSetting.textList["mdlinfo"]["detailModelLabel"], "allEdit", self.num, detailNum, self.decryptFile, self.colIdTuple, self.colTuple, self.detailMdlList, self.rootFrameAppearance)
+        if result.reloadFlag:
             self.reload()
             self.frame.tree.selection_set(selectId)
 
@@ -282,101 +293,203 @@ class DetailDialog(CustomSimpleDialog):
         self.colIdTuple = colIdTuple[2:]
         self.colTuple = colTuple[2:]
         self.materialList = detailMdlList[self.detailNum]["materialList"]
-        self.cancelFlag = False
+        self.reloadFlag = False
         self.detailMdlList = detailMdlList
         super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         index = 0
         self.varList = []
+        self.checkVarList = []
         self.varCnt = 0
+        self.checkVarCnt = 0
         self.entryWidth = 20
         for idx, colIdName in enumerate(self.colIdTuple):
-            if colIdName == "treeMesh":
-                eleLb = ttkCustomWidget.CustomTtkLabel(master, font=textSetting.textList["font2"], text=textSetting.textList["mdlinfo"]["detailModelMeshLabel"])
-                eleLb.grid(row=index, column=0, sticky=tkinter.W + tkinter.E)
-                self.varList.append(tkinter.IntVar(value=self.materialList[index]))
-                eleEt = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.varList[self.varCnt], width=self.entryWidth)
-                eleEt.grid(row=index, column=1, sticky=tkinter.W + tkinter.E)
-                self.varCnt += 1
-                index += 1
-
-                eleLb = ttkCustomWidget.CustomTtkLabel(master, font=textSetting.textList["font2"], text=textSetting.textList["mdlinfo"]["detailModelMtrlLabel"])
-                eleLb.grid(row=index, column=0, sticky=tkinter.W + tkinter.E)
-                self.varList.append(tkinter.IntVar(value=self.materialList[index]))
-                eleEt = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.varList[self.varCnt], width=self.entryWidth)
-                eleEt.grid(row=index, column=1, sticky=tkinter.W + tkinter.E)
-                self.varCnt += 1
-                index += 1
-            elif colIdName == "treeEle1-3":
-                eleLabelList = ["DRAW", "TRAN", "SPEC"]
-                for i in range(3):
-                    eleLb = ttkCustomWidget.CustomTtkLabel(master, font=textSetting.textList["font2"], text=eleLabelList[i])
+            if self.mode == "allEdit":
+                if colIdName == "treeMesh":
+                    eleLb = ttkCustomWidget.CustomTtkLabel(master, font=textSetting.textList["font2"], text=textSetting.textList["mdlinfo"]["detailModelMeshLabel"])
+                    eleLb.grid(row=index, column=0, sticky=tkinter.W + tkinter.E)
+                    self.varList.append(tkinter.IntVar(value=self.materialList[index]))
+                    eleMeshNoLb = ttkCustomWidget.CustomTtkLabel(master, font=textSetting.textList["font2"], text=self.varList[self.varCnt].get())
+                    eleMeshNoLb.grid(row=index, column=1, sticky=tkinter.W + tkinter.E)
+                    self.varCnt += 1
+                    index += 3
+                elif colIdName == "treeEle1-3":
+                    eleLabelList = ["DRAW", "TRAN", "SPEC"]
+                    for i in range(3):
+                        self.checkVarList.append(tkinter.IntVar(value=0))
+                        eleCkbtn = ttkCustomWidget.CustomTtkCheckbutton(master, text=eleLabelList[i], variable=self.checkVarList[self.checkVarCnt])
+                        eleCkbtn.grid(row=index, column=0, sticky=tkinter.W + tkinter.E)
+                        self.varList.append(tkinter.IntVar(value=self.materialList[index]))
+                        eleEt = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.varList[self.varCnt], width=self.entryWidth)
+                        eleEt.grid(row=index, column=1, sticky=tkinter.W + tkinter.E)
+                        self.varCnt += 1
+                        self.checkVarCnt += 1
+                        index += 1
+                elif colIdName == "treeDiff":
+                    colorLabelList = ["DIFF_R", "DIFF_G", "DIFF_B", "DIFF_A"]
+                    for i in range(4):
+                        self.checkVarList.append(tkinter.IntVar(value=0))
+                        eleCkbtn = ttkCustomWidget.CustomTtkCheckbutton(master, text=colorLabelList[i], variable=self.checkVarList[self.checkVarCnt])
+                        eleCkbtn.grid(row=index, column=0, sticky=tkinter.W + tkinter.E)
+                        self.varList.append(tkinter.DoubleVar(value=self.materialList[index]))
+                        eleEt = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.varList[self.varCnt], width=self.entryWidth)
+                        eleEt.grid(row=index, column=1, sticky=tkinter.W + tkinter.E)
+                        self.varCnt += 1
+                        self.checkVarCnt += 1
+                        index += 1
+                    index += 1
+                elif colIdName == "treeEmis":
+                    colorLabelList = ["EMIS_R", "EMIS_G", "EMIS_B"]
+                    for i in range(3):
+                        self.checkVarList.append(tkinter.IntVar(value=0))
+                        eleCkbtn = ttkCustomWidget.CustomTtkCheckbutton(master, text=colorLabelList[i], variable=self.checkVarList[self.checkVarCnt])
+                        eleCkbtn.grid(row=index, column=0, sticky=tkinter.W + tkinter.E)
+                        self.varList.append(tkinter.DoubleVar(value=self.materialList[index]))
+                        eleEt = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.varList[self.varCnt], width=self.entryWidth)
+                        eleEt.grid(row=index, column=1, sticky=tkinter.W + tkinter.E)
+                        self.varCnt += 1
+                        self.checkVarCnt += 1
+                        index += 1
+            else:
+                if colIdName == "treeMesh":
+                    eleLb = ttkCustomWidget.CustomTtkLabel(master, font=textSetting.textList["font2"], text=textSetting.textList["mdlinfo"]["detailModelMeshLabel"])
                     eleLb.grid(row=index, column=0, sticky=tkinter.W + tkinter.E)
                     self.varList.append(tkinter.IntVar(value=self.materialList[index]))
                     eleEt = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.varList[self.varCnt], width=self.entryWidth)
                     eleEt.grid(row=index, column=1, sticky=tkinter.W + tkinter.E)
                     self.varCnt += 1
                     index += 1
-            elif colIdName == "treeDiff":
-                colorLabelList = ["DIFF_R", "DIFF_G", "DIFF_B", "DIFF_A"]
-                for i in range(4):
-                    eleLb = ttkCustomWidget.CustomTtkLabel(master, font=textSetting.textList["font2"], text=colorLabelList[i])
+
+                    eleLb = ttkCustomWidget.CustomTtkLabel(master, font=textSetting.textList["font2"], text=textSetting.textList["mdlinfo"]["detailModelMtrlLabel"])
                     eleLb.grid(row=index, column=0, sticky=tkinter.W + tkinter.E)
-                    self.varList.append(tkinter.DoubleVar(value=self.materialList[index]))
+                    self.varList.append(tkinter.IntVar(value=self.materialList[index]))
                     eleEt = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.varList[self.varCnt], width=self.entryWidth)
                     eleEt.grid(row=index, column=1, sticky=tkinter.W + tkinter.E)
                     self.varCnt += 1
                     index += 1
-            elif colIdName == "treeEmis":
-                colorLabelList = ["EMIS_R", "EMIS_G", "EMIS_B"]
-                for i in range(3):
-                    eleLb = ttkCustomWidget.CustomTtkLabel(master, font=textSetting.textList["font2"], text=colorLabelList[i])
+                elif colIdName == "treeEle1-3":
+                    eleLabelList = ["DRAW", "TRAN", "SPEC"]
+                    for i in range(3):
+                        eleLb = ttkCustomWidget.CustomTtkLabel(master, font=textSetting.textList["font2"], text=eleLabelList[i])
+                        eleLb.grid(row=index, column=0, sticky=tkinter.W + tkinter.E)
+                        self.varList.append(tkinter.IntVar(value=self.materialList[index]))
+                        eleEt = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.varList[self.varCnt], width=self.entryWidth)
+                        eleEt.grid(row=index, column=1, sticky=tkinter.W + tkinter.E)
+                        self.varCnt += 1
+                        index += 1
+                elif colIdName == "treeDiff":
+                    colorLabelList = ["DIFF_R", "DIFF_G", "DIFF_B", "DIFF_A"]
+                    for i in range(4):
+                        eleLb = ttkCustomWidget.CustomTtkLabel(master, font=textSetting.textList["font2"], text=colorLabelList[i])
+                        eleLb.grid(row=index, column=0, sticky=tkinter.W + tkinter.E)
+                        self.varList.append(tkinter.DoubleVar(value=self.materialList[index]))
+                        eleEt = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.varList[self.varCnt], width=self.entryWidth)
+                        eleEt.grid(row=index, column=1, sticky=tkinter.W + tkinter.E)
+                        self.varCnt += 1
+                        index += 1
+                elif colIdName == "treeEmis":
+                    colorLabelList = ["EMIS_R", "EMIS_G", "EMIS_B"]
+                    for i in range(3):
+                        eleLb = ttkCustomWidget.CustomTtkLabel(master, font=textSetting.textList["font2"], text=colorLabelList[i])
+                        eleLb.grid(row=index, column=0, sticky=tkinter.W + tkinter.E)
+                        self.varList.append(tkinter.DoubleVar(value=self.materialList[index]))
+                        eleEt = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.varList[self.varCnt], width=self.entryWidth)
+                        eleEt.grid(row=index, column=1, sticky=tkinter.W + tkinter.E)
+                        self.varCnt += 1
+                        index += 1
+                else:
+                    eleLb = ttkCustomWidget.CustomTtkLabel(master, font=textSetting.textList["font2"], text=self.colTuple[idx])
                     eleLb.grid(row=index, column=0, sticky=tkinter.W + tkinter.E)
-                    self.varList.append(tkinter.DoubleVar(value=self.materialList[index]))
+                    self.varList.append(tkinter.IntVar(value=self.materialList[index]))
                     eleEt = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.varList[self.varCnt], width=self.entryWidth)
                     eleEt.grid(row=index, column=1, sticky=tkinter.W + tkinter.E)
                     self.varCnt += 1
                     index += 1
-            else:
-                eleLb = ttkCustomWidget.CustomTtkLabel(master, font=textSetting.textList["font2"], text=self.colTuple[idx])
-                eleLb.grid(row=index, column=0, sticky=tkinter.W + tkinter.E)
-                self.varList.append(tkinter.IntVar(value=self.materialList[index]))
-                eleEt = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.varList[self.varCnt], width=self.entryWidth)
-                eleEt.grid(row=index, column=1, sticky=tkinter.W + tkinter.E)
-                self.varCnt += 1
-                index += 1
         super().body(master)
 
     def validate(self):
         materialList = [x["materialList"][0:2] for x in self.detailMdlList]
-        newMeshList = [self.varList[0].get(), self.varList[1].get()]
-        oldMeshList = [self.materialList[0], self.materialList[1]]
-        if self.mode == "edit":
-            warnMsg = ""
-            if newMeshList != oldMeshList and newMeshList in materialList:
-                warnMsg = textSetting.textList["infoList"]["I30"].format(newMeshList[0], newMeshList[1])
-            warnMsg += textSetting.textList["infoList"]["I31"]
-        elif self.mode == "insert":
-            warnMsg = ""
-            if newMeshList in materialList:
-                warnMsg = textSetting.textList["infoList"]["I30"].format(newMeshList[0], newMeshList[1])
-            warnMsg += textSetting.textList["infoList"]["I32"]
-        result = mb.askokcancel(title=textSetting.textList["confirm"], message=warnMsg, icon="warning", parent=self)
+        if self.mode == "allEdit":
+            varCnt = 0
+            selectedMeshNo = self.varList[varCnt].get()
+            editLabelList = []
+            newDetailMaterialList = []
+            findFlag = False
+            firstDetailNum = -1
+            for detailIdx, detailMdlInfo in enumerate(self.detailMdlList):
+                meshNo = detailMdlInfo["materialList"][0]
+                varCnt = 1
+                checkVarCnt = 0
+                if selectedMeshNo == meshNo:
+                    if not findFlag:
+                        findFlag = True
+                        firstDetailNum = detailIdx
+                    newDetailMdlInfo = copy.deepcopy(detailMdlInfo)
+                    # "DRAW", "TRAN", "SPEC"
+                    eleLabelList = ["DRAW", "TRAN", "SPEC"]
+                    for i in range(3):
+                        if self.checkVarList[checkVarCnt].get():
+                            if eleLabelList[i] not in editLabelList:
+                                editLabelList.append(eleLabelList[i])
+                            newDetailMdlInfo["materialList"][3 + i] = self.varList[varCnt].get()
+                        varCnt += 1
+                        checkVarCnt += 1
+                    # DIFF
+                    colorLabelList = ["DIFF_R", "DIFF_G", "DIFF_B", "DIFF_A"]
+                    for i in range(4):
+                        if self.checkVarList[checkVarCnt].get():
+                            if colorLabelList[i] not in editLabelList:
+                                editLabelList.append(colorLabelList[i])
+                            newDetailMdlInfo["materialList"][6 + i] = self.varList[varCnt].get()
+                        varCnt += 1
+                        checkVarCnt += 1
+                    # EMIS
+                    colorLabelList = ["EMIS_R", "EMIS_G", "EMIS_B"]
+                    for i in range(3):
+                        if self.checkVarList[checkVarCnt].get():
+                            if colorLabelList[i] not in editLabelList:
+                                editLabelList.append(colorLabelList[i])
+                            newDetailMdlInfo["materialList"][11 + i] = self.varList[varCnt].get()
+                        varCnt += 1
+                        checkVarCnt += 1
+                    newDetailMaterialList.append(newDetailMdlInfo["materialList"])
+            warnMsg = textSetting.textList["infoList"]["I129"].format(selectedMeshNo, "\n".join(editLabelList))
+            result = mb.askokcancel(title=textSetting.textList["confirm"], message=warnMsg, icon="warning", parent=self)
+            if result:
+                if not self.decryptFile.updateTexList(self.num, firstDetailNum, newDetailMaterialList):
+                    self.decryptFile.printError()
+                    mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
+                    return False
+                return True
+        else:
+            newMeshList = [self.varList[0].get(), self.varList[1].get()]
+            oldMeshList = [self.materialList[0], self.materialList[1]]
+            if self.mode == "edit":
+                warnMsg = ""
+                if newMeshList != oldMeshList and newMeshList in materialList:
+                    warnMsg = textSetting.textList["infoList"]["I30"].format(newMeshList[0], newMeshList[1])
+                warnMsg += textSetting.textList["infoList"]["I31"]
+            elif self.mode == "insert":
+                warnMsg = ""
+                if newMeshList in materialList:
+                    warnMsg = textSetting.textList["infoList"]["I30"].format(newMeshList[0], newMeshList[1])
+                warnMsg += textSetting.textList["infoList"]["I32"]
+            result = mb.askokcancel(title=textSetting.textList["confirm"], message=warnMsg, icon="warning", parent=self)
 
-        if result:
-            varList = []
-            for var in self.varList:
-                varList.append(var.get())
+            if result:
+                varList = []
+                for var in self.varList:
+                    varList.append(var.get())
 
-            if not self.decryptFile.updateTex(self.num, self.detailNum, varList, self.mode):
-                self.decryptFile.printError()
-                mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
-                return False
-            return True
+                if not self.decryptFile.updateTex(self.num, self.detailNum, varList, self.mode):
+                    self.decryptFile.printError()
+                    mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
+                    return False
+                return True
 
     def apply(self):
-        self.cancelFlag = True
+        self.reloadFlag = True
         mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I26"])
 
 
