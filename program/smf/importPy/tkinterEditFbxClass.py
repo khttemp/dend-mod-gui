@@ -11,6 +11,7 @@ from fbx import FbxManager
 from fbx import FbxScene
 from fbx import FbxImporter
 from fbx import FbxNodeAttribute
+from fbx import FbxLayerElement
 
 
 class SwapFbxMeshDialog(CustomSimpleDialog):
@@ -59,6 +60,32 @@ class SwapFbxMeshDialog(CustomSimpleDialog):
         for i in range(pNode.GetChildCount()):
             self.getHierarchy(pNode.GetChild(i))
 
+    def getData(self, node, element):
+        dataList = []
+        mappingMode = element.GetMappingMode()
+        referenceMode = element.GetReferenceMode()
+        if mappingMode == FbxLayerElement.EMappingMode.eByControlPoint:
+            for i in range(node.GetControlPointsCount()):
+                if referenceMode == FbxLayerElement.EReferenceMode.eDirect:
+                    dataList.append(element.GetDirectArray().GetAt(i))
+                # eIndexToDirect
+                else:
+                    index = element.GetIndexArray().GetAt(i)
+                    dataList.append(element.GetDirectArray().GetAt(index))
+        elif mappingMode == FbxLayerElement.EMappingMode.eByPolygonVertex:
+            if referenceMode == FbxLayerElement.EReferenceMode.eIndexToDirect:
+                tempDataList = []
+                for data in element.GetDirectArray():
+                    tempDataList.append(data)
+                for index in element.GetIndexArray():
+                    dataList.append(tempDataList[index])
+            # eDirect
+            else:
+                for data in element.GetDirectArray():
+                    dataList.append(data)
+
+        return dataList
+
     def body(self, master):
         self.resizable(False, False)
 
@@ -76,47 +103,71 @@ class SwapFbxMeshDialog(CustomSimpleDialog):
         try:
             swapCbIdx = self.swapCb.current()
             swapMeshNode = self.swapMeshNodeList[swapCbIdx]
+
             swapMeshObj = {}
             swapMeshObj["coordList"] = []
             for i in range(swapMeshNode.GetControlPointsCount()):
                 coord = swapMeshNode.GetControlPointAt(i)
                 swapMeshObj["coordList"].append([-coord[0], coord[1], coord[2]])
 
+            material = swapMeshNode.GetElementMaterial(0)
+            materialIndexDict = {}
+            # マテリアルリストから、ポリゴン情報を抽出
+            for polygonIndex, materialIndex in enumerate(material.GetIndexArray()):
+                polygonSize = swapMeshNode.GetPolygonSize(polygonIndex)
+                if polygonSize != 3:
+                    mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E123"])
+                    return False
+
+                if materialIndex not in materialIndexDict:
+                    materialIndexDict[materialIndex] = []
+                materialIndexDict[materialIndex].append(polygonIndex)
+
             swapMeshObj["coordIndexList"] = []
-            for i in range(swapMeshNode.GetPolygonCount()):
-                indexList = []
-                for j in range(swapMeshNode.GetPolygonSize(i)):
-                    vertex = swapMeshNode.GetPolygonVertex(i, j)
-                    indexList.append(vertex)
-                swapMeshObj["coordIndexList"].append(reversed(indexList))
+            vertexFlag = False
+            materialKeyList = sorted(materialIndexDict.keys())
+            for materialIndex in materialKeyList:
+                for polygonIndex in materialIndexDict[materialIndex]:
+                    indexList = []
+                    for i in range(swapMeshNode.GetPolygonSize(polygonIndex)):
+                        vertex = swapMeshNode.GetPolygonVertex(polygonIndex, i)
+                        if vertex >= 0xFFFF:
+                            vertexFlag = True
+                        indexList.append(vertex)
+                    swapMeshObj["coordIndexList"].append(list(reversed(indexList)))
+
+            colorElement = swapMeshNode.GetLayer(0).GetVertexColors()
+            swapMeshObj["colorInfoList"] = []
+            if colorElement:
+                colorList = self.getData(swapMeshNode, colorElement)
+                for color in colorList:
+                    red = int(color.mRed * 255.0)
+                    green = int(color.mGreen * 255.0)
+                    blue = int(color.mBlue * 255.0)
+                    alpha = int(color.mAlpha * 255.0)
+                    swapMeshObj["colorInfoList"].append([red, green, blue, alpha])
 
             swapMeshObj["normalList"] = []
             normals = swapMeshNode.GetElementNormal(0)
-            for normal in normals.GetDirectArray():
-                swapMeshObj["normalList"].append([-normal[0], normal[1], normal[2]])
+            if normals:
+                normalList = self.getData(swapMeshNode, normals)
+                for normal in normalList:
+                    swapMeshObj["normalList"].append([-normal[0], normal[1], normal[2]])
 
             swapMeshObj["uvList"] = []
             uvs = swapMeshNode.GetElementUV(0)
-            for uv in uvs.GetDirectArray():
-                swapMeshObj["uvList"].append([uv[0], 1.0 - uv[1]])
-
-            material = swapMeshNode.GetElementMaterial(0)
-            materialIndexList = []
-            materialGroupList = []
-            mIdx = -1
-            for idx, materialIndex in enumerate(material.GetIndexArray()):
-                if mIdx != materialIndex:
-                    materialIndexList.append(idx)
-                    mIdx = materialIndex
-            for i in range(len(materialIndexList) - 1):
-                materialGroupList.append([materialIndexList[i], materialIndexList[i+1]-materialIndexList[i]])
-            materialGroupList.append([materialIndexList[-1], material.GetIndexArray().GetCount() - materialIndexList[-1]])
+            if uvs:
+                uvList = self.getData(swapMeshNode, uvs)
+                for uv in uvList:
+                    swapMeshObj["uvList"].append([uv[0], 1.0 - uv[1]])
 
             swapMeshObj["mtrlList"] = []
+            polyIndexStart = 0
             for mIdx, material in enumerate(material.GetDirectArray()):
                 mtrlObj = {}
-                mtrlObj["polyIndexStart"] = materialGroupList[mIdx][0]
-                mtrlObj["polyCount"] = materialGroupList[mIdx][1]
+                mtrlObj["polyIndexStart"] = polyIndexStart
+                mtrlObj["polyCount"] = len(materialIndexDict[mIdx])
+                polyIndexStart += len(materialIndexDict[mIdx])
                 diff = material.Diffuse.Get()
                 mtrlObj["diff"] = [diff[0], diff[1], diff[2]]
                 emis = material.Emissive.Get()
@@ -134,7 +185,7 @@ class SwapFbxMeshDialog(CustomSimpleDialog):
             result = mb.askokcancel(title=textSetting.textList["confirm"], message=self.infoMsg, icon="warning", parent=self)
             if result:
                 errorMsg = textSetting.textList["errorList"]["E4"]
-                if not self.decryptFile.saveSwapFbxMesh(self.meshNo, swapMeshObj):
+                if not self.decryptFile.saveSwapFbxMesh(self.meshNo, swapMeshObj, vertexFlag):
                     self.decryptFile.printError()
                     mb.showerror(title=textSetting.textList["saveError"], message=errorMsg)
                     return False

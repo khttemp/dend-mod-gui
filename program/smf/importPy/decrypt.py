@@ -556,6 +556,8 @@ class SmfDecrypt:
             index = self.index
 
             count = nextNameAndLength[1] // 16
+            if self.printMESH and self.printXYZ:
+                self.writeInfo(count)
             for i in range(count):
                 vPC = []
                 colorInfo = []
@@ -564,7 +566,7 @@ class SmfDecrypt:
                     index += 4
                     vPC.append(vec)
                 if self.printMESH and self.printXYZ:
-                    self.writeInfo(textSetting.textList["smf"]["vPCLabel"].format(vPC))
+                    self.writeInfo(textSetting.textList["smf"]["vPCLabel"].format(vPC), end=" / ")
 
                 if self.printMESH and self.printXYZ:
                     self.writeInfo(textSetting.textList["smf"]["vPCColor"], end=", ")
@@ -600,6 +602,8 @@ class SmfDecrypt:
             index = self.index
 
             count = nextNameAndLength[1] // 12
+            if self.printMESH and self.printXYZ:
+                self.writeInfo(count)
             for i in range(count):
                 vN = []
                 for i in range(3):
@@ -632,6 +636,8 @@ class SmfDecrypt:
             index = self.index
 
             count = nextNameAndLength[1] // 12
+            if self.printMESH and self.printXYZ:
+                self.writeInfo(count)
             for i in range(count):
                 vB = []
                 for i in range(3):
@@ -663,6 +669,8 @@ class SmfDecrypt:
             index = self.index
 
             count = nextNameAndLength[1] // 8
+            if self.printMESH and self.printXYZ:
+                self.writeInfo(count)
             for i in range(count):
                 f = struct.unpack("<f", self.byteArr[index:index+4])[0]
                 index += 4
@@ -699,6 +707,8 @@ class SmfDecrypt:
             index = self.index
 
             count = nextNameAndLength[1] // 16
+            if self.printMESH and self.printXYZ:
+                self.writeInfo(count)
             for i in range(count):
                 if self.printMESH and self.printXYZ:
                     self.writeInfo(textSetting.textList["smf"]["uvLabel"], end=", ")
@@ -709,7 +719,7 @@ class SmfDecrypt:
                     list1.append(f)
                 vUVInfo.append(list1)
                 if self.printMESH and self.printXYZ:
-                    self.writeInfo(list1)
+                    self.writeInfo(list1, end=" / ")
 
                 if self.printMESH and self.printXYZ:
                     self.writeInfo(textSetting.textList["smf"]["lightMapUvLabel"], end=", ")
@@ -745,10 +755,12 @@ class SmfDecrypt:
             index = self.index
 
             count = nextNameAndLength[1] // 2
+            if self.printMESH and self.printXYZ:
+                self.writeInfo(count)
             for i in range(count):
                 if self.printMESH and self.printXYZ:
                     self.writeInfo(textSetting.textList["smf"]["idxLabel"], end=", ")
-                h = struct.unpack("<h", self.byteArr[index:index+2])[0]
+                h = struct.unpack("<H", self.byteArr[index:index+2])[0]
                 index += 2
                 idx2Info.append(h)
                 if self.printMESH and self.printXYZ:
@@ -779,10 +791,12 @@ class SmfDecrypt:
             index = self.index
 
             count = nextNameAndLength[1] // 4
+            if self.printMESH and self.printXYZ:
+                self.writeInfo(count)
             for i in range(count):
                 if self.printMESH and self.printXYZ:
                     self.writeInfo(textSetting.textList["smf"]["idxLabel"], end=", ")
-                long = struct.unpack("<l", self.byteArr[index:index+4])[0]
+                long = struct.unpack("<L", self.byteArr[index:index+4])[0]
                 index += 4
                 idx4Info.append(long)
                 if self.printMESH and self.printXYZ:
@@ -1897,7 +1911,7 @@ class SmfDecrypt:
         boxSize = [(maxX - minX), (maxY - minY), (maxZ - minZ)]
         return [center, boxSize]
 
-    def saveSwapFbxMesh(self, meshNo, meshObj):
+    def saveSwapFbxMesh(self, meshNo, meshObj, vertexFlag):
         self.index = self.meshStartIdx
         meshStartIdx = -1
         meshEndIdx = -1
@@ -1954,10 +1968,17 @@ class SmfDecrypt:
         # V_CP
         newByteArr.extend(bytearray([0x43, 0x50, 0x5F, 0x56]))
         newByteArr.extend(struct.pack("<i", len(meshObj["coordList"]) * 16))
-        for coord in meshObj["coordList"]:
+        for cIdx, coord in enumerate(meshObj["coordList"]):
             for i in range(3):
                 newByteArr.extend(struct.pack("<f", coord[i]))
-            newByteArr.extend(struct.pack("<i", -1))
+            if cIdx >= len(meshObj["colorInfoList"]):
+                newByteArr.extend(struct.pack("<i", -1))
+            else:
+                colorList = meshObj["colorInfoList"][cIdx]
+                newByteArr.append(colorList[2])
+                newByteArr.append(colorList[1])
+                newByteArr.append(colorList[0])
+                newByteArr.append(colorList[3])
 
         # V_N
         newByteArr.extend(bytearray([0x4E, 0x5F, 0x56, 0x00]))
@@ -1975,11 +1996,19 @@ class SmfDecrypt:
                     newByteArr.extend(struct.pack("<f", uv[j]))
 
         # IDX2
-        newByteArr.extend(bytearray([0x32, 0x58, 0x44, 0x49]))
-        newByteArr.extend(struct.pack("<i", len(meshObj["coordIndexList"]) * 6))
-        for indexList in meshObj["coordIndexList"]:
-            for coordIndex in indexList:
-                newByteArr.extend(struct.pack("<h", coordIndex))
+        if not vertexFlag:
+            newByteArr.extend(bytearray([0x32, 0x58, 0x44, 0x49]))
+            newByteArr.extend(struct.pack("<i", len(meshObj["coordIndexList"]) * 6))
+            for indexList in meshObj["coordIndexList"]:
+                for coordIndex in indexList:
+                    newByteArr.extend(struct.pack("<H", coordIndex))
+        # IDX4
+        else:
+            newByteArr.extend(bytearray([0x34, 0x58, 0x44, 0x49]))
+            newByteArr.extend(struct.pack("<i", len(meshObj["coordIndexList"]) * 12))
+            for indexList in meshObj["coordIndexList"]:
+                for coordIndex in indexList:
+                    newByteArr.extend(struct.pack("<L", coordIndex))
 
         # MTRL
         for mtrl in meshObj["mtrlList"]:
@@ -1993,10 +2022,11 @@ class SmfDecrypt:
             newByteArr.extend(struct.pack("<i", 0))
             newByteArr.extend(struct.pack("<i", 0))
             # TEXC
-            newByteArr.extend(bytearray([0x43, 0x58, 0x45, 0x54]))
-            newByteArr.extend(struct.pack("<i", 64))
-            newByteArr.extend(mtrl["texc"].encode("shift-jis"))
-            newByteArr.extend(bytearray([0x00] * (64 - len(mtrl["texc"].encode("shift-jis")))))
+            if mtrl["texc"] != "":
+                newByteArr.extend(bytearray([0x43, 0x58, 0x45, 0x54]))
+                newByteArr.extend(struct.pack("<i", 64))
+                newByteArr.extend(mtrl["texc"].encode("shift-jis"))
+                newByteArr.extend(bytearray([0x00] * (64 - len(mtrl["texc"].encode("shift-jis")))))
             # DRAW
             newByteArr.extend(bytearray([0x57, 0x41, 0x52, 0x44]))
             newByteArr.extend(struct.pack("<i", 4))
