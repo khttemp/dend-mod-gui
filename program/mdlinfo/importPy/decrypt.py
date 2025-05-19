@@ -488,7 +488,7 @@ class MdlDecrypt:
                     smfByteArr.append(1)
                     smfByteArr.append(1)
                     smfByteArr.append(0)
-                    smfByteArr.append(1)
+                    smfByteArr.append(0)
 
                     diffList = mtrl["diff"]
                     for diff in diffList:
