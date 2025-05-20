@@ -4,6 +4,9 @@ import codecs
 import copy
 import traceback
 import math
+from fbx import FbxQuaternion
+from fbx import FbxAMatrix
+from fbx import FbxVector4
 import program.textSetting as textSetting
 
 
@@ -1825,6 +1828,136 @@ class SmfDecrypt:
         q = self.getQuaternion(inMat)
         return "{0} {1} {2} {3}".format(q[0], q[1], q[2], q[3])
 
+    def matrixToPosInfo(self, inMat):
+        return [inMat[3][0], inMat[3][1], inMat[3][2]]
+
+    def matrixToEulerAngleInfo(self, inMat):
+        if abs(inMat[0][2]) >= 1 - 1e-6:
+            pitch = math.pi/2 if inMat[0][2] > 0 else -math.pi/2
+            roll = 0
+            yaw = math.atan2(inMat[2][1], -inMat[2][2]) if pitch > 0 else math.atan2(-inMat[2][1], inMat[2][2])
+        else:
+            pitch = math.atan2(inMat[0][2], math.sqrt(inMat[0][0]**2 + inMat[0][1]**2))
+            roll = math.atan2(-inMat[1][2] / math.cos(pitch), inMat[2][2] / math.cos(pitch))
+            yaw = math.atan2(-inMat[0][1] / math.cos(pitch), inMat[0][0] / math.cos(pitch))
+        return [-math.degrees(roll), -math.degrees(pitch), -math.degrees(yaw)]
+
+    def eulerAngleToMatrix(self, rot):
+        matrix = FbxAMatrix()
+        euler = FbxVector4(rot[0], rot[1], rot[2])
+        matrix.SetR(euler)
+        resultMatrix = []
+        for i in range(3):
+            rows = matrix.GetRow(i)
+            resultMatrix.append([rows[0], rows[1], rows[2], 0.0])
+        return resultMatrix
+
+    def updateFrameInfo(self, frameIdx, varList, deleteFlag):
+        newByteArr = bytearray(self.byteArr)
+        self.index = self.frameStartIdx
+
+        index = -1
+        for frame in range(self.frameCount):
+            nameAndLength = self.getStructNameAndLength()
+            index = self.index
+            if frame == frameIdx:
+                break
+            if not self.readFRM(frame, nameAndLength[1]):
+                return False
+
+        rotInfo = varList[4:7]
+        matrix = self.eulerAngleToMatrix(rotInfo)
+        for rows in matrix:
+            for val in rows:
+                fValue = struct.pack("<f", val)
+                for f in fValue:
+                    newByteArr[index] = f
+                    index += 1
+        posInfo = copy.deepcopy(varList[1:4])
+        posInfo.append(1)
+        for pos in posInfo:
+            fValue = struct.pack("<f", pos)
+            for f in fValue:
+                newByteArr[index] = f
+                index += 1
+        name = varList[0]
+        bName = name.encode("shift-jis")
+        for b in bName:
+            newByteArr[index] = b
+            index += 1
+        for b in range(64 - len(bName)):
+            newByteArr[index] = 0
+            index += 1
+        meshNo = varList[7]
+        if meshNo > self.meshCount:
+            meshNo = self.meshCount
+        iValue = struct.pack("<i", meshNo)
+        for i in iValue:
+            newByteArr[index] = i
+            index += 1
+
+        if meshNo >= self.meshCount:
+            # MESH
+            newByteArr.extend(bytearray([0x48, 0x53, 0x45, 0x4D]))
+            newByteArr.extend(struct.pack("<i", 0x44))
+            bName = "No Name".encode("shift-jis")
+            newByteArr.extend(bName)
+            newByteArr.extend([0x00] * (64 - len(bName)))
+            newByteArr.extend(struct.pack("<i", 0))
+
+            # meshCount
+            iValue = struct.pack("<i", self.meshCount + 1)
+            index = 0xC
+            for i in iValue:
+                newByteArr[index] = i
+                index += 1
+        if meshNo == -1 and deleteFlag:
+            deleteMeshByteArr = bytearray()
+            self.index = self.meshStartIdx
+            deleteMeshByteArr.extend(newByteArr[:self.index])
+            originMeshNo = self.frameList[frameIdx]["meshNo"]
+            self.index = self.frameStartIdx
+            for frame in range(self.frameCount):
+                self.frameList = []
+                startIdx = self.index
+                nameAndLength = self.getStructNameAndLength()
+                if not self.readFRM(frame, nameAndLength[1]):
+                    return False
+                frameInfo = self.frameList[0]
+                frameMeshNo = frameInfo["meshNo"]
+                if frameMeshNo != originMeshNo and frameMeshNo != -1:
+                    if frameMeshNo > originMeshNo:
+                        frameMeshNo -= 1
+                        index = startIdx + 0x88
+                        iValue = struct.pack("<i", frameMeshNo)
+                        for i in iValue:
+                            deleteMeshByteArr[index] = i
+                            index += 1
+
+            meshStartIdx = -1
+            meshEndIdx = -1
+            for mesh in range(self.meshCount):
+                meshStartIdx = self.index
+                nameAndLength = self.getStructNameAndLength()
+                if not self.readMESH(mesh, nameAndLength[1], int(50 / self.meshCount)):
+                    return False
+                meshEndIdx = self.index
+                if mesh != originMeshNo:
+                    deleteMeshByteArr.extend(newByteArr[meshStartIdx:meshEndIdx])
+            deleteMeshByteArr.extend(newByteArr[meshEndIdx:])
+
+            iValue = struct.pack("<i", self.meshCount - 1)
+            index = 0xC
+            for i in iValue:
+                deleteMeshByteArr[index] = i
+                index += 1
+            newByteArr = deleteMeshByteArr
+
+        w = open(self.filePath, "wb")
+        w.write(newByteArr)
+        w.close()
+        return True
+
     def turnModelMesh(self, meshNo):
         self.index = self.meshStartIdx
         newByteArr = bytearray(self.byteArr)
@@ -1867,7 +2000,6 @@ class SmfDecrypt:
         self.index = self.meshStartIdx
         meshStartIdx = -1
         meshEndIdx = -1
-        self.index = self.meshStartIdx
         for mesh in range(self.meshCount):
             if mesh == meshNo:
                 meshStartIdx = self.index
@@ -1915,7 +2047,6 @@ class SmfDecrypt:
         self.index = self.meshStartIdx
         meshStartIdx = -1
         meshEndIdx = -1
-        self.index = self.meshStartIdx
         for mesh in range(self.meshCount):
             if mesh == meshNo:
                 meshStartIdx = self.index

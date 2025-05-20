@@ -1,6 +1,5 @@
 import os
 import shutil
-import math
 import codecs
 import traceback
 from PIL import Image
@@ -20,7 +19,7 @@ from fbx import FbxFileTexture
 from fbx import FbxTexture
 from fbx import FbxNode
 from fbx import FbxNull
-from fbx import FbxQuaternion
+from fbx import EFbxRotationOrder
 from fbx import FbxDouble3
 from fbx import FbxVector2
 from fbx import FbxVector4
@@ -108,12 +107,11 @@ class FbxObject():
             newNodeAttr = FbxNull.Create(self.manager, frameObj["name"])
         newNode.SetNodeAttribute(newNodeAttr)
 
-        translation = self.decryptFile.matrixToPos(frameObj["matrix"]).split()
-        newNode.LclTranslation.Set(FbxDouble3(float(translation[0]), float(translation[1]), float(translation[2])))
-        q = self.decryptFile.matrixToRot(frameObj["matrix"]).split()
-        quaternion = FbxQuaternion(float(q[0]), float(q[1]), float(q[2]), float(q[3]))
-        euler = quaternion.DecomposeSphericalXYZ()
-        newNode.LclRotation.Set(FbxDouble3(math.degrees(euler[0]), math.degrees(euler[1]), math.degrees(euler[2])))
+        translation = self.decryptFile.matrixToPosInfo(frameObj["matrix"])
+        newNode.LclTranslation.Set(FbxDouble3(-translation[0], translation[1], translation[2]))
+        euler = self.decryptFile.matrixToEulerAngleInfo(frameObj["matrix"])
+        newNode.SetRotationOrder(FbxNode.EPivotSet.eSourcePivot, EFbxRotationOrder.eEulerZXY)
+        newNode.LclRotation.Set(FbxDouble3(euler[0], -euler[1], -euler[2]))
         parentNode.AddChild(newNode)
 
         if len(frameObj["child"]) > 0:

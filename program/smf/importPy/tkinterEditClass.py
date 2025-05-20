@@ -121,3 +121,95 @@ class SwapMeshDialog(CustomSimpleDialog):
     def apply(self):
         mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I104"])
         self.reloadFlag = True
+
+
+class FrameInfoDialog(CustomSimpleDialog):
+    def __init__(self, master, title, frameIdx, decryptFile, rootFrameAppearance):
+        self.frameIdx = frameIdx
+        self.decryptFile = decryptFile
+        self.reloadFlag = False
+        super().__init__(master, title, rootFrameAppearance.bgColor)
+
+    def body(self, master):
+        self.resizable(False, False)
+        eleLabelList = ["Name", "pos", "rot", "meshNo"]
+        self.varList = []
+        self.varCnt = 0
+        self.entryWidth = 20
+        index = 0
+        frameInfo = self.decryptFile.frameList[self.frameIdx]
+        matrix = frameInfo["matrix"]
+        for label in eleLabelList:
+            if label == "Name":
+                eleLb = ttkCustomWidget.CustomTtkLabel(master, font=textSetting.textList["font2"], text=label)
+                eleLb.grid(row=index, column=0, sticky=tkinter.W + tkinter.E)
+                self.varList.append(tkinter.StringVar(value=frameInfo["name"]))
+                eleEt = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.varList[self.varCnt], width=self.entryWidth)
+                eleEt.grid(row=index, column=1, sticky=tkinter.W + tkinter.E)
+                self.varCnt += 1
+                index += 1
+            elif label == "pos":
+                posLabel = ["pos_x", "pos_y", "pos_z"]
+                posInfo = self.decryptFile.matrixToPosInfo(matrix)
+                for i in range(3):
+                    eleLb = ttkCustomWidget.CustomTtkLabel(master, font=textSetting.textList["font2"], text=posLabel[i])
+                    eleLb.grid(row=index, column=0, sticky=tkinter.W + tkinter.E)
+                    self.varList.append(tkinter.DoubleVar(value=round(posInfo[i], 5)))
+                    eleEt = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.varList[self.varCnt], width=self.entryWidth)
+                    eleEt.grid(row=index, column=1, sticky=tkinter.W + tkinter.E)
+                    self.varCnt += 1
+                    index += 1
+            elif label == "rot":
+                rotLabel = ["rot_x", "rot_y", "rot_z"]
+                rotInfo = self.decryptFile.matrixToEulerAngleInfo(matrix)
+                for i in range(3):
+                    eleLb = ttkCustomWidget.CustomTtkLabel(master, font=textSetting.textList["font2"], text=rotLabel[i])
+                    eleLb.grid(row=index, column=0, sticky=tkinter.W + tkinter.E)
+                    self.varList.append(tkinter.DoubleVar(value=round(rotInfo[i], 5)))
+                    eleEt = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.varList[self.varCnt], width=self.entryWidth)
+                    eleEt.grid(row=index, column=1, sticky=tkinter.W + tkinter.E)
+                    self.varCnt += 1
+                    index += 1
+            else:
+                eleLb = ttkCustomWidget.CustomTtkLabel(master, font=textSetting.textList["font2"], text=label)
+                eleLb.grid(row=index, column=0, sticky=tkinter.W + tkinter.E)
+                self.varList.append(tkinter.IntVar(value=frameInfo["meshNo"]))
+                eleEt = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"], textvariable=self.varList[self.varCnt], width=self.entryWidth)
+                eleEt.grid(row=index, column=1, sticky=tkinter.W + tkinter.E)
+                self.varCnt += 1
+                index += 1
+        super().body(master)
+
+    def validate(self):
+        warnMsg = textSetting.textList["infoList"]["I130"]
+        meshNo = self.varList[-1].get()
+        if meshNo < -1:
+            meshNo = -1
+        frameInfo = self.decryptFile.frameList[self.frameIdx]
+        originMeshNo = frameInfo["meshNo"]
+        deleteFlag = False
+        if originMeshNo != meshNo and meshNo != -1:
+            if meshNo < self.decryptFile.meshCount:
+                warnMsg = textSetting.textList["infoList"]["I132"].format(meshNo) + warnMsg
+            elif originMeshNo != -1:
+                warnMsg = textSetting.textList["infoList"]["I135"].format(originMeshNo) + warnMsg
+            else:
+                meshNo = self.decryptFile.meshCount
+                warnMsg = textSetting.textList["infoList"]["I134"].format(meshNo) + warnMsg
+        if originMeshNo != -1 and meshNo == -1:
+            deleteFlag = True
+            warnMsg = textSetting.textList["infoList"]["I133"].format(originMeshNo) + warnMsg
+        result = mb.askokcancel(title=textSetting.textList["confirm"], message=warnMsg, icon="warning", parent=self)
+        if result:
+            varList = []
+            for var in self.varList:
+                varList.append(var.get())
+            if not self.decryptFile.updateFrameInfo(self.frameIdx, varList, deleteFlag):
+                self.decryptFile.printError()
+                mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
+                return False
+            return True
+
+    def apply(self):
+        mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I131"])
+        self.reloadFlag = True

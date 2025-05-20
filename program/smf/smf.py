@@ -13,7 +13,7 @@ import program.textSetting as textSetting
 import program.appearance.ttkCustomWidget as ttkCustomWidget
 
 from program.smf.importPy.decrypt import SmfDecrypt
-from program.smf.importPy.tkinterEditClass import SwapDialog, SwapMeshDialog
+from program.smf.importPy.tkinterEditClass import SwapDialog, SwapMeshDialog, FrameInfoDialog
 from program.smf.importPy.tkinterEditFbxClass import SwapFbxMeshDialog
 from program.smf.importPy.tkinterScrollbarTreeviewSmf import ScrollbarTreeviewSmf
 from program.smf.importPy.extractFbx import FbxObject
@@ -33,6 +33,7 @@ copyAndPasteFrameButton = None
 extract3dObjButton = None
 turnModelMeshButton = None
 swapModelMeshButton = None
+editInfoFrameButton = None
 
 v_framePosX = None
 v_framePosY = None
@@ -40,7 +41,6 @@ v_framePosZ = None
 v_frameRotX = None
 v_frameRotY = None
 v_frameRotZ = None
-v_frameRotW = None
 
 scanSmfImageButton = None
 v_modelCount = None
@@ -118,12 +118,14 @@ def createWidget():
     global extract3dObjButton
     global turnModelMeshButton
     global swapModelMeshButton
+    global editInfoFrameButton
     global decryptFile
 
     btnList = [
         swapFrameButton,
         deleteFrameButton,
-        copyAndPasteFrameButton
+        copyAndPasteFrameButton,
+        editInfoFrameButton
     ]
     meshBtnList = [
         turnModelMeshButton,
@@ -260,6 +262,19 @@ def copyAndPasteFrame():
         mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I104"])
         reloadWidget()
 
+
+def editInfoFrame():
+    global root
+    global frame
+    global decryptFile
+
+    selectId = frame.tree.selection()[0]
+    frameIdx = int(selectId[4:])
+    result = FrameInfoDialog(root, textSetting.textList["smf"]["editInfoFrame"], frameIdx, decryptFile, rootFrameAppearance)
+    if result.reloadFlag:
+        reloadWidget()
+
+
 def extract3d():
     global decryptFile
     saveName = os.path.splitext(os.path.basename(decryptFile.filename))[0]
@@ -359,7 +374,6 @@ def getFrameInfo():
     global v_frameRotX
     global v_frameRotY
     global v_frameRotZ
-    global v_frameRotW
     global frame
     global decryptFile
 
@@ -367,15 +381,14 @@ def getFrameInfo():
     idx = int(selectId.strip("item"))
     frameObj = decryptFile.frameList[idx]
     matrix = frameObj["matrix"]
-    pos = decryptFile.matrixToPos(matrix).split()
-    v_framePosX.set(round(float(pos[0]), 5))
-    v_framePosY.set(round(float(pos[1]), 5))
-    v_framePosZ.set(round(float(pos[2]), 5))
-    q = decryptFile.matrixToRot(matrix).split()
-    v_frameRotX.set(round(float(q[0]), 5))
-    v_frameRotY.set(round(float(q[1]), 5))
-    v_frameRotZ.set(round(float(q[2]), 5))
-    v_frameRotW.set(round(float(q[3]), 5))
+    pos = decryptFile.matrixToPosInfo(matrix)
+    v_framePosX.set(round(pos[0], 5))
+    v_framePosY.set(round(pos[1], 5))
+    v_framePosZ.set(round(pos[2], 5))
+    q = decryptFile.matrixToEulerAngleInfo(matrix)
+    v_frameRotX.set(round(q[0], 5))
+    v_frameRotY.set(round(q[1], 5))
+    v_frameRotZ.set(round(q[2], 5))
 
 
 def scanSmfImage():
@@ -464,6 +477,7 @@ def call_smf(rootTk, appearance):
     global extract3dObjButton
     global turnModelMeshButton
     global swapModelMeshButton
+    global editInfoFrameButton
 
     global v_framePosX
     global v_framePosY
@@ -471,7 +485,6 @@ def call_smf(rootTk, appearance):
     global v_frameRotX
     global v_frameRotY
     global v_frameRotZ
-    global v_frameRotW
 
     global scanSmfImageButton
     global v_modelCount
@@ -486,7 +499,7 @@ def call_smf(rootTk, appearance):
     v_process.set(0)
 
     processScriptFrame = ttkCustomWidget.CustomTtkFrame(root)
-    processScriptFrame.pack(side=tkinter.LEFT, expand=True, fill=tkinter.BOTH, padx=30, pady=15)
+    processScriptFrame.pack(side=tkinter.LEFT, expand=True, fill=tkinter.BOTH, padx=25, pady=15)
     rightFrame = ttkCustomWidget.CustomTtkFrame(root)
     rightFrame.pack(side=tkinter.LEFT, expand=True, fill=tkinter.BOTH, padx=5, pady=5)
     buttonListFrame = ttkCustomWidget.CustomTtkFrame(rightFrame)
@@ -503,26 +516,30 @@ def call_smf(rootTk, appearance):
     scriptLf.pack(expand=True, fill=tkinter.BOTH, pady=15)
     frame = ScrollbarTreeviewSmf(scriptLf, None, None)
 
-    standardButton = ttkCustomWidget.CustomTtkButton(buttonListFrame, text=textSetting.textList["smf"]["createStandardLabel"], width=25, command=createStandardGaugeButton, state="disabled")
-    standardButton.grid(row=0, column=0, padx=45, pady=5)
+    frameEditButtonFrame = ttkCustomWidget.CustomTtkFrame(buttonListFrame)
+    frameEditButtonFrame.grid(row=0, column=0, pady=10)
+    copyAndPasteFrameButton = ttkCustomWidget.CustomTtkButton(frameEditButtonFrame, text=textSetting.textList["smf"]["copyAndPasteFrameLabel"], width=25, command=copyAndPasteFrame, state="disabled")
+    copyAndPasteFrameButton.grid(row=0, column=0, padx=30, pady=5)
+    deleteFrameButton = ttkCustomWidget.CustomTtkButton(frameEditButtonFrame, text=textSetting.textList["smf"]["deleteFrameLabel"], width=25, command=deleteFrame, state="disabled")
+    deleteFrameButton.grid(row=0, column=1, padx=30, pady=5)
+    editInfoFrameButton = ttkCustomWidget.CustomTtkButton(frameEditButtonFrame, text=textSetting.textList["smf"]["editInfoFrameLabel"], width=25, command=editInfoFrame, state="disabled")
+    editInfoFrameButton.grid(row=1, column=0, padx=30, pady=5)
+    swapFrameButton = ttkCustomWidget.CustomTtkButton(frameEditButtonFrame, text=textSetting.textList["smf"]["swapFrameLabel"], width=25, command=swapFrame, state="disabled")
+    swapFrameButton.grid(row=1, column=1, padx=30, pady=5)
 
-    swapFrameButton = ttkCustomWidget.CustomTtkButton(buttonListFrame, text=textSetting.textList["smf"]["swapFrameLabel"], width=25, command=swapFrame, state="disabled")
-    swapFrameButton.grid(row=0, column=1, padx=45, pady=5)
+    meshEditButtonFrame = ttkCustomWidget.CustomTtkFrame(buttonListFrame)
+    meshEditButtonFrame.grid(row=1, column=0, pady=10)
+    turnModelMeshButton = ttkCustomWidget.CustomTtkButton(meshEditButtonFrame, text=textSetting.textList["smf"]["turnModelMeshLabel"], width=25, command=turnModelMesh, state="disabled")
+    turnModelMeshButton.grid(row=0, column=0, padx=30, pady=5)
+    swapModelMeshButton = ttkCustomWidget.CustomTtkButton(meshEditButtonFrame, text=textSetting.textList["smf"]["swapModelMeshLabel"], width=25, command=swapModelMesh, state="disabled")
+    swapModelMeshButton.grid(row=0, column=1, padx=30, pady=5)
 
-    deleteFrameButton = ttkCustomWidget.CustomTtkButton(buttonListFrame, text=textSetting.textList["smf"]["deleteFrameLabel"], width=25, command=deleteFrame, state="disabled")
-    deleteFrameButton.grid(row=1, column=0, padx=45, pady=5)
-
-    copyAndPasteFrameButton = ttkCustomWidget.CustomTtkButton(buttonListFrame, text=textSetting.textList["smf"]["copyAndPasteFrameLabel"], width=25, command=copyAndPasteFrame, state="disabled")
-    copyAndPasteFrameButton.grid(row=1, column=1, padx=45, pady=5)
-
-    turnModelMeshButton = ttkCustomWidget.CustomTtkButton(buttonListFrame, text=textSetting.textList["smf"]["turnModelMeshLabel"], width=25, command=turnModelMesh, state="disabled")
-    turnModelMeshButton.grid(row=2, column=0, padx=45, pady=5)
-
-    swapModelMeshButton = ttkCustomWidget.CustomTtkButton(buttonListFrame, text=textSetting.textList["smf"]["swapModelMeshLabel"], width=25, command=swapModelMesh, state="disabled")
-    swapModelMeshButton.grid(row=2, column=1, padx=45, pady=5)
-
-    extract3dObjButton = ttkCustomWidget.CustomTtkButton(buttonListFrame, text=textSetting.textList["smf"]["extract3dLabel"], width=25, command=extract3d, state="disabled")
-    extract3dObjButton.grid(row=3, column=1, padx=45, pady=5)
+    elseEditButtonFrame = ttkCustomWidget.CustomTtkFrame(buttonListFrame)
+    elseEditButtonFrame.grid(row=2, column=0, pady=10)
+    standardButton = ttkCustomWidget.CustomTtkButton(elseEditButtonFrame, text=textSetting.textList["smf"]["createStandardLabel"], width=25, command=createStandardGaugeButton, state="disabled")
+    standardButton.grid(row=0, column=0, padx=30, pady=5)
+    extract3dObjButton = ttkCustomWidget.CustomTtkButton(elseEditButtonFrame, text=textSetting.textList["smf"]["extract3dLabel"], width=25, command=extract3d, state="disabled")
+    extract3dObjButton.grid(row=0, column=1, padx=30, pady=5)
 
     framePosInfoLf = ttkCustomWidget.CustomTtkLabelFrame(smfInfoLabelFrame, text=textSetting.textList["smf"]["framePosInfoLabel"])
     framePosInfoLf.grid(row=0, column=0, columnspan=4, sticky=tkinter.EW, padx=30, pady=5)
@@ -554,10 +571,6 @@ def call_smf(rootTk, appearance):
     v_frameRotZ = tkinter.DoubleVar()
     frameRotZEt = ttkCustomWidget.CustomTtkEntry(frameRotInfoLf, font=textSetting.textList["font2"], textvariable=v_frameRotZ, width=12, state="readonly")
     frameRotZEt.grid(row=0, column=2, padx=10, pady=5)
-
-    v_frameRotW = tkinter.DoubleVar()
-    frameRotWEt = ttkCustomWidget.CustomTtkEntry(frameRotInfoLf, font=textSetting.textList["font2"], textvariable=v_frameRotW, width=12, state="readonly")
-    frameRotWEt.grid(row=1, column=0, padx=10, pady=5)
 
 
     scanSmfImageButton = ttkCustomWidget.CustomTtkButton(smfImageSearchFrame, text=textSetting.textList["smf"]["scanSmfImageLabel"], width=72, command=scanSmfImage)
