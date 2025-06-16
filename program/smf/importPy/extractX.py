@@ -185,11 +185,72 @@ class XObject():
                 # Material End
             self.w.write((indent + "  }\n"))
             # mtrl End
+
+            if len(meshObj["boneList"]) > 0:
+                self.writeBone(meshObj["boneList"], meshObj["boneWeightList"], indent)
+
             self.w.write((indent + " }\n\n"))
             # Mesh End
+
+            
 
         if len(frameObj["child"]) > 0:
             for child in frameObj["child"]:
                 self.writeFrameAndMesh(child, indent + " ")
 
         self.w.write((indent + "}\n"))
+
+    def writeBone(self, boneList, boneWeightList, indent):
+        skinWeightsList = []
+        for boneInfo in boneList:
+            skinWeightsInfo = {}
+            frameIdx = boneInfo["frameNo"]
+            frameName = self.decryptFile.frameList[frameIdx]["name"]
+            skinWeightsInfo["name"] = frameName
+            skinWeightsInfo["coordIndexList"] = []
+            skinWeightsInfo["coordWeightList"] = []
+            skinWeightsInfo["matrixOffset"] = boneInfo["matrixOffset"]
+            skinWeightsList.append(skinWeightsInfo)
+        
+        for coordIndex, boneWeightInfo in enumerate(boneWeightList):
+            weight = boneWeightInfo[0]
+            boneIdxList = boneWeightInfo[1]
+            skinWeightsList[boneIdxList[0]]["coordIndexList"].append(coordIndex)
+            skinWeightsList[boneIdxList[0]]["coordWeightList"].append(weight)
+            skinWeightsList[boneIdxList[1]]["coordIndexList"].append(coordIndex)
+            skinWeightsList[boneIdxList[1]]["coordWeightList"].append(1.0 - weight)
+            skinWeightsList[boneIdxList[2]]["coordIndexList"].append(coordIndex)
+            skinWeightsList[boneIdxList[2]]["coordWeightList"].append(0)
+            skinWeightsList[boneIdxList[3]]["coordIndexList"].append(coordIndex)
+            skinWeightsList[boneIdxList[3]]["coordWeightList"].append(0)
+
+        self.w.write((indent + "  XSkinMeshHeader {\n"))
+        self.w.write((indent + "   4;\n"))
+        self.w.write((indent + "   4;\n"))
+        self.w.write((indent + "   {0};\n".format(len(boneList))))
+        self.w.write((indent + "  }\n"))
+
+        for i in range(len(skinWeightsList)):
+            self.w.write((indent + "  SkinWeights {\n"))
+            self.w.write((indent + "   \"{0}\";\n".format(skinWeightsList[i]["name"])))
+            count = len(skinWeightsList[i]["coordIndexList"])
+            self.w.write((indent + "   {0};\n".format(count)))
+            for coordIndex in skinWeightsList[i]["coordIndexList"]:
+                self.w.write((indent + "   {0}".format(coordIndex)))
+                if coordIndex == count - 1:
+                    self.w.write(";\n")
+                else:
+                    self.w.write(",\n")
+            for coordIndex in skinWeightsList[i]["coordWeightList"]:
+                self.w.write((indent + "   {0}".format(coordIndex)))
+                if coordIndex == count - 1:
+                    self.w.write(";\n")
+                else:
+                    self.w.write(",\n")
+            self.w.write((indent + "   "))
+            self.w.write(",".join(map(str, skinWeightsList[i]["matrixOffset"][0])) + ",")
+            self.w.write(",".join(map(str, skinWeightsList[i]["matrixOffset"][1])) + ",")
+            self.w.write(",".join(map(str, skinWeightsList[i]["matrixOffset"][2])) + ",")
+            self.w.write(",".join(map(str, skinWeightsList[i]["matrixOffset"][3])) + ";;\n")
+
+            self.w.write((indent + "  }\n"))
