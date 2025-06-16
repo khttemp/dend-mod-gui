@@ -179,31 +179,40 @@ def createStandardGaugeButton():
             return
     else:
         modelIndex = decryptFile.standardGuageList.index(decryptFile.filename)
-        modelName = decryptFile.d4NarrowGuageList[modelIndex]
-        msg = textSetting.textList["infoList"]["I106"].format(modelName)
-        mb.showinfo(title=textSetting.textList["smf"]["smfFile"], message=msg)
-        file_path = fd.askopenfilename(filetypes=[(textSetting.textList["smf"]["fileType"], "*.SMF")])
-        if file_path:
-            filename = os.path.basename(file_path)
-            if filename.upper() != modelName:
-                msg = textSetting.textList["infoList"]["I107"]
-                mb.showerror(title=textSetting.textList["error"], message=msg)
-                return
-            d4DecryptFile = SmfDecrypt(file_path, False, False, False, False, v_process, processBar, False)
-            if not d4DecryptFile.open():
-                d4DecryptFile.printError()
-                mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E74"])
-                return
-
-            if not decryptFile.createStandardGauge(d4DecryptFile):
-                if d4DecryptFile.error != "":
-                    mb.showerror(title=textSetting.textList["error"], message=d4DecryptFile.error)
+        if decryptFile.detectMuTrack():
+            if not decryptFile.createStandardGauge(None):
+                if decryptFile.error != "":
+                    mb.showerror(title=textSetting.textList["error"], message=decryptFile.error)
                     return
                 decryptFile.printError()
                 mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
                 return
         else:
-            return
+            modelName = decryptFile.d4NarrowGuageList[modelIndex]
+            msg = textSetting.textList["infoList"]["I106"].format(modelName)
+            mb.showinfo(title=textSetting.textList["smf"]["smfFile"], message=msg)
+            file_path = fd.askopenfilename(filetypes=[(textSetting.textList["smf"]["fileType"], "*.SMF")])
+            if file_path:
+                filename = os.path.basename(file_path)
+                if filename.upper() != modelName:
+                    msg = textSetting.textList["infoList"]["I107"]
+                    mb.showerror(title=textSetting.textList["error"], message=msg)
+                    return
+                d4DecryptFile = SmfDecrypt(file_path, False, False, False, False, v_process, processBar, False)
+                if not d4DecryptFile.open():
+                    d4DecryptFile.printError()
+                    mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E74"])
+                    return
+
+                if not decryptFile.createStandardGauge(d4DecryptFile):
+                    if d4DecryptFile.error != "":
+                        mb.showerror(title=textSetting.textList["error"], message=d4DecryptFile.error)
+                        return
+                    decryptFile.printError()
+                    mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
+                    return
+            else:
+                return
         mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I108"])
         reloadWidget()
 

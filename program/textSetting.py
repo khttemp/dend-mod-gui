@@ -815,7 +815,7 @@ textList = {
         "editInfoFrame": "フレーム情報修正",
         "swapMesh": "メッシュ入れ替え",
         "scriptLabel": "構成",
-        "createStandardLabel": "標準軌を作成する",
+        "createStandardLabel": "RSの標準軌を作成する",
         "swapFrameLabel": "フレームの位置を入れ替える",
         "editInfoFrameLabel": "フレームの情報を修正する",
         "deleteFrameLabel": "フレームを消す",

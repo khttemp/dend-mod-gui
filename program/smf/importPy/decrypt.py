@@ -83,24 +83,45 @@ class SmfDecrypt:
             "K800_TRACK.SMF",
             "MUTRACK_LOW.SMF",
         ]
+        for i in range(len(self.standardGuageList)):
+            self.standardGuageList[i] = self.standardGuageList[i].upper()
         self.d4NarrowGuageList = [
-            "H2000_TRACK_LOWD4.SMF",
-            "K8000_TRACK_LOWD4.SMF",
-            "JR2000_TRACK_LOWD4.SMF",
-            "KQ2100_TRACK_LOWD4.SMF",
-            "UV_TRACK_LOWD4.SMF",
-            "K800_TRACK_LOWD4.SMF",
-            "K8000_TRACK.SMF",
+            "H2000_Track_LowD4.SMF",
+            "K8000_Track_LowD4.SMF",
+            "JR2000_Track_LowD4.SMF",
+            "KQ2100_Track_LowD4.SMF",
+            "UV_Track_LowD4.SMF",
+            "K800_Track_LowD4.SMF",
+            "",
         ]
+        for i in range(len(self.d4NarrowGuageList)):
+            self.d4NarrowGuageList[i] = self.d4NarrowGuageList[i].upper()
+
         self.d4StandardGuageList = [
-            "H2000_TRACK_D4.SMF",
-            "K8000_TRACK_D4.SMF",
+            "H2000_Track_D4.SMF",
+            "K8000_Track_D4.SMF",
             "JR2000_Track_D4.SMF",
-            "KQ2100_TRACK_D4.SMF",
-            "UV_TRACK_D4.SMF",
-            "K800_TRACK_D4.SMF",
+            "KQ2100_Track_D4.SMF",
+            "UV_Track_D4.SMF",
+            "K800_Track_D4.SMF",
             "Mu_Track_D4.SMF",
         ]
+        self.adjustFrameList = [
+            "LW_POS",
+            "RW_POS",
+            "FIRE_CENTER",
+            "FIRE_R00",
+            "FIRE_R01",
+            "FIRE_L00",
+            "FIRE_L01",
+            "R"
+        ]
+        self.adjustFireLeft = -2.427
+        self.adjustFireRight = 2.427
+        self.adjustHurikoX = 0.85
+        self.adjustMuTrackbaseScale = 2.3 / 1.69
+        self.adjustMuTrackbaseDistance = 2.3 - 1.69
+
         self.texList = set()
         self.lastParentIdx = 0
         self.popFrameByteArr = bytearray()
@@ -1443,105 +1464,339 @@ class SmfDecrypt:
         else:
             return True
 
-    def createStandardGauge(self, d4DecryptFile):
-        newByteArr = bytearray()
-        self.index = self.frameStartIdx
-        newByteArr.extend(self.byteArr[0:self.index])
+    def detectMuTrack(self):
+        if self.filename.upper() == "MUTRACK_LOW.SMF":
+            return True
+        else:
+            return False
 
-        deleteMeshCount = 0
-        originMeshIndexList = []
+    def getFrameByteArrByName(self, searchFrameName):
+        self.index = self.frameStartIdx
         for frame in range(self.frameCount):
             self.frameList = []
             startIdx = self.index
             nameAndLength = self.getStructNameAndLength()
             if not self.readFRM(frame, nameAndLength[1]):
-                return False
+                return None
             frameInfo = self.frameList[0]
             frameName = frameInfo["name"]
-            insertByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
-            if frameName in ["Fire0_R_1", "Fire1_R_1", "Fire0_L_1", "Fire1_L_1"]:
-                originMeshIndexList.append(frameInfo["meshNo"])
-                deleteMeshCount += 1
-                continue
-            elif frameName in ["Fire0_R_0", "Fire1_R_0", "Fire0_L_0", "Fire1_L_0"]:
-                if frameName == "Fire0_R_0":
-                    startIdx = 8
-                    startIdx += 64
-                    newFrameName = "Mesh3"
-                    for n in newFrameName.encode("shift-jis"):
-                        insertByteArr[startIdx] = n
-                        startIdx += 1
-                    for n in range(64 - len(newFrameName.encode("shift-jis"))):
-                        insertByteArr[startIdx] = 0
-                        startIdx += 1
-                elif frameName == "Fire1_R_0":
-                    startIdx = 8
-                    startIdx += 64
-                    newFrameName = "Mesh4"
-                    for n in newFrameName.encode("shift-jis"):
-                        insertByteArr[startIdx] = n
-                        startIdx += 1
-                    for n in range(64 - len(newFrameName.encode("shift-jis"))):
-                        insertByteArr[startIdx] = 0
-                        startIdx += 1
-                elif frameName == "Fire0_L_0":
-                    startIdx = 8
-                    startIdx += 64
-                    newFrameName = "Mesh1"
-                    for n in newFrameName.encode("shift-jis"):
-                        insertByteArr[startIdx] = n
-                        startIdx += 1
-                    for n in range(64 - len(newFrameName.encode("shift-jis"))):
-                        insertByteArr[startIdx] = 0
-                        startIdx += 1
-                elif frameName == "Fire1_L_0":
-                    startIdx = 8
-                    startIdx += 64
-                    newFrameName = "Mesh2"
-                    for n in newFrameName.encode("shift-jis"):
-                        insertByteArr[startIdx] = n
-                        startIdx += 1
-                    for n in range(64 - len(newFrameName.encode("shift-jis"))):
-                        insertByteArr[startIdx] = 0
-                        startIdx += 1
+            if frameName == searchFrameName:
+                insertByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
+                return insertByteArr
+        return None
 
-            if deleteMeshCount > 0:
-                meshNo = frameInfo["meshNo"]
-                if meshNo != -1:
-                    meshNo -= deleteMeshCount
-                parentNo = frameInfo["parentFrameNo"]
-                if parentNo >= 15:
-                    parentNo -= deleteMeshCount
-                startIdx = 8
-                startIdx += (64 + 64)
-                iMeshNo = struct.pack("<i", meshNo)
-                for iM in iMeshNo:
-                    insertByteArr[startIdx] = iM
-                    startIdx += 1
-                iParentNo = struct.pack("<i", parentNo)
-                for iP in iParentNo:
-                    insertByteArr[startIdx] = iP
-                    startIdx += 1
-            newByteArr.extend(insertByteArr)
-        startIdx = 12
-        newAllMeshCount = self.meshCount - deleteMeshCount
-        iNewAllMeshCount = struct.pack("<i", newAllMeshCount)
-        for iN in iNewAllMeshCount:
-            newByteArr[startIdx] = iN
-            startIdx += 1
-        newAllFrameCount = self.frameCount - deleteMeshCount
-        iNewAllFrameCount = struct.pack("<i", newAllFrameCount)
-        for iN in iNewAllFrameCount:
-            newByteArr[startIdx] = iN
-            startIdx += 1
+    def getTrackBaseMeshInfo(self):
+        self.index = self.meshStartIdx
+        for mesh in range(self.meshCount):
+            self.meshList = []
+            startIdx = self.index
+            nameAndLength = self.getStructNameAndLength()
+            if not self.readMESH(mesh, nameAndLength[1], int(50 / self.meshCount)):
+                return None
+            if mesh == self.meshCount - 1:
+                insertByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
+                return (insertByteArr, self.meshList[0]["mtrlList"])
+        return None
+
+    def createRSTrackbase(self, d4DecryptFile):
+        newByteArr = bytearray()
+        # MESH
+        newByteArr.extend(bytearray([0x48, 0x53, 0x45, 0x4D]))
+        meshLengthAddress = len(newByteArr)
+        newByteArr.extend(struct.pack("<i", 0))
+
+        getStandardMeshInfo = self.getTrackBaseMeshInfo()
+        if getStandardMeshInfo is None:
+            return False
+        getStandardByteArr = getStandardMeshInfo[0]
+        getStandardMtrlList = getStandardMeshInfo[1]
+        insertCoordIndex = getStandardMtrlList[2]["coordIndexStart"]
+        insertPolyIndex = getStandardMtrlList[2]["polyIndexStart"]
+
+        d4TrackbaseMeshInfo = d4DecryptFile.getTrackBaseMeshInfo()
+        if d4TrackbaseMeshInfo is None:
+            return False
+        d4ByteArr = d4TrackbaseMeshInfo[0]
+        d4MtrlList = d4TrackbaseMeshInfo[1]
+        d4AddMtrlInfo = d4MtrlList[2]
+        d4AddPolyIndexStart = d4AddMtrlInfo["polyIndexStart"]
+        d4AddPolyCount = d4AddMtrlInfo["polyCount"]
+        d4AddCoordIndexStart = d4AddMtrlInfo["coordIndexStart"]
+        d4AddCoordIndexEnd = d4AddCoordIndexStart + d4AddMtrlInfo["coordCount"]
+        d4AddCoordCount = d4AddMtrlInfo["coordCount"]
+
+        # Name
+        index = 8
+        newByteArr.extend(getStandardByteArr[index:index + 64])
+        index += 64
+        # MtrlCount
+        newByteArr.extend(struct.pack("<i", len(d4MtrlList)))
+        index += 4
+        # OBB
+        newByteArr.extend(getStandardByteArr[index:index + 0x44])
+        index += 0x44
+        # V_PC
+        index += 4
+        newCoordByteArr = bytearray()
+        length = struct.unpack("<i", getStandardByteArr[index:index + 4])[0]
+        d4Index = index
+        d4Length = struct.unpack("<i", d4ByteArr[d4Index:d4Index + 4])[0]
+        index += 4
+        d4Index += 4
+        newCoordByteArr.extend(getStandardByteArr[index:index + length])
+        index += length
+        vPCSize = 16
+        newCoordByteArr[vPCSize*insertCoordIndex:vPCSize*insertCoordIndex] = d4ByteArr[d4Index + vPCSize*d4AddCoordIndexStart:d4Index + vPCSize*d4AddCoordIndexEnd]
+        d4Index += d4Length
+        newByteArr.extend(bytearray([0x43, 0x50, 0x5F, 0x56]))
+        newByteArr.extend(struct.pack("<i", len(newCoordByteArr)))
+        newByteArr.extend(newCoordByteArr)
+        # V_N
+        index += 4
+        d4Index += 4
+        newNormalByteArr = bytearray()
+        length = struct.unpack("<i", getStandardByteArr[index:index + 4])[0]
+        d4Length = struct.unpack("<i", d4ByteArr[d4Index:d4Index + 4])[0]
+        index += 4
+        d4Index += 4
+        newNormalByteArr.extend(getStandardByteArr[index:index + length])
+        index += length
+        vNSize = 12
+        newNormalByteArr[vNSize*insertCoordIndex:vNSize*insertCoordIndex] = d4ByteArr[d4Index + vNSize*d4AddCoordIndexStart:d4Index + vNSize*d4AddCoordIndexEnd]
+        d4Index += d4Length
+        newByteArr.extend(bytearray([0x4E, 0x5F, 0x56, 0x00]))
+        newByteArr.extend(struct.pack("<i", len(newNormalByteArr)))
+        newByteArr.extend(newNormalByteArr)
+        # V_B
+        index += 4
+        d4Index += 4
+        newVBByteArr = bytearray()
+        length = struct.unpack("<i", getStandardByteArr[index:index + 4])[0]
+        d4Length = struct.unpack("<i", d4ByteArr[d4Index:d4Index + 4])[0]
+        index += 4
+        d4Index += 4
+        newVBByteArr.extend(getStandardByteArr[index:index + length])
+        index += length
+        vBSize = 12
+        newVBByteArr[vBSize*insertCoordIndex:vBSize*insertCoordIndex] = d4ByteArr[d4Index + vBSize*d4AddCoordIndexStart:d4Index + vBSize*d4AddCoordIndexEnd]
+        d4Index += d4Length
+        newByteArr.extend(bytearray([0x42, 0x5F, 0x56, 0x00]))
+        newByteArr.extend(struct.pack("<i", len(newVBByteArr)))
+        newByteArr.extend(newVBByteArr)
+        # V_UV
+        index += 4
+        d4Index += 4
+        newUVByteArr = bytearray()
+        length = struct.unpack("<i", getStandardByteArr[index:index + 4])[0]
+        d4Length = struct.unpack("<i", d4ByteArr[d4Index:d4Index + 4])[0]
+        index += 4
+        d4Index += 4
+        newUVByteArr.extend(getStandardByteArr[index:index + length])
+        index += length
+        vUVSize = 16
+        newUVByteArr[vUVSize*insertCoordIndex:vUVSize*insertCoordIndex] = d4ByteArr[d4Index + vUVSize*d4AddCoordIndexStart:d4Index + vUVSize*d4AddCoordIndexEnd]
+        d4Index += d4Length
+        newByteArr.extend(bytearray([0x56, 0x55, 0x5F, 0x56]))
+        newByteArr.extend(struct.pack("<i", len(newUVByteArr)))
+        newByteArr.extend(newUVByteArr)
+        # IDX2
+        index += 4
+        d4Index += 4
+        newIdx2Arr = []
+        length = struct.unpack("<i", getStandardByteArr[index:index + 4])[0]
+        d4Length = struct.unpack("<i", d4ByteArr[d4Index:d4Index + 4])[0]
+        index += 4
+        d4Index += 4
+        idx2Size = 6
+        for i in range(length // idx2Size):
+            idxList = []
+            for j in range(3):
+                idx = struct.unpack("<h", getStandardByteArr[index:index + 2])[0]
+                index += 2
+                if i >= insertPolyIndex:
+                    idx += d4AddCoordCount
+                idxList.append(idx)
+            newIdx2Arr.append(idxList)
+
+        d4MtrlIndex = d4Index + d4Length
+        d4Index = d4Index + idx2Size*d4AddPolyIndexStart
+        insertNewIdx2Arr = []
+        for i in range(d4AddPolyCount):
+            idxList = []
+            for j in range(3):
+                idx = struct.unpack("<h", d4ByteArr[d4Index:d4Index + 2])[0]
+                idx = idx - d4AddCoordIndexStart + insertCoordIndex
+                idxList.append(idx)
+                d4Index += 2
+            insertNewIdx2Arr.append(idxList)
+        newIdx2Arr[insertPolyIndex:insertPolyIndex] = insertNewIdx2Arr
+
+        newByteArr.extend(bytearray([0x32, 0x58, 0x44, 0x49]))
+        newByteArr.extend(struct.pack("<i", len(newIdx2Arr) * 6))
+        for idxList in newIdx2Arr:
+            for idx in idxList:
+                newByteArr.extend(struct.pack("<h", idx))
+
+        # MTRL
+        d4Index = d4MtrlIndex
+        d4AddMtrlByteArr = bytearray()
+        for mtrlNo in range(len(d4MtrlList)):
+            d4Length = struct.unpack("<i", d4ByteArr[d4Index + 4:d4Index + 8])[0]
+            if mtrlNo == 2:
+                d4AddMtrlByteArr = d4ByteArr[d4Index:d4Index + 8 + d4Length]
+                iPolyStartIndex = struct.pack("<i", insertPolyIndex)
+                for addr, val in enumerate(iPolyStartIndex):
+                    d4AddMtrlByteArr[0x48 + addr] = val
+                iCoordStartIndex = struct.pack("<i", insertCoordIndex)
+                for addr, val in enumerate(iCoordStartIndex):
+                    d4AddMtrlByteArr[0x50 + addr] = val
+                break
+            d4Index += (8 + d4Length)
+
+        for mtrlNo in range(len(getStandardMtrlList)):
+            length = struct.unpack("<i", getStandardByteArr[index + 4:index + 8])[0]
+            mtrlByteArr = getStandardByteArr[index:index + 8 + length]
+            if mtrlNo >= 2:
+                polyStartIndex = struct.unpack("<i", mtrlByteArr[0x48:0x48 + 4])[0]
+                iPolyStartIndex = struct.pack("<i", polyStartIndex + d4AddPolyCount)
+                for addr, val in enumerate(iPolyStartIndex):
+                    mtrlByteArr[0x48 + addr] = val
+                coordStartIndex = struct.unpack("<i", mtrlByteArr[0x50:0x50 + 4])[0]
+                iCoordStartIndex = struct.pack("<i", coordStartIndex + d4AddCoordCount)
+                for addr, val in enumerate(iCoordStartIndex):
+                    mtrlByteArr[0x50 + addr] = val
+            newByteArr.extend(mtrlByteArr)
+            index += (8 + length)
+
+            if mtrlNo == 1:
+                newByteArr.extend(d4AddMtrlByteArr)
+
+        meshLength = len(newByteArr) - meshLengthAddress - 4
+        iMeshLength = struct.pack("<i", meshLength)
+        for addr, val in enumerate(iMeshLength):
+            newByteArr[meshLengthAddress + addr] = val
+
+        return newByteArr
+
+    def adjustMuHuriko(self, byteArr):
+        # OBB
+        index = 0x84
+        boxXSize = struct.unpack("<f", byteArr[index:index + 4])[0]
+        boxXSize += (self.adjustHurikoX * 2)
+        fBoxXSize = struct.pack("<f", boxXSize)
+        for addr, val in enumerate(fBoxXSize):
+            byteArr[index + addr] = val
+        index += 12
+        # V_PC
+        index += 4
+        length = struct.unpack("<i", byteArr[index:index + 4])[0]
+        index += 4
+        for i in range(length // 16):
+            coordX = struct.unpack("<f", byteArr[index:index + 4])[0]
+            if coordX >= 0:
+                coordX += self.adjustHurikoX
+            else:
+                coordX -= self.adjustHurikoX
+            fCoordX = struct.pack("<f", coordX)
+            for addr, val in enumerate(fCoordX):
+                byteArr[index + addr] = val
+            index += 16
+        return byteArr
+
+    def adjustMuTrackbase(self, byteArr):
+        # OBB
+        index = 0x84
+        boxXSize = struct.unpack("<f", byteArr[index:index + 4])[0]
+        boxXSize *= self.adjustMuTrackbaseScale
+        fBoxXSize = struct.pack("<f", boxXSize)
+        for addr, val in enumerate(fBoxXSize):
+            byteArr[index + addr] = val
+        index += 12
+        # V_PC
+        index += 4
+        length = struct.unpack("<i", byteArr[index:index + 4])[0]
+        index += 4
+        mtrlList = self.meshList[-1]["mtrlList"]
+        coordIndex = mtrlList[3]["coordIndexStart"]
+        for i in range(length // 16):
+            coordX = struct.unpack("<f", byteArr[index:index + 4])[0]
+            if i < coordIndex:
+                coordX *= self.adjustMuTrackbaseScale
+            else:
+                if coordX >= 0:
+                    coordX += self.adjustMuTrackbaseDistance
+                else:
+                    coordX -= self.adjustMuTrackbaseDistance
+            fCoordX = struct.pack("<f", coordX)
+            for addr, val in enumerate(fCoordX):
+                byteArr[index + addr] = val
+            index += 16
+        return byteArr
+
+    def createStandardGauge(self, d4DecryptFile):
+        newByteArr = bytearray()
 
         if self.filename.upper() == "MUTRACK_LOW.SMF":
-            for mesh in range(self.meshCount - 1):
+            newByteArr.extend(self.byteArr[0:self.frameStartIdx])
+            self.index = self.frameStartIdx
+            for frame in range(self.frameCount):
+                self.frameList = []
                 startIdx = self.index
                 nameAndLength = self.getStructNameAndLength()
-                if not self.readMESH(mesh, nameAndLength[1], int(50 / self.meshCount)):
+                if not self.readFRM(frame, nameAndLength[1]):
+                    return False
+                frameInfo = self.frameList[0]
+                frameName = frameInfo["name"]
+                insertByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
+                if frameName in self.adjustFrameList and frameName in ["FIRE_R00", "FIRE_R01", "FIRE_L00", "FIRE_L01"]:
+                    if frameName in ["FIRE_L00", "FIRE_L01"]:
+                        fCoordX = struct.pack("<f", self.adjustFireLeft)
+                    else:
+                        fCoordX = struct.pack("<f", self.adjustFireRight)
+                    for addr, val in enumerate(fCoordX):
+                        insertByteArr[0x38 + addr] = val
+                newByteArr.extend(insertByteArr)
+
+            self.index = self.meshStartIdx
+            for d4Mesh in range(0, 4):
+                startIdx = self.index
+                nameAndLength = self.getStructNameAndLength()
+                if not self.readMESH(d4Mesh, nameAndLength[1], int(50 / self.meshCount)):
                     return False
                 insertByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
+                newByteArr.extend(insertByteArr)
+
+            startIdx = self.index
+            nameAndLength = self.getStructNameAndLength()
+            if not self.readMESH(4, nameAndLength[1], int(50 / self.meshCount)):
+                return False
+            insertByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
+            newByteArr.extend(self.adjustMuHuriko(insertByteArr))
+
+            startIdx = self.index
+            nameAndLength = self.getStructNameAndLength()
+            if not self.readMESH(5, nameAndLength[1], int(50 / self.meshCount)):
+                return False
+            insertByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
+            newByteArr.extend(self.adjustMuTrackbase(insertByteArr))
+        else:
+            newByteArr.extend(d4DecryptFile.byteArr[0:d4DecryptFile.frameStartIdx])
+            d4DecryptFile.index = d4DecryptFile.frameStartIdx
+            for d4Frame in range(d4DecryptFile.frameCount):
+                d4DecryptFile.frameList = []
+                startIdx = d4DecryptFile.index
+                nameAndLength = d4DecryptFile.getStructNameAndLength()
+                if not d4DecryptFile.readFRM(d4Frame, nameAndLength[1]):
+                    return False
+                frameInfo = d4DecryptFile.frameList[0]
+                frameName = frameInfo["name"]
+                insertByteArr = copy.deepcopy(d4DecryptFile.byteArr[startIdx:d4DecryptFile.index])
+                if frameName in self.adjustFrameList:
+                    getByteArr = self.getFrameByteArrByName(frameName)
+                    if getByteArr is None:
+                        return False
+                    for b in range(8, 72):
+                        insertByteArr[b] = getByteArr[b]
                 newByteArr.extend(insertByteArr)
 
             d4DecryptFile.index = d4DecryptFile.meshStartIdx
@@ -1550,29 +1805,13 @@ class SmfDecrypt:
                 nameAndLength = d4DecryptFile.getStructNameAndLength()
                 if not d4DecryptFile.readMESH(d4Mesh, nameAndLength[1], int(50 / d4DecryptFile.meshCount)):
                     return False
-                if d4Mesh == d4DecryptFile.meshCount - 1:
-                    insertByteArr = copy.deepcopy(d4DecryptFile.byteArr[d4StartIdx:d4DecryptFile.index])
-                    newByteArr.extend(insertByteArr)
-        else:
-            d4DecryptFile.index = d4DecryptFile.meshStartIdx
-            for d4Mesh in range(d4DecryptFile.meshCount - 1):
-                d4StartIdx = d4DecryptFile.index
-                nameAndLength = d4DecryptFile.getStructNameAndLength()
-                if not d4DecryptFile.readMESH(d4Mesh, nameAndLength[1], int(50 / d4DecryptFile.meshCount)):
-                    return False
                 insertByteArr = copy.deepcopy(d4DecryptFile.byteArr[d4StartIdx:d4DecryptFile.index])
-                newByteArr.extend(insertByteArr)
-
-            for mesh in range(self.meshCount):
-                startIdx = self.index
-                nameAndLength = self.getStructNameAndLength()
-                if not self.readMESH(mesh, nameAndLength[1], int(50 / self.meshCount)):
-                    return False
-                if mesh == self.meshCount - 1:
-                    insertByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
+                if d4Mesh == d4DecryptFile.meshCount - 1:
+                    newByteArr.extend(self.createRSTrackbase(d4DecryptFile))
+                else:
                     newByteArr.extend(insertByteArr)
 
-        newFilename = self.d4StandardGuageList[self.standardGuageList.index(self.filename)]
+        newFilename = self.d4StandardGuageList[self.standardGuageList.index(self.filename.upper())]
         w = open(os.path.join(self.directory, newFilename), "wb")
         w.write(newByteArr)
         w.close()
@@ -2096,7 +2335,7 @@ class SmfDecrypt:
         for i in range(4):
             newByteArr[materialCountIndex + i] = iMaterialCount[i]
 
-        # V_CP
+        # V_PC
         newByteArr.extend(bytearray([0x43, 0x50, 0x5F, 0x56]))
         newByteArr.extend(struct.pack("<i", len(meshObj["coordList"]) * 16))
         for cIdx, coord in enumerate(meshObj["coordList"]):
