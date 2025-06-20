@@ -1,5 +1,3 @@
-import traceback
-
 import tkinter
 from tkinter import ttk
 from tkinter import filedialog as fd
@@ -40,20 +38,18 @@ def openFile():
         del fvtConvertFile
         fvtConvertFile = FvtConvert(file_path, content)
         if not fvtConvertFile.open():
-            mb.showerror(title=textSetting.textList["error"], message=fvtConvertFile.error)
+            fvtConvertFile.printError()
+            mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E124"])
             return
 
         warnMsg = textSetting.textList["infoList"]["I13"]
         result = mb.askokcancel(title=textSetting.textList["warning"], message=warnMsg, icon="warning", parent=root)
         if result:
-            try:
-                fvtConvertFile.write()
-                mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I14"])
-            except Exception:
-                w = open("error.log", "w")
-                w.write(traceback.format_exc())
-                w.close()
+            if not fvtConvertFile.write():
+                fvtConvertFile.printError()
                 mb.showerror(title=textSetting.textList["saveError"], message=textSetting.textList["errorList"]["E14"])
+                return
+            mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I14"])
 
 
 def selectGame():

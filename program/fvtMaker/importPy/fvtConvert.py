@@ -1,5 +1,6 @@
 import os
 import struct
+import traceback
 import program.textSetting as textSetting
 from program.encodingClass import SJISEncodingObject
 from program.errorLogClass import ErrorLogObj
@@ -21,14 +22,17 @@ class FvtConvert:
 
     def open(self):
         try:
-            f = open(self.filePath)
+            f = open(self.filePath, encoding=self.encObj.enc)
             lines = f.readlines()
             f.close()
-        except Exception:
-            f = open(self.filePath, "r", encoding="utf-8")
-            lines = f.readlines()
-            f.close()
+            if not self.makeFvtInfo(lines):
+                return False
+            return True
+        except UnicodeDecodeError:
+            self.error = traceback.format_exc()
+            return False
 
+    def makeFvtInfo(self, lines):
         lines.pop(0)
 
         self.fvtList = []
@@ -49,10 +53,10 @@ class FvtConvert:
                 contentCnt = 0
                 if self.content > LS:
                     contentCnt = 4
-                    faceX = int(arr[2])
-                    faceY = int(arr[3])
-                    faceW = int(arr[4])
-                    faceH = int(arr[5])
+                    faceW = int(arr[2])
+                    faceH = int(arr[3])
+                    faceX = int(arr[4])
+                    faceY = int(arr[5])
 
                 effect = int(arr[contentCnt + 2])
                 voNum = int(arr[contentCnt + 3])
@@ -60,9 +64,8 @@ class FvtConvert:
                 self.error = textSetting.textList["errorList"]["E11"].format(cnt)
                 return False
 
-            try:
-                text = self.encObj.convertByteArray(arr[contentCnt + 4])
-            except Exception:
+            text = self.encObj.convertByteArray(arr[contentCnt + 4])
+            if text is None:
                 self.error = textSetting.textList["errorList"]["E12"].format(cnt)
                 return False
 
@@ -80,10 +83,10 @@ class FvtConvert:
             newLine.extend(self.encObj.convertByteArray(header))
             newLine.extend(struct.pack("<h", faceNum))
             if self.content > LS:
-                newLine.extend(struct.pack("<h", faceX))
-                newLine.extend(struct.pack("<h", faceY))
                 newLine.extend(struct.pack("<h", faceW))
                 newLine.extend(struct.pack("<h", faceH))
+                newLine.extend(struct.pack("<h", faceX))
+                newLine.extend(struct.pack("<h", faceY))
             newLine.extend(struct.pack("<b", effect))
             newLine.extend(struct.pack("<h", voNum))
 
@@ -95,10 +98,18 @@ class FvtConvert:
 
         return True
 
+    def printError(self):
+        self.errObj.write(self.error)
+
     def write(self):
-        for fvt in self.fvtList:
-            fvtNum = fvt["fvtNum"]
-            path = os.path.join(os.path.dirname(self.filePath), "{0:03}.FVT".format(fvtNum))
-            f = open(path, "wb")
-            f.write(fvt["info"])
-            f.close()
+        try:
+            for fvt in self.fvtList:
+                fvtNum = fvt["fvtNum"]
+                path = os.path.join(os.path.dirname(self.filePath), "{0:03}.FVT".format(fvtNum))
+                f = open(path, "wb")
+                f.write(fvt["info"])
+                f.close()
+            return True
+        except Exception:
+            self.error = traceback.format_exc()
+            return False
