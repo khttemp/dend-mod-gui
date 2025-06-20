@@ -1,6 +1,5 @@
 import os
 import copy
-import codecs
 import traceback
 import sys
 import requests
@@ -12,6 +11,7 @@ from tkinter import filedialog as fd
 from tkinter import messagebox as mb
 import program.textSetting as textSetting
 import program.appearance.ttkCustomWidget as ttkCustomWidget
+from program.errorLogClass import ErrorLogObj
 
 from program.cmdList import cmdList
 
@@ -29,6 +29,7 @@ scriptLf = None
 frame = None
 rootFrameAppearance = None
 copyComicData = None
+errObj = ErrorLogObj()
 
 
 def resource_path(relative_path):
@@ -56,9 +57,7 @@ def openFile(pComicCheck):
             deleteWidget()
             createWidget(pComicCheck)
         except Exception:
-            w = codecs.open("error.log", "a", "utf-8", "strict")
-            w.write(traceback.format_exc())
-            w.close()
+            errObj.write(traceback.format_exc())
             mb.showerror(title=textSetting.textList["error"], message=errorMsg)
 
 
@@ -82,7 +81,7 @@ def createWidget(pComicCheck):
         pass
 
     if cmdJsonInfo is None:
-        f = codecs.open(resource_path("cmd.json"), "r", "utf-8", "strict")
+        f = open(resource_path("cmd.json"), encoding="utf-8")
         cmdJsonInfo = json.load(f)
         f.close()
 
@@ -258,9 +257,7 @@ def reloadFile():
                     frame.tree.see(selectId - 3)
                 frame.tree.selection_set(selectId)
         except Exception:
-            w = codecs.open("error.log", "a", "utf-8", "strict")
-            w.write(traceback.format_exc())
-            w.close()
+            errObj.write(traceback.format_exc())
             mb.showerror(title=textSetting.textList["error"], message=errorMsg)
 
 
@@ -285,9 +282,7 @@ def csvExtract():
             w.close()
             mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I10"])
         except Exception:
-            w = codecs.open("error.log", "a", "utf-8", "strict")
-            w.write(traceback.format_exc())
-            w.close()
+            errObj.write(traceback.format_exc())
             mb.showerror(title=textSetting.textList["error"], message=errorMsg)
 
 
@@ -318,9 +313,7 @@ def csvLoadAndSave():
             try:
                 comicDataParaList.append(float(arr[j]))
             except Exception:
-                w = codecs.open("error.log", "a", "utf-8", "strict")
-                w.write(traceback.format_exc())
-                w.close()
+                errObj.write(traceback.format_exc())
                 errorMsg = textSetting.textList["errorList"]["E9"].format(i+1, arr[j])
                 mb.showerror(title=textSetting.textList["error"], message=errorMsg)
                 return

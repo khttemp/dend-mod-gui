@@ -1,9 +1,9 @@
 import os
 import tkinter
-import codecs
 import traceback
 from tkinter import messagebox as mb
 import program.textSetting as textSetting
+from program.errorLogClass import ErrorLogObj
 import program.appearance.ttkCustomWidget as ttkCustomWidget
 from program.appearance.customSimpleDialog import CustomSimpleDialog
 
@@ -16,6 +16,7 @@ from fbx import FbxLayerElement
 
 class SwapFbxMeshDialog(CustomSimpleDialog):
     def __init__(self, master, title, decryptFile, fbxFilePath, rootFrameAppearance, meshNo):
+        self.errObj = ErrorLogObj()
         self.decryptFile = decryptFile
         self.fbxFilePath = fbxFilePath
         self.meshNo = meshNo
@@ -29,9 +30,7 @@ class SwapFbxMeshDialog(CustomSimpleDialog):
         super().__init__(master, title, rootFrameAppearance.bgColor)
     
     def printError(self, error):
-        w = codecs.open("error.log", "w", "utf-8", "strict")
-        w.write(error)
-        w.close()
+        self.errObj.write(error)
 
     def importFbx(self):
         self.manager = FbxManager.Create()

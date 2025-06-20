@@ -1,13 +1,16 @@
 import os
 import struct
-import codecs
 import traceback
 import copy
+from program.encodingClass import SJISEncodingObject
+from program.errorLogClass import ErrorLogObj
 
 
 class RailDecrypt:
     def __init__(self, filePath):
         self.game = "LS"
+        self.encObj = SJISEncodingObject()
+        self.errObj = ErrorLogObj()
         self.filePath = filePath
         self.directory = os.path.dirname(self.filePath)
         self.filename = os.path.splitext(os.path.basename(self.filePath))[0]
@@ -48,9 +51,7 @@ class RailDecrypt:
             return False
 
     def printError(self):
-        w = codecs.open("error.log", "w", "utf-8", "strict")
-        w.write(self.error)
-        w.close()
+        self.errObj.write(self.error)
 
     def decrypt(self):
         self.game = "LS"
@@ -81,7 +82,7 @@ class RailDecrypt:
         index = 16
         readFlag = False
 
-        header = self.byteArr[0:index].decode("shift-jis")
+        header = self.encObj.convertString(self.byteArr[0:index])
         if header != "DEND_MAP_VER0100" and header != "DEND_MAP_VER0101":
             return False
 
@@ -98,7 +99,7 @@ class RailDecrypt:
             smfInfo = []
             b = self.byteArr[index]
             index += 1
-            text = self.byteArr[index:index + b].decode("shift-jis")
+            text = self.encObj.convertString(self.byteArr[index:index + b])
             smfInfo.append(text)
             index += b
             for j in range(2):
@@ -129,13 +130,13 @@ class RailDecrypt:
         musicInfo = []
         musicFileLen = self.byteArr[index]
         index += 1
-        musicFile = self.byteArr[index:index + musicFileLen].decode("shift-jis")
+        musicFile = self.encObj.convertString(self.byteArr[index:index + musicFileLen])
         musicInfo.append(musicFile)
         index += musicFileLen
 
         musicNameLen = self.byteArr[index]
         index += 1
-        musicName = self.byteArr[index:index + musicNameLen].decode("shift-jis")
+        musicName = self.encObj.convertString(self.byteArr[index:index + musicNameLen])
         musicInfo.append(musicName)
         index += musicNameLen
 
@@ -155,7 +156,7 @@ class RailDecrypt:
         self.railStationNameIdx = index
         railStationNameLen = self.byteArr[index]
         index += 1
-        self.railStationName = self.byteArr[index:index + railStationNameLen].decode("shift-jis")
+        self.railStationName = self.encObj.convertString(self.byteArr[index:index + railStationNameLen])
         index += railStationNameLen
 
         # SCENE 3D OBJ(bin ANIME)
@@ -358,7 +359,7 @@ class RailDecrypt:
             stationNameInfo = []
             b = self.byteArr[index]
             index += 1
-            text = self.byteArr[index:index + b].decode("shift-jis")
+            text = self.encObj.convertString(self.byteArr[index:index + b])
             stationNameInfo.append(text)
             index += b
 
@@ -569,7 +570,7 @@ class RailDecrypt:
                         tempF = struct.pack("<f", musicInfo[j])
                         newByteArr.extend(tempF)
                     else:
-                        musicStr = musicInfo[j].encode("shift-jis")
+                        musicStr = self.encObj.convertByteArray(musicInfo[j])
                         newByteArr.append(len(musicStr))
                         newByteArr.extend(musicStr)
 
@@ -703,7 +704,7 @@ class RailDecrypt:
 
             if mode == "modify" or mode == "insert":
                 newByteArr.append(len(smfInfo[0]))
-                newByteArr.extend(smfInfo[0].encode("shift-jis"))
+                newByteArr.extend(self.encObj.convertByteArray(smfInfo[0]))
                 for i in range(2):
                     newByteArr.append(smfInfo[1 + i])
 
@@ -820,7 +821,7 @@ class RailDecrypt:
             newByteArr = self.byteArr[0:index]
 
             if mode == "modify" or mode == "insert":
-                encodeName = stationNameInfo[0].encode("shift-jis")
+                encodeName = self.encObj.convertByteArray(stationNameInfo[0])
                 newByteArr.append(len(encodeName))
                 newByteArr.extend(encodeName)
                 newByteArr.append(int(stationNameInfo[1]))

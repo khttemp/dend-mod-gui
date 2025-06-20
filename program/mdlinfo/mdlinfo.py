@@ -1,5 +1,4 @@
 import os
-import codecs
 import tkinter
 import traceback
 
@@ -7,6 +6,7 @@ from tkinter import messagebox as mb
 from tkinter import filedialog as fd
 import program.textSetting as textSetting
 import program.appearance.ttkCustomWidget as ttkCustomWidget
+from program.errorLogClass import ErrorLogObj
 
 from program.mdlinfo.importPy.decrypt import MdlDecrypt
 from program.mdlinfo.importPy.tkinterScrollbarTreeviewMdlinfo import ScrollbarTreeviewMdlinfo
@@ -33,6 +33,7 @@ readSMFBtn = None
 decryptFile = None
 frame = None
 copyInfoByteArr = None
+errObj = ErrorLogObj
 
 
 def openFile():
@@ -62,9 +63,7 @@ def openFile():
             copyAnotherBtn["state"] = "normal"
             readSMFBtn["state"] = "normal"
         except Exception:
-            w = codecs.open("error.log", "a", "utf-8", "strict")
-            w.write(traceback.format_exc())
-            w.close()
+            errObj.write(traceback.format_exc())
             mb.showerror(title=textSetting.textList["error"], message=errorMsg)
 
 
@@ -271,9 +270,7 @@ def copyAnother():
                 frame.tree.selection_set(len(decryptFile.allInfoList) - 1)
 
         except Exception:
-            w = codecs.open("error.log", "a", "utf-8", "strict")
-            w.write(traceback.format_exc())
-            w.close()
+            errObj.write(traceback.format_exc())
             mb.showerror(title=textSetting.textList["error"], message=errorMsg)
 
 

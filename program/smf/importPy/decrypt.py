@@ -1,17 +1,19 @@
 import os
 import struct
-import codecs
 import copy
 import traceback
 import math
-from fbx import FbxQuaternion
 from fbx import FbxAMatrix
 from fbx import FbxVector4
 import program.textSetting as textSetting
+from program.encodingClass import SJISEncodingObject
+from program.errorLogClass import ErrorLogObj
 
 
 class SmfDecrypt:
     def __init__(self, filePath, frameFlag=False, meshFlag=False, xyzFlag=False, mtrlFlag=False, v_process=None, processBar=None, writeFlag=True):
+        self.encObj = SJISEncodingObject()
+        self.errObj = ErrorLogObj()
         self.filePath = filePath
         self.directory = os.path.dirname(self.filePath)
         self.filename = os.path.basename(self.filePath)
@@ -139,13 +141,11 @@ class SmfDecrypt:
             return False
 
     def printError(self):
-        w = codecs.open("error.log", "w", "utf-8", "strict")
-        w.write(self.error)
-        w.close()
+        self.errObj.write(self.error)
 
     def writeInfo(self, text="", end="\n"):
         if self.writeFlag:
-            f = codecs.open(os.path.join(self.directory, self.originFilename), "a", "utf-8", "strict")
+            f = open(os.path.join(self.directory, self.originFilename), "a", encoding="utf-8")
             f.write("{0}".format(text).encode().decode("utf-8"))
             f.write(end)
             f.close()
@@ -155,7 +155,7 @@ class SmfDecrypt:
         if self.v_process is not None or self.processBar is not None:
             self.processFlag = True
         if self.writeFlag:
-            w = codecs.open(os.path.join(self.directory, self.originFilename), "w", "utf-8", "strict")
+            w = open(os.path.join(self.directory, self.originFilename), "w", encoding="utf-8")
             w.close()
         self.texList = set()
         self.frameList = []
@@ -277,7 +277,7 @@ class SmfDecrypt:
         if self.printFRM:
             self.writeInfo(textSetting.textList["smf"]["frameName"], end=", ")
         fName = struct.unpack("<64s", self.byteArr[index:index+self.MAX_NAME_SIZE])[0]
-        fName = fName.decode("shift-jis").rstrip("\x00")
+        fName = self.encObj.convertString(fName).rstrip("\x00")
         frameObj["name"] = fName
         index += self.MAX_NAME_SIZE
         if self.printFRM:
@@ -355,7 +355,7 @@ class SmfDecrypt:
         if self.printFRM:
             self.writeInfo(textSetting.textList["smf"]["anisName"], end=", ")
         mName = struct.unpack("<64s", self.byteArr[index:index+self.MAX_NAME_SIZE])[0]
-        mName = mName.decode("shift-jis").rstrip("\x00")
+        mName = self.encObj.convertString(mName).rstrip("\x00")
         index += self.MAX_NAME_SIZE
         if self.printFRM:
             self.writeInfo(mName)
@@ -454,7 +454,7 @@ class SmfDecrypt:
         if self.printMESH:
             self.writeInfo(textSetting.textList["smf"]["meshName"], end=", ")
         mName = struct.unpack("<64s", self.byteArr[index:index+self.MAX_NAME_SIZE])[0]
-        mName = mName.decode("shift-jis").rstrip("\x00")
+        mName = self.encObj.convertString(mName).rstrip("\x00")
         self.meshInfo["name"] = mName
         index += self.MAX_NAME_SIZE
         if self.printMESH:
@@ -1019,7 +1019,7 @@ class SmfDecrypt:
             self.writeInfo("MESH, MTRL:{0}-{1}".format(mesh, mtrl))
             self.writeInfo(textSetting.textList["smf"]["mtrlName"], end=", ")
         mName = struct.unpack("<64s", self.byteArr[index:index+self.MAX_NAME_SIZE])[0]
-        mName = mName.decode("shift-jis").rstrip("\x00")
+        mName = self.encObj.convertString(mName).rstrip("\x00")
         mtrlInfo["name"] = mName
         index += self.MAX_NAME_SIZE
         if self.printMTRL:
@@ -1071,7 +1071,7 @@ class SmfDecrypt:
             if self.printMTRL:
                 self.writeInfo(textSetting.textList["smf"]["texCommon"], end=", ")
             mName = struct.unpack("<64s", self.byteArr[index:index+self.MAX_NAME_SIZE])[0]
-            mName = mName.decode("shift-jis").rstrip("\x00")
+            mName = self.encObj.convertString(mName).rstrip("\x00")
             mtrlInfo["texc"] = mName
             texcInfo.append(mName)
             index += self.MAX_NAME_SIZE
@@ -1096,7 +1096,7 @@ class SmfDecrypt:
             if self.printMTRL:
                 self.writeInfo(textSetting.textList["smf"]["texLight"], end=", ")
             mName = struct.unpack("<64s", self.byteArr[index:index+self.MAX_NAME_SIZE])[0]
-            mName = mName.decode("shift-jis").rstrip("\x00")
+            mName = self.encObj.convertString(mName).rstrip("\x00")
             texlInfo.append(mName)
             mtrlInfo["texl"] = mName
             index += self.MAX_NAME_SIZE
@@ -1121,7 +1121,7 @@ class SmfDecrypt:
             if self.printMTRL:
                 self.writeInfo(textSetting.textList["smf"]["texDds"], end=", ")
             mName = struct.unpack("<64s", self.byteArr[index:index+self.MAX_NAME_SIZE])[0]
-            mName = mName.decode("shift-jis").rstrip("\x00")
+            mName = self.encObj.convertString(mName).rstrip("\x00")
             texeInfo.append(mName)
             index += self.MAX_NAME_SIZE
             if self.printMTRL:
@@ -1145,7 +1145,7 @@ class SmfDecrypt:
             if self.printMTRL:
                 self.writeInfo(textSetting.textList["smf"]["texSpe"], end=", ")
             mName = struct.unpack("<64s", self.byteArr[index:index+self.MAX_NAME_SIZE])[0]
-            mName = mName.decode("shift-jis").rstrip("\x00")
+            mName = self.encObj.convertString(mName).rstrip("\x00")
             texsInfo.append(texsInfo)
             index += self.MAX_NAME_SIZE
             if self.printMTRL:
@@ -1169,7 +1169,7 @@ class SmfDecrypt:
             if self.printMTRL:
                 self.writeInfo(textSetting.textList["smf"]["texN"], end=", ")
             mName = struct.unpack("<64s", self.byteArr[index:index+self.MAX_NAME_SIZE])[0]
-            mName = mName.decode("shift-jis").rstrip("\x00")
+            mName = self.encObj.convertString(mName).rstrip("\x00")
             texnInfo.append(mName)
             index += self.MAX_NAME_SIZE
             if self.printMTRL:
@@ -2120,7 +2120,7 @@ class SmfDecrypt:
                 newByteArr[index] = f
                 index += 1
         name = varList[0]
-        bName = name.encode("shift-jis")
+        bName = self.encObj.convertByteArray(name)
         for b in bName:
             newByteArr[index] = b
             index += 1
@@ -2139,7 +2139,7 @@ class SmfDecrypt:
             # MESH
             newByteArr.extend(bytearray([0x48, 0x53, 0x45, 0x4D]))
             newByteArr.extend(struct.pack("<i", 0x44))
-            bName = "No Name".encode("shift-jis")
+            bName = self.encObj.convertByteArray("No Name")
             newByteArr.extend(bName)
             newByteArr.extend([0x00] * (64 - len(bName)))
             newByteArr.extend(struct.pack("<i", 0))
@@ -2206,7 +2206,7 @@ class SmfDecrypt:
             nameAndLength = self.getStructNameAndLength()
             if not self.readMESH(mesh, nameAndLength[1], int(50 / self.meshCount)):
                 return False
-        searchIdx = newByteArr.find("CP_V".encode("shift-jis"), self.index)
+        searchIdx = newByteArr.find(self.encObj.convertByteArray("CP_V"), self.index)
         if searchIdx == -1:
             return False
         self.index = searchIdx
@@ -2385,7 +2385,7 @@ class SmfDecrypt:
             newByteArr.extend(bytearray([0x4C, 0x52, 0x54, 0x4D]))
             mtrlLengthIndex = len(newByteArr)
             newByteArr.extend(struct.pack("<i", 0))
-            newByteArr.extend("Material".encode("shift-jis"))
+            newByteArr.extend(self.encObj.convertByteArray("Material"))
             newByteArr.extend(bytearray([0x00]*56))
             newByteArr.extend(struct.pack("<i", mtrl["polyIndexStart"]))
             newByteArr.extend(struct.pack("<i", mtrl["polyCount"]))
@@ -2395,8 +2395,8 @@ class SmfDecrypt:
             if mtrl["texc"] != "":
                 newByteArr.extend(bytearray([0x43, 0x58, 0x45, 0x54]))
                 newByteArr.extend(struct.pack("<i", 64))
-                newByteArr.extend(mtrl["texc"].encode("shift-jis"))
-                newByteArr.extend(bytearray([0x00] * (64 - len(mtrl["texc"].encode("shift-jis")))))
+                newByteArr.extend(self.encObj.convertByteArray(mtrl["texc"]))
+                newByteArr.extend(bytearray([0x00] * (64 - len(self.encObj.convertByteArray(mtrl["texc"])))))
             # DRAW
             newByteArr.extend(bytearray([0x57, 0x41, 0x52, 0x44]))
             newByteArr.extend(struct.pack("<i", 4))

@@ -1,5 +1,4 @@
 import os
-import codecs
 import tkinter
 import json
 import sys
@@ -7,6 +6,8 @@ import traceback
 from tkinter import filedialog as fd
 from tkinter import messagebox as mb
 import program.textSetting as textSetting
+from program.encodingClass import SJISEncodingObject
+from program.errorLogClass import ErrorLogObj
 import program.appearance.ttkCustomWidget as ttkCustomWidget
 
 from program.ssUnity.importPy.tkinterScrollbarTreeviewSSUnity import ScrollbarTreeviewSSUnity
@@ -35,6 +36,8 @@ decryptFile = None
 configPath = None
 railModelInfo = None
 ambModelInfo = None
+encObj = SJISEncodingObject()
+errObj = ErrorLogObj()
 
 
 def resource_path(relative_path):
@@ -46,7 +49,7 @@ def readModelInfo(jsonPath):
     global railModelInfo
     global ambModelInfo
 
-    f = codecs.open(jsonPath, "r", "utf-8", "strict")
+    f = open(jsonPath, "r", encoding="utf-8")
     modelDict = json.load(f)
     f.close()
 
@@ -282,9 +285,7 @@ def extract():
                     w.close()
                     mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I110"])
         except Exception:
-            w = codecs.open("error.log", "w", "utf-8", "strict")
-            w.write(traceback.format_exc())
-            w.close()
+            errObj.write(traceback.format_exc())
             mb.showerror(title=textSetting.textList["error"], message=errorMsg)
 
 
@@ -355,9 +356,7 @@ def loadAndSave():
         mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I51"])
         reloadFile()
     except Exception:
-        w = codecs.open("error.log", "w", "utf-8", "strict")
-        w.write(traceback.format_exc())
-        w.close()
+        errObj.write(traceback.format_exc())
         mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
 
 
@@ -376,7 +375,7 @@ def csvExtract():
         errorMsg = textSetting.textList["errorList"]["E7"]
         if file_path:
             try:
-                w = codecs.open(file_path, "w", "utf-8-sig", "strict")
+                w = open(file_path, "w", encoding="utf-8-sig")
                 trainOrgInfo = decryptFile.getTrainOrgInfo(data.raw_data)
                 if trainOrgInfo is None:
                     decryptFile.printError()
@@ -405,9 +404,7 @@ def csvExtract():
                 w.close()
                 mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I10"])
             except Exception:
-                w = codecs.open("error.log", "a", "utf-8", "strict")
-                w.write(traceback.format_exc())
-                w.close()
+                errObj.write(traceback.format_exc())
                 mb.showerror(title=textSetting.textList["error"], message=errorMsg)
     elif monoCombo.current() == 1:
         pathId = int(selectItem["treePathId"])
@@ -444,7 +441,7 @@ def csvExtract():
         errorMsg = textSetting.textList["errorList"]["E7"]
         if file_path:
             try:
-                w = codecs.open(file_path, "w", "utf-8-sig", "strict")
+                w = open(file_path, "w", encoding="utf-8-sig")
                 meshTexInfoList = decryptFile.changeMeshTexList[trainModelName]
                 meshTexInfo = [item for item in meshTexInfoList if item["num"] == pathId][0]
                 for index, meshTexTitle in enumerate(meshTexTitleList):
@@ -452,9 +449,7 @@ def csvExtract():
                 w.close()
                 mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I10"])
             except Exception:
-                w = codecs.open("error.log", "a", "utf-8", "strict")
-                w.write(traceback.format_exc())
-                w.close()
+                errObj.write(traceback.format_exc())
                 mb.showerror(title=textSetting.textList["error"], message=errorMsg)
 
 
@@ -473,11 +468,11 @@ def csvLoadAndSave():
         csvLines = None
         try:
             try:
-                f = codecs.open(file_path, "r", "utf-8-sig", "strict")
+                f = open(file_path, "r", encoding="utf-8-sig")
                 csvLines = f.readlines()
                 f.close()
             except UnicodeDecodeError:
-                f = codecs.open(file_path, "r", "shift-jis", "strict")
+                f = open(file_path, "r", encoding=encObj.enc)
                 csvLines = f.readlines()
                 f.close()
             if not decryptFile.checkCsv(csvLines):
@@ -490,9 +485,7 @@ def csvLoadAndSave():
             mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I111"])
             frame.tree.set(selectId, column="treeSize", value=str(decryptFile.trainOrgInfoList[trainName]["data"]["size"]))
         except Exception:
-            w = codecs.open("error.log", "a", "utf-8", "strict")
-            w.write(traceback.format_exc())
-            w.close()
+            errObj.write(traceback.format_exc())
             mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
     elif monoCombo.current() == 1:
         trainModelName = selectItem["treeName"]
@@ -502,11 +495,11 @@ def csvLoadAndSave():
             return
         try:
             try:
-                f = codecs.open(file_path, "r", "utf-8-sig", "strict")
+                f = open(file_path, "r", encoding="utf-8-sig")
                 csvLines = f.readlines()
                 f.close()
             except UnicodeDecodeError:
-                f = codecs.open(file_path, "r", "shift-jis", "strict")
+                f = open(file_path, "r", encoding=encObj.enc)
                 csvLines = f.readlines()
                 f.close()
             if not decryptFile.saveChangeMeshTex(csvLines, trainModelName, pathId):
@@ -517,9 +510,7 @@ def csvLoadAndSave():
             changeMeshTexFilterInfo = [item for item in decryptFile.changeMeshTexList[trainModelName] if item["num"] == pathId][0]
             frame.tree.set(selectId, column="treeSize", value=str(changeMeshTexFilterInfo["data"]["size"]))
         except Exception:
-            w = codecs.open("error.log", "a", "utf-8", "strict")
-            w.write(traceback.format_exc())
-            w.close()
+            errObj.write(traceback.format_exc())
             mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
 
 
@@ -537,9 +528,7 @@ def assetsSave():
         mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I112"])
         reloadFile()
     except Exception:
-        w = codecs.open("error.log", "a", "utf-8", "strict")
-        w.write(traceback.format_exc())
-        w.close()
+        errObj.write(traceback.format_exc())
         mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
     assetsSaveBtn["state"] = "normal"
 
@@ -586,9 +575,7 @@ def reloadFile():
                         frame.tree.see(idx - 3)
 
         except Exception:
-            w = codecs.open("error.log", "a", "utf-8", "strict")
-            w.write(traceback.format_exc())
-            w.close()
+            errObj.write(traceback.format_exc())
             mb.showerror(title=textSetting.textList["error"], message=errorMsg)
 
 

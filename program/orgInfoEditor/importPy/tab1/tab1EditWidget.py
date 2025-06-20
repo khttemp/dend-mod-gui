@@ -1,15 +1,18 @@
-import codecs
 import tkinter
 import traceback
 from tkinter import messagebox as mb
 from tkinter import filedialog as fd
 import program.textSetting as textSetting
+from program.encodingClass import SJISEncodingObject
+from program.errorLogClass import ErrorLogObj
 import program.appearance.ttkCustomWidget as ttkCustomWidget
 from program.appearance.customSimpleDialog import CustomSimpleDialog
 
 import program.orgInfoEditor.importPy.gameDefine as gameDefine
 gameDefine.load()
 
+encObj = SJISEncodingObject()
+errObj = ErrorLogObj()
 
 def setDefault(tabFrame, decryptFile, game, trainIdx, defaultData, rootFrameAppearance, reloadFunc):
     result = SetDefaultEdit(tabFrame, textSetting.textList["orgInfoEditor"]["setDefaultBtnLabel"], decryptFile, game, trainIdx, defaultData, rootFrameAppearance)
@@ -210,9 +213,7 @@ def extractCsvTrainInfo(game, trainIdx, decryptFile):
                 w.close()
                 mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I48"])
             except Exception:
-                w = codecs.open("error.log", "a", "utf-8", "strict")
-                w.write(traceback.format_exc())
-                w.close()
+                errObj.write(traceback.format_exc())
                 mb.showerror(title=textSetting.textList["error"], message=errorMsg)
 
 
@@ -223,11 +224,11 @@ def saveCsvTrainInfo(game, trainIdx, decryptFile, reloadFunc):
             return
         csvLines = None
         try:
-            f = codecs.open(file_path, "r", "utf-8-sig", "strict")
+            f = open(file_path, "r", encoding="utf-8-sig")
             csvLines = f.readlines()
             f.close()
         except UnicodeDecodeError:
-            f = codecs.open(file_path, "r", "shift-jis", "strict")
+            f = open(file_path, "r", encoding=encObj.enc)
             csvLines = f.readlines()
             f.close()
 
@@ -250,7 +251,7 @@ def saveCsvTrainInfo(game, trainIdx, decryptFile, reloadFunc):
         if not file_path:
             return
         
-        f = codecs.open(file_path, "r", "utf-8", "strict")
+        f = open(file_path, "r", encoding="utf-8")
         lines = f.readlines()
         f.close()
         resultList = decryptFile.decryptLines(lines)
@@ -273,9 +274,7 @@ def saveCsvTrainInfo(game, trainIdx, decryptFile, reloadFunc):
             mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I51"])
             reloadFunc()
         except Exception:
-            w = codecs.open("error.log", "a", "utf-8", "strict")
-            w.write(traceback.format_exc())
-            w.close()
+            errObj.write(traceback.format_exc())
             mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
 
 

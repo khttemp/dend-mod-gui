@@ -3,10 +3,12 @@ from tkinter import messagebox as mb
 import program.textSetting as textSetting
 import program.appearance.ttkCustomWidget as ttkCustomWidget
 from program.appearance.customSimpleDialog import CustomSimpleDialog
+from program.encodingClass import SJISEncodingObject
 
 
 class InputDialog(CustomSimpleDialog):
     def __init__(self, master, title, decryptFile, rootFrameAppearance, num, bgmItem=None):
+        self.encObj = SJISEncodingObject()
         self.decryptFile = decryptFile
         self.num = num
         self.bgmItem = bgmItem
@@ -77,7 +79,7 @@ class InputDialog(CustomSimpleDialog):
                         return
                 else:
                     self.itemList[i - 2] = self.v_itemList[i - 2].get()
-                    if len(self.itemList[i - 2].encode("shift-jis")) > 0xFF:
+                    if len(self.encObj.convertByteArray(self.itemList[i - 2])) > 0xFF:
                         errorMsg = textSetting.textList["errorList"]["E20"]
                         mb.showerror(title=textSetting.textList["numberError"], message=errorMsg, parent=self)
                         return

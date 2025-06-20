@@ -1,11 +1,12 @@
 import os
-import codecs
 import UnityPy
 import traceback
+from program.errorLogClass import ErrorLogObj
 
 
 class DenDecrypt:
     def __init__(self, filePath):
+        self.errObj = ErrorLogObj()
         self.filePath = filePath
         self.fileDir = os.path.dirname(filePath)
         self.filenameAndExt = os.path.splitext(os.path.basename(filePath))
@@ -21,9 +22,7 @@ class DenDecrypt:
             return False
 
     def printError(self):
-        w = codecs.open("error.log", "w", "utf-8", "strict")
-        w.write(self.error)
-        w.close()
+        self.errObj.write(self.error)
 
     def decrypt(self):
         try:

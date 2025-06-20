@@ -1,16 +1,17 @@
 import os
-import codecs
 import copy
 import traceback
 import openpyxl
 from openpyxl.styles import PatternFill
 import configparser
-from tkinter import filedialog as fd
 from tkinter import messagebox as mb
 import program.textSetting as textSetting
+from program.errorLogClass import ErrorLogObj
+
 
 class ExcelWidget:
     def __init__(self, data, file_path, config_path, railModelInfo, ambModelInfo):
+        self.errObj = ErrorLogObj()
         self.data = data
         self.filePath = file_path
         self.configPath = config_path
@@ -26,6 +27,9 @@ class ExcelWidget:
         self.errorColorFill = PatternFill(patternType="solid", fgColor=textSetting.textList["excel"]["errorColor"])
         self.warningColorFill = PatternFill(patternType="solid", fgColor=textSetting.textList["excel"]["warningColor"])
         self.disableColorFill = PatternFill(patternType="solid", fgColor=textSetting.textList["excel"]["disableColor"])
+
+    def printError(self):
+        self.errObj.write(self.error)
 
     def extractExcel(self):
         wb = openpyxl.Workbook()
@@ -46,9 +50,7 @@ class ExcelWidget:
                 if not self.extractStageDataInfo(self.data, index, wb[tabName], mdlList, errorLog, warningLog):
                     return
             except Exception:
-                w = codecs.open("error.log", "w", "utf-8", "strict")
-                w.write(traceback.format_exc())
-                w.close()
+                self.printError(traceback.format_exc())
                 mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
                 return
 
@@ -59,13 +61,13 @@ class ExcelWidget:
                 dirPath = os.path.dirname(self.filePath)
                 if len(errorLog) > 0:
                     errPath = os.path.join(dirPath, "stageError.log")
-                    w = codecs.open(errPath, "w", "utf-8", "strict")
+                    w = open(errPath, "w", encoding="utf-8")
                     for err in errorLog:
                         w.write(err + "\n")
                     w.close()
                 if len(warningLog) > 0:
                     warnPath = os.path.join(dirPath, "stageWarning.log")
-                    w = codecs.open(warnPath, "w", "utf-8", "strict")
+                    w = open(warnPath, "w", encoding="utf-8")
                     for warn in warningLog:
                         w.write(warn + "\n")
                     w.close()

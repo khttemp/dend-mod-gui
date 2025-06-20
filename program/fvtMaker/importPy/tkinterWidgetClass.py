@@ -1,10 +1,10 @@
 import random
 import os
 import sys
-import codecs
 import tkinter
 import program.textSetting as textSetting
 import program.appearance.ttkCustomWidget as ttkCustomWidget
+from program.encodingClass import SJISEncodingObject
 
 LS = 0
 BS = 1
@@ -62,8 +62,9 @@ class CsvWidget():
             path = resource_path("CS.csv")
         elif content == RS:
             path = resource_path("RS.csv")
+        self.encObj = SJISEncodingObject()
 
-        f = codecs.open(path, "r", "shift-jis", "ignore")
+        f = open(path, encoding=self.encObj.enc)
         lines = f.readlines()
         f.close()
         lines.pop(0)
@@ -102,8 +103,9 @@ class CsvWidget():
             voNum = int(arr[contentCnt + 3])
 
             text = arr[contentCnt + 4]
-            if maxNum < len(text.encode("shift-jis")):
-                maxNum = len(text.encode("shift-jis"))
+            textLen = len(self.encObj.convertByteArray(text))
+            if maxNum < textLen:
+                maxNum = textLen
 
             csvNumLb = ttkCustomWidget.CustomTtkLabel(frame, text=fvtNum, font=textSetting.textList["font3"], anchor=tkinter.CENTER, width=5, borderwidth=1, relief="solid")
             csvNumLb.grid(row=row, column=0, sticky=tkinter.W+tkinter.E)

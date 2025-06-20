@@ -1,9 +1,10 @@
-import math
-import codecs
 import traceback
+from program.errorLogClass import ErrorLogObj
+
 
 class XObject():
     def __init__(self, filePath, decryptFile):
+        self.errObj = ErrorLogObj()
         self.filePath = filePath
         self.decryptFile = decryptFile
         self.header = "xof 0303txt 0032\n\n"
@@ -25,9 +26,7 @@ class XObject():
             return False
 
     def printError(self):
-        w = codecs.open("error.log", "w", "utf-8", "strict")
-        w.write(self.error)
-        w.close()
+        self.errObj.write(self.error)
 
     def makeStructure(self):
         frameObjList = []

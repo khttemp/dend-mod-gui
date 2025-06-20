@@ -1,7 +1,9 @@
 import struct
 import traceback
-import codecs
 import program.textSetting as textSetting
+from program.encodingClass import SJISEncodingObject
+from program.errorLogClass import ErrorLogObj
+
 
 CSTrainName = [
     "H2000",
@@ -66,6 +68,8 @@ hurikoName = [
 
 class CSdecrypt():
     def __init__(self, filePath):
+        self.encObj = SJISEncodingObject()
+        self.errObj = ErrorLogObj()
         self.filePath = filePath
         self.trainNameList = CSTrainName
         self.trainPerfNameList = perfName
@@ -105,9 +109,7 @@ class CSdecrypt():
             return False
 
     def printError(self):
-        w = codecs.open("error.log", "w", "utf-8", "strict")
-        w.write(self.error)
-        w.close()
+        self.errObj.write(self.error)
 
     def decrypt(self, line):
         self.trainInfoList = []
@@ -190,7 +192,7 @@ class CSdecrypt():
             for j in range(smfTrackCnt):
                 b = line[index]
                 index += 1
-                train["trackNames"].append(line[index:index + b].decode("shift-jis"))
+                train["trackNames"].append(self.encObj.convertString(line[index:index + b]))
                 index += b
 
             self.henseiIndexList.append(index)
@@ -204,7 +206,7 @@ class CSdecrypt():
             for j in range(mdlSmfCnt):
                 b = line[index]
                 index += 1
-                train["mdlNames"].append(line[index:index + b].decode("shift-jis"))
+                train["mdlNames"].append(self.encObj.convertString(line[index:index + b]))
                 index += b
 
             train["mdlNames"].append(textSetting.textList["orgInfoEditor"]["noList"])
@@ -212,7 +214,7 @@ class CSdecrypt():
             for j in range(mdlSmfCnt):
                 b = line[index]
                 index += 1
-                train["colNames"].append(line[index:index + b].decode("shift-jis"))
+                train["colNames"].append(self.encObj.convertString(line[index:index + b]))
                 index += b
 
             train["colNames"].append(textSetting.textList["orgInfoEditor"]["noList"])
@@ -222,7 +224,7 @@ class CSdecrypt():
             for j in range(pantaCnt):
                 b = line[index]
                 index += 1
-                train["pantaNames"].append(line[index:index + b].decode("shift-jis"))
+                train["pantaNames"].append(self.encObj.convertString(line[index:index + b]))
                 index += b
 
             train["pantaNames"].append(textSetting.textList["orgInfoEditor"]["noList"])
@@ -232,7 +234,7 @@ class CSdecrypt():
             for j in range(4):
                 b = line[index]
                 index += 1
-                train["elseModel"].append(line[index:index + b].decode("shift-jis"))
+                train["elseModel"].append(self.encObj.convertString(line[index:index + b]))
                 index += b
 
             self.henseiStartIndexList.append(index)
@@ -256,7 +258,7 @@ class CSdecrypt():
             for j in range(5):
                 b = line[index]
                 index += 1
-                train["else2Model"].append(line[index:index + b].decode("shift-jis"))
+                train["else2Model"].append(self.encObj.convertString(line[index:index + b]))
                 index += b
 
             self.else2IndexList.append(index)
@@ -265,7 +267,7 @@ class CSdecrypt():
             index += 1
             b = line[index]
             index += 1
-            name = line[index:index + b].decode("shift-jis")
+            name = self.encObj.convertString(line[index:index + b])
             index += b
             elseList2.append([cnta, name])
 
@@ -273,7 +275,7 @@ class CSdecrypt():
             index += 1
             b = line[index]
             index += 1
-            name = line[index:index + b].decode("shift-jis")
+            name = self.encObj.convertString(line[index:index + b])
             index += b
             elseList2.append([cntb, name])
 
@@ -288,13 +290,13 @@ class CSdecrypt():
                 lensList = []
                 b = line[index]
                 index += 1
-                lensName = line[index:index + b].decode("shift-jis")
+                lensName = self.encObj.convertString(line[index:index + b])
                 lensList.append(lensName)
                 index += b
 
                 b = line[index]
                 index += 1
-                lensName = line[index:index + b].decode("shift-jis")
+                lensName = self.encObj.convertString(line[index:index + b])
                 lensList.append(lensName)
                 index += b
 
@@ -322,7 +324,7 @@ class CSdecrypt():
             for j in range(tailCnt):
                 b = line[index]
                 index += 1
-                tailSmfName = line[index:index + b].decode("shift-jis")
+                tailSmfName = self.encObj.convertString(line[index:index + b])
                 tailSmfList.append(tailSmfName)
                 index += b
             tailList.append(tailSmfList)
@@ -338,13 +340,13 @@ class CSdecrypt():
                 lensList = []
                 b = line[index]
                 index += 1
-                lensName = line[index:index + b].decode("shift-jis")
+                lensName = self.encObj.convertString(line[index:index + b])
                 lensList.append(lensName)
                 index += b
 
                 b = line[index]
                 index += 1
-                lensName = line[index:index + b].decode("shift-jis")
+                lensName = self.encObj.convertString(line[index:index + b])
                 lensList.append(lensName)
                 index += b
 
@@ -604,7 +606,7 @@ class CSdecrypt():
             newByteArr.append(len(newTrackList))
             for newTrack in newTrackList:
                 newByteArr.append(len(newTrack))
-                newByteArr.extend(newTrack.encode("shift-jis"))
+                newByteArr.extend(self.encObj.convertByteArray(newTrack))
 
             newCnt = modelInfo["mdlCnt"]
             newByteArr.append(newCnt)
@@ -615,12 +617,12 @@ class CSdecrypt():
                 if newMdl == textSetting.textList["orgInfoEditor"]["noList"]:
                     continue
                 newByteArr.append(len(newMdl))
-                newByteArr.extend(newMdl.encode("shift-jis"))
+                newByteArr.extend(self.encObj.convertByteArray(newMdl))
 
             for i in range(len(newMdlList) - 1):
                 strHex = "H2000_COL_0.smf"
                 newByteArr.append(len(strHex))
-                newByteArr.extend(strHex.encode("shift-jis"))
+                newByteArr.extend(self.encObj.convertByteArray(strHex))
 
             newPantaList = modelInfo["pantaNames"]
             newByteArr.append(len(newPantaList) - 1)
@@ -628,7 +630,7 @@ class CSdecrypt():
                 if newPanta == textSetting.textList["orgInfoEditor"]["noList"]:
                     continue
                 newByteArr.append(len(newPanta))
-                newByteArr.extend(newPanta.encode("shift-jis"))
+                newByteArr.extend(self.encObj.convertByteArray(newPanta))
 
             index = self.henseiModelEndIndexList[trainIdx]
             newByteArr.extend(self.byteArr[index:])
@@ -647,7 +649,7 @@ class CSdecrypt():
                 newByteArr = self.byteArr[0:index]
 
                 for i in range(4):
-                    strHex = elseList[i].encode("shift-jis")
+                    strHex = self.encObj.convertByteArray(elseList[i])
                     newByteArr.append(len(strHex))
                     newByteArr.extend(strHex)
                 index = self.henseiStartIndexList[trainIdx]
@@ -659,7 +661,7 @@ class CSdecrypt():
                 newByteArr = self.byteArr[0:index]
 
                 for i in range(5):
-                    strHex = elseList[i].encode("shift-jis")
+                    strHex = self.encObj.convertByteArray(elseList[i])
                     newByteArr.append(len(strHex))
                     newByteArr.extend(strHex)
                 index = self.else2IndexList[trainIdx]
@@ -684,7 +686,7 @@ class CSdecrypt():
                 num = elseInfo[0]
                 newByteArr.append(num)
 
-                strHex = elseInfo[1].encode("shift-jis")
+                strHex = self.encObj.convertByteArray(elseInfo[1])
                 newByteArr.append(len(strHex))
                 newByteArr.extend(strHex)
 
@@ -709,10 +711,10 @@ class CSdecrypt():
                 newByteArr = self.byteArr[0:index]
 
                 for i in range(cnt - lensCnt):
-                    strHex = "lensflear00.tga".encode("shift-jis")
+                    strHex = self.encObj.convertByteArray("lensflear00.tga")
                     newByteArr.append(len(strHex))
                     newByteArr.extend(strHex)
-                    strHex = "lensflear01.tga".encode("shift-jis")
+                    strHex = self.encObj.convertByteArray("lensflear01.tga")
                     newByteArr.append(len(strHex))
                     newByteArr.extend(strHex)
 
@@ -759,7 +761,7 @@ class CSdecrypt():
                 valInfo = valList[i]
                 for j in range(len(valInfo)):
                     if j in [0, 1]:
-                        strHex = valInfo[j].encode("shift-jis")
+                        strHex = self.encObj.convertByteArray(valInfo[j])
                         newByteArr.append(len(strHex))
                         newByteArr.extend(strHex)
                     elif j in [2, 3]:
@@ -799,7 +801,7 @@ class CSdecrypt():
                     index += b
 
                 for i in range(cnt - tailCnt):
-                    strHex = ".smf".encode("shift-jis")
+                    strHex = self.encObj.convertByteArray(".smf")
                     newByteArr.insert(index, len(strHex))
                     index += 1
                     for s in strHex:
@@ -827,14 +829,14 @@ class CSdecrypt():
                         index += 1
 
                 for i in range(cnt - tailCnt):
-                    strHex = "lensflear00.tga".encode("shift-jis")
+                    strHex = self.encObj.convertByteArray("lensflear00.tga")
                     newByteArr.insert(index, len(strHex))
                     index += 1
                     for s in strHex:
                         newByteArr.insert(index, s)
                         index += 1
 
-                    strHex = "lensflear01.tga".encode("shift-jis")
+                    strHex = self.encObj.convertByteArray("lensflear01.tga")
                     newByteArr.insert(index, len(strHex))
                     index += 1
                     for s in strHex:
@@ -909,7 +911,7 @@ class CSdecrypt():
             cnt = len(valList) // 2
             for i in range(cnt):
                 valInfo = valList[i]
-                strHex = valInfo.encode("shift-jis")
+                strHex = self.encObj.convertByteArray(valInfo)
                 newByteArr.append(len(strHex))
                 newByteArr.extend(strHex)
 
@@ -952,7 +954,7 @@ class CSdecrypt():
                 valInfo = valList[i]
                 for j in range(len(valInfo)):
                     if j in [0, 1]:
-                        strHex = valInfo[j].encode("shift-jis")
+                        strHex = self.encObj.convertByteArray(valInfo[j])
                         newByteArr.append(len(strHex))
                         newByteArr.extend(strHex)
                     elif j in [2, 3]:
@@ -1144,7 +1146,7 @@ class CSdecrypt():
 
     def extractCsvTrainInfo(self, trainIdx, filePath):
         try:
-            w = codecs.open(filePath, "w", "utf-8-sig", "ignore")
+            w = open(filePath, "w", encoding="utf-8-sig")
             trainOrgInfo = self.trainInfoList[trainIdx]
             speedList = trainOrgInfo[0]
             index = self.indexList[trainIdx]
@@ -1515,7 +1517,7 @@ class CSdecrypt():
             trackInfo = self.csvReadInfo["trackInfo"]
             newByteArr.append(len(trackInfo))
             for i in range(len(trackInfo)):
-                strHex = trackInfo[i].encode("shift-jis")
+                strHex = self.encObj.convertByteArray(trackInfo[i])
                 newByteArr.append(len(strHex))
                 newByteArr.extend(strHex)
 
@@ -1525,19 +1527,19 @@ class CSdecrypt():
             mdlNameList = self.csvReadInfo["mdlNameList"]
             newByteArr.append(len(mdlNameList))
             for i in range(len(mdlNameList)):
-                strHex = mdlNameList[i].encode("shift-jis")
+                strHex = self.encObj.convertByteArray(mdlNameList[i])
                 newByteArr.append(len(strHex))
                 newByteArr.extend(strHex)
 
             for i in range(len(mdlNameList)):
-                strHex = "H2000_COL_0.smf".encode("shift-jis")
+                strHex = self.encObj.convertByteArray("H2000_COL_0.smf")
                 newByteArr.append(len(strHex))
                 newByteArr.extend(strHex)
 
             pantaNameList = self.csvReadInfo["pantaNameList"]
             newByteArr.append(len(pantaNameList))
             for i in range(len(pantaNameList)):
-                strHex = pantaNameList[i].encode("shift-jis")
+                strHex = self.encObj.convertByteArray(pantaNameList[i])
                 newByteArr.append(len(strHex))
                 newByteArr.extend(strHex)
 
@@ -1545,7 +1547,7 @@ class CSdecrypt():
             elseModel = train["elseModel"]
 
             for i in range(4):
-                strHex = elseModel[i].encode("shift-jis")
+                strHex = self.encObj.convertByteArray(elseModel[i])
                 newByteArr.append(len(strHex))
                 newByteArr.extend(strHex)
 
@@ -1573,7 +1575,7 @@ class CSdecrypt():
                 lensInfo = lensList[i]
                 for j in range(len(lensInfo)):
                     if j in [0, 1]:
-                        strHex = lensInfo[j].encode("shift-jis")
+                        strHex = self.encObj.convertByteArray(lensInfo[j])
                         newByteArr.append(len(strHex))
                         newByteArr.extend(strHex)
                     elif j in [2, 3]:
@@ -1589,7 +1591,7 @@ class CSdecrypt():
             newByteArr.append(tailCnt)
 
             for i in range(tailCnt):
-                strHex = tailList[0][i].encode("shift-jis")
+                strHex = self.encObj.convertByteArray(tailList[0][i])
                 newByteArr.append(len(strHex))
                 newByteArr.extend(strHex)
 
@@ -1600,7 +1602,7 @@ class CSdecrypt():
                 lensInfo = tailList[2][i]
                 for j in range(len(lensInfo)):
                     if j in [0, 1]:
-                        strHex = lensInfo[j].encode("shift-jis")
+                        strHex = self.encObj.convertByteArray(lensInfo[j])
                         newByteArr.append(len(strHex))
                         newByteArr.extend(strHex)
                     elif j in [2, 3]:

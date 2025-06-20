@@ -1,7 +1,8 @@
 import struct
-import codecs
 import traceback
 import program.textSetting as textSetting
+from program.encodingClass import SJISEncodingObject
+from program.errorLogClass import ErrorLogObj
 
 
 headerList = [
@@ -73,6 +74,8 @@ ver108Music = [
 
 class RSMusicDecrypt():
     def __init__(self, filePath):
+        self.encObj = SJISEncodingObject()
+        self.errObj = ErrorLogObj()
         self.filePath = filePath
         self.headerList = headerList
         self.musicList = []
@@ -93,9 +96,7 @@ class RSMusicDecrypt():
             return False
 
     def printError(self):
-        w = codecs.open("error.log", "w", "utf-8", "strict")
-        w.write(self.error)
-        w.close()
+        self.errObj.write(self.error)
 
     def decrypt(self, line):
         self.musicList = []
@@ -130,13 +131,13 @@ class RSMusicDecrypt():
 
             musicFileNameLen = line[index]
             index += 1
-            musicFileName = line[index:index + musicFileNameLen].decode("shift-jis")
+            musicFileName = self.encObj.convertString(line[index:index + musicFileNameLen])
             musicArr.append(musicFileName)
             index += musicFileNameLen
 
             musicNameLen = line[index]
             index += 1
-            musicName = line[index:index + musicNameLen].decode("shift-jis")
+            musicName = self.encObj.convertString(line[index:index + musicNameLen])
             musicArr.append(musicName)
             index += musicNameLen
 
@@ -169,7 +170,7 @@ class RSMusicDecrypt():
                         for n in time:
                             newByteArr.append(n)
                     else:
-                        name = self.musicList[i][j - 1].encode("shift-jis")
+                        name = self.encObj.convertByteArray(self.musicList[i][j - 1])
                         nameLen = len(name)
                         newByteArr.append(nameLen)
 

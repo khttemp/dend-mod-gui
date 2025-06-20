@@ -1,15 +1,16 @@
 import os
-import codecs
 import copy
 import traceback
 import time
 import program.textSetting as textSetting
+from program.errorLogClass import ErrorLogObj
 from pymem import Pymem
 from pymem.process import module_from_name
 
 
 class GetMemory:
     def __init__(self, filePath):
+        self.errObj = ErrorLogObj()
         self.filePath = filePath
         self.fileDir = os.path.dirname(filePath)
         self.fileName = os.path.basename(filePath)
@@ -252,6 +253,4 @@ class GetMemory:
         return addr
 
     def printError(self):
-        w = codecs.open("error.log", "w", "utf-8", "strict")
-        w.write(self.error)
-        w.close()
+        self.errObj.write(self.error)

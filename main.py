@@ -4,7 +4,6 @@ import requests
 import webbrowser
 import datetime
 import sys
-import codecs
 import configparser
 import traceback
 import tkinter
@@ -28,6 +27,7 @@ import program.smf.smf as smfProgram
 import program.ssUnity.ssUnity as ssUnityProgram
 import program.rsRail.rsRail as rsRailProgram
 import program.appearance.rootFrameWidget as rootFrameWidget
+from program.errorLogClass import ErrorLogObj
 
 
 root = None
@@ -53,12 +53,11 @@ rootFrameBackgroundColor = None
 rootDarkModeFlag = False
 darkModeDllPath = None
 darkModeDll = None
+errObj = ErrorLogObj()
 
 
 def errorLog(message):
-    w = codecs.open("error.log", "a", "utf-8", "strict")
-    w.write(message)
-    w.close()
+    errObj.write(message)
 
 
 def resource_path(relative_path):
@@ -164,7 +163,7 @@ def configCheckOption(section, options, defaultValue="0"):
         configRead.set(section, options, defaultValue)
 
         try:
-            f = codecs.open(config_ini_path, "w", "utf-8", "strict")
+            f = open(config_ini_path, "w", encoding="utf-8")
             configRead.write(f)
             f.close()
         except PermissionError:
@@ -331,7 +330,7 @@ def writeDefaultConfig():
             config.add_section("UPDATE")
             config.set("UPDATE", "time", "2000/01/01")
 
-            f = codecs.open(config_ini_path, "w", "utf-8", "strict")
+            f = open(config_ini_path, "w", encoding="utf-8")
             config.write(f)
             f.close()
         except PermissionError:
@@ -348,7 +347,7 @@ def writeComicscriptConfig():
     configRead.set("COMICSCRIPT_GAME", "mode", str(v_comicscriptCheck.get()))
 
     try:
-        f = codecs.open(config_ini_path, "w", "utf-8", "strict")
+        f = open(config_ini_path, "w", encoding="utf-8")
         configRead.write(f)
         f.close()
     except PermissionError:
@@ -371,7 +370,7 @@ def writeSmfConfig():
     configRead.set("SMF_MTRL", "mode", str(v_mtrlCheck.get()))
 
     try:
-        f = codecs.open(config_ini_path, "w", "utf-8", "strict")
+        f = open(config_ini_path, "w", encoding="utf-8")
         configRead.write(f)
         f.close()
     except PermissionError:
@@ -392,7 +391,7 @@ def writeXlsxConfig():
     configRead.set("AMB_READ_MODE", "mode", str(v_ambReadMode.get()))
 
     try:
-        f = codecs.open(config_ini_path, "w", "utf-8", "strict")
+        f = open(config_ini_path, "w", encoding="utf-8")
         configRead.write(f)
         f.close()
     except PermissionError:
@@ -405,7 +404,7 @@ def getUpdateVer():
     global updateFlag
 
     path = resource_path("ver.txt")
-    f = codecs.open(path, "r", "utf-8", "ignore")
+    f = open(path, "r", encoding="utf-8")
     line = f.read()
     f.close()
     version = line.strip()
@@ -449,7 +448,7 @@ def confirmUpdate():
             currentDate = datetime.datetime.strftime(currentTime, "%Y/%m/%d")
             configRead.set("UPDATE", "time", currentDate)
 
-            f = codecs.open(config_ini_path, "w", "utf-8", "strict")
+            f = open(config_ini_path, "w", encoding="utf-8")
             configRead.write(f)
             f.close()
         except PermissionError:

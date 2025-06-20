@@ -1,8 +1,10 @@
 import copy
-import codecs
 import UnityPy
 import traceback
 import program.textSetting as textSetting
+from program.encodingClass import SJISEncodingObject
+from program.errorLogClass import ErrorLogObj
+
 
 SSTrainName = [
     "H2000",
@@ -120,6 +122,8 @@ oneWheelName = [
 
 class SSdecrypt:
     def __init__(self, filePath):
+        self.encObj = SJISEncodingObject()
+        self.errObj = ErrorLogObj()
         self.filePath = filePath
         self.trainNameList = SSTrainName
         self.trainPerfNameList = perfName
@@ -144,9 +148,7 @@ class SSdecrypt:
             return False
 
     def printError(self):
-        w = codecs.open("error.log", "w", "utf-8", "strict")
-        w.write(self.error)
-        w.close()
+        self.errObj.write(self.error)
 
     def decrypt(self):
         try:

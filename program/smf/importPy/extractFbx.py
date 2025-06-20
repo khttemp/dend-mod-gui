@@ -1,6 +1,5 @@
 import os
 import shutil
-import codecs
 import traceback
 from PIL import Image
 from fbx import FbxManager
@@ -24,9 +23,12 @@ from fbx import FbxDouble3
 from fbx import FbxVector2
 from fbx import FbxVector4
 from fbx import FbxLayerElement
+from program.errorLogClass import ErrorLogObj
+
 
 class FbxObject():
     def __init__(self, filePath, decryptFile):
+        self.errObj = ErrorLogObj()
         self.filePath = filePath
         self.fileName = os.path.splitext(os.path.basename(filePath))[0]
         self.decryptFile = decryptFile
@@ -57,9 +59,7 @@ class FbxObject():
             return False
 
     def printError(self):
-        w = codecs.open("error.log", "w", "utf-8", "strict")
-        w.write(self.error)
-        w.close()
+        self.errObj.write(self.error)
 
     def makeStructure(self):
         frameObjList = []

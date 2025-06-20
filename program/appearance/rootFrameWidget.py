@@ -1,5 +1,4 @@
 from functools import partial
-import codecs
 import configparser
 import tkinter
 from tkinter import ttk
@@ -73,7 +72,7 @@ class RootFrameAppearance:
                 configRead.set("RADIO", "indicator_color", self.indicatorColor)
                 configRead.set("RADIO", "sel_indicator_color", self.indicatorSelColor)
 
-                f = codecs.open(self.iniPath, "w", "utf-8", "strict")
+                f = open(self.iniPath, "w", encoding="utf-8")
                 configRead.write(f)
                 f.close()
 

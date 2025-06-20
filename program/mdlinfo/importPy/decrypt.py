@@ -1,12 +1,15 @@
 import os
 import struct
-import codecs
 import traceback
 import program.textSetting as textSetting
+from program.encodingClass import SJISEncodingObject
+from program.errorLogClass import ErrorLogObj
 
 
 class MdlDecrypt:
     def __init__(self, filePath):
+        self.encObj = SJISEncodingObject()
+        self.errObj = ErrorLogObj()
         self.filePath = filePath
         self.allInfoList = []
         self.error = ""
@@ -26,16 +29,14 @@ class MdlDecrypt:
             return False
 
     def printError(self):
-        w = codecs.open("error.log", "w", "utf-8", "strict")
-        w.write(self.error)
-        w.close()
+        self.errObj.write(self.error)
 
     def decrypt(self, line):
         self.allInfoList = []
         self.error = ""
 
         index = 16
-        header = line[0:index].decode("shift-jis")
+        header = self.encObj.convertString(line[0:index])
         if header != "MDL_INFO_VER_100":
             self.error = textSetting.textList["errorList"]["E16"]
             raise False
@@ -48,7 +49,7 @@ class MdlDecrypt:
             mdlInfo["smfIndex"] = index
             smfLen = line[index]
             index += 1
-            smfName = line[index:index + smfLen].decode("shift-jis")
+            smfName = self.encObj.convertString(line[index:index + smfLen])
             index += smfLen
             mdlInfo["smfName"] = smfName
 
@@ -107,7 +108,7 @@ class MdlDecrypt:
                 for k in range(b):
                     imgLen = line[index]
                     index += 1
-                    imgName = line[index:index + imgLen].decode("shift-jis")
+                    imgName = self.encObj.convertString(line[index:index + imgLen])
                     index += imgLen
                     detailMdlInfo["textureImgList"].append(imgName)
 
@@ -124,7 +125,7 @@ class MdlDecrypt:
 
                 mdlLen = line[index]
                 index += 1
-                mdlName = line[index:index + mdlLen].decode("shift-jis")
+                mdlName = self.encObj.convertString(line[index:index + mdlLen])
                 index += mdlLen
                 smfDetailInfo["smfDetail"].append(mdlName)
 
@@ -139,7 +140,7 @@ class MdlDecrypt:
             mdlInfo["binInfoIndex"] = index
             binFileLen = line[index]
             index += 1
-            binFileName = line[index:index + binFileLen].decode("shift-jis")
+            binFileName = self.encObj.convertString(line[index:index + binFileLen])
             mdlInfo["binInfo"].append(binFileName)
             index += binFileLen
 
@@ -158,7 +159,7 @@ class MdlDecrypt:
             newByteArr.append(len(imgList))
             for img in imgList:
                 newByteArr.append(len(img))
-                newByteArr.extend(img.encode("shift-jis"))
+                newByteArr.extend(self.encObj.convertByteArray(img))
 
             oldImgCnt = self.byteArr[index]
             index += 1
@@ -335,7 +336,7 @@ class MdlDecrypt:
 
             if valueList is not None:
                 newByteArr.append(len(valueList[0]))
-                newByteArr.extend(valueList[0].encode("shift-jis"))
+                newByteArr.extend(self.encObj.convertByteArray(valueList[0]))
                 for v in valueList[1:]:
                     f = struct.pack("<f", v)
                     newByteArr.extend(f)
@@ -365,7 +366,7 @@ class MdlDecrypt:
             index = self.allInfoList[smfNum]["smfIndex"]
             newByteArr = self.byteArr[0:index]
             newByteArr.append(len(valueList[0]))
-            newByteArr.extend(valueList[0].encode("shift-jis"))
+            newByteArr.extend(self.encObj.convertByteArray(valueList[0]))
 
             oldLen = self.byteArr[index]
             index += 1
@@ -376,7 +377,7 @@ class MdlDecrypt:
             newByteArr.extend(self.byteArr[startIdx:index])
 
             newByteArr.append(len(valueList[1]))
-            newByteArr.extend(valueList[1].encode("shift-jis"))
+            newByteArr.extend(self.encObj.convertByteArray(valueList[1]))
             h = struct.pack("<h", valueList[2])
             newByteArr.extend(h)
 
@@ -471,7 +472,7 @@ class MdlDecrypt:
             # 小文字の「.smf」にする
             ext = os.path.splitext(filename)[1]
             filename = os.path.splitext(filename)[0] + ext.lower()
-            bFilename = filename.encode("shift-jis")
+            bFilename = self.encObj.convertByteArray(filename)
             smfByteArr.append(len(bFilename))
             smfByteArr.extend(bFilename)
             allCount = 0

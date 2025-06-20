@@ -1,6 +1,5 @@
 import os
 import struct
-import codecs
 import traceback
 import openpyxl
 import configparser
@@ -8,10 +7,14 @@ from tkinter import filedialog as fd
 from tkinter import messagebox as mb
 
 import program.textSetting as textSetting
+from program.encodingClass import SJISEncodingObject
+from program.errorLogClass import ErrorLogObj
 
 
 class ExcelWidget:
     def __init__(self, decryptFile, reloadFunc, configPath):
+        self.encObj = SJISEncodingObject()
+        self.errObj = ErrorLogObj()
         self.decryptFile = decryptFile
         self.reloadFunc = reloadFunc
         self.configPath = configPath
@@ -51,9 +54,7 @@ class ExcelWidget:
             try:
                 self.extractRailDataInfo(index, wb[tabName])
             except Exception:
-                w = codecs.open("error.log", "w", "utf-8", "strict")
-                w.write(traceback.format_exc())
-                w.close()
+                self.errObj.write(traceback.format_exc())
                 mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
                 return
 
@@ -1067,7 +1068,7 @@ class ExcelWidget:
                 if ver is None:
                     self.error = textSetting.textList["errorList"]["E99"]
                     return False
-                bVer = ver.encode("shift-jis")
+                bVer = self.encObj.convertByteArray(ver)
                 newByteArr.extend(bVer)
 
             # smf情報
@@ -1089,7 +1090,7 @@ class ExcelWidget:
                         smfName = ws.cell(row, 2).value
                         smfNameList.append(smfName)
 
-                        bSmfName = smfName.encode("shift-jis")
+                        bSmfName = self.encObj.convertByteArray(smfName)
                         newByteArr.append(len(bSmfName))
                         newByteArr.extend(bSmfName)
 
@@ -1111,7 +1112,7 @@ class ExcelWidget:
                         smfName = ws.cell(row, 2).value
                         smfNameList.append(smfName)
 
-                        bSmfName = smfName.encode("shift-jis")
+                        bSmfName = self.encObj.convertByteArray(smfName)
                         newByteArr.append(len(bSmfName))
                         newByteArr.extend(bSmfName)
 
@@ -1142,12 +1143,12 @@ class ExcelWidget:
             try:
                 row += 1
                 musicFile = ws.cell(row, 1).value
-                bMusicFile = musicFile.encode("shift-jis")
+                bMusicFile = self.encObj.convertByteArray(musicFile)
                 newByteArr.append(len(bMusicFile))
                 newByteArr.extend(bMusicFile)
 
                 musicName = ws.cell(row, 2).value
-                bMusicName = musicName.encode("shift-jis")
+                bMusicName = self.encObj.convertByteArray(musicName)
                 newByteArr.append(len(bMusicName))
                 newByteArr.extend(bMusicName)
 
@@ -1167,7 +1168,7 @@ class ExcelWidget:
 
             try:
                 railStationName = ws.cell(row, 2).value
-                bRailStationName = railStationName.encode("shift-jis")
+                bRailStationName = self.encObj.convertByteArray(railStationName)
                 newByteArr.append(len(bRailStationName))
                 newByteArr.extend(bRailStationName)
             except Exception:
@@ -1594,7 +1595,7 @@ class ExcelWidget:
                 row += 1
                 for i in range(stCnt):
                     stName = ws.cell(row, 2).value
-                    bStName = stName.encode("shift-jis")
+                    bStName = self.encObj.convertByteArray(stName)
                     newByteArr.append(len(bStName))
                     newByteArr.extend(bStName)
 
@@ -1734,9 +1735,7 @@ class ExcelWidget:
                     return False
             return True
         except Exception:
-            w = codecs.open("error.log", "w", "utf-8", "strict")
-            w.write(traceback.format_exc())
-            w.close()
+            self.errObj.write(traceback.format_exc())
             self.error = textSetting.textList["errorList"]["E14"]
             return False
 
@@ -1751,7 +1750,7 @@ class ExcelWidget:
                 return False
             if ver == "DEND_MAP_VER0101":
                 readFlag = True
-            bVer = ver.encode("shift-jis")
+            bVer = self.encObj.convertByteArray(ver)
             newByteArr.extend(bVer)
 
             # smf情報
@@ -1772,7 +1771,7 @@ class ExcelWidget:
                     smfName = ws.cell(row, 2).value
                     smfNameList.append(smfName)
 
-                    bSmfName = smfName.encode("shift-jis")
+                    bSmfName = self.encObj.convertByteArray(smfName)
                     newByteArr.append(len(bSmfName))
                     newByteArr.extend(bSmfName)
 
@@ -1804,12 +1803,12 @@ class ExcelWidget:
             try:
                 row += 1
                 musicFile = ws.cell(row, 1).value
-                bMusicFile = musicFile.encode("shift-jis")
+                bMusicFile = self.encObj.convertByteArray(musicFile)
                 newByteArr.append(len(bMusicFile))
                 newByteArr.extend(bMusicFile)
 
                 musicName = ws.cell(row, 2).value
-                bMusicName = musicName.encode("shift-jis")
+                bMusicName = self.encObj.convertByteArray(musicName)
                 newByteArr.append(len(bMusicName))
                 newByteArr.extend(bMusicName)
 
@@ -1829,7 +1828,7 @@ class ExcelWidget:
 
             try:
                 railStationName = ws.cell(row, 2).value
-                bRailStationName = railStationName.encode("shift-jis")
+                bRailStationName = self.encObj.convertByteArray(railStationName)
                 newByteArr.append(len(bRailStationName))
                 newByteArr.extend(bRailStationName)
             except Exception:
@@ -2114,7 +2113,7 @@ class ExcelWidget:
                 row += 1
                 for i in range(stCnt):
                     stName = ws.cell(row, 2).value
-                    bStName = stName.encode("shift-jis")
+                    bStName = self.encObj.convertByteArray(stName)
                     newByteArr.append(len(bStName))
                     newByteArr.extend(bStName)
 
@@ -2235,9 +2234,7 @@ class ExcelWidget:
                 return False
             return True
         except Exception:
-            w = codecs.open("error.log", "w", "utf-8", "strict")
-            w.write(traceback.format_exc())
-            w.close()
+            self.errObj.write(traceback.format_exc())
             self.error = textSetting.textList["errorList"]["E14"]
             return False
 
@@ -2249,7 +2246,7 @@ class ExcelWidget:
             if ver is None:
                 self.error = textSetting.textList["errorList"]["E99"]
                 return False
-            bVer = ver.encode("shift-jis")
+            bVer = self.encObj.convertByteArray(ver)
             newByteArr.extend(bVer)
 
             # レール名
@@ -2260,7 +2257,7 @@ class ExcelWidget:
 
             try:
                 railStationName = ws.cell(row, 2).value
-                bRailStationName = railStationName.encode("shift-jis")
+                bRailStationName = self.encObj.convertByteArray(railStationName)
                 newByteArr.append(len(bRailStationName))
                 newByteArr.extend(bRailStationName)
             except Exception:
@@ -2279,12 +2276,12 @@ class ExcelWidget:
                 row += 1
                 for i in range(musicCnt):
                     musicFile = ws.cell(row, 1).value
-                    bMusicFile = musicFile.encode("shift-jis")
+                    bMusicFile = self.encObj.convertByteArray(musicFile)
                     newByteArr.append(len(bMusicFile))
                     newByteArr.extend(bMusicFile)
 
                     musicName = ws.cell(row, 2).value
-                    bMusicName = musicName.encode("shift-jis")
+                    bMusicName = self.encObj.convertByteArray(musicName)
                     newByteArr.append(len(bMusicName))
                     newByteArr.extend(bMusicName)
 
@@ -2458,7 +2455,7 @@ class ExcelWidget:
                 row += 1
                 for i in range(lightCnt):
                     lightFile = ws.cell(row, 1).value
-                    bLightFile = lightFile.encode("shift-jis")
+                    bLightFile = self.encObj.convertByteArray(lightFile)
                     newByteArr.append(len(bLightFile))
                     newByteArr.extend(bLightFile)
                     row += 1
@@ -2477,7 +2474,7 @@ class ExcelWidget:
                 row += 1
                 for i in range(baseBinCnt):
                     baseBinFile = ws.cell(row, 1).value
-                    bBaseBinFile = baseBinFile.encode("shift-jis")
+                    bBaseBinFile = self.encObj.convertByteArray(baseBinFile)
                     newByteArr.append(len(bBaseBinFile))
                     newByteArr.extend(bBaseBinFile)
                     row += 1
@@ -2525,7 +2522,7 @@ class ExcelWidget:
                     smfName = ws.cell(row, 2).value
                     smfNameList.append(smfName)
 
-                    bSmfName = smfName.encode("shift-jis")
+                    bSmfName = self.encObj.convertByteArray(smfName)
                     newByteArr.append(len(bSmfName))
                     newByteArr.extend(bSmfName)
 
@@ -2562,7 +2559,7 @@ class ExcelWidget:
                 row += 1
                 for i in range(stCnt):
                     stName = ws.cell(row, 2).value
-                    bStName = stName.encode("shift-jis")
+                    bStName = self.encObj.convertByteArray(stName)
                     newByteArr.append(len(bStName))
                     newByteArr.extend(bStName)
 
@@ -2889,9 +2886,7 @@ class ExcelWidget:
                     return False
             return True
         except Exception:
-            w = codecs.open("error.log", "w", "utf-8", "strict")
-            w.write(traceback.format_exc())
-            w.close()
+            self.errObj.write(traceback.format_exc())
             self.error = textSetting.textList["errorList"]["E14"]
             return False
 
@@ -2903,7 +2898,7 @@ class ExcelWidget:
             if ver is None:
                 self.error = textSetting.textList["errorList"]["E99"]
                 return False
-            bVer = ver.encode("shift-jis")
+            bVer = self.encObj.convertByteArray(ver)
             newByteArr.extend(bVer)
 
             # BGM
@@ -3051,7 +3046,7 @@ class ExcelWidget:
                 row += 1
                 for i in range(lightCnt):
                     lightFile = ws.cell(row, 1).value
-                    bLightFile = lightFile.encode("shift-jis")
+                    bLightFile = self.encObj.convertByteArray(lightFile)
                     newByteArr.append(len(bLightFile))
                     newByteArr.extend(bLightFile)
                     row += 1
@@ -3071,7 +3066,7 @@ class ExcelWidget:
                 row += 1
                 for i in range(stageResCnt):
                     stageFile = ws.cell(row, 1).value
-                    bStageFile = stageFile.encode("shift-jis")
+                    bStageFile = self.encObj.convertByteArray(stageFile)
                     newByteArr.append(len(bStageFile))
                     newByteArr.extend(bStageFile)
                     row += 1
@@ -3110,7 +3105,7 @@ class ExcelWidget:
                 row += 1
                 for i in range(baseBinCnt):
                     baseBinFile = ws.cell(row, 1).value
-                    bBaseBinFile = baseBinFile.encode("shift-jis")
+                    bBaseBinFile = self.encObj.convertByteArray(baseBinFile)
                     newByteArr.append(len(bBaseBinFile))
                     newByteArr.extend(bBaseBinFile)
                     row += 1
@@ -3158,7 +3153,7 @@ class ExcelWidget:
                     smfName = ws.cell(row, 2).value
                     smfNameList.append(smfName)
 
-                    bSmfName = smfName.encode("shift-jis")
+                    bSmfName = self.encObj.convertByteArray(smfName)
                     newByteArr.append(len(bSmfName))
                     newByteArr.extend(bSmfName)
 
@@ -3196,7 +3191,7 @@ class ExcelWidget:
                 for i in range(stCnt):
                     stName = ws.cell(row, 2).value
                     if stName is not None:
-                        bStName = stName.encode("shift-jis")
+                        bStName = self.encObj.convertByteArray(stName)
                         newByteArr.append(len(bStName))
                         newByteArr.extend(bStName)
                     else:
@@ -3635,9 +3630,7 @@ class ExcelWidget:
                     return False
             return True
         except Exception:
-            w = codecs.open("error.log", "w", "utf-8", "strict")
-            w.write(traceback.format_exc())
-            w.close()
+            self.errObj.write(traceback.format_exc())
             self.error = textSetting.textList["errorList"]["E14"]
             return False
 
@@ -3652,7 +3645,7 @@ class ExcelWidget:
                 return False
             if ver == "DEND_MAP_VER0400":
                 readFlag = True
-            bVer = ver.encode("shift-jis")
+            bVer = self.encObj.convertByteArray(ver)
             newByteArr.extend(bVer)
 
             # BGM
@@ -3800,7 +3793,7 @@ class ExcelWidget:
                 row += 1
                 for i in range(lightCnt):
                     lightFile = ws.cell(row, 1).value
-                    bLightFile = lightFile.encode("shift-jis")
+                    bLightFile = self.encObj.convertByteArray(lightFile)
                     newByteArr.append(len(bLightFile))
                     newByteArr.extend(bLightFile)
                     row += 1
@@ -3820,7 +3813,7 @@ class ExcelWidget:
                 row += 1
                 for i in range(stageResCnt):
                     stageFile = ws.cell(row, 1).value
-                    bStageFile = stageFile.encode("shift-jis")
+                    bStageFile = self.encObj.convertByteArray(stageFile)
                     newByteArr.append(len(bStageFile))
                     newByteArr.extend(bStageFile)
                     row += 1
@@ -3859,7 +3852,7 @@ class ExcelWidget:
                 row += 1
                 for i in range(baseBinCnt):
                     baseBinFile = ws.cell(row, 1).value
-                    bBaseBinFile = baseBinFile.encode("shift-jis")
+                    bBaseBinFile = self.encObj.convertByteArray(baseBinFile)
                     newByteArr.append(len(bBaseBinFile))
                     newByteArr.extend(bBaseBinFile)
                     row += 1
@@ -3907,7 +3900,7 @@ class ExcelWidget:
                     smfName = ws.cell(row, 2).value
                     smfNameList.append(smfName)
 
-                    bSmfName = smfName.encode("shift-jis")
+                    bSmfName = self.encObj.convertByteArray(smfName)
                     newByteArr.append(len(bSmfName))
                     newByteArr.extend(bSmfName)
 
@@ -3945,7 +3938,7 @@ class ExcelWidget:
                 for i in range(stCnt):
                     stName = ws.cell(row, 2).value
                     if stName is not None:
-                        bStName = stName.encode("shift-jis")
+                        bStName = self.encObj.convertByteArray(stName)
                         newByteArr.append(len(bStName))
                         newByteArr.extend(bStName)
                     else:
@@ -4411,9 +4404,7 @@ class ExcelWidget:
                     return False
             return True
         except Exception:
-            w = codecs.open("error.log", "w", "utf-8", "strict")
-            w.write(traceback.format_exc())
-            w.close()
+            self.errObj.write(traceback.format_exc())
             self.error = textSetting.textList["errorList"]["E14"]
             return False
 

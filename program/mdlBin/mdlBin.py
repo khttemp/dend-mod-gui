@@ -1,6 +1,5 @@
 import os
 import copy
-import codecs
 import traceback
 
 import tkinter
@@ -9,6 +8,7 @@ from tkinter import filedialog as fd
 from tkinter import messagebox as mb
 import program.textSetting as textSetting
 import program.appearance.ttkCustomWidget as ttkCustomWidget
+from program.errorLogClass import ErrorLogObj
 
 from program.cmdList import cmdList
 
@@ -35,6 +35,7 @@ scriptLf = None
 decryptFile = None
 frame = None
 copyScriptData = None
+errObj = ErrorLogObj()
 
 
 def openFile():
@@ -59,9 +60,7 @@ def openFile():
             deleteWidget()
             createWidget()
         except Exception:
-            w = codecs.open("error.log", "a", "utf-8", "strict")
-            w.write(traceback.format_exc())
-            w.close()
+            errObj.write(traceback.format_exc())
             mb.showerror(title=textSetting.textList["error"], message=errorMsg)
 
 
@@ -304,9 +303,7 @@ def reloadFile():
             if selectId >= 0:
                 frame.tree.selection_set(selectId)
         except Exception:
-            w = codecs.open("error.log", "a", "utf-8", "strict")
-            w.write(traceback.format_exc())
-            w.close()
+            errObj.write(traceback.format_exc())
             mb.showerror(title=textSetting.textList["error"], message=errorMsg)
 
 
@@ -388,9 +385,7 @@ def csvExtract():
             w.close()
             mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I10"])
         except Exception:
-            w = codecs.open("error.log", "a", "utf-8", "strict")
-            w.write(traceback.format_exc())
-            w.close()
+            errObj.write(traceback.format_exc())
             mb.showerror(title=textSetting.textList["error"], message=errorMsg)
 
 

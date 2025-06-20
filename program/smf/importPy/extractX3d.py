@@ -1,11 +1,12 @@
-import math
-import codecs
 import traceback
 from xml.dom import minidom
 import xml.etree.ElementTree as ET
+from program.errorLogClass import ErrorLogObj
+
 
 class X3dObject():
     def __init__(self, filePath, decryptFile):
+        self.errObj = ErrorLogObj()
         self.filePath = filePath
         self.decryptFile = decryptFile
         self.xmlFile = None
@@ -37,9 +38,7 @@ class X3dObject():
             return False
 
     def printError(self):
-        w = codecs.open("error.log", "w", "utf-8", "strict")
-        w.write(self.error)
-        w.close()
+        self.errObj.write(self.error)
 
     def makeTransform(self):
         for trans in self.decryptFile.frameList:

@@ -1,12 +1,15 @@
 import os
 import struct
-import codecs
 import traceback
+from program.encodingClass import SJISEncodingObject
+from program.errorLogClass import ErrorLogObj
 
 
 class RailDecrypt:
     def __init__(self, filePath):
         self.game = "RS"
+        self.encObj = SJISEncodingObject()
+        self.errObj = ErrorLogObj()
         self.filePath = filePath
         self.directory = os.path.dirname(self.filePath)
         self.filename = os.path.splitext(os.path.basename(self.filePath))[0]
@@ -47,9 +50,7 @@ class RailDecrypt:
             return False
 
     def printError(self):
-        w = codecs.open("error.log", "w", "utf-8", "strict")
-        w.write(self.error)
-        w.close()
+        self.errObj.write(self.error)
 
     def decrypt(self):
         self.game = "RS"
@@ -80,7 +81,7 @@ class RailDecrypt:
         index = 16
         readFlag = False
 
-        header = self.byteArr[0:index].decode("shift-jis")
+        header = self.encObj.convertString(self.byteArr[0:index])
         if header != "DEND_MAP_VER0300" and header != "DEND_MAP_VER0400":
             return False
 
@@ -292,7 +293,7 @@ class RailDecrypt:
             stationNameInfo = []
             b = self.byteArr[index]
             index += 1
-            text = self.byteArr[index:index + b].decode("shift-jis")
+            text = self.encObj.convertString(self.byteArr[index:index + b])
             stationNameInfo.append(text)
             index += b
 
@@ -864,7 +865,7 @@ class RailDecrypt:
             for i in range(len(simpleList)):
                 name = simpleList[i]
                 newByteArr.append(len(name))
-                newByteArr.extend(name.encode("shift-jis"))
+                newByteArr.extend(self.encObj.convertByteArray(name))
 
             cnt = 0
             if listCntVer == 1:
@@ -1024,7 +1025,7 @@ class RailDecrypt:
 
             if mode == "modify" or mode == "insert":
                 newByteArr.append(len(smfInfo[0]))
-                newByteArr.extend(smfInfo[0].encode("shift-jis"))
+                newByteArr.extend(self.encObj.convertByteArray(smfInfo[0]))
                 for i in range(5):
                     newByteArr.append(smfInfo[1 + i])
                 newByteArr.append(smfInfo[6])
@@ -1078,7 +1079,7 @@ class RailDecrypt:
             newByteArr = self.byteArr[0:index]
 
             if mode == "modify" or mode == "insert":
-                encodeName = stationNameInfo[0].encode("shift-jis")
+                encodeName = self.encObj.convertByteArray(stationNameInfo[0])
                 newByteArr.append(len(encodeName))
                 newByteArr.extend(encodeName)
                 newByteArr.append(int(stationNameInfo[1]))

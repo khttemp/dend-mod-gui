@@ -1,10 +1,13 @@
 import struct
-import codecs
 import traceback
+from program.encodingClass import SJISEncodingObject
+from program.errorLogClass import ErrorLogObj
 
 
 class MdlBinDecrypt:
     def __init__(self, filePath, cmdList):
+        self.encObj = SJISEncodingObject()
+        self.errObj = ErrorLogObj()
         self.filePath = filePath
         self.byteArr = []
         self.error = ""
@@ -35,9 +38,7 @@ class MdlBinDecrypt:
             return False
 
     def printError(self):
-        w = codecs.open("error.log", "w", "utf-8", "strict")
-        w.write(self.error)
-        w.close()
+        self.errObj.write(self.error)
 
     def decrypt(self):
         self.ver = self.byteArr[0]
@@ -50,7 +51,7 @@ class MdlBinDecrypt:
             imgInfo = {}
             imgNameLen = self.byteArr[self.index]
             self.index += 1
-            imgName = self.byteArr[self.index:self.index + imgNameLen].decode("shift-jis")
+            imgName = self.encObj.convertString(self.byteArr[self.index:self.index + imgNameLen])
             imgInfo["imgName"] = imgName
             self.index += imgNameLen
             imgInfo["imgElse"] = []
@@ -89,7 +90,7 @@ class MdlBinDecrypt:
         for i in range(smfCnt):
             smfLen = self.byteArr[self.index]
             self.index += 1
-            smfName = self.byteArr[self.index:self.index + smfLen].decode("shift-jis")
+            smfName = self.encObj.convertString(self.byteArr[self.index:self.index + smfLen])
             self.smfList.append(smfName)
             self.index += smfLen
 
@@ -101,7 +102,7 @@ class MdlBinDecrypt:
             wavInfo = []
             wavLen = self.byteArr[self.index]
             self.index += 1
-            wavName = self.byteArr[self.index:self.index + wavLen].decode("shift-jis")
+            wavName = self.encObj.convertString(self.byteArr[self.index:self.index + wavLen])
             wavInfo.append(wavName)
             self.index += wavLen
             wavInfo.append(self.byteArr[self.index])
@@ -119,7 +120,7 @@ class MdlBinDecrypt:
                 for j in range(2):
                     lightTgaLen = self.byteArr[self.index]
                     self.index += 1
-                    lightTgaName = self.byteArr[self.index:self.index + lightTgaLen].decode("shift-jis")
+                    lightTgaName = self.encObj.convertString(self.byteArr[self.index:self.index + lightTgaLen])
                     tgaInfo["tgaInfo"].append(lightTgaName)
                     self.index += lightTgaLen
 
@@ -213,7 +214,7 @@ class MdlBinDecrypt:
                 for j in range(fileCnt):
                     txtLen = self.byteArr[self.index]
                     self.index += 1
-                    temp = self.byteArr[self.index:self.index + txtLen].decode("shift-jis")
+                    temp = self.encObj.convertString(self.byteArr[self.index:self.index + txtLen])
                     self.index += txtLen
                     scriptData.append(temp)
 
@@ -228,7 +229,7 @@ class MdlBinDecrypt:
             newByteArr.append(len(imgList))
             for i in range(len(imgList)):
                 newByteArr.append(len(imgList[i]["imgName"]))
-                newByteArr.extend(imgList[i]["imgName"].encode("shift-jis"))
+                newByteArr.extend(self.encObj.convertByteArray(imgList[i]["imgName"]))
                 if self.ver == 4:
                     newByteArr.append(imgList[i]["imgElse"][0])
                     if imgList[i]["imgElse"][0] != 0:
@@ -245,12 +246,12 @@ class MdlBinDecrypt:
             newByteArr.append(len(smfList))
             for i in range(len(smfList)):
                 newByteArr.append(len(smfList[i]))
-                newByteArr.extend(smfList[i].encode("shift-jis"))
+                newByteArr.extend(self.encObj.convertByteArray(smfList[i]))
 
             newByteArr.append(len(wavList))
             for i in range(len(wavList)):
                 newByteArr.append(len(wavList[i][0]))
-                newByteArr.extend(wavList[i][0].encode("shift-jis"))
+                newByteArr.extend(self.encObj.convertByteArray(wavList[i][0]))
                 newByteArr.append(wavList[i][1])
 
             if self.ver != 1:
@@ -259,7 +260,7 @@ class MdlBinDecrypt:
                     for j in range(4):
                         if j < 2:
                             newByteArr.append(len(tgaList[i]["tgaInfo"][j]))
-                            newByteArr.extend(tgaList[i]["tgaInfo"][j].encode("shift-jis"))
+                            newByteArr.extend(self.encObj.convertByteArray(tgaList[i]["tgaInfo"][j]))
                         else:
                             f = struct.pack("<f", tgaList[i]["tgaInfo"][j])
                             newByteArr.extend(f)
@@ -355,7 +356,7 @@ class MdlBinDecrypt:
                             bTemp = struct.pack("<f", temp)
                             newByteArr.extend(bTemp)
                         else:
-                            temp = scriptData[4 + i].encode("shift-jis")
+                            temp = self.encObj.convertByteArray(scriptData[4 + i])
                             newByteArr.append(len(temp))
                             newByteArr.extend(temp)
 
@@ -459,11 +460,11 @@ class MdlBinDecrypt:
                                     paramByteList.append(tempF)
                                 except Exception:
                                     floatFlag = False
-                                    tempS = csvScriptData[2 + i].encode("shift-jis")
+                                    tempS = self.encObj.convertByteArray(csvScriptData[2 + i])
                                     paramByteList.append(struct.pack("<b", len(tempS)))
                                     paramByteList.append(tempS)
                             else:
-                                tempS = csvScriptData[2 + i].encode("shift-jis")
+                                tempS = self.encObj.convertByteArray(csvScriptData[2 + i])
                                 paramByteList.append(struct.pack("<b", len(tempS)))
                                 paramByteList.append(tempS)
 

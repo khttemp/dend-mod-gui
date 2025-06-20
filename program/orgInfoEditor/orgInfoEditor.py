@@ -1,5 +1,4 @@
 import os
-import codecs
 import sys
 import tkinter
 import copy
@@ -86,7 +85,7 @@ def defaultDataRead(game):
         elif game == gameDefine.RS:
             path = resource_path("RSdata.txt")
 
-        f = codecs.open(path, "r", "utf-8", "ignore")
+        f = open(path, "r", encoding="utf-8")
         lines = f.readlines()
         f.close()
 

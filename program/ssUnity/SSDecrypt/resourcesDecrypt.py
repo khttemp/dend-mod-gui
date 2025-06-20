@@ -1,9 +1,11 @@
 import os
-import codecs
 import UnityPy
 import struct
 import traceback
 import program.textSetting as textSetting
+from program.encodingClass import SJISEncodingObject
+from program.errorLogClass import ErrorLogObj
+
 
 SSTrainName = [
     "H2000",
@@ -157,6 +159,8 @@ SSModelName = [
 
 class ResourcesDecrypt:
     def __init__(self, filePath):
+        self.encObj = SJISEncodingObject()
+        self.errObj = ErrorLogObj()
         self.filePath = filePath
         self.fileDir = os.path.dirname(filePath)
         self.filenameAndExt = os.path.splitext(os.path.basename(filePath))
@@ -184,9 +188,7 @@ class ResourcesDecrypt:
             return False
 
     def printError(self):
-        w = codecs.open("error.log", "w", "utf-8", "strict")
-        w.write(self.error)
-        w.close()
+        self.errObj.write(self.error)
 
     def decrypt(self):
         try:
@@ -275,7 +277,7 @@ class ResourcesDecrypt:
             for i in range(bodyClassCnt):
                 bodyClassNameCnt = struct.unpack("<i", byteArr[index:index + 4])[0]
                 index += 4
-                bodyClassName = byteArr[index:index + bodyClassNameCnt].decode("shift-jis")
+                bodyClassName = self.encObj.convertString(byteArr[index:index + bodyClassNameCnt])
                 bodyClassList.append(bodyClassName)
                 index += bodyClassNameCnt
                 index += self.readStringPadding(bodyClassNameCnt)
@@ -287,7 +289,7 @@ class ResourcesDecrypt:
             for i in range(bodyMdlCnt):
                 bodyMdlNameCnt = struct.unpack("<i", byteArr[index:index + 4])[0]
                 index += 4
-                bodyMdlName = byteArr[index:index + bodyMdlNameCnt].decode("shift-jis")
+                bodyMdlName = self.encObj.convertString(byteArr[index:index + bodyMdlNameCnt])
                 bodyMdlList.append(bodyMdlName)
                 index += bodyMdlNameCnt
                 index += self.readStringPadding(bodyMdlNameCnt)
@@ -299,7 +301,7 @@ class ResourcesDecrypt:
             for i in range(pantaMdlCnt):
                 pantaMdlNameCnt = struct.unpack("<i", byteArr[index:index + 4])[0]
                 index += 4
-                pantaMdlName = byteArr[index:index + pantaMdlNameCnt].decode("shift-jis")
+                pantaMdlName = self.encObj.convertString(byteArr[index:index + pantaMdlNameCnt])
                 pantaMdlList.append(pantaMdlName)
                 index += pantaMdlNameCnt
                 index += self.readStringPadding(pantaMdlNameCnt)
@@ -475,9 +477,9 @@ class ResourcesDecrypt:
             bodyClassCnt = len(self.newTrainOrgInfo[2])
             newByteArr.extend(struct.pack("<i", bodyClassCnt))
             for bodyClass in self.newTrainOrgInfo[2]:
-                bodyClassNameCnt = len(bodyClass.encode("shift-jis"))
+                bodyClassNameCnt = len(self.encObj.convertByteArray(bodyClass))
                 newByteArr.extend(struct.pack("<i", bodyClassNameCnt))
-                newByteArr.extend(bodyClass.encode("shift-jis"))
+                newByteArr.extend(self.encObj.convertByteArray(bodyClass))
 
                 for i in range(self.readStringPadding(bodyClassNameCnt)):
                     newByteArr.append(0)
@@ -485,9 +487,9 @@ class ResourcesDecrypt:
             bodyMdlCnt = len(self.newTrainOrgInfo[3])
             newByteArr.extend(struct.pack("<i", bodyMdlCnt))
             for bodyMdl in self.newTrainOrgInfo[3]:
-                bodyMdlNameCnt = len(bodyMdl.encode("shift-jis"))
+                bodyMdlNameCnt = len(self.encObj.convertByteArray(bodyMdl))
                 newByteArr.extend(struct.pack("<i", bodyMdlNameCnt))
-                newByteArr.extend(bodyMdl.encode("shift-jis"))
+                newByteArr.extend(self.encObj.convertByteArray(bodyMdl))
 
                 for i in range(self.readStringPadding(bodyMdlNameCnt)):
                     newByteArr.append(0)
@@ -495,9 +497,9 @@ class ResourcesDecrypt:
             pantaMdlCnt = len(self.newTrainOrgInfo[4])
             newByteArr.extend(struct.pack("<i", pantaMdlCnt))
             for pantaMdl in self.newTrainOrgInfo[4]:
-                pantaMdlNameCnt = len(pantaMdl.encode("shift-jis"))
+                pantaMdlNameCnt = len(self.encObj.convertByteArray(pantaMdl))
                 newByteArr.extend(struct.pack("<i", pantaMdlNameCnt))
-                newByteArr.extend(pantaMdl.encode("shift-jis"))
+                newByteArr.extend(self.encObj.convertByteArray(pantaMdl))
 
                 for i in range(self.readStringPadding(pantaMdlNameCnt)):
                     newByteArr.append(0)
@@ -594,28 +596,28 @@ class ResourcesDecrypt:
             # MatName
             matNameLen = struct.unpack("<i", byteArr[index:index + 4])[0]
             index += 4
-            matName = byteArr[index:index + matNameLen].decode("shift-jis")
+            matName = self.encObj.convertString(byteArr[index:index + matNameLen])
             changeMeshTexInfo.append(matName)
             index += matNameLen
             index += self.readStringPadding(matNameLen)
             # shader_tex_name
             shaderTexNameLen = struct.unpack("<i", byteArr[index:index + 4])[0]
             index += 4
-            shaderTexName = byteArr[index:index + shaderTexNameLen].decode("shift-jis")
+            shaderTexName = self.encObj.convertString(byteArr[index:index + shaderTexNameLen])
             changeMeshTexInfo.append(shaderTexName)
             index += shaderTexNameLen
             index += self.readStringPadding(shaderTexNameLen)
             # shader_emission_name
             shaderEmisNameLen = struct.unpack("<i", byteArr[index:index + 4])[0]
             index += 4
-            shaderEmisName = byteArr[index:index + shaderEmisNameLen].decode("shift-jis")
+            shaderEmisName = self.encObj.convertString(byteArr[index:index + shaderEmisNameLen])
             changeMeshTexInfo.append(shaderEmisName)
             index += shaderEmisNameLen
             index += self.readStringPadding(shaderEmisNameLen)
             # asset_name
             assetNameLen = struct.unpack("<i", byteArr[index:index + 4])[0]
             index += 4
-            assetName = byteArr[index:index + assetNameLen].decode("shift-jis")
+            assetName = self.encObj.convertString(byteArr[index:index + assetNameLen])
             changeMeshTexInfo.append(assetName)
             index += assetNameLen
             index += self.readStringPadding(assetNameLen)
@@ -626,7 +628,7 @@ class ResourcesDecrypt:
             for i in range(texNameListCnt):
                 texNameLen = struct.unpack("<i", byteArr[index:index + 4])[0]
                 index += 4
-                texName = byteArr[index:index + texNameLen].decode("shift-jis")
+                texName = self.encObj.convertString(byteArr[index:index + texNameLen])
                 texNameList.append(texName)
                 index += texNameLen
                 index += self.readStringPadding(texNameLen)
@@ -691,7 +693,7 @@ class ResourcesDecrypt:
                 texNameLen = len(texNameList[i])
                 iTexNameLen = struct.pack("<i", texNameLen)
                 newByteArr.extend(iTexNameLen)
-                newByteArr.extend(texNameList[i].encode("shift-jis"))
+                newByteArr.extend(self.encObj.convertByteArray(texNameList[i]))
                 for j in range(self.readStringPadding(texNameLen)):
                     newByteArr.append(0)
             newByteArr.extend(byteArr[index:])

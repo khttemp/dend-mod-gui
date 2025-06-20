@@ -1,7 +1,8 @@
 import os
 import struct
-import codecs
 import program.textSetting as textSetting
+from program.encodingClass import SJISEncodingObject
+from program.errorLogClass import ErrorLogObj
 
 LS = 0
 BS = 1
@@ -11,6 +12,8 @@ RS = 3
 
 class FvtConvert:
     def __init__(self, filePath, content):
+        self.encObj = SJISEncodingObject()
+        self.errObj = ErrorLogObj()
         self.filePath = filePath
         self.error = ""
         self.content = content
@@ -22,7 +25,7 @@ class FvtConvert:
             lines = f.readlines()
             f.close()
         except Exception:
-            f = codecs.open(self.filePath, "r", "utf-8", "ignore")
+            f = open(self.filePath, "r", encoding="utf-8")
             lines = f.readlines()
             f.close()
 
@@ -58,7 +61,7 @@ class FvtConvert:
                 return False
 
             try:
-                text = arr[contentCnt + 4].encode("shift-jis")
+                text = self.encObj.convertByteArray(arr[contentCnt + 4])
             except Exception:
                 self.error = textSetting.textList["errorList"]["E12"].format(cnt)
                 return False
@@ -74,7 +77,7 @@ class FvtConvert:
             elif self.content == RS:
                 header = "D4_FVT"
 
-            newLine.extend(header.encode("shift-jis"))
+            newLine.extend(self.encObj.convertByteArray(header))
             newLine.extend(struct.pack("<h", faceNum))
             if self.content > LS:
                 newLine.extend(struct.pack("<h", faceX))

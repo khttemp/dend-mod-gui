@@ -1,11 +1,14 @@
 import struct
 import traceback
-import codecs
 import program.textSetting as textSetting
+from program.encodingClass import SJISEncodingObject
+from program.errorLogClass import ErrorLogObj
 
 
 class ComicDecrypt:
     def __init__(self, filePath, cmdList):
+        self.encObj = SJISEncodingObject()
+        self.errObj = ErrorLogObj()
         self.filePath = filePath
         self.cmdList = cmdList
         self.comicCntIndex = 0
@@ -34,13 +37,11 @@ class ComicDecrypt:
             return False
 
     def printError(self):
-        w = codecs.open("error.log", "w", "utf-8", "strict")
-        w.write(self.error)
-        w.close()
+        self.errObj.write(self.error)
 
     def decrypt(self):
         index = 16
-        header = self.byteArr[0:index].decode("shift-jis")
+        header = self.encObj.convertString(self.byteArr[0:index])
         if header != "DEND_COMICSCRIPT":
             return False
         index += 1
@@ -51,7 +52,7 @@ class ComicDecrypt:
         for i in range(imgCnt):
             b = self.byteArr[index]
             index += 1
-            imgName = self.byteArr[index:index+b].decode("shift-jis")
+            imgName = self.encObj.convertString(self.byteArr[index:index+b])
             index += b
             self.imgList.append(imgName)
 
@@ -75,7 +76,7 @@ class ComicDecrypt:
         for i in range(seCnt):
             b = self.byteArr[index]
             index += 1
-            seName = self.byteArr[index:index+b].decode("shift-jis")
+            seName = self.encObj.convertString(self.byteArr[index:index+b])
             index += b
             seFileCnt = self.byteArr[index]
             index += 1
@@ -87,7 +88,7 @@ class ComicDecrypt:
         for i in range(bgmCnt):
             b = self.byteArr[index]
             index += 1
-            bgmName = self.byteArr[index:index+b].decode("shift-jis")
+            bgmName = self.encObj.convertString(self.byteArr[index:index+b])
             index += b
             bgmFileCnt = self.byteArr[index]
             index += 1
@@ -141,7 +142,7 @@ class ComicDecrypt:
             newByteArr.append(len(imgList))
             for i in range(len(imgList)):
                 newByteArr.append(len(imgList[i]))
-                newByteArr.extend(imgList[i].encode("shift-jis"))
+                newByteArr.extend(self.encObj.convertByteArray(imgList[i]))
 
             newByteArr.append(len(imgSizeList))
             for i in range(len(imgSizeList)):
@@ -153,13 +154,13 @@ class ComicDecrypt:
             newByteArr.append(len(seList))
             for i in range(len(seList)):
                 newByteArr.append(len(seList[i][0]))
-                newByteArr.extend(seList[i][0].encode("shift-jis"))
+                newByteArr.extend(self.encObj.convertByteArray(seList[i][0]))
                 newByteArr.append(seList[i][1])
 
             newByteArr.append(len(bgmList))
             for i in range(len(bgmList)):
                 newByteArr.append(len(bgmList[i][0]))
-                newByteArr.extend(bgmList[i][0].encode("shift-jis"))
+                newByteArr.extend(self.encObj.convertByteArray(bgmList[i][0]))
                 newByteArr.append(bgmList[i][1])
 
                 for j in range(2):

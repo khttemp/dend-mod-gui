@@ -1,5 +1,4 @@
 import os
-import codecs
 import shutil
 import copy
 import re
@@ -10,6 +9,7 @@ from tkinter import ttk
 from tkinter import filedialog as fd
 from tkinter import messagebox as mb
 import program.textSetting as textSetting
+from program.errorLogClass import ErrorLogObj
 import program.appearance.ttkCustomWidget as ttkCustomWidget
 
 from program.smf.importPy.decrypt import SmfDecrypt
@@ -49,6 +49,7 @@ v_modelPath = None
 copyImageButton = None
 noTexList = []
 decryptFile = None
+errObj = ErrorLogObj()
 
 
 def openFile(frameCheck, meshCheck, xyzCheck, mtrlCheck):
@@ -80,9 +81,7 @@ def openFile(frameCheck, meshCheck, xyzCheck, mtrlCheck):
             deleteWidget()
             createWidget()
         except Exception:
-            w = codecs.open("error.log", "a", "utf-8", "strict")
-            w.write(traceback.format_exc())
-            w.close()
+            errObj.write(traceback.format_exc())
             mb.showerror(title=textSetting.textList["error"], message=errorMsg)
 
 
