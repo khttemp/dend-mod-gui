@@ -171,8 +171,11 @@ class SwapFbxMeshDialog(CustomSimpleDialog):
                 mtrlObj["diff"] = [diff[0], diff[1], diff[2]]
                 emis = material.Emissive.Get()
                 mtrlObj["emis"] = [emis[0], emis[1], emis[2]]
-                spec = material.Specular.Get()
-                mtrlObj["spec"] = [spec[0], spec[1], spec[2]]
+                try:
+                    spec = material.Specular.Get()
+                    mtrlObj["spec"] = [spec[0], spec[1], spec[2]]
+                except Exception:
+                    pass
                 obj = material.Diffuse.GetSrcObject()
                 if obj is not None:
                     texc = os.path.basename(material.Diffuse.GetSrcObject().GetFileName())
