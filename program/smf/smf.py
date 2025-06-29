@@ -16,6 +16,7 @@ from program.smf.importPy.decrypt import SmfDecrypt
 from program.smf.importPy.tkinterEditClass import SwapDialog, SwapMeshDialog, FrameInfoDialog
 from program.smf.importPy.tkinterEditFbxClass import SwapFbxMeshDialog
 from program.smf.importPy.tkinterScrollbarTreeviewSmf import ScrollbarTreeviewSmf
+from program.smf.importPy.extractGlb import GlbObject
 from program.smf.importPy.extractFbx import FbxObject
 from program.smf.importPy.extractX import XObject
 from program.smf.importPy.extractX3d import X3dObject
@@ -290,6 +291,7 @@ def extract3d():
         initialfile=saveName,
         filetypes=[
             (textSetting.textList["smf"]["fbxFile"], "*.fbx"),
+            (textSetting.textList["smf"]["glbFile"], "*.glb"),
             (textSetting.textList["smf"]["xFile"], "*.x"),
             (textSetting.textList["smf"]["x3dFile"], "*.x3d")
         ],
@@ -305,6 +307,13 @@ def extract3d():
                 mb.showerror(title=textSetting.textList["saveError"], message=errorMsg)
                 return
             mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I123"])
+        elif ext == ".glb":
+            glbObj = GlbObject(file_path, decryptFile)
+            if not glbObj.makeGlbFile():
+                glbObj.printError()
+                mb.showerror(title=textSetting.textList["saveError"], message=errorMsg)
+                return
+            mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I136"])
         elif ext == ".x":
             xObj = XObject(file_path, decryptFile)
             if not xObj.makeXFile():
