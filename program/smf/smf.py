@@ -50,6 +50,7 @@ v_modelPath = None
 copyImageButton = None
 noTexList = []
 decryptFile = None
+configPath = None
 errObj = ErrorLogObj()
 
 
@@ -285,6 +286,7 @@ def editInfoFrame():
 
 
 def extract3d():
+    global configPath
     global decryptFile
     saveName = os.path.splitext(os.path.basename(decryptFile.filename))[0]
     file_path = fd.asksaveasfilename(
@@ -308,7 +310,7 @@ def extract3d():
                 return
             mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I123"])
         elif ext == ".glb":
-            glbObj = GlbObject(file_path, decryptFile)
+            glbObj = GlbObject(file_path, decryptFile, configPath)
             if not glbObj.makeGlbFile():
                 glbObj.printError()
                 mb.showerror(title=textSetting.textList["saveError"], message=errorMsg)
@@ -480,7 +482,7 @@ def copyImage():
             copyImageButton["state"] = "disabled"
 
 
-def call_smf(rootTk, appearance):
+def call_smf(rootTk, config_ini_path, appearance):
     global root
     global rootFrameAppearance
     global frame
@@ -509,7 +511,10 @@ def call_smf(rootTk, appearance):
     global v_modelPath
     global copyImageButton
 
+    global configPath
+
     root = rootTk
+    configPath = config_ini_path
     rootFrameAppearance = appearance
 
     v_process = tkinter.IntVar()

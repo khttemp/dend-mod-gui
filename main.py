@@ -38,6 +38,7 @@ v_frameCheck = None
 v_meshCheck = None
 v_XYZCheck = None
 v_mtrlCheck = None
+v_flagGlbMode = None
 v_modelNameMode = None
 v_flagHexMode = None
 v_ambReadMode = None
@@ -104,7 +105,7 @@ def callProgram(programName):
     elif selectedProgram == "railEditor":
         railEditorProgram.call_railEditor(root, config_ini_path, rootFrameAppearance)
     elif selectedProgram == "smf":
-        smfProgram.call_smf(root, rootFrameAppearance)
+        smfProgram.call_smf(root, config_ini_path, rootFrameAppearance)
     elif selectedProgram == "SSUnity":
         ssUnityProgram.call_ssUnity(root, config_ini_path)
     elif selectedProgram == "rsRail":
@@ -206,6 +207,7 @@ def add_smfWriteOptionMenu():
     global v_meshCheck
     global v_XYZCheck
     global v_mtrlCheck
+    global v_flagGlbMode
     global menubar
     global maxMenubarLen
 
@@ -224,6 +226,8 @@ def add_smfWriteOptionMenu():
         readErrorFlag = True
     if configCheckOption("SMF_MTRL", "mode"):
         readErrorFlag = True
+    if configCheckOption("GLB_WRITE", "mode"):
+        readErrorFlag = True
 
     if readErrorFlag:
         configRead.read(config_ini_path, encoding="utf-8")
@@ -237,11 +241,16 @@ def add_smfWriteOptionMenu():
         v_XYZCheck.set(int(configRead.get("SMF_XYZ", "mode")))
         v_mtrlCheck = tkinter.IntVar()
         v_mtrlCheck.set(int(configRead.get("SMF_MTRL", "mode")))
+        v_flagGlbMode = tkinter.IntVar()
+        v_flagGlbMode.set(int(configRead.get("GLB_WRITE", "mode")))
         smfWriteOptionMenu = tkinter.Menu(menubar, tearoff=False)
         smfWriteOptionMenu.add_checkbutton(label=textSetting.textList["menu"]["smf"]["write"]["opt1"], variable=v_frameCheck, command=writeSmfConfig)
         smfWriteOptionMenu.add_checkbutton(label=textSetting.textList["menu"]["smf"]["write"]["opt2"], variable=v_meshCheck, command=writeSmfConfig)
         smfWriteOptionMenu.add_checkbutton(label=textSetting.textList["menu"]["smf"]["write"]["opt3"], variable=v_XYZCheck, command=writeSmfConfig)
         smfWriteOptionMenu.add_checkbutton(label=textSetting.textList["menu"]["smf"]["write"]["opt4"], variable=v_mtrlCheck, command=writeSmfConfig)
+        smfWriteOptionMenu.add_separator()
+        smfWriteOptionMenu.add_radiobutton(label=textSetting.textList["menu"]["smf"]["glb"]["opt1"], variable=v_flagGlbMode, value=0, command=writeGlbWriteConfig)
+        smfWriteOptionMenu.add_radiobutton(label=textSetting.textList["menu"]["smf"]["glb"]["opt2"], variable=v_flagGlbMode, value=1, command=writeGlbWriteConfig)
         menubar.add_cascade(label=textSetting.textList["menu"]["smf"]["name"], menu=smfWriteOptionMenu)
 
 
@@ -319,6 +328,8 @@ def writeDefaultConfig():
             config.set("SMF_XYZ", "mode", 0)
             config.add_section("SMF_MTRL")
             config.set("SMF_MTRL", "mode", 0)
+            config.add_section("GLB_WRITE")
+            config.set("GLB_WRITE", "mode", 0)
 
             config.add_section("MODEL_NAME_MODE")
             config.set("MODEL_NAME_MODE", "mode", 0)
@@ -368,6 +379,23 @@ def writeSmfConfig():
     configRead.set("SMF_MESH", "mode", str(v_meshCheck.get()))
     configRead.set("SMF_XYZ", "mode", str(v_XYZCheck.get()))
     configRead.set("SMF_MTRL", "mode", str(v_mtrlCheck.get()))
+
+    try:
+        f = open(config_ini_path, "w", encoding="utf-8")
+        configRead.write(f)
+        f.close()
+    except PermissionError:
+        errorLog(traceback.format_exc())
+
+
+def writeGlbWriteConfig():
+    global v_flagGlbMode
+    global config_ini_path
+
+    configRead = configparser.ConfigParser()
+    configRead.read(config_ini_path, encoding="utf-8")
+
+    configRead.set("GLB_WRITE", "mode", str(v_flagGlbMode.get()))
 
     try:
         f = open(config_ini_path, "w", encoding="utf-8")

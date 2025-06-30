@@ -2206,6 +2206,8 @@ class SmfDecrypt:
             nameAndLength = self.getStructNameAndLength()
             if not self.readMESH(mesh, nameAndLength[1], int(50 / self.meshCount)):
                 return False
+
+        # V_CP
         searchIdx = newByteArr.find(self.encObj.convertByteArray("CP_V"), self.index)
         if searchIdx == -1:
             return False
@@ -2227,9 +2229,33 @@ class SmfDecrypt:
                         newByteArr[index+3] &= 0x7F
                 index += 4
             index += 4
-
         if self.index + nextNameAndLength[1] != index:
             return False
+
+        #
+        searchIdx = newByteArr.find(self.encObj.convertByteArray("N_V"), self.index)
+        if searchIdx == -1:
+            return False
+        self.index = searchIdx
+
+        nextNameAndLength = self.getStructNameAndLength()
+        count = nextNameAndLength[1] // 12
+        index = self.index
+        for i in range(count):
+            for j in range(3):
+                # x座標とz座標のみマイナスを付ける
+                if j == 0 or j == 2:
+                    b = newByteArr[index+3]
+                    # 正の数の場合
+                    if b & 0x80 == 0x00:
+                        newByteArr[index+3] |= 0x80
+                    # 負の数の場合
+                    elif b & 0x80 == 0x80:
+                        newByteArr[index+3] &= 0x7F
+                index += 4
+        if self.index + nextNameAndLength[1] != index:
+            return False
+
         w = open(self.filePath, "wb")
         w.write(newByteArr)
         w.close()

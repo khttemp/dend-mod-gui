@@ -1,14 +1,18 @@
 import os
+import copy
 import shutil
 import json
 import struct
 import traceback
+import io
+from PIL import Image
+import configparser
 from program.encodingClass import SJISEncodingObject
 from program.errorLogClass import ErrorLogObj
 
 
 class GlbObject:
-    def __init__(self, filePath, decryptFile):
+    def __init__(self, filePath, decryptFile, configPath):
         self.encObj = SJISEncodingObject()
         self.errObj = ErrorLogObj()
         self.headerName = "glTF"
@@ -27,9 +31,15 @@ class GlbObject:
         self.binFileLenAddr = -1
         self.jsonLenAddr = -1
         self.bufferByteArr = bytearray()
+        self.configPath = configPath
+        self.glbWriteMode = None
 
     def makeGlbFile(self):
         try:
+            configRead = configparser.ConfigParser()
+            configRead.read(self.configPath, encoding="utf-8")
+            self.glbWriteMode = int(configRead.get("GLB_WRITE", "mode"))
+
             self.imageFileList = []
             self.makeHeader()
             self.makeJson()
@@ -100,12 +110,13 @@ class GlbObject:
             newMatrix.extend(pos)
             frameObj = {
                 "name": trans["name"],
-                "children": [],
                 "translation":pos,
                 "rotation":q
             }
 
             if trans["parentFrameNo"] != -1:
+                if "children" not in frameObjList[trans["parentFrameNo"]]:
+                    frameObjList[trans["parentFrameNo"]]["children"] = []
                 frameObjList[trans["parentFrameNo"]]["children"].append(frameIdx)
             if trans["meshNo"] != -1:
                 frameObj["mesh"] = trans["meshNo"]
@@ -131,8 +142,10 @@ class GlbObject:
 
                 coordIndexStart = mtrl["coordIndexStart"]
                 coordIndexEnd = coordIndexStart + mtrl["coordCount"]
-                splitCoordList = mesh["coordList"][coordIndexStart:coordIndexEnd]
                 # coord
+                splitCoordList = copy.deepcopy(mesh["coordList"][coordIndexStart:coordIndexEnd])
+                for coordList in splitCoordList:
+                    coordList[0] = -coordList[0]
                 primitiveObj["attributes"]["POSITION"] = bufferViewIndex
                 posAccObj = {}
                 posAccObj["bufferView"] = bufferViewIndex
@@ -147,18 +160,18 @@ class GlbObject:
                 bufferViewObj["buffer"] = 0
                 bufferViewObj["byteOffset"] = len(self.bufferByteArr)
                 for coordList in splitCoordList:
-                    for cidx, coord in enumerate(coordList):
-                        if cidx == 0:
-                            self.bufferByteArr.extend(struct.pack("<f", -coord))
-                        else:
-                            self.bufferByteArr.extend(struct.pack("<f", coord))
+                    for coord in coordList:
+                        self.bufferByteArr.extend(struct.pack("<f", coord))
                 bufferViewObj["byteLength"] = len(self.bufferByteArr) - bufferViewObj["byteOffset"]
                 bufferViewObj["target"] = self.arrayBufferType
                 bufferViewsList.append(bufferViewObj)
                 bufferViewIndex += 1
+                self.checkBufferByteLength()
 
                 # normal
-                splitNormalList = mesh["normalList"][coordIndexStart:coordIndexEnd]
+                splitNormalList = copy.deepcopy(mesh["normalList"][coordIndexStart:coordIndexEnd])
+                for normalList in splitNormalList:
+                    normalList[0] = -normalList[0]
                 primitiveObj["attributes"]["NORMAL"] = bufferViewIndex
                 normalAccObj = {}
                 normalAccObj["bufferView"] = bufferViewIndex
@@ -170,15 +183,13 @@ class GlbObject:
                 bufferViewObj["buffer"] = 0
                 bufferViewObj["byteOffset"] = len(self.bufferByteArr)
                 for normalList in splitNormalList:
-                    for nidx, normal in enumerate(normalList):
-                        if nidx == 0:
-                            self.bufferByteArr.extend(struct.pack("<f", -normal))
-                        else:
-                            self.bufferByteArr.extend(struct.pack("<f", normal))
+                    for normal in normalList:
+                        self.bufferByteArr.extend(struct.pack("<f", normal))
                 bufferViewObj["byteLength"] = len(self.bufferByteArr) - bufferViewObj["byteOffset"]
                 bufferViewObj["target"] = self.arrayBufferType
                 bufferViewsList.append(bufferViewObj)
                 bufferViewIndex += 1
+                self.checkBufferByteLength()
 
                 # uv
                 splitUvList = mesh["uvList"][coordIndexStart:coordIndexEnd]
@@ -199,6 +210,7 @@ class GlbObject:
                 bufferViewObj["target"] = self.arrayBufferType
                 bufferViewsList.append(bufferViewObj)
                 bufferViewIndex += 1
+                self.checkBufferByteLength()
 
                 # color
                 splitColorInfoList = mesh["colorInfoList"][coordIndexStart:coordIndexEnd]
@@ -206,6 +218,7 @@ class GlbObject:
                 colorAccObj = {}
                 colorAccObj["bufferView"] = bufferViewIndex
                 colorAccObj["componentType"] = self.uByteType
+                colorAccObj["normalized"] = True
                 colorAccObj["count"] = len(splitColorInfoList)
                 colorAccObj["type"] = "VEC4"
                 accessorsList.append(colorAccObj)
@@ -221,6 +234,7 @@ class GlbObject:
                 bufferViewObj["target"] = self.arrayBufferType
                 bufferViewsList.append(bufferViewObj)
                 bufferViewIndex += 1
+                self.checkBufferByteLength()
 
                 # polygon
                 indicesIndexStart = mtrl["polyIndexStart"] * 3
@@ -252,6 +266,7 @@ class GlbObject:
                 bufferViewObj["target"] = self.elementArrayBufferType
                 bufferViewsList.append(bufferViewObj)
                 bufferViewIndex += 1
+                self.checkBufferByteLength()
 
                 # material
                 primitiveObj["material"] = materialIndex
@@ -267,9 +282,7 @@ class GlbObject:
                     file = mtrl["texc"]
                     dirname = os.path.dirname(self.filePath)
                     self.imageFileList.append(os.path.join(dirname, file))
-                    imageObj = {
-                        "uri": file
-                    }
+                    imageObj = {}
                     textureObj = {
                         "source": len(imagesList)
                     }
@@ -285,8 +298,41 @@ class GlbObject:
         jsonDict["meshes"] = meshObjList
         jsonDict["materials"] = materialsList
         jsonDict["textures"] = texturesList
-        jsonDict["images"] = imagesList
         jsonDict["accessors"] = accessorsList
+
+        usedImageList = {}
+        for imageIdx, imageFile in enumerate(self.imageFileList):
+            ext = os.path.splitext(imageFile)[1]
+            imageObj = imagesList[imageIdx]
+            # texture in glb
+            if self.glbWriteMode == 1:
+                if os.path.exists(imageFile) and ext.lower() in [".bmp", ".png", ".tga"]:
+                    if os.path.basename(imageFile) not in usedImageList:
+                        usedImageList[os.path.basename(imageFile)] = bufferViewIndex
+                        imageObj["bufferView"] = bufferViewIndex
+                        imageObj["mimeType"] = "image/png"
+                        imageObj["originName"] = os.path.basename(imageFile)
+                        bufferViewObj = {}
+                        bufferViewObj["buffer"] = 0
+                        bufferViewObj["byteOffset"] = len(self.bufferByteArr)
+                        img = Image.open(imageFile)
+                        imageBytes = io.BytesIO()
+                        img.save(imageBytes, "png")
+                        self.bufferByteArr.extend(imageBytes.getvalue())
+                        bufferViewObj["byteLength"] = len(self.bufferByteArr) - bufferViewObj["byteOffset"]
+                        bufferViewsList.append(bufferViewObj)
+                        bufferViewIndex += 1
+                        self.checkBufferByteLength()
+                    else:
+                        imageObj["bufferView"] = usedImageList[os.path.basename(imageFile)]
+                        imageObj["mimeType"] = "image/png"
+                        imageObj["originName"] = os.path.basename(imageFile)
+                else:
+                    imageObj["uri"] = os.path.basename(imageFile)
+            else:
+                imageObj["uri"] = os.path.basename(imageFile)
+
+        jsonDict["images"] = imagesList
         jsonDict["bufferViews"] = bufferViewsList
 
         jsonDict["buffers"] = [
@@ -294,10 +340,7 @@ class GlbObject:
                 "byteLength":len(self.bufferByteArr)
             }
         ]
-        if len(self.bufferByteArr) % 4 != 0:
-            cnt = 4 - len(self.bufferByteArr) % 4
-            for i in range(cnt):
-                self.bufferByteArr.append(0)
+        self.checkBufferByteLength()
 
         jsonDump = json.dumps(jsonDict, separators=(',', ':'))
         jsonByteArr = bytearray(self.encObj.convertByteArray(jsonDump))
@@ -316,6 +359,12 @@ class GlbObject:
         self.byteArr.extend(self.encObj.convertByteArray(self.binName))
         self.byteArr.append(0)
         self.byteArr.extend(self.bufferByteArr)
+
+    def checkBufferByteLength(self):
+        if len(self.bufferByteArr) % 4 != 0:
+            cnt = 4 - len(self.bufferByteArr) % 4
+            for i in range(cnt):
+                self.bufferByteArr.append(0)
 
     def exportGlb(self):
         dirname = os.path.splitext(self.filePath)[0]
