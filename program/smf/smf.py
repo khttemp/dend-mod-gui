@@ -19,7 +19,6 @@ from program.smf.importPy.tkinterScrollbarTreeviewSmf import ScrollbarTreeviewSm
 from program.smf.importPy.extractGlb import GlbObject
 from program.smf.importPy.extractFbx import FbxObject
 from program.smf.importPy.extractX import XObject
-from program.smf.importPy.extractX3d import X3dObject
 
 root = None
 rootFrameAppearance = None
@@ -294,8 +293,7 @@ def extract3d():
         filetypes=[
             (textSetting.textList["smf"]["fbxFile"], "*.fbx"),
             (textSetting.textList["smf"]["glbFile"], "*.glb"),
-            (textSetting.textList["smf"]["xFile"], "*.x"),
-            (textSetting.textList["smf"]["x3dFile"], "*.x3d")
+            (textSetting.textList["smf"]["xFile"], "*.x")
         ],
         defaultextension=".fbx")
 
@@ -315,7 +313,7 @@ def extract3d():
                 glbObj.printError()
                 mb.showerror(title=textSetting.textList["saveError"], message=errorMsg)
                 return
-            mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I136"])
+            mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I121"])
         elif ext == ".x":
             xObj = XObject(file_path, decryptFile)
             if not xObj.makeXFile():
@@ -323,13 +321,6 @@ def extract3d():
                 mb.showerror(title=textSetting.textList["saveError"], message=errorMsg)
                 return
             mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I122"])
-        elif ext == ".x3d":
-            x3dObj = X3dObject(file_path, decryptFile)
-            if not x3dObj.makeX3d():
-                x3dObj.printError()
-                mb.showerror(title=textSetting.textList["saveError"], message=errorMsg)
-                return
-            mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I121"])
 
 
 def turnModelMesh():
