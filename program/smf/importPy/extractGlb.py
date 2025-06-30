@@ -100,14 +100,13 @@ class GlbObject:
 
         frameObjList = []
         for frameIdx, trans in enumerate(self.decryptFile.frameList):
-            newMatrix = []
             pos = [
                 -trans["matrix"][3][0],
                 trans["matrix"][3][1],
                 trans["matrix"][3][2]
             ]
             q = self.decryptFile.getQuaternion(trans["matrix"])
-            newMatrix.extend(pos)
+            q[0] = -q[0]
             frameObj = {
                 "name": trans["name"],
                 "translation":pos,
