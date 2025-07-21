@@ -34,6 +34,8 @@ extract3dObjButton = None
 turnModelMeshButton = None
 swapModelMeshButton = None
 editInfoFrameButton = None
+meshMaterialCsvSaveButton = None
+meshMaterialCsvLoadButton = None
 
 v_framePosX = None
 v_framePosY = None
@@ -119,6 +121,8 @@ def createWidget():
     global turnModelMeshButton
     global swapModelMeshButton
     global editInfoFrameButton
+    global meshMaterialCsvSaveButton
+    global meshMaterialCsvLoadButton
     global decryptFile
 
     btnList = [
@@ -129,7 +133,9 @@ def createWidget():
     ]
     meshBtnList = [
         turnModelMeshButton,
-        swapModelMeshButton
+        swapModelMeshButton,
+        meshMaterialCsvSaveButton,
+        meshMaterialCsvLoadButton
     ]
 
     frame = ScrollbarTreeviewSmf(scriptLf, btnList, meshBtnList, getFrameInfo)
@@ -151,6 +157,8 @@ def createWidget():
     extract3dObjButton["state"] = "normal"
     turnModelMeshButton["state"] = "disabled"
     swapModelMeshButton["state"] = "disabled"
+    meshMaterialCsvSaveButton["state"] = "disabled"
+    meshMaterialCsvLoadButton["state"] = "disabled"
 
 
 def reloadWidget():
@@ -377,6 +385,130 @@ def swapModelMesh():
                 reloadWidget()
 
 
+def meshMaterialCsvSave():
+    global decryptFile
+    global frame
+
+    saveName = os.path.splitext(os.path.basename(decryptFile.filename))[0]
+    selectId = frame.tree.selection()[0]
+    selectName = frame.tree.item(selectId)["text"]
+    meshNo = int(re.findall("Mesh No.(\d+)", selectName)[0])
+    saveName += "_mesh{0}".format(meshNo)
+    file_path = fd.asksaveasfilename(
+        initialfile=saveName,
+        filetypes=[
+            (textSetting.textList["smf"]["csvFile"], "*.csv")
+        ],
+        defaultextension=".csv")
+
+    if file_path:
+        errorMsg = textSetting.textList["errorList"]["E19"]
+        try:
+            mtrlList = decryptFile.meshList[meshNo]["mtrlList"]
+            f = open(file_path, "w", encoding="utf-8-sig")
+            f.write("mtrlNo,texc,diff_r,diff_g,diff_b,diff_a,emis_r,emis_g,emis_b\n")
+            for mIdx, mtrlInfo in enumerate(mtrlList):
+                rowList = []
+                rowList.append(mIdx)
+                if "texc" in mtrlInfo:
+                    rowList.append(mtrlInfo["texc"])
+                else:
+                    rowList.append("")
+                rowList.extend(mtrlInfo["diff"])
+                rowList.extend(mtrlInfo["emis"])
+                f.write(",".join(map(str, rowList)))
+                f.write("\n")
+            f.close()
+            mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I10"])
+        except Exception:
+            errObj.write(traceback.format_exc())
+            mb.showerror(title=textSetting.textList["error"], message=errorMsg)
+
+
+def meshMaterialCsvLoad():
+    global root
+    global decryptFile
+    global frame
+
+    selectId = frame.tree.selection()[0]
+    selectName = frame.tree.item(selectId)["text"]
+    meshNo = int(re.findall("Mesh No.(\d+)", selectName)[0])
+    file_path = fd.askopenfilename(
+        filetypes=[
+            (textSetting.textList["smf"]["csvFile"], "*.csv")
+        ],
+        defaultextension=".csv"
+    )
+    if file_path:
+        errorMsg = textSetting.textList["errorList"]["E14"]
+        noTexcInputFlag = False
+        try:
+            f = open(file_path, "r", encoding="utf-8-sig")
+            lines = f.readlines()
+            f.close()
+
+            lines.pop(0)
+            originMtrlList = decryptFile.meshList[meshNo]["mtrlList"]
+            if len(originMtrlList) != len(lines):
+                errorMsg2 = textSetting.textList["errorList"]["E125"].format(len(lines), len(originMtrlList))
+                mb.showerror(title=textSetting.textList["error"], message=errorMsg2)
+                return
+
+            mtrlList = []
+            for idx, line in enumerate(lines):
+                originMtrlInfo = originMtrlList[idx]
+                mtrlInfo = {}
+                arr = line.strip().split(",")
+                if arr[1] != "":
+                    mtrlInfo["texc"] = arr[1]
+                    bTexc = decryptFile.encObj.convertByteArray(mtrlInfo["texc"])
+                    if len(bTexc) > 64:
+                        errorMsg = textSetting.textList["errorList"]["E127"].format(idx)
+                        mb.showerror(title=textSetting.textList["error"], message=errorMsg)
+                        return
+                if "texc" in originMtrlInfo and "texc" not in mtrlInfo:
+                    errorMsg = textSetting.textList["errorList"]["E126"].format(idx)
+                    mb.showerror(title=textSetting.textList["error"], message=errorMsg)
+                    return
+                if "texc" not in originMtrlInfo and "texc" in mtrlInfo:
+                    noTexcInputFlag = True
+
+                diff = [0.0, 0.0, 0.0, 0.0]
+                if arr[2] != "":
+                    diff[0] = float(arr[2])
+                if arr[3] != "":
+                    diff[1] = float(arr[3])
+                if arr[4] != "":
+                    diff[2] = float(arr[4])
+                if arr[5] != "":
+                    diff[3] = float(arr[5])
+                mtrlInfo["diff"] = diff
+
+                emis = [0.0, 0.0, 0.0]
+                if arr[6] != "":
+                    emis[0] = float(arr[6])
+                if arr[7] != "":
+                    emis[1] = float(arr[7])
+                if arr[8] != "":
+                    emis[2] = float(arr[8])
+                mtrlInfo["emis"] = emis
+                mtrlList.append(mtrlInfo)
+
+            warnMsg = textSetting.textList["infoList"]["I136"]
+            if noTexcInputFlag:
+                warnMsg = textSetting.textList["infoList"]["I138"] + warnMsg
+            result = mb.askokcancel(title=textSetting.textList["confirm"], message=warnMsg, icon="warning", parent=root)
+            if result:
+                if not decryptFile.modifyMaterial(meshNo, mtrlList):
+                    decryptFile.printError()
+                    mb.showerror(title=textSetting.textList["saveError"], message=errorMsg)
+                    return
+                mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I137"])
+                reloadWidget()
+        except Exception:
+            errObj.write(traceback.format_exc())
+            mb.showerror(title=textSetting.textList["error"], message=errorMsg)
+
 def getFrameInfo():
     global v_framePosX
     global v_framePosY
@@ -488,6 +620,8 @@ def call_smf(rootTk, config_ini_path, appearance):
     global turnModelMeshButton
     global swapModelMeshButton
     global editInfoFrameButton
+    global meshMaterialCsvSaveButton
+    global meshMaterialCsvLoadButton
 
     global v_framePosX
     global v_framePosY
@@ -546,6 +680,10 @@ def call_smf(rootTk, config_ini_path, appearance):
     turnModelMeshButton.grid(row=0, column=0, padx=30, pady=5)
     swapModelMeshButton = ttkCustomWidget.CustomTtkButton(meshEditButtonFrame, text=textSetting.textList["smf"]["swapModelMeshLabel"], width=25, command=swapModelMesh, state="disabled")
     swapModelMeshButton.grid(row=0, column=1, padx=30, pady=5)
+    meshMaterialCsvSaveButton = ttkCustomWidget.CustomTtkButton(meshEditButtonFrame, text=textSetting.textList["smf"]["meshMaterialCsvSaveLabel"], width=25, command=meshMaterialCsvSave, state="disabled")
+    meshMaterialCsvSaveButton.grid(row=1, column=0, padx=30, pady=5)
+    meshMaterialCsvLoadButton = ttkCustomWidget.CustomTtkButton(meshEditButtonFrame, text=textSetting.textList["smf"]["meshMaterialCsvLoadLabel"], width=25, command=meshMaterialCsvLoad, state="disabled")
+    meshMaterialCsvLoadButton.grid(row=1, column=1, padx=30, pady=5)
 
     elseEditButtonFrame = ttkCustomWidget.CustomTtkFrame(buttonListFrame)
     elseEditButtonFrame.grid(row=2, column=0, pady=10)

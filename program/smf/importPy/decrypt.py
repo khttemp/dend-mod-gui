@@ -2476,3 +2476,70 @@ class SmfDecrypt:
         w.write(newByteArr)
         w.close()
         return True
+
+    def modifyMaterial(self, meshNo, mtrlList):
+        self.index = self.meshStartIdx
+        meshStartIdx = -1
+        meshEndIdx = -1
+        for mesh in range(self.meshCount):
+            if mesh == meshNo:
+                meshStartIdx = self.index
+            nameAndLength = self.getStructNameAndLength()
+            if not self.readMESH(mesh, nameAndLength[1], int(50 / self.meshCount)):
+                return False
+            if mesh == meshNo:
+                meshEndIdx = self.index
+                break
+        if meshStartIdx == -1 or meshEndIdx == -1:
+            return False
+        searchIdx = self.byteArr.find(self.encObj.convertByteArray("LRTM"), meshStartIdx)
+        if searchIdx == -1:
+            return False
+        newByteArr = bytearray(self.byteArr)
+        index = searchIdx
+        for mtrl in mtrlList:
+            index += 4
+            mtrlLen = struct.unpack("<i", self.byteArr[index:index + 4])[0]
+            index += 4
+            mtrlStartIndex = index
+            # TEXC
+            searchIdx = self.byteArr.find(self.encObj.convertByteArray("CXET"), index)
+            if searchIdx != -1 and "texc" in mtrl:
+                index = searchIdx
+                index += 4
+                index += 4
+                bTexc = self.encObj.convertByteArray(mtrl["texc"])
+                for addr, val in enumerate(bTexc):
+                    newByteArr[index + addr] = val
+                index += len(bTexc)
+                for i in range(64 - len(bTexc)):
+                    newByteArr[index + i] = 0
+                index += (64 - len(bTexc))
+            # DIFF
+            searchIdx = self.byteArr.find(self.encObj.convertByteArray("FFID"), index)
+            if searchIdx != -1 and "diff" in mtrl:
+                index = searchIdx
+                index += 4
+                index += 4
+                for diff in mtrl["diff"]:
+                    bDiff = struct.pack("<f", diff)
+                    for addr, val in enumerate(bDiff):
+                        newByteArr[index + addr] = val
+                    index += 4
+            # EMIS
+            searchIdx = self.byteArr.find(self.encObj.convertByteArray("SIME"), index)
+            if searchIdx != -1 and "emis" in mtrl:
+                index = searchIdx
+                index += 4
+                index += 4
+                for emis in mtrl["emis"]:
+                    bEmis = struct.pack("<f", emis)
+                    for addr, val in enumerate(bEmis):
+                        newByteArr[index + addr] = val
+                    index += 4
+            index = mtrlStartIndex + mtrlLen
+
+        w = open(self.filePath, "wb")
+        w.write(newByteArr)
+        w.close()
+        return True
