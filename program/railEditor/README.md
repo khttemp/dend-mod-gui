@@ -354,10 +354,12 @@ RSのレール情報の要素についは、[【こちら】](/program/railEdito
      ⓪番号：要素３リストのindex番号<br>
      ①タイプ：ANIME効果を適用する箇所<br>
        　0：【LS、BSのみ】モデルの中央(smfを直で指定)<br>
-       　1：レールの横<br>
+       　1：レール<br>
        　2：架線柱<br>
        　6：レールのボーン<br>
-     ②railPos：指定レールのボーン<br>
+     ②railPos
+       　タイプで１や２の場合、SMFに定義されたNの位置。（ex:2を指定した場合、【N2】に置く）
+       　タイプが6の場合、レールのボーン<br>
      ③bin index：ベースbin情報のindex<br>
      ④anime1：ANIME番号１<br>
      ⑤anime2：ANIME番号２
