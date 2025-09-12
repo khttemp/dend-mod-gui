@@ -97,16 +97,23 @@ class SwapMeshDialog(CustomSimpleDialog):
         swapMeshStartIdx = -1
         swapMeshEndIdx = -1
         self.swapDecryptFile.index = self.swapDecryptFile.meshStartIdx
-        for mesh in range(self.swapDecryptFile.meshCount):
-            if mesh == swapMeshNo:
+        errorMsg = textSetting.textList["errorList"]["E14"]
+        for meshNo in range(self.swapDecryptFile.meshCount):
+            if meshNo == swapMeshNo:
                 swapMeshStartIdx = self.swapDecryptFile.index
             nameAndLength = self.swapDecryptFile.getStructNameAndLength()
-            if not self.swapDecryptFile.readMESH(mesh, nameAndLength[1], int(50 / self.swapDecryptFile.meshCount)):
+            if nameAndLength[1] == -1:
+                mb.showerror(title=textSetting.textList["error"], message=errorMsg)
                 return False
-            if mesh == swapMeshNo:
+
+            if not self.swapDecryptFile.readMESH(meshNo, nameAndLength[1]):
+                mb.showerror(title=textSetting.textList["error"], message=errorMsg)
+                return False
+            if meshNo == swapMeshNo:
                 swapMeshEndIdx = self.swapDecryptFile.index
                 break
         if swapMeshStartIdx == -1 or swapMeshEndIdx == -1:
+            mb.showerror(title=textSetting.textList["error"], message=errorMsg)
             return False
         swapMeshByteArr = self.swapDecryptFile.byteArr[swapMeshStartIdx:swapMeshEndIdx]
         result = mb.askokcancel(title=textSetting.textList["confirm"], message=self.infoMsg, icon="warning", parent=self)

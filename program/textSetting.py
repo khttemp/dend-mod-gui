@@ -829,7 +829,13 @@ textList = {
         "scanSmfImageLabel": "SMFファイルリストで イメージファイル検索",
         "copyImageLabel": "上記のパスに、イメージファイルをコピーするフォルダー指定",
         "framePosInfoLabel": "Frameの座標情報(x, y, z)",
-        "frameRotInfoLabel": "Frameの回転情報(x, y, z)"
+        "frameRotInfoLabel": "Frameの回転情報(x, y, z)",
+        "errorList": {
+            "E1": "indexがファイルサイズを超えています",
+            "E2": "チャンク名解析エラー (index: 0x{0:02x})",
+            "E3": "最後に読み込んだチャンク名({0}) (index: 0x{1:02x})",
+            "E4": "{0}チャンク (index: 0x{1:02x})の長さが不一致です (設定値:{2}, 実際値:{3})"
+        }
     },
     "ssUnity": {
         "csvNotchNum": "ノッチ数",

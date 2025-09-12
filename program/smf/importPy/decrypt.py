@@ -11,7 +11,7 @@ from program.errorLogClass import ErrorLogObj
 
 
 class SmfDecrypt:
-    def __init__(self, filePath, frameFlag=False, meshFlag=False, xyzFlag=False, mtrlFlag=False, v_process=None, processBar=None, writeFlag=True):
+    def __init__(self, filePath, flagList=[], v_process=None, processBar=None):
         self.encObj = SJISEncodingObject()
         self.errObj = ErrorLogObj()
         self.filePath = filePath
@@ -68,6 +68,15 @@ class SmfDecrypt:
             "SPEC",
             "BUMP"
         ]
+        frameFlag = flagList[0] if len(flagList) >= 4 else False
+        meshFlag = flagList[1] if len(flagList) >= 4 else False
+        xyzFlag = flagList[2] if len(flagList) >= 4 else False
+        mtrlFlag = flagList[3] if len(flagList) >= 4 else False
+
+        writeFlag = False
+        if frameFlag or meshFlag or xyzFlag or mtrlFlag:
+            writeFlag = True
+
         self.writeFlag = writeFlag
         self.printFRM = frameFlag
         self.printMESH = meshFlag
@@ -127,7 +136,9 @@ class SmfDecrypt:
         self.texList = set()
         self.lastParentIdx = 0
         self.popFrameByteArr = bytearray()
+        self.checkChunkName = ""
         self.error = ""
+        self.errorFlag = False
 
     def open(self):
         try:
@@ -138,6 +149,8 @@ class SmfDecrypt:
             return self.decrypt()
         except Exception:
             self.error = traceback.format_exc()
+            self.error += "\n"
+            self.error += textSetting.textList["smf"]["errorList"]["E3"].format(self.checkChunkName, self.index)
             return False
 
     def printError(self):
@@ -163,22 +176,30 @@ class SmfDecrypt:
         self.index = 0
 
         nameAndLength = self.getStructNameAndLength()
+        if nameAndLength[1] == -1:
+            return False
+
         if not self.readSMF(nameAndLength[1]):
             return False
+
         if self.processFlag:
             self.v_process.set(25)
             self.processBar.update()
 
         self.frameStartIdx = self.index
-        for frame in range(self.frameCount):
+        for frameNo in range(self.frameCount):
             nameAndLength = self.getStructNameAndLength()
+            if nameAndLength[1] == -1:
+                return False
+
             if self.printFRM:
                 self.writeInfo("="*20)
                 self.writeInfo("{0}, 0x{1:02x}".format(nameAndLength[0], nameAndLength[1]))
-            if not self.readFRM(frame, nameAndLength[1]):
+            if not self.readFRM(frameNo, nameAndLength[1]):
                 return False
+
             if self.processFlag:
-                self.v_process.set(25 + 25 * (frame / self.frameCount))
+                self.v_process.set(25 + 25 * (frameNo / self.frameCount))
                 self.processBar.update()
         if self.processFlag:
             self.v_process.set(50)
@@ -187,6 +208,9 @@ class SmfDecrypt:
         self.anisStartIdx = self.index
         for anis in range(self.animationSetCount):
             nameAndLength = self.getStructNameAndLength()
+            if nameAndLength[1] == -1:
+                return False
+
             if self.printFRM:
                 self.writeInfo("="*20)
                 self.writeInfo("{0}, 0x{1:02x}".format(nameAndLength[0], nameAndLength[1]))
@@ -195,12 +219,15 @@ class SmfDecrypt:
 
         self.meshStartIdx = self.index
         self.writeInfo("="*30)
-        for mesh in range(self.meshCount):
+        for meshNo in range(self.meshCount):
             nameAndLength = self.getStructNameAndLength()
+            if nameAndLength[1] == -1:
+                return False
+
             if self.printMESH:
                 self.writeInfo("="*20)
                 self.writeInfo("{0}, 0x{1:02x}".format(nameAndLength[0], nameAndLength[1]))
-            if not self.readMESH(mesh, nameAndLength[1], int(50 / self.meshCount)):
+            if not self.readMESH(meshNo, nameAndLength[1]):
                 return False
             if self.processFlag:
                 self.processBar.update()
@@ -212,19 +239,30 @@ class SmfDecrypt:
     def getStructNameAndLength(self):
         index = self.index
 
-        if index >= len(self.byteArr):
-            return ("SMF READ END!", 0)
-        nameAndLength = struct.unpack("<ll", self.byteArr[index:index+8])
-        nameChar4 = str(hex(nameAndLength[0]))[2:]
-        index += 4
-        index += 4
-        nameList = [int(nameChar4[x:x+2], 16) for x in range(0, len(nameChar4), 2)]
-        name = ""
-        for n in nameList:
-            name += chr(n)
-        structLen = nameAndLength[1]
-        self.index = index
-        return (name, structLen)
+        if index == len(self.byteArr):
+            return ("", 0)
+        elif index > len(self.byteArr):
+            self.checkChunkName = ""
+            self.error = textSetting.textList["smf"]["errorList"]["E1"]
+            return ("", -1)
+
+        try:
+            nameAndLength = struct.unpack("<ll", self.byteArr[index:index+8])
+            nameChar4 = str(hex(nameAndLength[0]))[2:]
+            index += 4
+            index += 4
+            nameList = [int(nameChar4[x:x+2], 16) for x in range(0, len(nameChar4), 2)]
+            name = ""
+            for n in nameList:
+                name += chr(n)
+            structLen = nameAndLength[1]
+            self.index = index
+            self.checkChunkName = name
+            return (name, structLen)
+        except Exception:
+            self.checkChunkName = ""
+            self.error = textSetting.textList["smf"]["errorList"]["E2"].format(self.index)
+            return ("", -1)
 
     def readSMF(self, length):
         index = self.index
@@ -249,15 +287,18 @@ class SmfDecrypt:
             self.index = index
             return True
         else:
+            realLength = index - self.index
+            self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, self.index, length, realLength)
             return False
 
-    def readFRM(self, frame, length):
+    def readFRM(self, frameNo, length):
         index = self.index
         startIndex = self.index
+        startName = self.checkChunkName
         frameObj = {}
 
         if self.printFRM:
-            self.writeInfo(textSetting.textList["smf"]["frameNumFormat"].format(frame, self.frameCount-1))
+            self.writeInfo(textSetting.textList["smf"]["frameNumFormat"].format(frameNo, self.frameCount-1))
             self.writeInfo(textSetting.textList["smf"]["frameMatrixLabel"])
 
         matrix = []
@@ -303,6 +344,10 @@ class SmfDecrypt:
         self.index = index
         if length > 0x88:
             obbNameAndLength = self.getStructNameAndLength()
+            if obbNameAndLength[1] == -1:
+                return False
+
+            subStartIdx = self.index
             index = self.index
             if self.printFRM and obbNameAndLength[0] in self.frameFormatList:
                 self.writeInfo("{0}, 0x{1:02x}".format(obbNameAndLength[0], obbNameAndLength[1]))
@@ -336,6 +381,13 @@ class SmfDecrypt:
             if self.printFRM:
                 self.writeInfo(textSetting.textList["smf"]["fLengthLabel"].format(fLength))
             obbInfo.append(fLength)
+
+            if subStartIdx + obbNameAndLength[1] != index:
+                subLength = obbNameAndLength[1]
+                subRealLength = index - subStartIdx
+                self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, subStartIdx, subLength, subRealLength)
+                return False
+
         frameObj["obbInfo"] = obbInfo
         self.frameList.append(frameObj)
 
@@ -343,11 +395,14 @@ class SmfDecrypt:
             self.index = index
             return True
         else:
+            realLength = index - startIndex
+            self.error = textSetting.textList["smf"]["errorList"]["E4"].format(startName, startIndex, length, realLength)
             return False
 
     def readANIS(self, anis, length):
         index = self.index
         startIndex = self.index
+        startName = self.checkChunkName
 
         if self.printFRM:
             self.writeInfo(textSetting.textList["smf"]["anisNumFormat"].format(anis, self.animationSetCount-1))
@@ -377,6 +432,8 @@ class SmfDecrypt:
         for ani in range(animationCount):
             self.index = index
             nextNameAndLength = self.getStructNameAndLength()
+            if nextNameAndLength[1] == -1:
+                return False
 
             index = self.index
             subStartIdx = self.index
@@ -431,25 +488,30 @@ class SmfDecrypt:
                 if self.printFRM:
                     self.writeInfo(keyTransLateList)
 
-            if subStartIdx + nextNameAndLength[1] == index:
-                self.index = index
-            else:
+            if subStartIdx + nextNameAndLength[1] != index:
+                subLength = nextNameAndLength[1]
+                subRealLength = index - subStartIdx
+                self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, subStartIdx, subLength, subRealLength)
                 return False
 
         if startIndex + length == index:
             self.index = index
             return True
         else:
+            realLength = index - startIndex
+            self.error = textSetting.textList["smf"]["errorList"]["E4"].format(startName, startIndex, length, realLength)
             return False
 
-    def readMESH(self, mesh, length, meshCountRatio):
+    def readMESH(self, meshNo, length):
         index = self.index
         startIndex = self.index
+        startName = self.checkChunkName
         subName = ""
+        meshCountRatio = int(50 / self.meshCount)
         self.meshInfo = {}
 
         if self.printMESH:
-            self.writeInfo(textSetting.textList["smf"]["meshNumFormat"].format(mesh, self.meshCount-1))
+            self.writeInfo(textSetting.textList["smf"]["meshNumFormat"].format(meshNo, self.meshCount-1))
 
         if self.printMESH:
             self.writeInfo(textSetting.textList["smf"]["meshName"], end=", ")
@@ -469,6 +531,9 @@ class SmfDecrypt:
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
+        if nextNameAndLength[1] == -1:
+            return False
+
         if self.printMESH and nextNameAndLength[0] in self.meshFormatList and subName != nextNameAndLength[0] and nextNameAndLength[1] != 0:
             self.writeInfo("{0}, 0x{1:02x}".format(nextNameAndLength[0], nextNameAndLength[1]))
         if nextNameAndLength[0] in self.meshFormatList:
@@ -511,7 +576,11 @@ class SmfDecrypt:
                 self.writeInfo()
 
             if self.index + nextNameAndLength[1] != index:
+                subLength = nextNameAndLength[1]
+                subRealLength = index - self.index
+                self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, self.index, subLength, subRealLength)
                 return False
+
         if self.processFlag:
             v_process += (meshCountRatio / len(self.meshFormatList))
             self.v_process.set(round(v_process))
@@ -519,6 +588,9 @@ class SmfDecrypt:
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
+        if nextNameAndLength[1] == -1:
+            return False
+
         if self.printMESH and nextNameAndLength[0] in self.meshFormatList and subName != nextNameAndLength[0] and nextNameAndLength[1] != 0:
             self.writeInfo("{0}, 0x{1:02x}".format(nextNameAndLength[0], nextNameAndLength[1]))
         if nextNameAndLength[0] in self.meshFormatList:
@@ -560,7 +632,11 @@ class SmfDecrypt:
                 boneList.append(boneObj)
 
             if self.index + nextNameAndLength[1] != index:
+                subLength = nextNameAndLength[1]
+                subRealLength = index - self.index
+                self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, self.index, subLength, subRealLength)
                 return False
+
         self.meshInfo["boneList"] = boneList
         if self.processFlag:
             v_process += (meshCountRatio / len(self.meshFormatList))
@@ -569,6 +645,9 @@ class SmfDecrypt:
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
+        if nextNameAndLength[1] == -1:
+            return False
+
         if self.printMESH and nextNameAndLength[0] in self.meshFormatList and subName != nextNameAndLength[0] and nextNameAndLength[1] != 0:
             self.writeInfo("{0}, 0x{1:02x}".format(nextNameAndLength[0], nextNameAndLength[1]))
         if nextNameAndLength[0] in self.meshFormatList:
@@ -606,7 +685,11 @@ class SmfDecrypt:
                 self.writeInfo()
 
             if self.index + nextNameAndLength[1] != index:
+                subLength = nextNameAndLength[1]
+                subRealLength = index - self.index
+                self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, self.index, subLength, subRealLength)
                 return False
+
         self.meshInfo["coordList"] = coordList
         self.meshInfo["colorInfoList"] = colorInfoList
         if self.processFlag:
@@ -616,6 +699,9 @@ class SmfDecrypt:
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
+        if nextNameAndLength[1] == -1:
+            return False
+
         if self.printMESH and nextNameAndLength[0] in self.meshFormatList and subName != nextNameAndLength[0] and nextNameAndLength[1] != 0:
             self.writeInfo("{0}, 0x{1:02x}".format(nextNameAndLength[0], nextNameAndLength[1]))
         if nextNameAndLength[0] in self.meshFormatList:
@@ -641,7 +727,11 @@ class SmfDecrypt:
                 self.writeInfo()
 
             if self.index + nextNameAndLength[1] != index:
+                subLength = nextNameAndLength[1]
+                subRealLength = index - self.index
+                self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, self.index, subLength, subRealLength)
                 return False
+
         self.meshInfo["normalList"] = vNInfo
         if self.processFlag:
             v_process += (meshCountRatio / len(self.meshFormatList))
@@ -650,6 +740,9 @@ class SmfDecrypt:
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
+        if nextNameAndLength[1] == -1:
+            return False
+
         if self.printMESH and nextNameAndLength[0] in self.meshFormatList and subName != nextNameAndLength[0] and nextNameAndLength[1] != 0:
             self.writeInfo("{0}, 0x{1:02x}".format(nextNameAndLength[0], nextNameAndLength[1]))
         if nextNameAndLength[0] in self.meshFormatList:
@@ -675,7 +768,11 @@ class SmfDecrypt:
                 self.writeInfo()
 
             if self.index + nextNameAndLength[1] != index:
+                subLength = nextNameAndLength[1]
+                subRealLength = index - self.index
+                self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, self.index, subLength, subRealLength)
                 return False
+
         if self.processFlag:
             v_process += (meshCountRatio / len(self.meshFormatList))
             self.v_process.set(round(v_process))
@@ -683,6 +780,9 @@ class SmfDecrypt:
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
+        if nextNameAndLength[1] == -1:
+            return False
+
         if self.printMESH and nextNameAndLength[0] in self.meshFormatList and subName != nextNameAndLength[0] and nextNameAndLength[1] != 0:
             self.writeInfo("{0}, 0x{1:02x}".format(nextNameAndLength[0], nextNameAndLength[1]))
         if nextNameAndLength[0] in self.meshFormatList:
@@ -712,7 +812,11 @@ class SmfDecrypt:
                 self.writeInfo()
 
             if self.index + nextNameAndLength[1] != index:
+                subLength = nextNameAndLength[1]
+                subRealLength = index - self.index
+                self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, self.index, subLength, subRealLength)
                 return False
+
         self.meshInfo["boneWeightList"] = vAInfo
         if self.processFlag:
             v_process += (meshCountRatio / len(self.meshFormatList))
@@ -721,6 +825,9 @@ class SmfDecrypt:
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
+        if nextNameAndLength[1] == -1:
+            return False
+
         if self.printMESH and nextNameAndLength[0] in self.meshFormatList and subName != nextNameAndLength[0] and nextNameAndLength[1] != 0:
             self.writeInfo("{0}, 0x{1:02x}".format(nextNameAndLength[0], nextNameAndLength[1]))
         if nextNameAndLength[0] in self.meshFormatList:
@@ -759,7 +866,11 @@ class SmfDecrypt:
                 self.writeInfo()
 
             if self.index + nextNameAndLength[1] != index:
+                subLength = nextNameAndLength[1]
+                subRealLength = index - self.index
+                self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, self.index, subLength, subRealLength)
                 return False
+
         self.meshInfo["uvList"] = vUVInfo
         if self.processFlag:
             v_process += (meshCountRatio / len(self.meshFormatList))
@@ -768,6 +879,9 @@ class SmfDecrypt:
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
+        if nextNameAndLength[1] == -1:
+            return False
+
         if self.printMESH and nextNameAndLength[0] in self.meshFormatList and subName != nextNameAndLength[0] and nextNameAndLength[1] != 0:
             self.writeInfo("{0}, 0x{1:02x}".format(nextNameAndLength[0], nextNameAndLength[1]))
         if nextNameAndLength[0] in self.meshFormatList:
@@ -794,7 +908,11 @@ class SmfDecrypt:
                 self.writeInfo()
 
             if self.index + nextNameAndLength[1] != index:
+                subLength = nextNameAndLength[1]
+                subRealLength = index - self.index
+                self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, self.index, subLength, subRealLength)
                 return False
+
         if len(idx2Info) > 0:
             coordIndexList.extend(idx2Info)
 
@@ -805,6 +923,9 @@ class SmfDecrypt:
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
+        if nextNameAndLength[1] == -1:
+            return False
+
         if self.printMESH and nextNameAndLength[0] in self.meshFormatList and subName != nextNameAndLength[0] and nextNameAndLength[1] != 0:
             self.writeInfo("{0}, 0x{1:02x}".format(nextNameAndLength[0], nextNameAndLength[1]))
         if nextNameAndLength[0] in self.meshFormatList:
@@ -829,7 +950,11 @@ class SmfDecrypt:
                 self.writeInfo()
 
             if self.index + nextNameAndLength[1] != index:
+                subLength = nextNameAndLength[1]
+                subRealLength = index - self.index
+                self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, self.index, subLength, subRealLength)
                 return False
+
         if len(idx4Info) > 0:
             coordIndexList.extend(idx4Info)
         self.meshInfo["coordIndexList"] = coordIndexList
@@ -842,13 +967,16 @@ class SmfDecrypt:
         for i in range(materialCount):
             self.index = index
             nextNameAndLength = self.getStructNameAndLength()
+            if nextNameAndLength[1] == -1:
+                return False
+
             if self.printMESH and nextNameAndLength[0] in self.meshFormatList and subName != nextNameAndLength[0] and nextNameAndLength[1] != 0:
                 self.writeInfo("{0}, 0x{1:02x}".format(nextNameAndLength[0], nextNameAndLength[1]))
             if nextNameAndLength[0] in self.meshFormatList:
                 subName = nextNameAndLength[0]
 
             if subName == "MTRL":
-                mtrlInfo = self.readMTRL(mesh, i, nextNameAndLength[1])
+                mtrlInfo = self.readMTRL(meshNo, i, nextNameAndLength[1])
                 if mtrlInfo is None:
                     return False
                 index = self.index
@@ -866,6 +994,9 @@ class SmfDecrypt:
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
+        if nextNameAndLength[1] == -1:
+            return False
+
         if self.printMESH and nextNameAndLength[0] in self.meshFormatList and subName != nextNameAndLength[0] and nextNameAndLength[1] != 0:
             self.writeInfo("{0}, 0x{1:02x}".format(nextNameAndLength[0], nextNameAndLength[1]))
         if nextNameAndLength[0] in self.meshFormatList:
@@ -900,7 +1031,11 @@ class SmfDecrypt:
                 cATInfo.append([colStart, colCount, colAttribute])
 
             if self.index + nextNameAndLength[1] != index:
+                subLength = nextNameAndLength[1]
+                subRealLength = index - self.index
+                self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, self.index, subLength, subRealLength)
                 return False
+
         if self.processFlag:
             v_process += (meshCountRatio / len(self.meshFormatList))
             self.v_process.set(round(v_process))
@@ -908,6 +1043,9 @@ class SmfDecrypt:
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
+        if nextNameAndLength[1] == -1:
+            return False
+
         if self.printMESH and nextNameAndLength[0] in self.meshFormatList and subName != nextNameAndLength[0] and nextNameAndLength[1] != 0:
             self.writeInfo("{0}, 0x{1:02x}".format(nextNameAndLength[0], nextNameAndLength[1]))
         if nextNameAndLength[0] in self.meshFormatList:
@@ -948,7 +1086,11 @@ class SmfDecrypt:
                 cFCInfo.append([colAttribute, indexList, planeList])
 
             if self.index + nextNameAndLength[1] != index:
+                subLength = nextNameAndLength[1]
+                subRealLength = index - self.index
+                self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, self.index, subLength, subRealLength)
                 return False
+
         if self.processFlag:
             v_process += (meshCountRatio / len(self.meshFormatList))
             self.v_process.set(round(v_process))
@@ -956,6 +1098,9 @@ class SmfDecrypt:
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
+        if nextNameAndLength[1] == -1:
+            return False
+
         if self.printMESH and nextNameAndLength[0] in self.meshFormatList and subName != nextNameAndLength[0] and nextNameAndLength[1] != 0:
             self.writeInfo("{0}, 0x{1:02x}".format(nextNameAndLength[0], nextNameAndLength[1]))
         if nextNameAndLength[0] in self.meshFormatList:
@@ -996,7 +1141,11 @@ class SmfDecrypt:
                 cVXInfo.append([vecList, colColor, vecList])
 
             if self.index + nextNameAndLength[1] != index:
+                subLength = nextNameAndLength[1]
+                subRealLength = index - self.index
+                self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, self.index, subLength, subRealLength)
                 return False
+
         if self.processFlag:
             v_process += (meshCountRatio / len(self.meshFormatList))
             self.v_process.set(round(v_process))
@@ -1007,16 +1156,19 @@ class SmfDecrypt:
             self.index = index
             return True
         else:
+            realLength = index - startIndex
+            self.error = textSetting.textList["smf"]["errorList"]["E4"].format(startName, startIndex, length, realLength)
             return False
 
-    def readMTRL(self, mesh, mtrl, length):
+    def readMTRL(self, meshNo, mtrlNo, length):
         index = self.index
         startIndex = self.index
+        startName = self.checkChunkName
         subName = ""
         mtrlInfo = {}
 
         if self.printMTRL:
-            self.writeInfo("MESH, MTRL:{0}-{1}".format(mesh, mtrl))
+            self.writeInfo("MESH, MTRL:{0}-{1}".format(meshNo, mtrlNo))
             self.writeInfo(textSetting.textList["smf"]["mtrlName"], end=", ")
         mName = struct.unpack("<64s", self.byteArr[index:index+self.MAX_NAME_SIZE])[0]
         mName = self.encObj.convertString(mName).rstrip("\x00")
@@ -1059,6 +1211,9 @@ class SmfDecrypt:
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
+        if nextNameAndLength[1] == -1:
+            return None
+
         if self.printMTRL and nextNameAndLength[0] in self.mtrlFormatList and subName != nextNameAndLength[0] and nextNameAndLength[1] != 0:
             self.writeInfo("{0}".format(nextNameAndLength[0]), end=", ")
         if nextNameAndLength[0] in self.mtrlFormatList:
@@ -1079,11 +1234,18 @@ class SmfDecrypt:
                 self.writeInfo(mName)
 
             if self.index + nextNameAndLength[1] != index:
-                return False
+                subLength = nextNameAndLength[1]
+                subRealLength = index - self.index
+                self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, self.index, subLength, subRealLength)
+                return None
+
         self.texList |= set(texcInfo)
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
+        if nextNameAndLength[1] == -1:
+            return None
+
         if self.printMTRL and nextNameAndLength[0] in self.mtrlFormatList and subName != nextNameAndLength[0] and nextNameAndLength[1] != 0:
             self.writeInfo("{0}".format(nextNameAndLength[0]), end=", ")
         if nextNameAndLength[0] in self.mtrlFormatList:
@@ -1104,11 +1266,18 @@ class SmfDecrypt:
                 self.writeInfo(mName)
 
             if self.index + nextNameAndLength[1] != index:
-                return False
+                subLength = nextNameAndLength[1]
+                subRealLength = index - self.index
+                self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, self.index, subLength, subRealLength)
+                return None
+
         self.texList |= set(texlInfo)
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
+        if nextNameAndLength[1] == -1:
+            return None
+
         if self.printMTRL and nextNameAndLength[0] in self.mtrlFormatList and subName != nextNameAndLength[0] and nextNameAndLength[1] != 0:
             self.writeInfo("{0}".format(nextNameAndLength[0]), end=", ")
         if nextNameAndLength[0] in self.mtrlFormatList:
@@ -1128,11 +1297,18 @@ class SmfDecrypt:
                 self.writeInfo(mName)
 
             if self.index + nextNameAndLength[1] != index:
-                return False
+                subLength = nextNameAndLength[1]
+                subRealLength = index - self.index
+                self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, self.index, subLength, subRealLength)
+                return None
+
         self.texList |= set(texeInfo)
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
+        if nextNameAndLength[1] == -1:
+            return None
+
         if self.printMTRL and nextNameAndLength[0] in self.mtrlFormatList and subName != nextNameAndLength[0] and nextNameAndLength[1] != 0:
             self.writeInfo("{0}".format(nextNameAndLength[0]), end=", ")
         if nextNameAndLength[0] in self.mtrlFormatList:
@@ -1152,11 +1328,18 @@ class SmfDecrypt:
                 self.writeInfo(mName)
 
             if self.index + nextNameAndLength[1] != index:
-                return False
+                subLength = nextNameAndLength[1]
+                subRealLength = index - self.index
+                self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, self.index, subLength, subRealLength)
+                return None
+
         self.texList |= set(texsInfo)
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
+        if nextNameAndLength[1] == -1:
+            return None
+
         if self.printMTRL and nextNameAndLength[0] in self.mtrlFormatList and subName != nextNameAndLength[0] and nextNameAndLength[1] != 0:
             self.writeInfo("{0}".format(nextNameAndLength[0]), end=", ")
         if nextNameAndLength[0] in self.mtrlFormatList:
@@ -1176,11 +1359,18 @@ class SmfDecrypt:
                 self.writeInfo(mName)
 
             if self.index + nextNameAndLength[1] != index:
-                return False
+                subLength = nextNameAndLength[1]
+                subRealLength = index - self.index
+                self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, self.index, subLength, subRealLength)
+                return None
+
         self.texList |= set(texnInfo)
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
+        if nextNameAndLength[1] == -1:
+            return None
+
         if self.printMTRL and nextNameAndLength[0] in self.mtrlFormatList and subName != nextNameAndLength[0] and nextNameAndLength[1] != 0:
             self.writeInfo("{0}".format(nextNameAndLength[0]), end=", ")
         if nextNameAndLength[0] in self.mtrlFormatList:
@@ -1199,10 +1389,16 @@ class SmfDecrypt:
                 self.writeInfo(long)
 
             if self.index + nextNameAndLength[1] != index:
-                return False
+                subLength = nextNameAndLength[1]
+                subRealLength = index - self.index
+                self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, self.index, subLength, subRealLength)
+                return None
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
+        if nextNameAndLength[1] == -1:
+            return None
+
         if self.printMTRL and nextNameAndLength[0] in self.mtrlFormatList and subName != nextNameAndLength[0] and nextNameAndLength[1] != 0:
             self.writeInfo("{0}".format(nextNameAndLength[0]), end=", ")
         if nextNameAndLength[0] in self.mtrlFormatList:
@@ -1221,10 +1417,16 @@ class SmfDecrypt:
                 self.writeInfo(long)
 
             if self.index + nextNameAndLength[1] != index:
-                return False
+                subLength = nextNameAndLength[1]
+                subRealLength = index - self.index
+                self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, self.index, subLength, subRealLength)
+                return None
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
+        if nextNameAndLength[1] == -1:
+            return None
+
         if self.printMTRL and nextNameAndLength[0] in self.mtrlFormatList and subName != nextNameAndLength[0] and nextNameAndLength[1] != 0:
             self.writeInfo("{0}".format(nextNameAndLength[0]), end=", ")
         if nextNameAndLength[0] in self.mtrlFormatList:
@@ -1243,10 +1445,16 @@ class SmfDecrypt:
                 self.writeInfo(long)
 
             if self.index + nextNameAndLength[1] != index:
-                return False
+                subLength = nextNameAndLength[1]
+                subRealLength = index - self.index
+                self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, self.index, subLength, subRealLength)
+                return None
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
+        if nextNameAndLength[1] == -1:
+            return None
+
         if self.printMTRL and nextNameAndLength[0] in self.mtrlFormatList and subName != nextNameAndLength[0] and nextNameAndLength[1] != 0:
             self.writeInfo("{0}".format(nextNameAndLength[0]), end=", ")
         if nextNameAndLength[0] in self.mtrlFormatList:
@@ -1265,10 +1473,16 @@ class SmfDecrypt:
                 self.writeInfo(long)
 
             if self.index + nextNameAndLength[1] != index:
-                return False
+                subLength = nextNameAndLength[1]
+                subRealLength = index - self.index
+                self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, self.index, subLength, subRealLength)
+                return None
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
+        if nextNameAndLength[1] == -1:
+            return None
+
         if self.printMTRL and nextNameAndLength[0] in self.mtrlFormatList and subName != nextNameAndLength[0] and nextNameAndLength[1] != 0:
             self.writeInfo("{0}".format(nextNameAndLength[0]), end=", ")
         if nextNameAndLength[0] in self.mtrlFormatList:
@@ -1287,10 +1501,16 @@ class SmfDecrypt:
                 self.writeInfo(long)
 
             if self.index + nextNameAndLength[1] != index:
-                return False
+                subLength = nextNameAndLength[1]
+                subRealLength = index - self.index
+                self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, self.index, subLength, subRealLength)
+                return None
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
+        if nextNameAndLength[1] == -1:
+            return None
+
         if self.printMTRL and nextNameAndLength[0] in self.mtrlFormatList and subName != nextNameAndLength[0] and nextNameAndLength[1] != 0:
             self.writeInfo("{0}".format(nextNameAndLength[0]), end=", ")
         if nextNameAndLength[0] in self.mtrlFormatList:
@@ -1309,10 +1529,16 @@ class SmfDecrypt:
                 self.writeInfo(long)
 
             if self.index + nextNameAndLength[1] != index:
-                return False
+                subLength = nextNameAndLength[1]
+                subRealLength = index - self.index
+                self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, self.index, subLength, subRealLength)
+                return None
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
+        if nextNameAndLength[1] == -1:
+            return None
+
         if self.printMTRL and nextNameAndLength[0] in self.mtrlFormatList and subName != nextNameAndLength[0] and nextNameAndLength[1] != 0:
             self.writeInfo("{0}".format(nextNameAndLength[0]), end=", ")
         if nextNameAndLength[0] in self.mtrlFormatList:
@@ -1331,10 +1557,16 @@ class SmfDecrypt:
                 self.writeInfo(long)
 
             if self.index + nextNameAndLength[1] != index:
-                return False
+                subLength = nextNameAndLength[1]
+                subRealLength = index - self.index
+                self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, self.index, subLength, subRealLength)
+                return None
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
+        if nextNameAndLength[1] == -1:
+            return None
+
         if self.printMTRL and nextNameAndLength[0] in self.mtrlFormatList and subName != nextNameAndLength[0] and nextNameAndLength[1] != 0:
             self.writeInfo("{0}".format(nextNameAndLength[0]), end=", ")
         if nextNameAndLength[0] in self.mtrlFormatList:
@@ -1359,10 +1591,16 @@ class SmfDecrypt:
                 self.writeInfo()
 
             if self.index + nextNameAndLength[1] != index:
-                return False
+                subLength = nextNameAndLength[1]
+                subRealLength = index - self.index
+                self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, self.index, subLength, subRealLength)
+                return None
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
+        if nextNameAndLength[1] == -1:
+            return None
+
         if self.printMTRL and nextNameAndLength[0] in self.mtrlFormatList and subName != nextNameAndLength[0] and nextNameAndLength[1] != 0:
             self.writeInfo("{0}".format(nextNameAndLength[0]), end=", ")
         if nextNameAndLength[0] in self.mtrlFormatList:
@@ -1387,10 +1625,16 @@ class SmfDecrypt:
                 self.writeInfo()
 
             if self.index + nextNameAndLength[1] != index:
-                return False
+                subLength = nextNameAndLength[1]
+                subRealLength = index - self.index
+                self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, self.index, subLength, subRealLength)
+                return None
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
+        if nextNameAndLength[1] == -1:
+            return None
+
         if self.printMTRL and nextNameAndLength[0] in self.mtrlFormatList and subName != nextNameAndLength[0] and nextNameAndLength[1] != 0:
             self.writeInfo("{0}".format(nextNameAndLength[0]), end=", ")
         if nextNameAndLength[0] in self.mtrlFormatList:
@@ -1429,10 +1673,16 @@ class SmfDecrypt:
             specList.append([vecList, fRefractive, fRoughly])
 
             if self.index + nextNameAndLength[1] != index:
-                return False
+                subLength = nextNameAndLength[1]
+                subRealLength = index - self.index
+                self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, self.index, subLength, subRealLength)
+                return None
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
+        if nextNameAndLength[1] == -1:
+            return None
+
         if self.printMTRL and nextNameAndLength[0] in self.mtrlFormatList and subName != nextNameAndLength[0] and nextNameAndLength[1] != 0:
             self.writeInfo("{0}".format(nextNameAndLength[0]), end=", ")
         if nextNameAndLength[0] in self.mtrlFormatList:
@@ -1451,9 +1701,14 @@ class SmfDecrypt:
                 self.writeInfo(fParallaxDepth)
 
             if self.index + nextNameAndLength[1] != index:
-                return False
+                subLength = nextNameAndLength[1]
+                subRealLength = index - self.index
+                self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, self.index, subLength, subRealLength)
+                return None
 
         if startIndex + length != index:
+            realLength = index - startIndex
+            self.error = textSetting.textList["smf"]["errorList"]["E4"].format(startName, startIndex, length, realLength)
             return None
         self.index = index
         return mtrlInfo
@@ -1472,11 +1727,14 @@ class SmfDecrypt:
 
     def getFrameByteArrByName(self, searchFrameName):
         self.index = self.frameStartIdx
-        for frame in range(self.frameCount):
+        for frameNo in range(self.frameCount):
             self.frameList = []
             startIdx = self.index
             nameAndLength = self.getStructNameAndLength()
-            if not self.readFRM(frame, nameAndLength[1]):
+            if nameAndLength[1] == -1:
+                return False
+
+            if not self.readFRM(frameNo, nameAndLength[1]):
                 return None
             frameInfo = self.frameList[0]
             frameName = frameInfo["name"]
@@ -1487,13 +1745,16 @@ class SmfDecrypt:
 
     def getTrackBaseMeshInfo(self):
         self.index = self.meshStartIdx
-        for mesh in range(self.meshCount):
+        for meshNo in range(self.meshCount):
             self.meshList = []
             startIdx = self.index
             nameAndLength = self.getStructNameAndLength()
-            if not self.readMESH(mesh, nameAndLength[1], int(50 / self.meshCount)):
+            if nameAndLength[1] == -1:
+                return False
+
+            if not self.readMESH(meshNo, nameAndLength[1]):
                 return None
-            if mesh == self.meshCount - 1:
+            if meshNo == self.meshCount - 1:
                 insertByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
                 return (insertByteArr, self.meshList[0]["mtrlList"])
         return None
@@ -1739,11 +2000,14 @@ class SmfDecrypt:
         if self.filename.upper() == "MUTRACK_LOW.SMF":
             newByteArr.extend(self.byteArr[0:self.frameStartIdx])
             self.index = self.frameStartIdx
-            for frame in range(self.frameCount):
+            for frameNo in range(self.frameCount):
                 self.frameList = []
                 startIdx = self.index
                 nameAndLength = self.getStructNameAndLength()
-                if not self.readFRM(frame, nameAndLength[1]):
+                if nameAndLength[1] == -1:
+                    return False
+
+                if not self.readFRM(frameNo, nameAndLength[1]):
                     return False
                 frameInfo = self.frameList[0]
                 frameName = frameInfo["name"]
@@ -1758,35 +2022,47 @@ class SmfDecrypt:
                 newByteArr.extend(insertByteArr)
 
             self.index = self.meshStartIdx
-            for d4Mesh in range(0, 4):
+            for d4MeshNo in range(0, 4):
                 startIdx = self.index
                 nameAndLength = self.getStructNameAndLength()
-                if not self.readMESH(d4Mesh, nameAndLength[1], int(50 / self.meshCount)):
+                if nameAndLength[1] == -1:
+                    return False
+
+                if not self.readMESH(d4MeshNo, nameAndLength[1]):
                     return False
                 insertByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
                 newByteArr.extend(insertByteArr)
 
             startIdx = self.index
             nameAndLength = self.getStructNameAndLength()
-            if not self.readMESH(4, nameAndLength[1], int(50 / self.meshCount)):
+            if nameAndLength[1] == -1:
+                return False
+
+            if not self.readMESH(4, nameAndLength[1]):
                 return False
             insertByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
             newByteArr.extend(self.adjustMuHuriko(insertByteArr))
 
             startIdx = self.index
             nameAndLength = self.getStructNameAndLength()
-            if not self.readMESH(5, nameAndLength[1], int(50 / self.meshCount)):
+            if nameAndLength[1] == -1:
+                return False
+
+            if not self.readMESH(5, nameAndLength[1]):
                 return False
             insertByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
             newByteArr.extend(self.adjustMuTrackbase(insertByteArr))
         else:
             newByteArr.extend(d4DecryptFile.byteArr[0:d4DecryptFile.frameStartIdx])
             d4DecryptFile.index = d4DecryptFile.frameStartIdx
-            for d4Frame in range(d4DecryptFile.frameCount):
+            for d4FrameNo in range(d4DecryptFile.frameCount):
                 d4DecryptFile.frameList = []
                 startIdx = d4DecryptFile.index
                 nameAndLength = d4DecryptFile.getStructNameAndLength()
-                if not d4DecryptFile.readFRM(d4Frame, nameAndLength[1]):
+                if nameAndLength[1] == -1:
+                    return False
+
+                if not d4DecryptFile.readFRM(d4FrameNo, nameAndLength[1]):
                     return False
                 frameInfo = d4DecryptFile.frameList[0]
                 frameName = frameInfo["name"]
@@ -1800,13 +2076,16 @@ class SmfDecrypt:
                 newByteArr.extend(insertByteArr)
 
             d4DecryptFile.index = d4DecryptFile.meshStartIdx
-            for d4Mesh in range(d4DecryptFile.meshCount):
+            for d4MeshNo in range(d4DecryptFile.meshCount):
                 d4StartIdx = d4DecryptFile.index
                 nameAndLength = d4DecryptFile.getStructNameAndLength()
-                if not d4DecryptFile.readMESH(d4Mesh, nameAndLength[1], int(50 / d4DecryptFile.meshCount)):
+                if nameAndLength[1] == -1:
+                    return False
+
+                if not d4DecryptFile.readMESH(d4MeshNo, nameAndLength[1]):
                     return False
                 insertByteArr = copy.deepcopy(d4DecryptFile.byteArr[d4StartIdx:d4DecryptFile.index])
-                if d4Mesh == d4DecryptFile.meshCount - 1:
+                if d4MeshNo == d4DecryptFile.meshCount - 1:
                     newByteArr.extend(self.createRSTrackbase(d4DecryptFile))
                 else:
                     newByteArr.extend(insertByteArr)
@@ -1839,14 +2118,17 @@ class SmfDecrypt:
             deleteMeshCount = 1
         deleteFrameCount = 1
         self.popFrameByteArr = bytearray()
-        for frame in range(self.frameCount):
+        for frameNo in range(self.frameCount):
             self.frameList = []
             startIdx = self.index
             nameAndLength = self.getStructNameAndLength()
-            if not self.readFRM(frame, nameAndLength[1]):
+            if nameAndLength[1] == -1:
+                return False
+
+            if not self.readFRM(frameNo, nameAndLength[1]):
                 return False
             frameInfo = self.frameList[0]
-            if frame == frameIdx:
+            if frameNo == frameIdx:
                 self.popFrameByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
                 continue
             insertByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
@@ -1855,7 +2137,7 @@ class SmfDecrypt:
                 meshNo -= deleteMeshCount
             parentNo = frameInfo["parentFrameNo"]
             if parentNo == parentIdx:
-                self.lastParentIdx = frame
+                self.lastParentIdx = frameNo
             if parentNo >= deleteFrameNo:
                 parentNo -= deleteFrameCount
             startIdx = 8
@@ -1882,12 +2164,15 @@ class SmfDecrypt:
             newByteArr[startIdx] = iN
             startIdx += 1
 
-        for mesh in range(self.meshCount):
+        for meshNo in range(self.meshCount):
             startIdx = self.index
             nameAndLength = self.getStructNameAndLength()
-            if not self.readMESH(mesh, nameAndLength[1], int(50 / self.meshCount)):
+            if nameAndLength[1] == -1:
                 return False
-            if mesh == deleteMeshNo and flag:
+
+            if not self.readMESH(meshNo, nameAndLength[1]):
+                return False
+            if meshNo == deleteMeshNo and flag:
                 continue
             insertByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
             newByteArr.extend(insertByteArr)
@@ -1903,11 +2188,14 @@ class SmfDecrypt:
 
         addFrameNo = self.frameCount + 1
         addFrameCount = 0
-        for frame in range(self.frameCount):
+        for frameNo in range(self.frameCount):
             self.frameList = []
             startIdx = self.index
             nameAndLength = self.getStructNameAndLength()
-            if not self.readFRM(frame, nameAndLength[1]):
+            if nameAndLength[1] == -1:
+                return False
+
+            if not self.readFRM(frameNo, nameAndLength[1]):
                 return False
             insertByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
             frameInfo = self.frameList[0]
@@ -1926,7 +2214,7 @@ class SmfDecrypt:
                 insertByteArr[startIdx] = iP
                 startIdx += 1
             newByteArr.extend(insertByteArr)
-            if frame == frameIdx:
+            if frameNo == frameIdx:
                 startIdx = 8
                 startIdx += (64 + 64)
                 meshNo = struct.unpack("<i", self.popFrameByteArr[startIdx:startIdx + 4])[0]
@@ -1955,10 +2243,13 @@ class SmfDecrypt:
             newByteArr[startIdx] = iN
             startIdx += 1
 
-        for mesh in range(self.meshCount):
+        for meshNo in range(self.meshCount):
             startIdx = self.index
             nameAndLength = self.getStructNameAndLength()
-            if not self.readMESH(mesh, nameAndLength[1], int(50 / self.meshCount)):
+            if nameAndLength[1] == -1:
+                return False
+
+            if not self.readMESH(meshNo, nameAndLength[1]):
                 return False
             insertByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
             newByteArr.extend(insertByteArr)
@@ -1974,11 +2265,14 @@ class SmfDecrypt:
 
         addFrameNo = self.frameCount + 1
         addFrameCount = 0
-        for frame in range(self.frameCount):
+        for frameNo in range(self.frameCount):
             self.frameList = []
             startIdx = self.index
             nameAndLength = self.getStructNameAndLength()
-            if not self.readFRM(frame, nameAndLength[1]):
+            if nameAndLength[1] == -1:
+                return False
+
+            if not self.readFRM(frameNo, nameAndLength[1]):
                 return False
             insertByteArr = copy.deepcopy(self.byteArr[startIdx:self.index])
             frameInfo = self.frameList[0]
@@ -1997,7 +2291,7 @@ class SmfDecrypt:
                 insertByteArr[startIdx] = iP
                 startIdx += 1
             newByteArr.extend(insertByteArr)
-            if frame == frameIdx:
+            if frameNo == frameIdx:
                 startIdx = 8
                 startIdx += (64 + 64)
                 meshNo = -1
@@ -2096,12 +2390,15 @@ class SmfDecrypt:
         self.index = self.frameStartIdx
 
         index = -1
-        for frame in range(self.frameCount):
+        for frameNo in range(self.frameCount):
             nameAndLength = self.getStructNameAndLength()
+            if nameAndLength[1] == -1:
+                return False
+
             index = self.index
-            if frame == frameIdx:
+            if frameNo == frameIdx:
                 break
-            if not self.readFRM(frame, nameAndLength[1]):
+            if not self.readFRM(frameNo, nameAndLength[1]):
                 return False
 
         rotInfo = varList[4:7]
@@ -2156,11 +2453,14 @@ class SmfDecrypt:
             deleteMeshByteArr.extend(newByteArr[:self.index])
             originMeshNo = self.frameList[frameIdx]["meshNo"]
             self.index = self.frameStartIdx
-            for frame in range(self.frameCount):
+            for frameNo in range(self.frameCount):
                 self.frameList = []
                 startIdx = self.index
                 nameAndLength = self.getStructNameAndLength()
-                if not self.readFRM(frame, nameAndLength[1]):
+                if nameAndLength[1] == -1:
+                    return False
+
+                if not self.readFRM(frameNo, nameAndLength[1]):
                     return False
                 frameInfo = self.frameList[0]
                 frameMeshNo = frameInfo["meshNo"]
@@ -2175,13 +2475,16 @@ class SmfDecrypt:
 
             meshStartIdx = -1
             meshEndIdx = -1
-            for mesh in range(self.meshCount):
+            for meshNo in range(self.meshCount):
                 meshStartIdx = self.index
                 nameAndLength = self.getStructNameAndLength()
-                if not self.readMESH(mesh, nameAndLength[1], int(50 / self.meshCount)):
+                if nameAndLength[1] == -1:
+                    return False
+
+                if not self.readMESH(meshNo, nameAndLength[1]):
                     return False
                 meshEndIdx = self.index
-                if mesh != originMeshNo:
+                if meshNo != originMeshNo:
                     deleteMeshByteArr.extend(newByteArr[meshStartIdx:meshEndIdx])
             deleteMeshByteArr.extend(newByteArr[meshEndIdx:])
 
@@ -2197,14 +2500,17 @@ class SmfDecrypt:
         w.close()
         return True
 
-    def turnModelMesh(self, meshNo):
+    def turnModelMesh(self, pMeshNo):
         self.index = self.meshStartIdx
         newByteArr = bytearray(self.byteArr)
-        for mesh in range(self.meshCount):
-            if mesh == meshNo:
+        for meshNo in range(self.meshCount):
+            if meshNo == pMeshNo:
                 break
             nameAndLength = self.getStructNameAndLength()
-            if not self.readMESH(mesh, nameAndLength[1], int(50 / self.meshCount)):
+            if nameAndLength[1] == -1:
+                return False
+
+            if not self.readMESH(meshNo, nameAndLength[1]):
                 return False
 
         # V_CP
@@ -2214,6 +2520,9 @@ class SmfDecrypt:
         self.index = searchIdx
 
         nextNameAndLength = self.getStructNameAndLength()
+        if nextNameAndLength[1] == -1:
+            return False
+
         count = nextNameAndLength[1] // 16
         index = self.index
         for i in range(count):
@@ -2239,6 +2548,9 @@ class SmfDecrypt:
         self.index = searchIdx
 
         nextNameAndLength = self.getStructNameAndLength()
+        if nextNameAndLength[1] == -1:
+            return False
+
         count = nextNameAndLength[1] // 12
         index = self.index
         for i in range(count):
@@ -2261,17 +2573,20 @@ class SmfDecrypt:
         w.close()
         return True
 
-    def saveSwapMesh(self, meshNo, swapMeshByteArr):
+    def saveSwapMesh(self, pMeshNo, swapMeshByteArr):
         self.index = self.meshStartIdx
         meshStartIdx = -1
         meshEndIdx = -1
-        for mesh in range(self.meshCount):
-            if mesh == meshNo:
+        for meshNo in range(self.meshCount):
+            if meshNo == pMeshNo:
                 meshStartIdx = self.index
             nameAndLength = self.getStructNameAndLength()
-            if not self.readMESH(mesh, nameAndLength[1], int(50 / self.meshCount)):
+            if nameAndLength[1] == -1:
                 return False
-            if mesh == meshNo:
+
+            if not self.readMESH(meshNo, nameAndLength[1]):
+                return False
+            if meshNo == pMeshNo:
                 meshEndIdx = self.index
                 break
         if meshStartIdx == -1 or meshEndIdx == -1:
@@ -2308,17 +2623,20 @@ class SmfDecrypt:
         boxSize = [(maxX - minX), (maxY - minY), (maxZ - minZ)]
         return [center, boxSize]
 
-    def saveSwapFbxMesh(self, meshNo, meshObj, vertexFlag):
+    def saveSwapFbxMesh(self, pMeshNo, meshObj, vertexFlag):
         self.index = self.meshStartIdx
         meshStartIdx = -1
         meshEndIdx = -1
-        for mesh in range(self.meshCount):
-            if mesh == meshNo:
+        for meshNo in range(self.meshCount):
+            if meshNo == pMeshNo:
                 meshStartIdx = self.index
             nameAndLength = self.getStructNameAndLength()
-            if not self.readMESH(mesh, nameAndLength[1], int(50 / self.meshCount)):
+            if nameAndLength[1] == -1:
                 return False
-            if mesh == meshNo:
+
+            if not self.readMESH(meshNo, nameAndLength[1]):
+                return False
+            if meshNo == pMeshNo:
                 meshEndIdx = self.index
                 break
         if meshStartIdx == -1 or meshEndIdx == -1:
@@ -2477,17 +2795,20 @@ class SmfDecrypt:
         w.close()
         return True
 
-    def modifyMaterial(self, meshNo, mtrlList):
+    def modifyMaterial(self, pMeshNo, mtrlList):
         self.index = self.meshStartIdx
         meshStartIdx = -1
         meshEndIdx = -1
-        for mesh in range(self.meshCount):
-            if mesh == meshNo:
+        for meshNo in range(self.meshCount):
+            if meshNo == pMeshNo:
                 meshStartIdx = self.index
             nameAndLength = self.getStructNameAndLength()
-            if not self.readMESH(mesh, nameAndLength[1], int(50 / self.meshCount)):
+            if nameAndLength[1] == -1:
                 return False
-            if mesh == meshNo:
+
+            if not self.readMESH(meshNo, nameAndLength[1]):
+                return False
+            if meshNo == pMeshNo:
                 meshEndIdx = self.index
                 break
         if meshStartIdx == -1 or meshEndIdx == -1:

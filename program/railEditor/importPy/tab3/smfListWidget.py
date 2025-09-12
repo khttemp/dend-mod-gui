@@ -390,6 +390,9 @@ class SmfListWidget:
                         kasenName = self.decryptFile.smfList[kasenNo][0]
                         railMdlSet.add(kasenName)
             else:
+                flag = rail[13]
+                if flag & 128 > 0:
+                    continue
                 mdlNo = rail[6]
                 if len(self.decryptFile.smfList) > mdlNo:
                     mdlName = self.decryptFile.smfList[mdlNo][0]

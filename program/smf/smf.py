@@ -76,7 +76,8 @@ def openFile(frameCheck, meshCheck, xyzCheck, mtrlCheck):
             mtrlFlag = False
             if mtrlCheck == 1:
                 mtrlFlag = True
-            decryptFile = SmfDecrypt(file_path, frameFlag, meshFlag, xyzFlag, mtrlFlag, v_process, processBar)
+            flagList = [frameFlag, meshFlag, xyzFlag, mtrlFlag]
+            decryptFile = SmfDecrypt(file_path, flagList, v_process, processBar)
             if not decryptFile.open():
                 decryptFile.printError()
                 mb.showerror(title=textSetting.textList["error"], message=errorMsg)
@@ -91,8 +92,10 @@ def openFile(frameCheck, meshCheck, xyzCheck, mtrlCheck):
 def deleteWidget():
     global processBar
     global scriptLf
-    global swapFrameButton
+    global copyAndPasteFrameButton
     global deleteFrameButton
+    global editInfoFrameButton
+    global swapFrameButton
 
     children = processBar.winfo_children()
     for child in children:
@@ -103,8 +106,10 @@ def deleteWidget():
         child.destroy()
 
     btnList = [
-        swapFrameButton,
-        deleteFrameButton
+        copyAndPasteFrameButton,
+        deleteFrameButton,
+        editInfoFrameButton,
+        swapFrameButton
     ]
     for btn in btnList:
         btn["state"] = "disabled"
@@ -206,7 +211,7 @@ def createStandardGaugeButton():
                     msg = textSetting.textList["infoList"]["I107"]
                     mb.showerror(title=textSetting.textList["error"], message=msg)
                     return
-                d4DecryptFile = SmfDecrypt(file_path, False, False, False, False, v_process, processBar, False)
+                d4DecryptFile = SmfDecrypt(file_path, [], v_process, processBar)
                 if not d4DecryptFile.open():
                     d4DecryptFile.printError()
                     mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E74"])
@@ -365,7 +370,7 @@ def swapModelMesh():
     if file_path:
         ext = os.path.splitext(os.path.basename(file_path))[1].lower()
         if ext == ".smf":
-            swapDecryptFile = SmfDecrypt(file_path, False, False, False, False, v_process, processBar, False)
+            swapDecryptFile = SmfDecrypt(file_path, [], v_process, processBar)
             if not swapDecryptFile.open():
                 swapDecryptFile.printError()
                 mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E74"])
@@ -552,7 +557,7 @@ def scanSmfImage():
             v_modelCount.set(modelCountFormat.format(idx + 1, len(fileList)))
             root.update()
 
-            decryptFile = SmfDecrypt(file, writeFlag=False)
+            decryptFile = SmfDecrypt(file)
             if not decryptFile.open():
                 decryptFile.printError()
                 mb.showerror(title=textSetting.textList["error"], message=errorMsg)

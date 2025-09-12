@@ -342,7 +342,7 @@ def readSMF():
     file_path = fd.askopenfilename(filetypes=[(textSetting.textList["smf"]["fileType"], "*.SMF")])
     if file_path:
         errorMsg = textSetting.textList["errorList"]["E19"]
-        smfDecryptFile = SmfDecrypt(file_path, writeFlag=False)
+        smfDecryptFile = SmfDecrypt(file_path)
         if not smfDecryptFile.open():
             smfDecryptFile.printError()
             mb.showerror(title=textSetting.textList["error"], message=errorMsg)
