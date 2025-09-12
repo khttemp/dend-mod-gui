@@ -2,4 +2,4 @@ requests
 UnityPy==1.9.28
 openpyxl
 pymem
-pyinstaller==5.9.0
+pyinstaller==6.10.0
