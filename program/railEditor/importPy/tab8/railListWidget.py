@@ -1064,29 +1064,6 @@ class RailListWidget:
             return
 
     def saveRevRailCsv(self):
-        allRailOriginNextList = {}
-        allRailOriginPrevList = {}
-        for railInfo in self.railList:
-            nextRailInfo = []
-            prevRailInfo = []
-            rail_data = railInfo[14]
-            for i in range(rail_data):
-                for j in range(4):
-                    if j % 4 == 0:
-                        nextRail = railInfo[15 + 4 * i + j]
-                        nextRailNo = railInfo[15 + 4 * i + j + 1]
-                        if nextRailNo == -1:
-                            nextRail = -1
-                        nextRailInfo.append([nextRail, nextRailNo])
-                    elif j % 4 == 2:
-                        prevRail = railInfo[15 + 4 * i + j]
-                        prevRailNo = railInfo[15 + 4 * i + j + 1]
-                        if prevRailNo == -1:
-                            prevRail = -1
-                        prevRailInfo.append([prevRail, prevRailNo])
-            allRailOriginNextList[railInfo[0]] = nextRailInfo
-            allRailOriginPrevList[railInfo[0]] = prevRailInfo
-
         allModelRailCount = {railInfo[0]: railInfo[14] for railInfo in self.railList}
         allModelRailLen = {i: self.decryptFile.smfList[i][3] for i in range(len(self.decryptFile.smfList))}
 
