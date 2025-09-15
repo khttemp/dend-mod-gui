@@ -2,10 +2,12 @@ import os
 import copy
 
 import tkinter
+import traceback
 from tkinter import messagebox as mb
 from tkinter import filedialog as fd
 import program.textSetting as textSetting
 import program.appearance.ttkCustomWidget as ttkCustomWidget
+from program.errorLogClass import ErrorLogObj
 
 
 class RailListWidget:
@@ -16,6 +18,7 @@ class RailListWidget:
         self.railList = railList
         self.varRailList = []
         self.varRevRailList = []
+        self.errObj = ErrorLogObj()
         self.reloadFunc = reloadFunc
 
         if self.decryptFile.game in ["CS", "RS"]:
@@ -535,7 +538,7 @@ class RailListWidget:
             self.v_z.set(railInfo[5])
             self.mdlNoCb.current(railInfo[6])
             kasenNo = railInfo[7]
-            if kasenNo == -1:
+            if kasenNo == -1 or kasenNo == -2:
                 kasenNo = len(self.smfList) + kasenNo
             self.mdlKasenCb.current(kasenNo)
 
@@ -1091,6 +1094,7 @@ class RailListWidget:
         file_path = fd.asksaveasfilename(initialfile=filename, defaultextension="csv", filetypes=[(textSetting.textList["railEditor"]["railCsvFileType"], "*.csv")])
         newRailList = []
         errorMsg = textSetting.textList["errorList"]["E7"]
+        currentRailNo = -1
         if file_path:
             try:
                 directory = os.path.dirname(file_path)
@@ -1104,6 +1108,7 @@ class RailListWidget:
                 w.write("rail_data,")
                 w.write("next_rail,next_no,prev_rail,prev_no,\n")
                 for railInfo in self.railList:
+                    currentRailNo = railInfo[0]
                     newRailInfo = railInfo[1:]
                     w.write("{0},{1},{2},".format(railInfo[0], railInfo[1], railInfo[2]))
                     for i in range(3):
@@ -1120,73 +1125,43 @@ class RailListWidget:
                     for i in range(rail_data):
                         originRailInfo = []
                         for j in range(4):
+                            # next_rail, prev_rail
                             if j % 2 == 0:
                                 if railInfo[15 + 4 * i + j + 1] == -1:
-                                    originRailInfo.append(-1)
+                                    originRailInfo.append([-1, -1])
                                 else:
-                                    originRailInfo.append(railInfo[15 + 4 * i + j])
+                                    originRailInfo.append([railInfo[15 + 4 * i + j], railInfo[15 + 4 * i + j + 1]])
                             w.write("{0},".format(railInfo[15 + 4 * i + j]))
                         originRailList.append(originRailInfo)
 
-                    revRailList = []
                     originRailList.reverse()
-                    for railIndex, originRailInfo in enumerate(originRailList):
-                        originRailInfo.reverse()
-                        for i in range(len(originRailInfo)):
-                            w.write("{0},".format(originRailInfo[i]))
-                            revRailList.append(originRailInfo[i])
-                            newRailInfo.append(originRailInfo[i])
-
+                    for originRailNextPrevInfo in originRailList:
+                        originRailNextPrevInfo.reverse()
+                        for i in range(len(originRailNextPrevInfo)):
+                            originRailNoInfo = originRailNextPrevInfo[i]
+                            w.write("{0},".format(originRailNoInfo[0]))
+                            newRailInfo.append(originRailNoInfo[0])
+                            if originRailNoInfo[0] == -1:
+                                w.write("{0},".format(-1))
+                                newRailInfo.append(-1)
+                                continue
+                            # next_no rev (origin_prev_no)
                             if i == 0:
-                                if originRailInfo[i] == -1:
-                                    w.write("{0},".format(-1))
-                                    newRailInfo.append(-1)
-                                    continue
-
-                                if allModelRailCount[railInfo[0]] < allModelRailCount[originRailInfo[i]]:
-                                    originNextRailList = allRailOriginNextList[originRailInfo[i]]
-                                    revNextNo = 0
-                                    for index, originNextRailInfo in enumerate(originNextRailList):
-                                        if originNextRailInfo[0] == railInfo[0]:
-                                            railCount = allModelRailCount[originRailInfo[i]]
-                                            revNextNo = (railCount - 1 - index)
-
-                                    if allModelRailCount[originRailInfo[i]] > 1:
-                                        revNextNo += (revRailList.count(originRailInfo[i]) - 1)
-                                    revNextNo *= 100
-                                    w.write("{0},".format(revNextNo))
-                                    newRailInfo.append(revNextNo)
-                                else:
-                                    revNextNo = (revRailList.count(originRailInfo[i]) - 1) * 100
-                                    w.write("{0},".format(revNextNo))
-                                    newRailInfo.append(revNextNo)
+                                prevRailMaxHorizonNum = (allModelRailCount[originRailNoInfo[0]] - 1) * 100
+                                prevRailHorizonNum = (originRailNoInfo[1] // 100) * 100
+                                nextRevRailHorizonNum = prevRailMaxHorizonNum - prevRailHorizonNum
+                                w.write("{0},".format(nextRevRailHorizonNum))
+                                newRailInfo.append(nextRevRailHorizonNum)
+                            # prev_no rev (origin_next_no)
                             else:
-                                if originRailInfo[i] == -1:
-                                    w.write("{0},".format(-1))
-                                    revRailList.append(-1)
-                                    newRailInfo.append(-1)
-                                    continue
-
-                                mdlNo = self.railList[originRailInfo[i]][6]
+                                nextRailMaxHorizonNum = (allModelRailCount[originRailNoInfo[0]] - 1) * 100
+                                nextRailHorizonNum = (originRailNoInfo[1] // 100) * 100
+                                prevRevRailHorizonNum = nextRailMaxHorizonNum - nextRailHorizonNum
+                                mdlNo = self.railList[originRailNoInfo[0]][6]
                                 railLen = allModelRailLen[mdlNo]
-                                if allModelRailCount[railInfo[0]] < allModelRailCount[originRailInfo[i]]:
-                                    originPrevRailList = allRailOriginPrevList[originRailInfo[i]]
-                                    revPrevNo = 0
-                                    for index, originPrevRailInfo in enumerate(originPrevRailList):
-                                        if originPrevRailInfo[0] == railInfo[0]:
-                                            railCount = allModelRailCount[originRailInfo[i]]
-                                            revPrevNo = (railCount - 1 - index)
-
-                                    if allModelRailCount[originRailInfo[i]] > 1:
-                                        revPrevNo += (revRailList.count(originRailInfo[i]) - 1)
-                                    revPrevNo *= 100
-                                    revPrevNo += (railLen - 1)
-                                    w.write("{0},".format(revPrevNo))
-                                    newRailInfo.append(revPrevNo)
-                                else:
-                                    revPrevNo = (revRailList.count(originRailInfo[i]) - 1) * 100 + railLen - 1
-                                    w.write("{0},".format(revPrevNo))
-                                    newRailInfo.append(revPrevNo)
+                                prevRevRailHorizonNum += (railLen - 1)
+                                w.write("{0},".format(prevRevRailHorizonNum))
+                                newRailInfo.append(prevRevRailHorizonNum)
                     newRailList.append(newRailInfo)
                     w.write("\n")
                 w.close()
@@ -1203,6 +1178,11 @@ class RailListWidget:
                 self.reloadFunc()
 
             except Exception:
+                error = traceback.format_exc()
+                error += "\n"
+                error += textSetting.textList["errorList"]["E128"].format(currentRailNo)
+                error += "{0}".format(self.railList[currentRailNo][15:])
+                self.errObj.write(error)
                 mb.showerror(title=textSetting.textList["error"], message=errorMsg)
 
     def csToRs(self):
