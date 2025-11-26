@@ -12,6 +12,7 @@ from fbx import FbxColor
 from fbx import FbxLayerElementNormal
 from fbx import FbxSkin
 from fbx import FbxCluster
+from fbx import FbxMatrix
 from fbx import FbxAMatrix
 from fbx import FbxSurfacePhong
 from fbx import FbxFileTexture
@@ -22,6 +23,7 @@ from fbx import EFbxRotationOrder
 from fbx import FbxDouble3
 from fbx import FbxVector2
 from fbx import FbxVector4
+from fbx import FbxQuaternion
 from fbx import FbxLayerElement
 from program.errorLogClass import ErrorLogObj
 
@@ -231,19 +233,34 @@ class FbxObject():
                 for boneIdx in range(len(meshObj["boneList"])):
                     cluster = FbxCluster.Create(self.manager, "")
                     cluster.SetLink(self.skeletonNodeList[boneIdx])
-                    cluster.SetLinkMode(FbxCluster.ELinkMode.eTotalOne)
-                    transformMatrix = FbxAMatrix()
-                    cluster.SetTransformMatrix(transformMatrix)
-                    cluster.SetTransformLinkMatrix(self.skeletonNodeList[boneIdx].EvaluateGlobalTransform())
+                    cluster.SetLinkMode(FbxCluster.ELinkMode.eNormalize)
+
+                    meshMatrix = self.scene.GetAnimationEvaluator().GetNodeGlobalTransform(meshNode)
+                    boneMatrix = self.scene.GetAnimationEvaluator().GetNodeGlobalTransform(self.skeletonNodeList[boneIdx])
+                    cluster.SetTransformMatrix(meshMatrix)
+                    boneMatrix.SetT(boneMatrix.GetT() + meshMatrix.GetT())
+                    cluster.SetTransformLinkMatrix(boneMatrix)
                     skin.AddCluster(cluster)
                     clusterList.append(cluster)
 
                 for vertexIndex, boneWeightInfo in enumerate(meshObj["boneWeightList"]):
-                    if boneWeightInfo[0] >= 0.5:
-                        cluster = clusterList[boneWeightInfo[1][0]]
-                    else:
-                        cluster = clusterList[boneWeightInfo[1][1]]
-                    cluster.AddControlPointIndex(vertexIndex, boneWeightInfo[0])
+                    weight = boneWeightInfo[0]
+                    cluster1 = clusterList[boneWeightInfo[1][0]]
+                    cluster1.AddControlPointIndex(vertexIndex, weight)
+                    cluster2 = clusterList[boneWeightInfo[1][1]]
+                    cluster2.AddControlPointIndex(vertexIndex, 1.0 - weight)
+
+    def getListToFbxAMatrix(self, matrixList):
+        matrix = FbxMatrix()
+        for i in range(4):
+            matrix.SetRow(i, FbxVector4(matrixList[i][0], matrixList[i][1], matrixList[i][2], matrixList[i][3]))
+        trans = FbxVector4()
+        rot = FbxQuaternion()
+        scale = FbxVector4()
+        matrix.GetElements(trans, rot, FbxVector4(), scale)
+        aMatrix = FbxAMatrix()
+        aMatrix.SetTQS(trans, rot, scale)
+        return aMatrix
 
     def exportFbx(self):
         dirname = os.path.splitext(self.filePath)[0]

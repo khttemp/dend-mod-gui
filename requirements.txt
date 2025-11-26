@@ -1,6 +1,6 @@
 requests
 etcpak==0.9.8
-UnityPy==1.9.28
+UnityPy==1.8.20
 openpyxl
 pymem
 pyinstaller==6.5.0

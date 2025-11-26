@@ -4215,6 +4215,7 @@ class ExcelWidget:
                     row += 1
             except Exception:
                 self.error = textSetting.textList["errorList"]["E101"].format(tabList[7], row)
+                self.error += traceback.format_exc()
                 return False
 
             if dupNum != -1:
