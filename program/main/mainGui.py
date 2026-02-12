@@ -1,0 +1,291 @@
+import os
+import sys
+from functools import partial
+
+import program.main.mainProcess as mainProcess
+import program.sub.textSetting as textSetting
+import program.sub.errorLogClass as errorLogClass
+
+import program.comicscript.comicscript as comicscriptProgram
+import program.mdlBin.mdlBin as mdlBinProgram
+import program.mdlinfo.mdlinfo as mdlinfoProgram
+import program.orgInfoEditor.orgInfoEditor as orgInfoEditorProgram
+import program.musicEditor.musicEditor as musicEditorProgram
+import program.fvtMaker.fvtMaker as fvtMakerProgram
+import program.railEditor.railEditor as railEditorProgram
+import program.smf.smf as smfProgram
+import program.ssUnity.ssUnity as ssUnityProgram
+import program.rsRail.rsRail as rsRailProgram
+import program.appearance.rootFrameWidget as rootFrameWidget
+
+import configparser
+import platform
+import ctypes
+import traceback
+import tkinter
+from tkinter import ttk
+from tkinter import messagebox as mb
+
+errObj = errorLogClass.ErrorLogObj()
+
+
+class MainWindow(tkinter.Frame):
+    def __init__(self, master, importDict):
+        super().__init__(master)
+        self.root = master
+        self.rootFrameAppearance = None
+        self.darkModeDllPath = None
+        self.darkModeDll = None
+        self.importDict = importDict
+
+        self.selectedProgram = None
+        self.version = mainProcess.getUpdateVer(self.importDict["rootPath"])
+
+        self.checkConfig()
+        self.drawMenu()
+
+        self.readRootFrameAppearance()
+        self.maxMenubarLen = self.menubar.index(tkinter.END)
+
+        self.root.after(100, mainProcess.confirmUpdate, self.version, self.importDict["configPath"])
+
+    def checkConfig(self):
+        configPath = self.importDict["configPath"]
+        if not os.path.exists(configPath):
+            mainProcess.writeDefaultConfig(configPath)
+
+    def drawMenu(self):
+        self.root.title(textSetting.textList["app"]["title"].format(self.version))
+        self.root.option_add("*font", textSetting.textList["defaultFont"])
+        self.root.geometry("1024x768")
+
+        self.style = ttk.Style(self.root)
+        self.style.configure(".", font=textSetting.textList["defaultFont"])
+
+        self.menubar = tkinter.Menu(self.root)
+
+        self.v_prog = tkinter.IntVar()
+
+        progmenu = tkinter.Menu(self.menubar, tearoff=False)
+        progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["SSUnity"], value=-1, variable=self.v_prog, command=partial(self.callProgram, "SSUnity"))
+        progmenu.add_separator()
+        progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["orgInfoEditor"], value=1, variable=self.v_prog, command=partial(self.callProgram, "orgInfoEditor"))
+        progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["mdlBin"], value=2, variable=self.v_prog, command=partial(self.callProgram, "mdlBin"))
+        progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["mdlinfo"], value=3, variable=self.v_prog, command=partial(self.callProgram, "mdlinfo"))
+        progmenu.add_separator()
+        progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["comicscript"], value=4, variable=self.v_prog, command=partial(self.callProgram, "comicscript"))
+        progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["musicEditor"], value=5, variable=self.v_prog, command=partial(self.callProgram, "musicEditor"))
+        progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["fvtMaker"], value=6, variable=self.v_prog, command=partial(self.callProgram, "fvtMaker"))
+        progmenu.add_separator()
+        progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["railEditor"], value=7, variable=self.v_prog, command=partial(self.callProgram, "railEditor"))
+        progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["rsRail"], value=8, variable=self.v_prog, command=partial(self.callProgram, "rsRail"))
+        progmenu.add_separator()
+        progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["smf"], value=9, variable=self.v_prog, command=partial(self.callProgram, "smf"))
+        progmenu.add_separator()
+        progmenu.add_command(label=textSetting.textList["menu"]["appearance"]["rootFrame"], command=self.editRootFrameAppearance)
+        progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["exit"], value=-2, variable=self.v_prog, command=sys.exit)
+
+        filemenu = tkinter.Menu(self.menubar, tearoff=False)
+        filemenu.add_command(label=textSetting.textList["menu"]["file"]["loadFile"], command=self.loadFile)
+
+        self.menubar.add_cascade(label=textSetting.textList["menu"]["program"]["name"], menu=progmenu)
+        self.menubar.add_cascade(label=textSetting.textList["menu"]["file"]["name"], menu=filemenu)
+
+        self.root.config(menu=self.menubar)
+
+    def delete_OptionMenu(self):
+        pass
+
+    def add_comicscriptOptionMenu(self):
+        pass
+
+    def add_smfWriteOptionMenu(self):
+        pass
+
+    def add_xlsxWriteOptionMenu(self):
+        pass
+
+    def checkUpdate(self):
+        configPath = self.importDict["configPath"]
+        mainProcess.confirmUpdate(self.version, configPath)
+
+    def clearRootFrame(self):
+        children = self.root.winfo_children()
+        for idx, child in enumerate(children):
+            # MainWindow, menu
+            if idx <= 1:
+                continue
+            child.destroy()
+
+    def readRootFrameAppearance(self):
+        configPath = self.importDict["configPath"]
+        mainProcess.configCheckOption(configPath, "ROOT_FRAME", "bg_color", "SystemButtonFace")
+        mainProcess.configCheckOption(configPath, "ROOT_FRAME", "dark_mode")
+        mainProcess.configCheckOption(configPath, "ROOT_FRAME", "theme", "vista")
+        mainProcess.configCheckOption(configPath, "LABEL", "fg_color", "SystemWindowText")
+        mainProcess.configCheckOption(configPath, "LABELFRAME_LABEL", "fg_color", "SystemWindowText")
+        mainProcess.configCheckOption(configPath, "RADIO", "fg_color", "SystemWindowText")
+        mainProcess.configCheckOption(configPath, "TREEVIEW", "bg_color", "SystemWindow")
+        mainProcess.configCheckOption(configPath, "TREEVIEW", "fg_color", "SystemWindowText")
+        mainProcess.configCheckOption(configPath, "TREEVIEW", "sel_bg_color", "SystemHighlight")
+        mainProcess.configCheckOption(configPath, "TREEVIEW", "sel_fg_color", "SystemWindow")
+        mainProcess.configCheckOption(configPath, "BUTTON", "fg_color", "SystemWindowText")
+        mainProcess.configCheckOption(configPath, "ENTRY", "fg_color", "SystemWindowText")
+        mainProcess.configCheckOption(configPath, "TREEVIEW", "field_bg_color", "SystemWindow")
+        mainProcess.configCheckOption(configPath, "TREEVIEW_HEADER", "bg_color", "SystemButtonFace")
+        mainProcess.configCheckOption(configPath, "TREEVIEW_HEADER", "fg_color", "SystemWindowText")
+        mainProcess.configCheckOption(configPath, "COMBOBOX", "bg_color", "SystemWindow")
+        mainProcess.configCheckOption(configPath, "COMBOBOX", "fg_color", "SystemWindowText")
+        mainProcess.configCheckOption(configPath, "COMBOBOX", "sel_bg_color", "SystemHighlight")
+        mainProcess.configCheckOption(configPath, "COMBOBOX", "sel_fg_color", "SystemWindow")
+        mainProcess.configCheckOption(configPath, "RADIO", "indicator_color", "SystemWindow")
+        mainProcess.configCheckOption(configPath, "RADIO", "sel_indicator_color", "SystemWindowText")
+
+        configRead = configparser.ConfigParser()
+        configRead.read(configPath, encoding="utf-8")
+        rootDarkModeFlag = int(configRead.get("ROOT_FRAME", "dark_mode")) > 0
+        rootFrameBackgroundColor = configRead.get("ROOT_FRAME", "bg_color")
+        self.root["bg"] = rootFrameBackgroundColor
+
+        labelForegroundColor = configRead.get("LABEL", "fg_color")
+        labelframeLabelForegroundColor = configRead.get("LABELFRAME_LABEL", "fg_color")
+        radioForegroundColor = configRead.get("RADIO", "fg_color")
+
+        treeviewBackgroundColor = configRead.get("TREEVIEW", "bg_color")
+        treeviewForegroundColor = configRead.get("TREEVIEW", "fg_color")
+        treeviewSelectedBackgroundColor = configRead.get("TREEVIEW", "sel_bg_color")
+        treeviewSelectedForegroundColor = configRead.get("TREEVIEW", "sel_fg_color")
+
+        buttonForegroundColor = configRead.get("BUTTON", "fg_color")
+        entryForegroundColor = configRead.get("ENTRY", "fg_color")
+
+        treeviewFieldBackgroundColor = configRead.get("TREEVIEW", "field_bg_color")
+        treeviewHeaderBackgroundColor = configRead.get("TREEVIEW_HEADER", "bg_color")
+        treeviewHeaderForegroundColor = configRead.get("TREEVIEW_HEADER", "fg_color")
+
+        comboboxBackgroundColor = configRead.get("COMBOBOX", "bg_color")
+        comboboxForegroundColor = configRead.get("COMBOBOX", "fg_color")
+        comboboxSelectedBackgroundColor = configRead.get("COMBOBOX", "sel_bg_color")
+        comboboxSelectedForegroundColor = configRead.get("COMBOBOX", "sel_fg_color")
+
+        indicatorColor = configRead.get("RADIO", "indicator_color")
+        indicatorSelectedColor = configRead.get("RADIO", "sel_indicator_color")
+
+        if platform.system() == "Windows":
+            try:
+                if rootDarkModeFlag:
+                    self.darkModeDllPath = mainProcess.dll_path(self.importDict["rootPath"], "tablacusdark64.dll")
+                    self.darkModeDll = ctypes.CDLL(self.darkModeDllPath)
+                    rootDarkModeFlag = True
+            except Exception:
+                rootDarkModeFlag = False
+                errObj.write(traceback.format_exc())
+
+        themeName = configRead.get("ROOT_FRAME", "theme")
+        self.style.theme_use(themeName)
+
+        self.style.configure("custom.TLabel", background=rootFrameBackgroundColor, foreground=labelForegroundColor)
+        self.style.configure("custom.red.TLabel", background=rootFrameBackgroundColor, foreground="red")
+        self.style.configure("custom.blue.TLabel", background=rootFrameBackgroundColor, foreground="blue")
+        self.style.configure("custom.green.TLabel", background=rootFrameBackgroundColor, foreground="green")
+        self.style.configure("custom.444444.TLabel", background=rootFrameBackgroundColor, foreground="#444444")
+        self.style.configure("custom.TButton", background=rootFrameBackgroundColor, foreground=buttonForegroundColor)
+        self.style.configure("custom.update.TButton", background=rootFrameBackgroundColor, foreground=buttonForegroundColor, font=textSetting.textList["font7"], width=5, disabledbackground=rootFrameBackgroundColor)
+        self.style.configure("custom.listbox.TButton", background=rootFrameBackgroundColor, foreground=buttonForegroundColor, font=textSetting.textList["font2"], width=5)
+        self.style.configure("custom.paste.TButton", background=rootFrameBackgroundColor, foreground=buttonForegroundColor, font=textSetting.textList["font2"], width=10)
+        self.style.configure("custom.elsePerf.TButton", background=rootFrameBackgroundColor, foreground=buttonForegroundColor, font=textSetting.textList["font7"])
+        self.style.configure("custom.TRadiobutton", background=rootFrameBackgroundColor, foreground=radioForegroundColor)
+        self.style.configure("custom.TCheckbutton", background=rootFrameBackgroundColor, foreground=radioForegroundColor, font=textSetting.textList["font2"])
+        self.style.configure("custom.railFlag.TCheckbutton", background=rootFrameBackgroundColor, foreground=radioForegroundColor)
+        self.style.configure("custom.TLabelframe", background=rootFrameBackgroundColor)
+        self.style.configure("custom.TLabelframe.Label", background=rootFrameBackgroundColor, foreground=labelframeLabelForegroundColor)
+        self.style.configure("custom.TFrame", background=rootFrameBackgroundColor)
+        self.style.configure("custom.TSeparator", background=rootFrameBackgroundColor)
+        self.style.configure("custom.Treeview", background=treeviewBackgroundColor, foreground=treeviewForegroundColor, fieldbackground=treeviewFieldBackgroundColor)
+        self.style.configure("custom.Treeview.Heading", background=treeviewHeaderBackgroundColor, foreground=treeviewHeaderForegroundColor)
+        self.style.configure("custom.TMenubutton", background=rootFrameBackgroundColor, foreground=buttonForegroundColor)
+        self.style.configure("custom.TSpinbox", fieldbackground=rootFrameBackgroundColor, foreground=buttonForegroundColor)
+        self.style.map("custom.TRadiobutton", indicatorcolor=[("!selected", indicatorColor), ("selected", indicatorSelectedColor)])
+        self.style.map("custom.TCheckbutton", indicatorcolor=[("!selected", indicatorColor), ("selected", indicatorSelectedColor)])
+        self.style.map("custom.railFlag.TCheckbutton", indicatorcolor=[("!selected", indicatorColor), ("selected", indicatorSelectedColor)])
+        self.style.map("custom.TEntry", background=[("!readonly", rootFrameBackgroundColor), ("readonly", rootFrameBackgroundColor)], fieldbackground=[("!readonly", rootFrameBackgroundColor), ("readonly", rootFrameBackgroundColor)], foreground=[("!readonly", entryForegroundColor), ("readonly", entryForegroundColor)])
+        self.style.map("custom.Horizontal.TScrollbar", background=[("!disabled", rootFrameBackgroundColor), ("disabled", rootFrameBackgroundColor)])
+        self.style.map("custom.Vertical.TScrollbar", background=[("!disabled", rootFrameBackgroundColor), ("disabled", rootFrameBackgroundColor)])
+        self.style.map("custom.TCombobox", background=[("readonly", rootFrameBackgroundColor), ("disabled", rootFrameBackgroundColor)], fieldbackground=[("readonly", comboboxBackgroundColor), ("disabled", comboboxBackgroundColor)], foreground=[("readonly", comboboxForegroundColor), ("disabled", comboboxForegroundColor)])
+        self.style.map("custom.Treeview", background=[("selected", treeviewSelectedBackgroundColor)], foreground=[("selected", treeviewSelectedForegroundColor)])
+        self.root.option_add("*TCombobox*Listbox.background", comboboxBackgroundColor)
+        self.root.option_add("*TCombobox*Listbox.foreground", comboboxForegroundColor)
+        self.root.option_add("*TCombobox*Listbox.selectBackground", comboboxSelectedBackgroundColor)
+        self.root.option_add("*TCombobox*Listbox.selectForeground", comboboxSelectedForegroundColor)
+
+        self.rootFrameAppearance = rootFrameWidget.RootFrameAppearance(self.root, configPath, labelForegroundColor, rootFrameBackgroundColor, configRead)
+
+    def editRootFrameAppearance(self):
+        pass
+
+    def callProgram(self, programName):
+        configPath = self.importDict["configPath"]
+        self.clearRootFrame()
+
+        self.selectedProgram = programName
+        if self.selectedProgram == "orgInfoEditor":
+            orgInfoEditorProgram.call_orgInfoEditor(self.root, self.rootFrameAppearance)
+        elif self.selectedProgram == "mdlBin":
+            mdlBinProgram.call_mdlBin(self.root, self.rootFrameAppearance)
+        elif self.selectedProgram == "mdlinfo":
+            mdlinfoProgram.call_mdlinfo(self.root, self.rootFrameAppearance)
+        elif self.selectedProgram == "comicscript":
+            comicscriptProgram.call_comicscript(self.root, self.rootFrameAppearance)
+        elif self.selectedProgram == "musicEditor":
+            musicEditorProgram.call_musicEditor(self.root, self.rootFrameAppearance)
+        elif self.selectedProgram == "fvtMaker":
+            fvtMakerProgram.call_fvtMaker(self.root, self.rootFrameAppearance)
+        elif self.selectedProgram == "railEditor":
+            railEditorProgram.call_railEditor(self.root, configPath, self.rootFrameAppearance)
+        elif self.selectedProgram == "smf":
+            smfProgram.call_smf(self.root, configPath, self.rootFrameAppearance)
+        elif self.selectedProgram == "SSUnity":
+            ssUnityProgram.call_ssUnity(self.root, configPath)
+        elif self.selectedProgram == "rsRail":
+            rsRailProgram.call_rsRail(self.root, self.rootFrameAppearance)
+        
+        self.delete_OptionMenu()
+        if self.selectedProgram == "comicscript":
+            self.add_comicscriptOptionMenu()
+        elif self.selectedProgram == "smf":
+            self.add_smfWriteOptionMenu()
+        elif self.selectedProgram == "SSUnity" or self.selectedProgram == "railEditor":
+            self.add_xlsxWriteOptionMenu()
+
+    def loadFile(self):
+        if self.selectedProgram is None:
+            mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E1"])
+            return
+
+        if self.selectedProgram == "orgInfoEditor":
+            orgInfoEditorProgram.openFile()
+        elif self.selectedProgram == "mdlBin":
+            mdlBinProgram.openFile()
+        elif self.selectedProgram == "mdlinfo":
+            mdlinfoProgram.openFile()
+        elif self.selectedProgram == "comicscript":
+            comicscriptProgram.openFile(self.v_comicscriptCheck.get())
+        elif self.selectedProgram == "musicEditor":
+            musicEditorProgram.openFile()
+        elif self.selectedProgram == "fvtMaker":
+            fvtMakerProgram.openFile()
+        elif self.selectedProgram == "railEditor":
+            railEditorProgram.openFile()
+        elif self.selectedProgram == "smf":
+            smfProgram.openFile(self.v_frameCheck.get(), self.v_meshCheck.get(), self.v_XYZCheck.get(), self.v_mtrlCheck.get())
+        elif self.selectedProgram == "SSUnity":
+            ssUnityProgram.openFile()
+        elif self.selectedProgram == "rsRail":
+            rsRailProgram.openFile()
+
+
+def guiMain(importDict):
+    root = tkinter.Tk()
+    window = MainWindow(root, importDict)
+    importDict["window"] = window
+    window.mainloop()
