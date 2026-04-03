@@ -247,13 +247,13 @@ class MainWindow(tkinter.Frame):
         self.setConfigMenu(self.selectedProgram)
 
     def setConfigMenu(self, selectedProgram):
+        if self.menubar.index(tkinter.END) > self.maxMenubarLen:
+            self.menubar.delete(self.maxMenubarLen + 1)
+
         if selectedProgram == "SSUnity":
             if self.menubar.entryconfig(tkinter.END) == self.menubar.entryconfig(self.maxMenubarLen):
                 configMenu = self.addXlsxWriteOptionMenu()
                 self.menubar.add_cascade(label=textSetting.textList["menu"]["SSUnity"]["name"], menu=configMenu)
-        else:
-            if self.menubar.index(tkinter.END) > self.maxMenubarLen:
-                self.menubar.delete(self.maxMenubarLen + 1)
 
     def addXlsxWriteOptionMenu(self):
         configPath = self.importDict["configPath"]
