@@ -2304,8 +2304,21 @@ class ExcelWidget:
                             return
                         if j == 1:
                             mdlList.append(val)
-                        if self.flagHexMode == self.HEX_FLAG and j in [2, 3]:
-                            val = int(val, 16)
+                        if j in [2, 3]:
+                            if self.flagHexMode == self.HEX_FLAG:
+                                try:
+                                    val = int(val, 16)
+                                except TypeError:
+                                    originValue = ws.cell(startIndex + i, 1 + j).value
+                                    coordinate = ws.cell(startIndex + i, 1 + j).coordinate
+                                    self.errorLogList.append(self.failHexValueError(search, coordinate, originValue))
+                                    return
+                            else:
+                                if type(val) == str and "0x" in val:
+                                    originValue = ws.cell(startIndex + i, 1 + j).value
+                                    coordinate = ws.cell(startIndex + i, 1 + j).coordinate
+                                    self.errorLogList.append(self.notConvertHexValueError(search, coordinate, originValue))
+                                    return
                         columnList.append("{0}".format(val))
                     columnLine = "\t".join(columnList)
                     newDataList.append("{0}\r".format(columnLine))
@@ -2332,7 +2345,19 @@ class ExcelWidget:
                         # flg
                         elif j >= 12 and j <= 15:
                             if self.flagHexMode == self.HEX_FLAG:
-                                val = int(val, 16)
+                                try:
+                                    val = int(val, 16)
+                                except TypeError:
+                                    originValue = ws.cell(startIndex + i, 1 + j).value
+                                    coordinate = ws.cell(startIndex + i, 1 + j).coordinate
+                                    self.errorLogList.append(self.failHexValueError(search, coordinate, originValue))
+                                    return
+                            else:
+                                if type(val) == str and "0x" in val:
+                                    originValue = ws.cell(startIndex + i, 1 + j).value
+                                    coordinate = ws.cell(startIndex + i, 1 + j).coordinate
+                                    self.errorLogList.append(self.notConvertHexValueError(search, coordinate, originValue))
+                                    return
                         columnList.append("{0}".format(val))
                     rail_data = ws.cell(startIndex + i, 17).value
                     # 単線複線の設定が空白の場合、エラー
@@ -2421,11 +2446,20 @@ class ExcelWidget:
             return textSetting.textList["errorList"]["E111"].format(search, coord)
         return textSetting.textList["errorList"]["E108"].format(search)
 
+    def failHexValueError(self, search, coord, val):
+        return textSetting.textList["errorList"]["E129"].format(search, coord, val)
+
+    def notConvertHexValueError(self, search, coord, val):
+        return textSetting.textList["errorList"]["E130"].format(search, coord, val)
+
     def getModelIndex(self, val, idx, mdlList, search):
         if type(val) is str:
             # 存在しないモデル名称の場合、エラー
             if val not in mdlList:
-                self.errorLogList.append(textSetting.textList["errorList"]["E109"].format(val))
+                if search == "RailCnt:":
+                    self.errorLogList.append(textSetting.textList["errorList"]["E109"].format(val))
+                elif search == "AmbCnt:":
+                    self.errorLogList.append(textSetting.textList["errorList"]["E110"].format(val))
                 return None
             tempList = [x for x in mdlList if x == val]
             # MdlCntに重複設定しているものがある場合、Warning
