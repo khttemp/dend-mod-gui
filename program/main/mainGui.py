@@ -48,7 +48,7 @@ class MainWindow(tkinter.Frame):
         self.readRootFrameAppearance()
         self.maxMenubarLen = self.menubar.index(tkinter.END)
 
-        self.root.after(100, mainProcess.confirmUpdate, self.version, self.importDict["configPath"])
+        self.root.after(100, mainProcess.confirmUpdate, mb, self.version, self.importDict["configPath"])
 
     def checkConfig(self):
         configPath = self.importDict["configPath"]
@@ -94,16 +94,10 @@ class MainWindow(tkinter.Frame):
 
         self.root.config(menu=self.menubar)
 
-    def delete_OptionMenu(self):
-        pass
-
     def add_comicscriptOptionMenu(self):
         pass
 
     def add_smfWriteOptionMenu(self):
-        pass
-
-    def add_xlsxWriteOptionMenu(self):
         pass
 
     def checkUpdate(self):
@@ -250,13 +244,37 @@ class MainWindow(tkinter.Frame):
         elif self.selectedProgram == "rsRail":
             rsRailProgram.call_rsRail(self.root, self.rootFrameAppearance)
         
-        self.delete_OptionMenu()
-        if self.selectedProgram == "comicscript":
-            self.add_comicscriptOptionMenu()
-        elif self.selectedProgram == "smf":
-            self.add_smfWriteOptionMenu()
-        elif self.selectedProgram == "SSUnity" or self.selectedProgram == "railEditor":
-            self.add_xlsxWriteOptionMenu()
+        self.setConfigMenu(self.selectedProgram)
+
+    def setConfigMenu(self, selectedProgram):
+        if selectedProgram == "SSUnity":
+            if self.menubar.entryconfig(tkinter.END) == self.menubar.entryconfig(self.maxMenubarLen):
+                configMenu = self.addXlsxWriteOptionMenu()
+                self.menubar.add_cascade(label=textSetting.textList["menu"]["SSUnity"]["name"], menu=configMenu)
+        else:
+            if self.menubar.index(tkinter.END) > self.maxMenubarLen:
+                self.menubar.delete(self.maxMenubarLen + 1)
+
+    def addXlsxWriteOptionMenu(self):
+        configPath = self.importDict["configPath"]
+        model, flag, amb = mainProcess.readXlsxWriteConfig(configPath)
+        self.v_modelNameMode = tkinter.IntVar()
+        self.v_modelNameMode.set(model)
+        self.v_flagHexMode = tkinter.IntVar()
+        self.v_flagHexMode.set(flag)
+        self.v_ambReadMode = tkinter.IntVar()
+        self.v_ambReadMode.set(amb)
+
+        xlsxWriteOptionMenu = tkinter.Menu(self.menubar, tearoff=False)
+        xlsxWriteOptionMenu.add_radiobutton(label=textSetting.textList["menu"]["SSUnity"]["write"]["model1"], variable=self.v_modelNameMode, value=0, command=partial(mainProcess.writeXlsxConfig, configPath, "model", 0))
+        xlsxWriteOptionMenu.add_radiobutton(label=textSetting.textList["menu"]["SSUnity"]["write"]["model2"], variable=self.v_modelNameMode, value=1, command=partial(mainProcess.writeXlsxConfig, configPath, "model", 1))
+        xlsxWriteOptionMenu.add_separator()
+        xlsxWriteOptionMenu.add_radiobutton(label=textSetting.textList["menu"]["SSUnity"]["write"]["flag1"], variable=self.v_flagHexMode, value=0, command=partial(mainProcess.writeXlsxConfig, configPath, "flag", 0))
+        xlsxWriteOptionMenu.add_radiobutton(label=textSetting.textList["menu"]["SSUnity"]["write"]["flag2"], variable=self.v_flagHexMode, value=1, command=partial(mainProcess.writeXlsxConfig, configPath, "flag", 1))
+        xlsxWriteOptionMenu.add_separator()
+        xlsxWriteOptionMenu.add_radiobutton(label=textSetting.textList["menu"]["SSUnity"]["write"]["ambRead1"], variable=self.v_ambReadMode, value=0, command=partial(mainProcess.writeXlsxConfig, configPath, "amb", 0))
+        xlsxWriteOptionMenu.add_radiobutton(label=textSetting.textList["menu"]["SSUnity"]["write"]["ambRead2"], variable=self.v_ambReadMode, value=1, command=partial(mainProcess.writeXlsxConfig, configPath, "amb", 1))
+        return xlsxWriteOptionMenu
 
     def loadFile(self):
         if self.selectedProgram is None:

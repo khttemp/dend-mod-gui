@@ -22,7 +22,7 @@ class ExcelWidget:
         self.ambReadMode = 0
         self.MODEL_NAME = 0
         self.HEX_FLAG = 1
-        self.AMB_NEWLINE = 1
+        self.AMB_NEWLINE = 0
         self.row = -1
         self.errorLogList = []
         self.errorMessage = ""
