@@ -12,7 +12,7 @@ import program.mdlinfo.mdlinfo as mdlinfoProgram
 import program.orgInfoEditor.orgInfoEditor as orgInfoEditorProgram
 import program.musicEditor.musicEditor as musicEditorProgram
 import program.fvtMaker.fvtMaker as fvtMakerProgram
-import program.railEditor.railEditor as railEditorProgram
+import program.sub.railEditor.railEditorGui as railEditorGui
 import program.smf.smf as smfProgram
 import program.sub.ssUnity.ssUnityGui as ssUnityGui
 import program.rsRail.rsRail as rsRailProgram
@@ -236,7 +236,7 @@ class MainWindow(tkinter.Frame):
         elif self.selectedProgram == "fvtMaker":
             fvtMakerProgram.call_fvtMaker(self.root, self.rootFrameAppearance)
         elif self.selectedProgram == "railEditor":
-            railEditorProgram.call_railEditor(self.root, configPath, self.rootFrameAppearance)
+            self.selectedProgramFrame = railEditorGui.RailEditorWindow(self.root, self.importDict)
         elif self.selectedProgram == "smf":
             smfProgram.call_smf(self.root, configPath, self.rootFrameAppearance)
         elif self.selectedProgram == "SSUnity":
@@ -250,7 +250,7 @@ class MainWindow(tkinter.Frame):
         if self.menubar.index(tkinter.END) > self.maxMenubarLen:
             self.menubar.delete(self.maxMenubarLen + 1)
 
-        if selectedProgram == "SSUnity":
+        if selectedProgram in ["SSUnity", "railEditor"]:
             if self.menubar.entryconfig(tkinter.END) == self.menubar.entryconfig(self.maxMenubarLen):
                 configMenu = self.addXlsxWriteOptionMenu()
                 self.menubar.add_cascade(label=textSetting.textList["menu"]["SSUnity"]["name"], menu=configMenu)
@@ -294,7 +294,7 @@ class MainWindow(tkinter.Frame):
         elif self.selectedProgram == "fvtMaker":
             fvtMakerProgram.openFile()
         elif self.selectedProgram == "railEditor":
-            railEditorProgram.openFile()
+            self.selectedProgramFrame.openFile()
         elif self.selectedProgram == "smf":
             smfProgram.openFile(self.v_frameCheck.get(), self.v_meshCheck.get(), self.v_XYZCheck.get(), self.v_mtrlCheck.get())
         elif self.selectedProgram == "SSUnity":

@@ -3,7 +3,7 @@ import traceback
 
 import program.sub.textSetting as textSetting
 import program.sub.errorLogClass as errorLogClass
-import program.appearance.ttkCustomWidget as ttkCustomWidget
+import program.sub.appearance.ttkCustomWidget as ttkCustomWidget
 
 from program.sub.ssUnity.importPy.tkinterScrollbarTreeviewSSUnity import ScrollbarTreeviewSSUnity
 import program.sub.ssUnity.ssUnityProcess as ssUnityProcess
