@@ -14,7 +14,7 @@ import program.musicEditor.musicEditor as musicEditorProgram
 import program.fvtMaker.fvtMaker as fvtMakerProgram
 import program.railEditor.railEditor as railEditorProgram
 import program.smf.smf as smfProgram
-import program.ssUnity.ssUnity as ssUnityProgram
+import program.sub.ssUnity.ssUnityGui as ssUnityGui
 import program.rsRail.rsRail as rsRailProgram
 import program.appearance.rootFrameWidget as rootFrameWidget
 
@@ -39,6 +39,7 @@ class MainWindow(tkinter.Frame):
         self.importDict = importDict
 
         self.selectedProgram = None
+        self.selectedProgramFrame = None
         self.version = mainProcess.getUpdateVer(self.importDict["rootPath"])
 
         self.checkConfig()
@@ -245,7 +246,7 @@ class MainWindow(tkinter.Frame):
         elif self.selectedProgram == "smf":
             smfProgram.call_smf(self.root, configPath, self.rootFrameAppearance)
         elif self.selectedProgram == "SSUnity":
-            ssUnityProgram.call_ssUnity(self.root, configPath)
+            self.selectedProgramFrame = ssUnityGui.SSUnityWindow(self.root, self.importDict)
         elif self.selectedProgram == "rsRail":
             rsRailProgram.call_rsRail(self.root, self.rootFrameAppearance)
         
@@ -279,7 +280,7 @@ class MainWindow(tkinter.Frame):
         elif self.selectedProgram == "smf":
             smfProgram.openFile(self.v_frameCheck.get(), self.v_meshCheck.get(), self.v_XYZCheck.get(), self.v_mtrlCheck.get())
         elif self.selectedProgram == "SSUnity":
-            ssUnityProgram.openFile()
+            self.selectedProgramFrame.openFile()
         elif self.selectedProgram == "rsRail":
             rsRailProgram.openFile()
 
