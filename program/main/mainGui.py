@@ -236,7 +236,7 @@ class MainWindow(tkinter.Frame):
         elif self.selectedProgram == "fvtMaker":
             fvtMakerProgram.call_fvtMaker(self.root, self.rootFrameAppearance)
         elif self.selectedProgram == "railEditor":
-            self.selectedProgramFrame = railEditorGui.RailEditorWindow(self.root, self.importDict)
+            self.selectedProgramFrame = railEditorGui.RailEditorWindow(self.root, self.importDict, self.rootFrameAppearance)
         elif self.selectedProgram == "smf":
             smfProgram.call_smf(self.root, configPath, self.rootFrameAppearance)
         elif self.selectedProgram == "SSUnity":
