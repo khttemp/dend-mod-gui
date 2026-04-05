@@ -17,6 +17,11 @@ def resource_path(localDir, relative_path):
     return os.path.join(bundle_dir, relative_path)
 
 
+def dll_path(rootPath, relative_path):
+    bundle_dir = getattr(sys, "_MEIPASS", os.path.join(rootPath, "program", "appearance", "dllData"))
+    return os.path.join(bundle_dir, relative_path)
+
+
 def getUpdateVer(rootPath):
     try:
         path = resource_path(rootPath, "ver.txt")
