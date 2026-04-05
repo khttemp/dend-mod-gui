@@ -168,6 +168,7 @@ class SSUnityWindow(tkinter.Frame):
                 trainData = self.decryptFile.trainOrgInfoList[trainName]
                 data += (trainData["num"], trainName, "", trainData["data"]["className"], trainData["data"]["size"])
                 self.frame.tree.insert(parent="", index="end", iid=index, values=data)
+            self.frame.tree.tag_configure("dirty", foreground="red")
             self.frame.tree["displaycolumns"] = (
                 "treeNum",
                 "treeName",
