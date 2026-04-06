@@ -4,10 +4,12 @@ import program.sub.textSetting as textSetting
 import program.sub.appearance.ttkCustomWidget as ttkCustomWidget
 
 from program.sub.railEditor.importPy.tkinterTab import (
-    tab1AllWidget, tab2AllWidget, tab3AllWidget, tab4AllWidget,
-    tab5AllWidget, tab6AllWidget, tab7AllWidget, tab8AllWidget,
-    tab9AllWidget, tab10AllWidget, tab11AllWidget
+    tab1AllWidget,
 )
+#     tab2AllWidget, tab3AllWidget, tab4AllWidget,
+#     tab5AllWidget, tab6AllWidget, tab7AllWidget, tab8AllWidget,
+#     tab9AllWidget, tab10AllWidget, tab11AllWidget
+# )
 
 import program.sub.railEditor.dendDecrypt.RSdecrypt as dendRs
 import program.sub.railEditor.dendDecrypt.CSdecrypt as dendCs
@@ -81,30 +83,29 @@ class RailEditorWindow(tkinter.Frame):
 
         if index == 0:
             tab1AllWidget(self.root, self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget)
-        elif index == 1:
-            tab2AllWidget(self.root, self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget)
-        elif index == 2:
-            tab3AllWidget(self.root, self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget, selectId)
-        elif index == 3:
-            tab4AllWidget(self.root, self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget, selectId)
-        elif index == 4:
-            tab5AllWidget(self.root, self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget)
-        elif index == 5:
-            tab6AllWidget(self.root, self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget, selectId)
-        elif index == 6:
-            tab7AllWidget(self.root, self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget)
-        elif index == 7:
-            tab8AllWidget(self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget)
-        elif index == 8:
-            tab9AllWidget(self.root, self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget, selectId)
-        elif index == 9:
-            tab10AllWidget(self.root, self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget)
-        elif index == 10:
-            tab11AllWidget(self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget)
+        # elif index == 1:
+        #     tab2AllWidget(self.root, self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget)
+        # elif index == 2:
+        #     tab3AllWidget(self.root, self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget, selectId)
+        # elif index == 3:
+        #     tab4AllWidget(self.root, self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget, selectId)
+        # elif index == 4:
+        #     tab5AllWidget(self.root, self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget)
+        # elif index == 5:
+        #     tab6AllWidget(self.root, self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget, selectId)
+        # elif index == 6:
+        #     tab7AllWidget(self.root, self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget)
+        # elif index == 7:
+        #     tab8AllWidget(self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget)
+        # elif index == 8:
+        #     tab9AllWidget(self.root, self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget, selectId)
+        # elif index == 9:
+        #     tab10AllWidget(self.root, self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget)
+        # elif index == 10:
+        #     tab11AllWidget(self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget)
 
     def reloadWidget(self, *selectId):
         self.decryptFile = self.decryptFile.reload()
-        self.deleteAllWidget()
         selId = None
         if selectId and selectId[0] is not None:
             selId = int(selectId[0])
@@ -114,7 +115,7 @@ class RailEditorWindow(tkinter.Frame):
         file_path = fd.askopenfilename(filetypes=[(textSetting.textList["railEditor"]["fileType"], "*.BIN")])
         if file_path:
             filename = os.path.basename(file_path)
-            self.fileNameLabel.setText(filename)
+            self.v_filename.set(filename)
             del self.decryptFile
             self.decryptFile = None
 
@@ -149,4 +150,4 @@ class RailEditorWindow(tkinter.Frame):
 
             self.excelExtractButton["state"] = "normal"
             self.excelSaveButton["state"] = "normal"
-            self.selectInfo(self.tabCombo.currentIndex())
+            self.selectInfo(self.tabCombo.current())
