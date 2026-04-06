@@ -5,7 +5,7 @@ import program.sub.appearance.ttkCustomWidget as ttkCustomWidget
 from program.sub.tkinterScrollbarFrameClass import ScrollbarFrame
 
 from program.sub.railEditor.importPy.tab1.musicWidget import MusicWidget
-# from program.railEditor.importPy.tab1.trainCountWidget import TrainCountWidget
+from program.sub.railEditor.importPy.tab1.trainCountWidget import TrainCountWidget
 # from program.railEditor.importPy.tab1.railPosWidget import RailPosWidget
 # from program.railEditor.importPy.tab1.stationNoWidget import StationNoWidget
 
@@ -39,7 +39,7 @@ def tab1AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc):
     frame.pack(expand=True, fill=tkinter.BOTH)
 
     MusicWidget(root, frame.interior, decryptFile, rootFrameAppearance, reloadFunc)
-    # TrainCountWidget(root, frame.interior, decryptFile, rootFrameAppearance, reloadFunc)
+    TrainCountWidget(root, frame.interior, decryptFile, rootFrameAppearance, reloadFunc)
     # RailPosWidget(root, frame.interior, textSetting.textList["railEditor"]["initPos"], 0, decryptFile, decryptFile.trainList, rootFrameAppearance, reloadFunc)
 
     # if decryptFile.game in ["BS", "CS", "RS"]:
