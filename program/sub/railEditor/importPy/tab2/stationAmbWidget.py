@@ -2,12 +2,12 @@ from functools import partial
 
 import tkinter
 from tkinter import messagebox as mb
-import program.textSetting as textSetting
-import program.appearance.ttkCustomWidget as ttkCustomWidget
-from program.appearance.customSimpleDialog import CustomSimpleDialog
+import program.sub.textSetting as textSetting
+import program.sub.appearance.ttkCustomWidget as ttkCustomWidget
+from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
 
 
-class StationWidget:
+class StationAmbWidget:
     def __init__(self, root, frame, decryptFile, stationList, rootFrameAppearance, reloadFunc):
         self.root = root
         self.frame = frame

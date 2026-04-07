@@ -11,7 +11,7 @@ from program.sub.railEditor.importPy.tab1.stationNoWidget import StationNoWidget
 
 from program.sub.railEditor.importPy.tab2.else1ListWidget import Else1ListWidget
 from program.sub.railEditor.importPy.tab2.simpleListWidget import SimpleListWidget
-# from program.railEditor.importPy.tab2.stationWidget import StationWidget
+from program.sub.railEditor.importPy.tab2.stationAmbWidget import StationAmbWidget
 # from program.railEditor.importPy.tab2.binAnimeListWidget import BinAnimeListWidget
 
 # from program.railEditor.importPy.tab3.smfListWidget import SmfListWidget
@@ -65,7 +65,7 @@ def tab2AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc):
         SimpleListWidget(root, simpleListFrame, textSetting.textList["railEditor"]["lightInfo"], decryptFile, decryptFile.lightList, decryptFile.lightIdx, 1, rootFrameAppearance, reloadFunc)
         if decryptFile.game in ["CS", "RS"]:
             SimpleListWidget(root, simpleListFrame, textSetting.textList["railEditor"]["stationInfo"], decryptFile, decryptFile.pngList, decryptFile.pngIdx, 2, rootFrameAppearance, reloadFunc)
-            # StationWidget(root, frame.interior, decryptFile, decryptFile.stationList, rootFrameAppearance, reloadFunc)
+            StationAmbWidget(root, frame.interior, decryptFile, decryptFile.stationList, rootFrameAppearance, reloadFunc)
 
     simpleListFrame2 = ttkCustomWidget.CustomTtkFrame(frame.interior)
     simpleListFrame2.pack(anchor=tkinter.NW)
