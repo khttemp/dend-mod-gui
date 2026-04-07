@@ -2,9 +2,9 @@ from functools import partial
 
 import tkinter
 from tkinter import messagebox as mb
-import program.textSetting as textSetting
-import program.appearance.ttkCustomWidget as ttkCustomWidget
-from program.appearance.customSimpleDialog import CustomSimpleDialog
+import program.sub.textSetting as textSetting
+import program.sub.appearance.ttkCustomWidget as ttkCustomWidget
+from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
 
 
 class RailPosWidget:
@@ -12,7 +12,6 @@ class RailPosWidget:
         self.root = root
         self.frame = frame
         self.title = title
-        self.railBtnList = []
         self.num = num
         self.decryptFile = decryptFile
         self.trainList = trainList
@@ -58,7 +57,6 @@ class RailPosWidget:
                 mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E4"])
                 return
             mb.showinfo(title=textSetting.textList["success"], message=self.title + textSetting.textList["infoList"]["I61"])
-
             self.reloadFunc()
 
 

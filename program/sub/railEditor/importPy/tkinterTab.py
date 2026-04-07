@@ -6,8 +6,8 @@ from program.sub.tkinterScrollbarFrameClass import ScrollbarFrame
 
 from program.sub.railEditor.importPy.tab1.musicWidget import MusicWidget
 from program.sub.railEditor.importPy.tab1.trainCountWidget import TrainCountWidget
-# from program.railEditor.importPy.tab1.railPosWidget import RailPosWidget
-# from program.railEditor.importPy.tab1.stationNoWidget import StationNoWidget
+from program.sub.railEditor.importPy.tab1.railPosWidget import RailPosWidget
+from program.sub.railEditor.importPy.tab1.stationNoWidget import StationNoWidget
 
 # from program.railEditor.importPy.tab2.else1ListWidget import Else1ListWidget
 # from program.railEditor.importPy.tab2.simpleListWidget import SimpleListWidget
@@ -40,18 +40,18 @@ def tab1AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc):
 
     MusicWidget(root, frame.interior, decryptFile, rootFrameAppearance, reloadFunc)
     TrainCountWidget(root, frame.interior, decryptFile, rootFrameAppearance, reloadFunc)
-    # RailPosWidget(root, frame.interior, textSetting.textList["railEditor"]["initPos"], 0, decryptFile, decryptFile.trainList, rootFrameAppearance, reloadFunc)
+    RailPosWidget(root, frame.interior, textSetting.textList["railEditor"]["initPos"], 0, decryptFile, decryptFile.trainList, rootFrameAppearance, reloadFunc)
 
-    # if decryptFile.game in ["BS", "CS", "RS"]:
-    #     RailPosWidget(root, frame.interior, textSetting.textList["railEditor"]["dummyPos"], 1, decryptFile, decryptFile.trainList2, rootFrameAppearance, reloadFunc)
-    #     RailPosWidget(root, frame.interior, textSetting.textList["railEditor"]["pracOrVsPos"], 2, decryptFile, decryptFile.trainList3, rootFrameAppearance, reloadFunc)
-    #     StationNoWidget(root, frame.interior, decryptFile, decryptFile.stationNo, 0, rootFrameAppearance, reloadFunc)
+    if decryptFile.game in ["BS", "CS", "RS"]:
+        RailPosWidget(root, frame.interior, textSetting.textList["railEditor"]["dummyPos"], 1, decryptFile, decryptFile.trainList2, rootFrameAppearance, reloadFunc)
+        RailPosWidget(root, frame.interior, textSetting.textList["railEditor"]["pracOrVsPos"], 2, decryptFile, decryptFile.trainList3, rootFrameAppearance, reloadFunc)
+        StationNoWidget(root, frame.interior, 0, decryptFile, decryptFile.stationNo, rootFrameAppearance, reloadFunc)
 
-    #     if decryptFile.game == "BS":
-    #         separator = ttkCustomWidget.CustomTtkSeparator(frame.interior, orient="horizontal")
-    #         separator.pack(fill=tkinter.X)
-    #         RailPosWidget(root, frame.interior, textSetting.textList["railEditor"]["dummyPos"], 3, decryptFile, decryptFile.trainList4, rootFrameAppearance, reloadFunc)
-    #         StationNoWidget(root, frame.interior, decryptFile, decryptFile.stationNo2, 1, rootFrameAppearance, reloadFunc)
+        if decryptFile.game == "BS":
+            separator = ttkCustomWidget.CustomTtkSeparator(frame.interior, orient="horizontal")
+            separator.pack(fill=tkinter.X)
+            RailPosWidget(root, frame.interior, textSetting.textList["railEditor"]["dummyPos"], 3, decryptFile, decryptFile.trainList4, rootFrameAppearance, reloadFunc)
+            StationNoWidget(root, frame.interior, 1, decryptFile, decryptFile.stationNo2, rootFrameAppearance, reloadFunc)
 
 
 def tab2AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc):
