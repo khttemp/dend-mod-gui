@@ -108,10 +108,10 @@ class EditElse1ListWidget(CustomSimpleDialog):
         for i in range(len(self.valList)):
             if i < 2:
                 txtLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["railEditor"]["editElse1F1Label"].format(i + 1), font=textSetting.textList["font2"])
-                txtLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
+                txtLb.grid(row=i + 1, column=0, sticky=tkinter.W + tkinter.E)
             else:
                 txtLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["railEditor"]["editElse1B1Label"].format(i - 1), font=textSetting.textList["font2"])
-                txtLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
+                txtLb.grid(row=i + 1, column=0, sticky=tkinter.W + tkinter.E)
 
             if i in [0, 1]:
                 varTemp = tkinter.DoubleVar()
@@ -121,7 +121,7 @@ class EditElse1ListWidget(CustomSimpleDialog):
                 varTemp.set(int(self.valList[i]))
             self.varList.append(varTemp)
             self.txtEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
-            self.txtEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+            self.txtEt.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
         super().body(master)
 
     def validate(self):
@@ -172,12 +172,12 @@ class EditElse1List2Widget(CustomSimpleDialog):
 
         for i in range(len(self.valList)):
             txtLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["railEditor"]["editElse1F1Label"].format(i + 1), font=textSetting.textList["font2"])
-            txtLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
+            txtLb.grid(row=i + 1, column=0, sticky=tkinter.W + tkinter.E)
             varTemp = tkinter.DoubleVar()
             varTemp.set(round(float(self.valList[i]), 5))
             self.varList.append(varTemp)
             txtEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
-            txtEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+            txtEt.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
         super().body(master)
 
     def validate(self):

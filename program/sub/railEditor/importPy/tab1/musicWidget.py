@@ -223,10 +223,13 @@ class EditMusicListWidget(CustomSimpleDialog):
     def body(self, master):
         self.resizable(False, False)
 
+        valLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
+        valLb.grid(columnspan=2, row=0, column=0, sticky=tkinter.W + tkinter.E)
+
         musicInfoLb = textSetting.textList["railEditor"]["editBgmInfoLabelList"]
         for i in range(len(musicInfoLb)):
             musicLb = ttkCustomWidget.CustomTtkLabel(master, text=musicInfoLb[i], font=textSetting.textList["font2"])
-            musicLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
+            musicLb.grid(row=i + 1, column=0, sticky=tkinter.W + tkinter.E)
             if i == 2 or i == 3:
                 self.varMusic = tkinter.DoubleVar()
                 if self.mode == "modify":
@@ -239,7 +242,7 @@ class EditMusicListWidget(CustomSimpleDialog):
                     self.varMusic.set(musicInfo[i])
             self.varList.append(self.varMusic)
             musicEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varMusic, font=textSetting.textList["font2"])
-            musicEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+            musicEt.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
 
         if self.mode == "insert":
             self.setInsertWidget(master, len(musicInfoLb))

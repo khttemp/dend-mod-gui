@@ -122,15 +122,15 @@ class EditSimpleListWidget(CustomSimpleDialog):
         valLb.grid(columnspan=2, row=0, column=0, sticky=tkinter.W + tkinter.E)
 
         tempNameLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["railEditor"]["editValueLabel"], font=textSetting.textList["font2"], width=12)
-        tempNameLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
+        tempNameLb.grid(row=1, column=0, sticky=tkinter.W + tkinter.E)
         self.varTemp = tkinter.StringVar()
         if self.mode == "modify":
             self.varTemp.set(self.simpleList[self.index])
         txtEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varTemp, font=textSetting.textList["font2"])
-        txtEt.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
+        txtEt.grid(row=1, column=1, sticky=tkinter.W + tkinter.E)
 
         if self.mode == "insert":
-            self.setInsertWidget(master, 1)
+            self.setInsertWidget(master, 2)
         super().body(master)
 
     def setInsertWidget(self, master, index):
