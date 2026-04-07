@@ -2,9 +2,9 @@ from functools import partial
 
 import tkinter
 from tkinter import messagebox as mb
-import program.textSetting as textSetting
-import program.appearance.ttkCustomWidget as ttkCustomWidget
-from program.appearance.customSimpleDialog import CustomSimpleDialog
+import program.sub.textSetting as textSetting
+import program.sub.appearance.ttkCustomWidget as ttkCustomWidget
+from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
 
 
 class Else1ListWidget:
@@ -47,9 +47,9 @@ class Else1ListWidget:
                     self.varList.append(varTemp)
                     tempfTextLb = ttkCustomWidget.CustomTtkLabel(txtFrame2, textvariable=self.varList[self.varCnt], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
                     tempfTextLb.grid(row=i, column=j, sticky=tkinter.W + tkinter.E)
-                    tempfBtn = ttkCustomWidget.CustomTtkButton(txtFrame2, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=partial(self.editVarList, i, else1Info))
-                    tempfBtn.grid(row=i, column=len(else1Info), sticky=tkinter.W + tkinter.E)
                     self.varCnt += 1
+                tempfBtn = ttkCustomWidget.CustomTtkButton(txtFrame2, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=partial(self.editVarList, i, else1Info))
+                tempfBtn.grid(row=i, column=len(else1Info), sticky=tkinter.W + tkinter.E)
         else:
             txtFrame2 = ttkCustomWidget.CustomTtkFrame(else1Lf)
             txtFrame2.pack(anchor=tkinter.NW, pady=5)
@@ -60,9 +60,9 @@ class Else1ListWidget:
                 self.varList.append(varTemp)
                 tempfTextLb = ttkCustomWidget.CustomTtkLabel(txtFrame2, textvariable=self.varList[self.varCnt], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
                 tempfTextLb.grid(row=0, column=i, sticky=tkinter.W + tkinter.E)
-                tempfBtn = ttkCustomWidget.CustomTtkButton(txtFrame2, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=partial(self.editVarList2, self.else1List))
-                tempfBtn.grid(row=0, column=len(self.else1List), sticky=tkinter.W + tkinter.E)
                 self.varCnt += 1
+            tempfBtn = ttkCustomWidget.CustomTtkButton(txtFrame2, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=partial(self.editVarList2, self.else1List))
+            tempfBtn.grid(row=0, column=len(self.else1List), sticky=tkinter.W + tkinter.E)
 
     def editVarList(self, i, valList):
         result = EditElse1ListWidget(self.root, textSetting.textList["railEditor"]["editElse1Label"], self.decryptFile, valList, self.rootFrameAppearance)
@@ -76,7 +76,6 @@ class Else1ListWidget:
                 mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
                 return
             mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I75"])
-
             self.reloadFunc()
 
     def editVarList2(self, valList):
@@ -88,7 +87,6 @@ class Else1ListWidget:
                 mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
                 return
             mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I75"])
-
             self.reloadFunc()
 
 
