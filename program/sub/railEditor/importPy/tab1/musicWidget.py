@@ -130,12 +130,12 @@ class EditMusicList(CustomSimpleDialog):
 
         copyMusicList = self.setListboxInfo(self.musicList)
         self.v_musicList = tkinter.StringVar(value=copyMusicList)
-        musicListListbox = tkinter.Listbox(listFrame, selectmode="single", font=textSetting.textList["font2"], width=55, height=6, listvariable=self.v_musicList, bg=self.rootFrameAppearance.bgColor, fg=self.rootFrameAppearance.fgColor)
-        musicListListbox.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
-        musicListListbox.bind("<<ListboxSelect>>", lambda e: self.buttonActive(musicListListbox, musicListListbox.curselection()))
+        self.musicListListbox = tkinter.Listbox(listFrame, selectmode="single", font=textSetting.textList["font2"], width=55, height=6, listvariable=self.v_musicList, bg=self.rootFrameAppearance.bgColor, fg=self.rootFrameAppearance.fgColor)
+        self.musicListListbox.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
+        self.musicListListbox.bind("<<ListboxSelect>>", lambda e: self.buttonActive(self.musicListListbox.curselection()))
         super().body(master)
 
-    def buttonActive(self, listbox, value):
+    def buttonActive(self, value):
         if len(value) == 0:
             self.modifyBtn["state"] = "disabled"
             self.insertBtn["state"] = "disabled"
@@ -144,7 +144,7 @@ class EditMusicList(CustomSimpleDialog):
         self.selectIndexNum = value[0]
 
         if self.decryptFile.game in ["BS", "CS", "RS"]:
-            if listbox.get(value[0]) == textSetting.textList["railEditor"]["noList"]:
+            if self.musicListListbox.get(value[0]) == textSetting.textList["railEditor"]["noList"]:
                 self.modifyBtn["state"] = "disabled"
                 self.deleteBtn["state"] = "disabled"
             else:
@@ -172,6 +172,8 @@ class EditMusicList(CustomSimpleDialog):
             self.musicList[self.selectIndexNum] = result.resultValueList
             copyMusicList = self.setListboxInfo(self.musicList)
             self.v_musicList.set(copyMusicList)
+            self.musicListListbox.selection_clear(0, tkinter.END)
+            self.musicListListbox.selection_set(self.selectIndexNum)
 
     def insert(self):
         result = EditMusicListWidget(self.frame, textSetting.textList["railEditor"]["insertBgmLabel"], self.decryptFile, "insert", self.selectIndexNum, self.musicList, self.rootFrameAppearance)
@@ -180,6 +182,9 @@ class EditMusicList(CustomSimpleDialog):
             self.musicList.insert(self.selectIndexNum + result.insertPos, result.resultValueList)
             copyMusicList = self.setListboxInfo(self.musicList)
             self.v_musicList.set(copyMusicList)
+            self.musicListListbox.selection_clear(0, tkinter.END)
+            self.selectIndexNum = self.selectIndexNum + result.insertPos
+            self.musicListListbox.selection_set(self.selectIndexNum)
 
     def delete(self):
         msg = textSetting.textList["infoList"]["I25"].format(self.selectIndexNum + 1)
