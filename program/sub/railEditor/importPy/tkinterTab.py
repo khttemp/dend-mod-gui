@@ -10,7 +10,7 @@ from program.sub.railEditor.importPy.tab1.railPosWidget import RailPosWidget
 from program.sub.railEditor.importPy.tab1.stationNoWidget import StationNoWidget
 
 from program.sub.railEditor.importPy.tab2.else1ListWidget import Else1ListWidget
-# from program.railEditor.importPy.tab2.simpleListWidget import SimpleListWidget
+from program.sub.railEditor.importPy.tab2.simpleListWidget import SimpleListWidget
 # from program.railEditor.importPy.tab2.stationWidget import StationWidget
 # from program.railEditor.importPy.tab2.binAnimeListWidget import BinAnimeListWidget
 
@@ -59,18 +59,18 @@ def tab2AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc):
     frame.pack(expand=True, fill=tkinter.BOTH)
     Else1ListWidget(root, frame.interior, decryptFile, decryptFile.else1List, rootFrameAppearance, reloadFunc)
 
-    # if decryptFile.game in ["BS", "CS", "RS"]:
-    #     simpleListFrame = ttkCustomWidget.CustomTtkFrame(frame.interior)
-    #     simpleListFrame.pack(anchor=tkinter.NW)
-    #     SimpleListWidget(root, simpleListFrame, textSetting.textList["railEditor"]["lightInfo"], decryptFile, decryptFile.lightList, decryptFile.lightIdx, 1, rootFrameAppearance, reloadFunc)
-    #     if decryptFile.game in ["CS", "RS"]:
-    #         SimpleListWidget(root, simpleListFrame, textSetting.textList["railEditor"]["stationInfo"], decryptFile, decryptFile.pngList, decryptFile.pngIdx, 2, rootFrameAppearance, reloadFunc)
-    #         StationWidget(root, frame.interior, decryptFile, decryptFile.stationList, rootFrameAppearance, reloadFunc)
+    if decryptFile.game in ["BS", "CS", "RS"]:
+        simpleListFrame = ttkCustomWidget.CustomTtkFrame(frame.interior)
+        simpleListFrame.pack(anchor=tkinter.NW)
+        SimpleListWidget(root, simpleListFrame, textSetting.textList["railEditor"]["lightInfo"], decryptFile, decryptFile.lightList, decryptFile.lightIdx, 1, rootFrameAppearance, reloadFunc)
+        if decryptFile.game in ["CS", "RS"]:
+            SimpleListWidget(root, simpleListFrame, textSetting.textList["railEditor"]["stationInfo"], decryptFile, decryptFile.pngList, decryptFile.pngIdx, 2, rootFrameAppearance, reloadFunc)
+            # StationWidget(root, frame.interior, decryptFile, decryptFile.stationList, rootFrameAppearance, reloadFunc)
 
-    # simpleListFrame2 = ttkCustomWidget.CustomTtkFrame(frame.interior)
-    # simpleListFrame2.pack(anchor=tkinter.NW)
-    # if decryptFile.game in ["BS", "CS", "RS"]:
-    #     SimpleListWidget(root, simpleListFrame2, textSetting.textList["railEditor"]["baseBinInfo"], decryptFile, decryptFile.baseBinList, decryptFile.binIdx, 1, rootFrameAppearance, reloadFunc)
+    simpleListFrame2 = ttkCustomWidget.CustomTtkFrame(frame.interior)
+    simpleListFrame2.pack(anchor=tkinter.NW)
+    if decryptFile.game in ["BS", "CS", "RS"]:
+        SimpleListWidget(root, simpleListFrame2, textSetting.textList["railEditor"]["baseBinInfo"], decryptFile, decryptFile.baseBinList, decryptFile.binIdx, 1, rootFrameAppearance, reloadFunc)
     # BinAnimeListWidget(root, simpleListFrame2, decryptFile, decryptFile.binAnimeList, rootFrameAppearance, reloadFunc)
 
 

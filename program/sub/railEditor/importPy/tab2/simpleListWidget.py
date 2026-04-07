@@ -2,9 +2,9 @@ import copy
 
 import tkinter
 from tkinter import messagebox as mb
-import program.textSetting as textSetting
-import program.appearance.ttkCustomWidget as ttkCustomWidget
-from program.appearance.customSimpleDialog import CustomSimpleDialog
+import program.sub.textSetting as textSetting
+import program.sub.appearance.ttkCustomWidget as ttkCustomWidget
+from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
 
 
 class SimpleListWidget:
@@ -73,6 +73,7 @@ class SimpleListWidget:
     def modify(self):
         result = EditSimpleListWidget(self.root, self.text + textSetting.textList["railEditor"]["commonModifyLabel"], self.decryptFile, "modify", self.selectIndexNum, self.simpleList, self.rootFrameAppearance)
         if result.reloadFlag:
+            self.simpleList[self.selectIndexNum] = result.resultValue
             if not self.decryptFile.saveSimpleList(self.index, self.listCntVer, result.simpleList):
                 self.decryptFile.printError()
                 mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
@@ -83,6 +84,7 @@ class SimpleListWidget:
     def insert(self):
         result = EditSimpleListWidget(self.root, self.text + textSetting.textList["railEditor"]["commonInsertLabel"], self.decryptFile, "insert", self.selectIndexNum, self.simpleList, self.rootFrameAppearance)
         if result.reloadFlag:
+            self.simpleList.insert(self.selectIndexNum + result.insertPos, result.resultValue)
             if not self.decryptFile.saveSimpleList(self.index, self.listCntVer, result.simpleList):
                 self.decryptFile.printError()
                 mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
@@ -109,6 +111,7 @@ class EditSimpleListWidget(CustomSimpleDialog):
         self.mode = mode
         self.index = index
         self.simpleList = simpleList
+        self.resultValue = ""
         self.reloadFlag = False
         super().__init__(master, title, rootFrameAppearance.bgColor)
 
@@ -142,8 +145,11 @@ class EditSimpleListWidget(CustomSimpleDialog):
         self.insertCb.current(0)
 
     def validate(self):
+        if self.mode == "insert":
+            self.insertPos = 1
+            if self.insertCb.current() == 1:
+                self.insertPos = 0
         result = mb.askokcancel(title=textSetting.textList["confirm"], message=textSetting.textList["infoList"]["I21"], parent=self)
-
         if result:
             try:
                 res = self.varTemp.get()
@@ -151,14 +157,7 @@ class EditSimpleListWidget(CustomSimpleDialog):
                     errorMsg = textSetting.textList["infoList"]["I44"]
                     mb.showerror(title=textSetting.textList["valueError"], message=errorMsg)
                     return False
-                if self.mode == "modify":
-                    self.simpleList[self.index] = res
-                else:
-                    insertIdx = self.insertCb.current()
-                    if insertIdx == 0:
-                        self.simpleList.insert(self.index + 1, res)
-                    else:
-                        self.simpleList.insert(self.index, res)
+                self.resultValue = res
                 return True
             except Exception:
                 errorMsg = textSetting.textList["errorList"]["E14"]
