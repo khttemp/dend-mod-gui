@@ -12,7 +12,7 @@ from program.sub.railEditor.importPy.tab1.stationNoWidget import StationNoWidget
 from program.sub.railEditor.importPy.tab2.else1ListWidget import Else1ListWidget
 from program.sub.railEditor.importPy.tab2.simpleListWidget import SimpleListWidget
 from program.sub.railEditor.importPy.tab2.stationAmbWidget import StationAmbWidget
-# from program.railEditor.importPy.tab2.binAnimeListWidget import BinAnimeListWidget
+from program.sub.railEditor.importPy.tab2.binAnimeListWidget import BinAnimeListWidget
 
 # from program.railEditor.importPy.tab3.smfListWidget import SmfListWidget
 
@@ -71,7 +71,7 @@ def tab2AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc):
     simpleListFrame2.pack(anchor=tkinter.NW)
     if decryptFile.game in ["BS", "CS", "RS"]:
         SimpleListWidget(root, simpleListFrame2, textSetting.textList["railEditor"]["baseBinInfo"], decryptFile, decryptFile.baseBinList, decryptFile.binIdx, 1, rootFrameAppearance, reloadFunc)
-    # BinAnimeListWidget(root, simpleListFrame2, decryptFile, decryptFile.binAnimeList, rootFrameAppearance, reloadFunc)
+    BinAnimeListWidget(root, simpleListFrame2, decryptFile, decryptFile.binAnimeList, rootFrameAppearance, reloadFunc)
 
 
 def tab3AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc, selectId):

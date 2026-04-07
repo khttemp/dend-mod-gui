@@ -148,15 +148,18 @@ class EditStationWidget(CustomSimpleDialog):
     def body(self, master):
         self.resizable(False, False)
 
+        valLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
+        valLb.grid(columnspan=2, row=0, column=0, sticky=tkinter.W + tkinter.E)
+
         stationInfoLbList = textSetting.textList["railEditor"]["editStationInfoLabelList"]
         for i in range(len(self.stationInfo)):
             stationLb = ttkCustomWidget.CustomTtkLabel(master, text=stationInfoLbList[i], font=textSetting.textList["font2"])
-            stationLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
+            stationLb.grid(row=i + 1, column=0, sticky=tkinter.W + tkinter.E)
             varStation = tkinter.IntVar()
             varStation.set(self.stationInfo[i])
             self.varList.append(varStation)
             stationEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
-            stationEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+            stationEt.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
         super().body(master)
 
     def validate(self):
