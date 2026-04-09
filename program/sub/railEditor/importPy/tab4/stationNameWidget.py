@@ -1,21 +1,25 @@
+import copy
+
 import tkinter
 from tkinter import messagebox as mb
-import program.textSetting as textSetting
-import program.appearance.ttkCustomWidget as ttkCustomWidget
-from program.appearance.customSimpleDialog import CustomSimpleDialog
+import program.sub.textSetting as textSetting
+import program.sub.appearance.ttkCustomWidget as ttkCustomWidget
+from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
 
-from program.railEditor.importPy.tkinterScrollbarTreeviewRailEditor import ScrollbarTreeviewRailEditor
+from program.sub.railEditor.importPy.tkinterScrollbarTreeviewRailEditor import ScrollbarTreeviewRailEditor
 
 
 class StationNameWidget:
-    def __init__(self, root, frame, decryptFile, stationNameList, rootFrameAppearance, reloadFunc, selectId):
+    def __init__(self, root, frame, decryptFile, rootFrameAppearance, reloadFunc, selectId):
         self.root = root
         self.frame = frame
         self.decryptFile = decryptFile
-        self.stationNameList = stationNameList
+        self.stationNameList = decryptFile.stationNameList
         self.rootFrameAppearance = rootFrameAppearance
         self.reloadFunc = reloadFunc
+        self.selectId = selectId
         self.copyStationNameInfo = []
+
         stationNameLf = ttkCustomWidget.CustomTtkLabelFrame(self.frame, text=textSetting.textList["railEditor"]["stationNameLabel"])
         stationNameLf.pack(anchor=tkinter.NW, padx=10, pady=5, fill=tkinter.BOTH, expand=True)
 
@@ -38,8 +42,8 @@ class StationNameWidget:
         editLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["railEditor"]["commonEditLineLabel"], width=25, state="disabled", command=self.editLine)
         editLineBtn.grid(row=0, column=0, padx=10, pady=15)
 
-        insertLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["railEditor"]["commonInsertLineLabel"], width=25, state="disabled", command=self.insertLine)
-        insertLineBtn.grid(row=0, column=1, padx=10, pady=15)
+        self.insertLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["railEditor"]["commonInsertLineLabel"], width=25, state="disabled", command=self.insertLine)
+        self.insertLineBtn.grid(row=0, column=1, padx=10, pady=15)
 
         deleteLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["railEditor"]["commonDeleteLineLabel"], width=25, state="disabled", command=self.deleteLine)
         deleteLineBtn.grid(row=0, column=2, padx=10, pady=15)
@@ -52,16 +56,22 @@ class StationNameWidget:
 
         btnList = [
             editLineBtn,
-            insertLineBtn,
+            self.insertLineBtn,
             deleteLineBtn,
             copyLineBtn
         ]
-
         self.treeviewFrame = ScrollbarTreeviewRailEditor(stationNameLf, self.v_select, btnList)
 
-        if len(self.stationNameList) == 0:
-            insertLineBtn["state"] = "normal"
+        self.createStationNameTable()
+        self.jumpToSelect()
 
+    def createStationNameTable(self):
+        self.setStationNameTableHeader()
+        self.setStationNameTableData()
+        if len(self.stationNameList) == 0:
+            self.insertLineBtn["state"] = "normal"
+
+    def setStationNameTableHeader(self):
         if self.decryptFile.game in ["CS", "RS"]:
             col_tuple = (
                 "treeNum",
@@ -76,7 +86,6 @@ class StationNameWidget:
                 "stationNameE3",
                 "stationNameE4"
             )
-
             self.treeviewFrame.tree["columns"] = col_tuple
             self.treeviewFrame.tree.column("#0", width=0, stretch=False)
             self.treeviewFrame.tree.column("treeNum", anchor=tkinter.CENTER, width=50, stretch=False)
@@ -102,17 +111,6 @@ class StationNameWidget:
             self.treeviewFrame.tree.heading("stationNameE2", text=textSetting.textList["railEditor"]["stationNameE2"], anchor=tkinter.CENTER)
             self.treeviewFrame.tree.heading("stationNameE3", text=textSetting.textList["railEditor"]["stationNameE3"], anchor=tkinter.CENTER)
             self.treeviewFrame.tree.heading("stationNameE4", text=textSetting.textList["railEditor"]["stationNameE4"], anchor=tkinter.CENTER)
-
-            self.treeviewFrame.tree["displaycolumns"] = col_tuple
-
-            index = 0
-            for stNameInfo in self.stationNameList:
-                data = (index,)
-                data += (stNameInfo[0], stNameInfo[1], stNameInfo[2])
-                data += (round(float(stNameInfo[3]), 3), round(float(stNameInfo[4]), 3), round(float(stNameInfo[5]), 3))
-                data += (stNameInfo[6], stNameInfo[7], stNameInfo[8], stNameInfo[9])
-                self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data)
-                index += 1
         elif self.decryptFile.game == "BS":
             col_tuple = (
                 "treeNum",
@@ -120,7 +118,6 @@ class StationNameWidget:
                 "stationNameFlag",
                 "stationNameRailNo"
             )
-
             self.treeviewFrame.tree["columns"] = col_tuple
             self.treeviewFrame.tree.column("#0", width=0, stretch=False)
             self.treeviewFrame.tree.column("treeNum", anchor=tkinter.CENTER, width=50, stretch=False)
@@ -132,15 +129,6 @@ class StationNameWidget:
             self.treeviewFrame.tree.heading("stationNameName", text=textSetting.textList["railEditor"]["stationNameName"], anchor=tkinter.CENTER)
             self.treeviewFrame.tree.heading("stationNameFlag", text=textSetting.textList["railEditor"]["stationNameFlag"], anchor=tkinter.CENTER)
             self.treeviewFrame.tree.heading("stationNameRailNo", text=textSetting.textList["railEditor"]["stationNameRailNo"], anchor=tkinter.CENTER)
-
-            self.treeviewFrame.tree["displaycolumns"] = col_tuple
-
-            index = 0
-            for stNameInfo in self.stationNameList:
-                data = (index,)
-                data += (stNameInfo[0], stNameInfo[1], stNameInfo[2])
-                self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data)
-                index += 1
         elif self.decryptFile.game == "LS":
             col_tuple = (
                 "treeNum",
@@ -154,7 +142,6 @@ class StationNameWidget:
                 "stationNameF5",
                 "stationNameF6"
             )
-
             self.treeviewFrame.tree["columns"] = col_tuple
             self.treeviewFrame.tree.column("#0", width=0, stretch=False)
             self.treeviewFrame.tree.column("treeNum", anchor=tkinter.CENTER, width=50, stretch=False)
@@ -178,16 +165,6 @@ class StationNameWidget:
             self.treeviewFrame.tree.heading("stationNameF4", text=textSetting.textList["railEditor"]["stationNameF4"], anchor=tkinter.CENTER)
             self.treeviewFrame.tree.heading("stationNameF5", text=textSetting.textList["railEditor"]["stationNameF5"], anchor=tkinter.CENTER)
             self.treeviewFrame.tree.heading("stationNameF6", text=textSetting.textList["railEditor"]["stationNameF6"], anchor=tkinter.CENTER)
-
-            self.treeviewFrame.tree["displaycolumns"] = col_tuple
-
-            index = 0
-            for stNameInfo in self.stationNameList:
-                data = (index,)
-                data += (stNameInfo[0], stNameInfo[1], stNameInfo[2])
-                data += (stNameInfo[3], stNameInfo[4], stNameInfo[5], stNameInfo[6], stNameInfo[7], stNameInfo[8])
-                self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data)
-                index += 1
         elif self.decryptFile.game == "LSTrial":
             if self.decryptFile.readFlag:
                 col_tuple = (
@@ -202,7 +179,6 @@ class StationNameWidget:
                     "stationNameF5",
                     "stationNameF6"
                 )
-
                 self.treeviewFrame.tree["columns"] = col_tuple
                 self.treeviewFrame.tree.column("#0", width=0, stretch=False)
                 self.treeviewFrame.tree.column("treeNum", anchor=tkinter.CENTER, width=50, stretch=False)
@@ -226,16 +202,6 @@ class StationNameWidget:
                 self.treeviewFrame.tree.heading("stationNameF4", text=textSetting.textList["railEditor"]["stationNameF4"], anchor=tkinter.CENTER)
                 self.treeviewFrame.tree.heading("stationNameF5", text=textSetting.textList["railEditor"]["stationNameF5"], anchor=tkinter.CENTER)
                 self.treeviewFrame.tree.heading("stationNameF6", text=textSetting.textList["railEditor"]["stationNameF6"], anchor=tkinter.CENTER)
-
-                self.treeviewFrame.tree["displaycolumns"] = col_tuple
-
-                index = 0
-                for stNameInfo in self.stationNameList:
-                    data = (index,)
-                    data += (stNameInfo[0], stNameInfo[1], stNameInfo[2])
-                    data += (stNameInfo[3], stNameInfo[4], stNameInfo[5], stNameInfo[6], stNameInfo[7], stNameInfo[8])
-                    self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data)
-                    index += 1
             else:
                 col_tuple = (
                     "treeNum",
@@ -248,7 +214,6 @@ class StationNameWidget:
                     "stationNameF5",
                     "stationNameF6"
                 )
-
                 self.treeviewFrame.tree["columns"] = col_tuple
                 self.treeviewFrame.tree.column("#0", width=0, stretch=False)
                 self.treeviewFrame.tree.column("treeNum", anchor=tkinter.CENTER, width=50, stretch=False)
@@ -270,31 +235,58 @@ class StationNameWidget:
                 self.treeviewFrame.tree.heading("stationNameF4", text=textSetting.textList["railEditor"]["stationNameF4"], anchor=tkinter.CENTER)
                 self.treeviewFrame.tree.heading("stationNameF5", text=textSetting.textList["railEditor"]["stationNameF5"], anchor=tkinter.CENTER)
                 self.treeviewFrame.tree.heading("stationNameF6", text=textSetting.textList["railEditor"]["stationNameF6"], anchor=tkinter.CENTER)
+        self.treeviewFrame.tree["displaycolumns"] = col_tuple
 
-                self.treeviewFrame.tree["displaycolumns"] = col_tuple
-
-                index = 0
-                for stNameInfo in self.stationNameList:
+    def setStationNameTableData(self):
+        for index, stNameInfo in enumerate(self.stationNameList):
+            if self.decryptFile.game in ["CS", "RS"]:
+                data = (index,)
+                data += (stNameInfo[0], stNameInfo[1], stNameInfo[2])
+                data += (round(float(stNameInfo[3]), 3), round(float(stNameInfo[4]), 3), round(float(stNameInfo[5]), 3))
+                data += (stNameInfo[6], stNameInfo[7], stNameInfo[8], stNameInfo[9])
+                self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data)
+            elif self.decryptFile.game == "BS":
+                data = (index,)
+                data += (stNameInfo[0], stNameInfo[1], stNameInfo[2])
+                self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data)
+            elif self.decryptFile.game == "LS":
+                data = (index,)
+                data += (stNameInfo[0], stNameInfo[1], stNameInfo[2])
+                data += (stNameInfo[3], stNameInfo[4], stNameInfo[5], stNameInfo[6], stNameInfo[7], stNameInfo[8])
+                self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data)
+            elif self.decryptFile.game == "LSTrial":
+                if self.decryptFile.readFlag:
+                    data = (index,)
+                    data += (stNameInfo[0], stNameInfo[1], stNameInfo[2])
+                    data += (stNameInfo[3], stNameInfo[4], stNameInfo[5], stNameInfo[6], stNameInfo[7], stNameInfo[8])
+                    self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data)
+                else:
                     data = (index,)
                     data += (stNameInfo[0], stNameInfo[1],)
                     data += (stNameInfo[2], stNameInfo[3], stNameInfo[4], stNameInfo[5], stNameInfo[6], stNameInfo[7],)
                     self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data)
-                    index += 1
 
-        if selectId is not None:
-            if selectId >= len(self.stationNameList):
-                selectId = len(self.stationNameList) - 1
-            if selectId - 3 < 0:
+    def jumpToSelect(self):
+        if self.selectId is not None:
+            if self.selectId >= len(self.stationNameList):
+                self.selectId = len(self.stationNameList) - 1
+            if self.selectId - 3 < 0:
                 self.treeviewFrame.tree.see(0)
             else:
-                self.treeviewFrame.tree.see(selectId - 3)
-            self.treeviewFrame.tree.selection_set(selectId)
+                self.treeviewFrame.tree.see(self.selectId - 3)
+            self.treeviewFrame.tree.selection_set(self.selectId)
 
     def editLine(self):
+        if not self.treeviewFrame.tree.selection():
+            return
+
+        headerNameList = [self.treeviewFrame.tree.heading(col)["text"] for col in self.treeviewFrame.tree.cget("columns")]
+        headerNameList.pop(0)
         selectId = self.treeviewFrame.tree.selection()[0]
         selectItem = self.treeviewFrame.tree.set(selectId)
         num = int(selectItem["treeNum"])
-        result = EditStationNameListWidget(self.root, textSetting.textList["railEditor"]["modifyStationNameLabel"], self.decryptFile, "modify", num, selectItem, self.rootFrameAppearance)
+        item = self.stationNameList[num]
+        result = EditStationNameListWidget(self.root, textSetting.textList["railEditor"]["modifyStationNameLabel"], self.decryptFile, "modify", num, headerNameList, item, self.rootFrameAppearance)
         if result.reloadFlag:
             if not self.decryptFile.saveStationNameInfo(num, "modify", result.resultValueList):
                 self.decryptFile.printError()
@@ -304,25 +296,18 @@ class StationNameWidget:
             self.reloadFunc(selectId)
 
     def insertLine(self):
-        noStationNameInfoFlag = False
+        headerNameList = [self.treeviewFrame.tree.heading(col)["text"] for col in self.treeviewFrame.tree.cget("columns")]
+        headerNameList.pop(0)
         if not self.treeviewFrame.tree.selection():
-            noStationNameInfoFlag = True
             selectId = None
             num = 0
-            keyList = self.treeviewFrame.tree["columns"]
-            selectItem = {}
-            for key in keyList:
-                selectItem[key] = None
         else:
             selectId = self.treeviewFrame.tree.selection()[0]
             selectItem = self.treeviewFrame.tree.set(selectId)
-            num = int(selectItem["treeNum"])
-        result = EditStationNameListWidget(self.root, textSetting.textList["railEditor"]["insertStationNameLabel"], self.decryptFile, "insert", num, selectItem, self.rootFrameAppearance)
+            num = int(selectItem["treeNum"]) + 1
+        result = EditStationNameListWidget(self.root, textSetting.textList["railEditor"]["insertStationNameLabel"], self.decryptFile, "insert", num, headerNameList, None, self.rootFrameAppearance)
         if result.reloadFlag:
-            if not noStationNameInfoFlag:
-                if result.insert == 0:
-                    num += 1
-            if not self.decryptFile.saveStationNameInfo(num, "insert", result.resultValueList):
+            if not self.decryptFile.saveStationNameInfo(num + result.insertPos, "insert", result.resultValueList):
                 self.decryptFile.printError()
                 mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
                 return
@@ -330,6 +315,9 @@ class StationNameWidget:
             self.reloadFunc(selectId)
 
     def deleteLine(self):
+        if not self.treeviewFrame.tree.selection():
+            return
+
         selectId = self.treeviewFrame.tree.selection()[0]
         selectItem = self.treeviewFrame.tree.set(selectId)
         num = int(selectItem["treeNum"])
@@ -346,154 +334,158 @@ class StationNameWidget:
             self.reloadFunc(selectId)
 
     def copyLine(self):
+        if not self.treeviewFrame.tree.selection():
+            return
+
         selectId = self.treeviewFrame.tree.selection()[0]
         selectItem = self.treeviewFrame.tree.set(selectId)
-
-        stationNameInfoKeyList = list(selectItem.keys())
-        stationNameInfoKeyList.pop(0)
-        copyList = []
-        for i in range(len(stationNameInfoKeyList)):
-            key = stationNameInfoKeyList[i]
-            copyList.append(selectItem[key])
-        self.copyStationNameInfo = copyList
+        num = int(selectItem["treeNum"])
+        self.copyStationNameInfo = copy.deepcopy(self.stationNameList[num])
         mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I12"])
         self.pasteLineBtn["state"] = "normal"
 
     def pasteLine(self):
+        if not self.treeviewFrame.tree.selection():
+            return
+
         selectId = self.treeviewFrame.tree.selection()[0]
         selectItem = self.treeviewFrame.tree.set(selectId)
-        result = PasteStationNameDialog(self.root, textSetting.textList["railEditor"]["pasteStationNameLabel"], self.decryptFile, int(selectItem["treeNum"]), self.copyStationNameInfo, self.rootFrameAppearance)
+        num = int(selectItem["treeNum"])
+        result = PasteStationNameDialog(self.root, textSetting.textList["railEditor"]["pasteStationNameLabel"], self.decryptFile, num, self.copyStationNameInfo, self.rootFrameAppearance)
         if result.reloadFlag:
             self.reloadFunc(selectId)
 
 
 class EditStationNameListWidget(CustomSimpleDialog):
-    def __init__(self, master, title, decryptFile, mode, num, stationNameInfo, rootFrameAppearance):
+    def __init__(self, master, title, decryptFile, mode, num, headerNameList, stationNameInfo, rootFrameAppearance):
         self.decryptFile = decryptFile
         self.mode = mode
         self.num = num
+        self.headerNameList = headerNameList
         self.stationNameInfo = stationNameInfo
+        self.rootFrameAppearance = rootFrameAppearance
         self.varList = []
         self.reloadFlag = False
-        self.insert = 0
+        self.insertPos = 0
         self.resultValueList = []
         super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
         self.resizable(False, False)
 
-        stationNameInfoKeyList = list(self.stationNameInfo.keys())
-        stationNameInfoKeyList.pop(0)
-        for i in range(len(stationNameInfoKeyList)):
-            stationNameInfoLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["railEditor"][stationNameInfoKeyList[i]], font=textSetting.textList["font2"])
-            stationNameInfoLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
+        valLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
+        valLb.grid(columnspan=2, row=0, column=0, sticky=tkinter.W + tkinter.E)
+
+        for i, headerName in enumerate(self.headerNameList):
+            stationNameInfoLb = ttkCustomWidget.CustomTtkLabel(master, text=headerName, font=textSetting.textList["font2"])
+            stationNameInfoLb.grid(row=i + 1, column=0, sticky=tkinter.W + tkinter.E)
             if self.decryptFile.game in ["CS", "RS"]:
                 if i == 0:
                     varStationNameInfo = tkinter.StringVar()
                     self.varList.append(varStationNameInfo)
                     stationNameInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
-                    stationNameInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                    stationNameInfoEt.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
                     if self.mode == "modify":
-                        varStationNameInfo.set(self.stationNameInfo[stationNameInfoKeyList[i]])
+                        varStationNameInfo.set(self.stationNameInfo[i])
                 elif i in [3, 4, 5]:
                     varStationNameInfo = tkinter.DoubleVar()
                     self.varList.append(varStationNameInfo)
                     stationNameInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
-                    stationNameInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                    stationNameInfoEt.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
                     if self.mode == "modify":
-                        varStationNameInfo.set(self.stationNameInfo[stationNameInfoKeyList[i]])
+                        varStationNameInfo.set(self.stationNameInfo[i])
                 else:
                     varStationNameInfo = tkinter.IntVar()
                     self.varList.append(varStationNameInfo)
                     stationNameInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
-                    stationNameInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                    stationNameInfoEt.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
                     if self.mode == "modify":
-                        varStationNameInfo.set(self.stationNameInfo[stationNameInfoKeyList[i]])
+                        varStationNameInfo.set(self.stationNameInfo[i])
             elif self.decryptFile.game == "BS":
                 if i == 0:
                     varStationNameInfo = tkinter.StringVar()
                     self.varList.append(varStationNameInfo)
                     stationNameInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
-                    stationNameInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                    stationNameInfoEt.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
                     if self.mode == "modify":
-                        varStationNameInfo.set(self.stationNameInfo[stationNameInfoKeyList[i]])
+                        varStationNameInfo.set(self.stationNameInfo[i])
                 else:
                     varStationNameInfo = tkinter.IntVar()
                     self.varList.append(varStationNameInfo)
                     stationNameInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
-                    stationNameInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                    stationNameInfoEt.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
                     if self.mode == "modify":
-                        varStationNameInfo.set(self.stationNameInfo[stationNameInfoKeyList[i]])
+                        varStationNameInfo.set(self.stationNameInfo[i])
             elif self.decryptFile.game == "LS":
                 if i == 0:
                     varStationNameInfo = tkinter.StringVar()
                     self.varList.append(varStationNameInfo)
                     stationNameInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
-                    stationNameInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                    stationNameInfoEt.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
                     if self.mode == "modify":
-                        varStationNameInfo.set(self.stationNameInfo[stationNameInfoKeyList[i]])
+                        varStationNameInfo.set(self.stationNameInfo[i])
                 elif i in [1, 2]:
                     varStationNameInfo = tkinter.IntVar()
                     self.varList.append(varStationNameInfo)
                     stationNameInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
-                    stationNameInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                    stationNameInfoEt.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
                     if self.mode == "modify":
-                        varStationNameInfo.set(self.stationNameInfo[stationNameInfoKeyList[i]])
+                        varStationNameInfo.set(self.stationNameInfo[i])
                 else:
                     varStationNameInfo = tkinter.DoubleVar()
                     self.varList.append(varStationNameInfo)
                     stationNameInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
-                    stationNameInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                    stationNameInfoEt.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
                     if self.mode == "modify":
-                        varStationNameInfo.set(self.stationNameInfo[stationNameInfoKeyList[i]])
+                        varStationNameInfo.set(self.stationNameInfo[i])
             elif self.decryptFile.game == "LSTrial":
                 if self.decryptFile.readFlag:
                     if i == 0:
                         varStationNameInfo = tkinter.StringVar()
                         self.varList.append(varStationNameInfo)
                         stationNameInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
-                        stationNameInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                        stationNameInfoEt.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
                         if self.mode == "modify":
-                            varStationNameInfo.set(self.stationNameInfo[stationNameInfoKeyList[i]])
+                            varStationNameInfo.set(self.stationNameInfo[i])
                     elif i in [1, 2]:
                         varStationNameInfo = tkinter.IntVar()
                         self.varList.append(varStationNameInfo)
                         stationNameInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
-                        stationNameInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                        stationNameInfoEt.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
                         if self.mode == "modify":
-                            varStationNameInfo.set(self.stationNameInfo[stationNameInfoKeyList[i]])
+                            varStationNameInfo.set(self.stationNameInfo[i])
                     else:
                         varStationNameInfo = tkinter.DoubleVar()
                         self.varList.append(varStationNameInfo)
                         stationNameInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
-                        stationNameInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                        stationNameInfoEt.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
                         if self.mode == "modify":
-                            varStationNameInfo.set(self.stationNameInfo[stationNameInfoKeyList[i]])
+                            varStationNameInfo.set(self.stationNameInfo[i])
                 else:
                     if i == 0:
                         varStationNameInfo = tkinter.StringVar()
                         self.varList.append(varStationNameInfo)
                         stationNameInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
-                        stationNameInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                        stationNameInfoEt.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
                         if self.mode == "modify":
-                            varStationNameInfo.set(self.stationNameInfo[stationNameInfoKeyList[i]])
+                            varStationNameInfo.set(self.stationNameInfo[i])
                     elif i == 1:
                         varStationNameInfo = tkinter.IntVar()
                         self.varList.append(varStationNameInfo)
                         stationNameInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
-                        stationNameInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                        stationNameInfoEt.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
                         if self.mode == "modify":
-                            varStationNameInfo.set(self.stationNameInfo[stationNameInfoKeyList[i]])
+                            varStationNameInfo.set(self.stationNameInfo[i])
                     else:
                         varStationNameInfo = tkinter.DoubleVar()
                         self.varList.append(varStationNameInfo)
                         stationNameInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
-                        stationNameInfoEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                        stationNameInfoEt.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
                         if self.mode == "modify":
-                            varStationNameInfo.set(self.stationNameInfo[stationNameInfoKeyList[i]])
+                            varStationNameInfo.set(self.stationNameInfo[i])
 
         if self.mode == "insert":
-            self.setInsertWidget(master, len(stationNameInfoKeyList))
+            self.setInsertWidget(master, len(self.headerNameList) + 1)
         super().body(master)
 
     def setInsertWidget(self, master, index):
@@ -579,7 +571,9 @@ class EditStationNameListWidget(CustomSimpleDialog):
                                 return False
 
                 if self.mode == "insert":
-                    self.insert = self.insertCb.current()
+                    self.insertPos = 0
+                    if self.insertCb.current() == 1:
+                        self.insertPos = -1
                 return True
             except Exception:
                 errorMsg = textSetting.textList["errorList"]["E14"]

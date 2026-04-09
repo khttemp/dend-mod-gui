@@ -16,7 +16,7 @@ from program.sub.railEditor.importPy.tab2.binAnimeListWidget import BinAnimeList
 
 from program.sub.railEditor.importPy.tab3.smfListWidget import SmfListWidget
 
-# from program.railEditor.importPy.tab4.stationNameWidget import StationNameWidget
+from program.sub.railEditor.importPy.tab4.stationNameWidget import StationNameWidget
 
 # from program.railEditor.importPy.tab5.else2ListWidget import Else2ListWidget
 
@@ -79,7 +79,7 @@ def tab3AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc, 
 
 
 def tab4AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc, selectId):
-    StationNameWidget(root, tabFrame, decryptFile, decryptFile.stationNameList, rootFrameAppearance, reloadFunc, selectId)
+    StationNameWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc, selectId)
 
 
 def tab5AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc):
