@@ -495,7 +495,7 @@ class SmfListWidget:
         else:
             selectId = self.treeviewFrame.tree.selection()[0]
             selectItem = self.treeviewFrame.tree.set(selectId)
-            num = int(selectItem["treeNum"])
+            num = int(selectItem["treeNum"]) + 1
         result = EditSmfListWidget(self.root, textSetting.textList["railEditor"]["insertSmfInfo"], self.decryptFile, "insert", num, headerNameList, None, self.rootFrameAppearance)
         if result.reloadFlag:
             if not self.decryptFile.saveSmfInfo(num + result.insertPos, "insert", result.resultValueList):
