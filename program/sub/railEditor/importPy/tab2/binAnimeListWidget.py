@@ -8,11 +8,11 @@ from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
 
 
 class BinAnimeListWidget:
-    def __init__(self, root, frame, decryptFile, binAnimeList, rootFrameAppearance, reloadFunc):
+    def __init__(self, root, frame, decryptFile, rootFrameAppearance, reloadFunc):
         self.root = root
         self.frame = frame
         self.decryptFile = decryptFile
-        self.binAnimeList = binAnimeList
+        self.binAnimeList = decryptFile.binAnimeList
         self.rootFrameAppearance = rootFrameAppearance
         self.reloadFunc = reloadFunc
 
@@ -29,13 +29,13 @@ class BinAnimeListWidget:
         binAnimeCntLb = ttkCustomWidget.CustomTtkLabel(txtFrame, textvariable=self.varBinAnimeCnt, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
         binAnimeCntLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
         if self.decryptFile.game in ["BS", "CS", "RS"]:
-            binAnimeCntBtn = ttkCustomWidget.CustomTtkButton(txtFrame, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=lambda: self.editBinAnimeCnt(self.varBinAnimeCnt.get()))
+            binAnimeCntBtn = ttkCustomWidget.CustomTtkButton(txtFrame, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=self.editBinAnimeCnt)
             binAnimeCntBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
 
-        txtFrame2 = ttkCustomWidget.CustomTtkFrame(eleLf)
-        txtFrame2.pack(anchor=tkinter.NW, pady=5)
-
         if len(self.binAnimeList) > 0:
+            txtFrame2 = ttkCustomWidget.CustomTtkFrame(eleLf)
+            txtFrame2.pack(anchor=tkinter.NW, pady=5)
+
             binAnimeHeaderLb = textSetting.textList["railEditor"]["editBinAnimeHeaderList"]
             for i in range(len(binAnimeHeaderLb)):
                 headerLb = ttkCustomWidget.CustomTtkLabel(txtFrame2, text=binAnimeHeaderLb[i], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
@@ -53,8 +53,8 @@ class BinAnimeListWidget:
                 temphBtn = ttkCustomWidget.CustomTtkButton(txtFrame2, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=partial(self.editBinAnime, i, binAnimeInfo))
                 temphBtn.grid(row=i + 1, column=len(binAnimeInfo), sticky=tkinter.W + tkinter.E)
 
-    def editBinAnimeCnt(self, val):
-        result = EditBinAnimeCntWidget(self.root, textSetting.textList["railEditor"]["editAnimeCntLabel"], self.decryptFile, val, self.rootFrameAppearance)
+    def editBinAnimeCnt(self):
+        result = EditBinAnimeCntWidget(self.root, textSetting.textList["railEditor"]["editAnimeCntLabel"], self.decryptFile, self.rootFrameAppearance)
         if result.reloadFlag:
             if not self.decryptFile.saveBinAnimeCnt(result.resultValue):
                 self.decryptFile.printError()
@@ -76,9 +76,8 @@ class BinAnimeListWidget:
 
 
 class EditBinAnimeCntWidget(CustomSimpleDialog):
-    def __init__(self, master, title, decryptFile, val, rootFrameAppearance):
+    def __init__(self, master, title, decryptFile, rootFrameAppearance):
         self.decryptFile = decryptFile
-        self.val = val
         self.resultValue = 0
         self.reloadFlag = False
         super().__init__(master, title, rootFrameAppearance.bgColor)
@@ -90,7 +89,7 @@ class EditBinAnimeCntWidget(CustomSimpleDialog):
         valLb.pack()
 
         self.varBinAnimeCnt = tkinter.IntVar()
-        self.varBinAnimeCnt.set(self.val)
+        self.varBinAnimeCnt.set(len(self.decryptFile.binAnimeList))
         valEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varBinAnimeCnt, font=textSetting.textList["font2"], width=16)
         valEt.pack()
         super().body(master)
@@ -116,7 +115,7 @@ class EditBinAnimeCntWidget(CustomSimpleDialog):
                 mb.showerror(title=textSetting.textList["error"], message=errorMsg)
                 return False
 
-            if self.resultValue < self.val:
+            if self.resultValue < len(self.decryptFile.binAnimeList):
                 msg = textSetting.textList["infoList"]["I20"] + textSetting.textList["infoList"]["I21"]
                 result = mb.askokcancel(title=textSetting.textList["warning"], message=msg, icon="warning", parent=self)
                 if result:

@@ -42,6 +42,16 @@ class SimpleListWidget:
         simpleListListbox.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
         simpleListListbox.bind("<<ListboxSelect>>", lambda e: self.buttonActive(simpleListListbox, simpleListListbox.curselection()))
 
+    def setListboxInfo(self, listboxInfo):
+        displaySimpleList = []
+        if len(listboxInfo) > 0:
+            for i in range(len(listboxInfo)):
+                simpleName = listboxInfo[i]
+                displaySimpleList.append("{0:02d}→{1}".format(i, simpleName))
+        else:
+            displaySimpleList = [textSetting.textList["railEditor"]["noList"]]
+        return displaySimpleList
+
     def buttonActive(self, listbox, value):
         if len(value) == 0:
             self.modifyBtn["state"] = "disabled"
@@ -58,23 +68,12 @@ class SimpleListWidget:
             self.deleteBtn["state"] = "normal"
         self.insertBtn["state"] = "normal"
 
-    def setListboxInfo(self, listboxInfo):
-        self.simpleList = listboxInfo
-        copySimpleList = copy.deepcopy(self.simpleList)
-        if len(copySimpleList) > 0:
-            for i in range(len(copySimpleList)):
-                simpleName = copySimpleList[i]
-                copySimpleList[i] = "{0:02d}→{1}".format(i, simpleName)
-        else:
-            copySimpleList = [textSetting.textList["railEditor"]["noList"]]
-
-        return copySimpleList
-
     def modify(self):
-        result = EditSimpleListWidget(self.root, self.text + textSetting.textList["railEditor"]["commonModifyLabel"], self.decryptFile, "modify", self.selectIndexNum, self.simpleList, self.rootFrameAppearance)
+        item = self.simpleList[self.selectIndexNum]
+        result = EditSimpleListWidget(self.root, self.text + textSetting.textList["railEditor"]["commonModifyLabel"], self.decryptFile, "modify", item, self.rootFrameAppearance)
         if result.reloadFlag:
             self.simpleList[self.selectIndexNum] = result.resultValue
-            if not self.decryptFile.saveSimpleList(self.index, self.listCntVer, result.simpleList):
+            if not self.decryptFile.saveSimpleList(self.index, self.listCntVer, self.simpleList):
                 self.decryptFile.printError()
                 mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
                 return False
@@ -82,10 +81,10 @@ class SimpleListWidget:
             self.reloadFunc()
 
     def insert(self):
-        result = EditSimpleListWidget(self.root, self.text + textSetting.textList["railEditor"]["commonInsertLabel"], self.decryptFile, "insert", self.selectIndexNum, self.simpleList, self.rootFrameAppearance)
+        result = EditSimpleListWidget(self.root, self.text + textSetting.textList["railEditor"]["commonInsertLabel"], self.decryptFile, "insert", None, self.rootFrameAppearance)
         if result.reloadFlag:
             self.simpleList.insert(self.selectIndexNum + result.insertPos, result.resultValue)
-            if not self.decryptFile.saveSimpleList(self.index, self.listCntVer, result.simpleList):
+            if not self.decryptFile.saveSimpleList(self.index, self.listCntVer, self.simpleList):
                 self.decryptFile.printError()
                 mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
                 return False
@@ -106,11 +105,10 @@ class SimpleListWidget:
 
 
 class EditSimpleListWidget(CustomSimpleDialog):
-    def __init__(self, master, title, decryptFile, mode, index, simpleList, rootFrameAppearance):
+    def __init__(self, master, title, decryptFile, mode, item, rootFrameAppearance):
         self.decryptFile = decryptFile
         self.mode = mode
-        self.index = index
-        self.simpleList = simpleList
+        self.item = item
         self.resultValue = ""
         self.reloadFlag = False
         super().__init__(master, title, rootFrameAppearance.bgColor)
@@ -125,7 +123,7 @@ class EditSimpleListWidget(CustomSimpleDialog):
         tempNameLb.grid(row=1, column=0, sticky=tkinter.W + tkinter.E)
         self.varTemp = tkinter.StringVar()
         if self.mode == "modify":
-            self.varTemp.set(self.simpleList[self.index])
+            self.varTemp.set(self.item)
         txtEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varTemp, font=textSetting.textList["font2"])
         txtEt.grid(row=1, column=1, sticky=tkinter.W + tkinter.E)
 

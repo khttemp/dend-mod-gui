@@ -8,11 +8,11 @@ from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
 
 
 class StationAmbWidget:
-    def __init__(self, root, frame, decryptFile, stationList, rootFrameAppearance, reloadFunc):
+    def __init__(self, root, frame, decryptFile, rootFrameAppearance, reloadFunc):
         self.root = root
         self.frame = frame
         self.decryptFile = decryptFile
-        self.stationList = stationList
+        self.stationList = decryptFile.stationList
         self.rootFrameAppearance = rootFrameAppearance
         self.reloadFunc = reloadFunc
 
@@ -29,13 +29,13 @@ class StationAmbWidget:
         self.varStationCnt.set(len(self.decryptFile.stationList))
         stationCntTextLb = ttkCustomWidget.CustomTtkLabel(txtFrame, textvariable=self.varStationCnt, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
         stationCntTextLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
-        stationCntBtn = ttkCustomWidget.CustomTtkButton(txtFrame, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=lambda: self.editStationCnt(self.varStationCnt.get()))
+        stationCntBtn = ttkCustomWidget.CustomTtkButton(txtFrame, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=self.editStationCnt)
         stationCntBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
 
-        txtFrame2 = ttkCustomWidget.CustomTtkFrame(stationLf)
-        txtFrame2.pack(anchor=tkinter.NW)
-
         if len(self.decryptFile.stationList) > 0:
+            txtFrame2 = ttkCustomWidget.CustomTtkFrame(stationLf)
+            txtFrame2.pack(anchor=tkinter.NW)
+
             constLb = ttkCustomWidget.CustomTtkLabel(txtFrame2, text=textSetting.textList["railEditor"]["stationConst0Label"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
             constLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
             ambLb = ttkCustomWidget.CustomTtkLabel(txtFrame2, text=textSetting.textList["railEditor"]["stationAmbNoLabel"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=9, borderwidth=1, relief="solid")
@@ -47,20 +47,20 @@ class StationAmbWidget:
             pngNumLb = ttkCustomWidget.CustomTtkLabel(txtFrame2, text=textSetting.textList["railEditor"]["stationImgNoLabel"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=9, borderwidth=1, relief="solid")
             pngNumLb.grid(row=0, column=4, sticky=tkinter.W + tkinter.E)
 
-        self.stationVarList = []
-        self.stationVarCnt = 0
-        for i in range(len(self.decryptFile.stationList)):
-            stationInfo = self.decryptFile.stationList[i]
-            for j in range(len(stationInfo)):
-                self.stationVarList.append(tkinter.IntVar(value=stationInfo[j]))
-                varStationLb = ttkCustomWidget.CustomTtkLabel(txtFrame2, textvariable=self.stationVarList[self.stationVarCnt], font=textSetting.textList["font6"], anchor=tkinter.CENTER, borderwidth=1, relief="solid")
-                varStationLb.grid(row=i + 1, column=j, sticky=tkinter.W + tkinter.E)
-                self.stationVarCnt += 1
-            varBtn = ttkCustomWidget.CustomTtkButton(txtFrame2, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=partial(self.editStation, i, stationInfo))
-            varBtn.grid(row=i + 1, column=len(stationInfo), sticky=tkinter.W + tkinter.E)
+            self.stationVarList = []
+            self.stationVarCnt = 0
+            for i in range(len(self.decryptFile.stationList)):
+                stationInfo = self.decryptFile.stationList[i]
+                for j in range(len(stationInfo)):
+                    self.stationVarList.append(tkinter.IntVar(value=stationInfo[j]))
+                    varStationLb = ttkCustomWidget.CustomTtkLabel(txtFrame2, textvariable=self.stationVarList[self.stationVarCnt], font=textSetting.textList["font6"], anchor=tkinter.CENTER, borderwidth=1, relief="solid")
+                    varStationLb.grid(row=i + 1, column=j, sticky=tkinter.W + tkinter.E)
+                    self.stationVarCnt += 1
+                varBtn = ttkCustomWidget.CustomTtkButton(txtFrame2, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=partial(self.editStation, i, stationInfo))
+                varBtn.grid(row=i + 1, column=len(stationInfo), sticky=tkinter.W + tkinter.E)
 
-    def editStationCnt(self, val):
-        result = EditStationCntWidget(self.root, textSetting.textList["railEditor"]["editStationCntLabel"], self.decryptFile, val, self.rootFrameAppearance)
+    def editStationCnt(self):
+        result = EditStationAmbCntWidget(self.root, textSetting.textList["railEditor"]["editStationCntLabel"], self.decryptFile, self.rootFrameAppearance)
         if result.reloadFlag:
             if not self.decryptFile.saveStationCnt(result.resultValue):
                 self.decryptFile.printError()
@@ -70,7 +70,7 @@ class StationAmbWidget:
             self.reloadFunc()
 
     def editStation(self, i, stationInfo):
-        result = EditStationWidget(self.root, textSetting.textList["railEditor"]["editStationInfoLabel"], self.decryptFile, stationInfo, self.rootFrameAppearance)
+        result = EditStationAmbWidget(self.root, textSetting.textList["railEditor"]["editStationInfoLabel"], self.decryptFile, stationInfo, self.rootFrameAppearance)
         if result.reloadFlag:
             self.stationList[i] = result.resultValueList
             if not self.decryptFile.saveStation(self.stationList):
@@ -81,10 +81,9 @@ class StationAmbWidget:
             self.reloadFunc()
 
 
-class EditStationCntWidget(CustomSimpleDialog):
-    def __init__(self, master, title, decryptFile, val, rootFrameAppearance):
+class EditStationAmbCntWidget(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, rootFrameAppearance):
         self.decryptFile = decryptFile
-        self.val = val
         self.rootFrameAppearance = rootFrameAppearance
         self.resultValue = 0
         self.reloadFlag = False
@@ -97,7 +96,7 @@ class EditStationCntWidget(CustomSimpleDialog):
         valLb.pack()
 
         self.varStationCnt = tkinter.IntVar()
-        self.varStationCnt.set(self.val)
+        self.varStationCnt.set(len(self.decryptFile.stationList))
         valEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varStationCnt, font=textSetting.textList["font2"], width=16)
         valEt.pack()
         super().body(master)
@@ -123,7 +122,7 @@ class EditStationCntWidget(CustomSimpleDialog):
                 mb.showerror(title=textSetting.textList["error"], message=errorMsg)
                 return False
 
-            if self.resultValue < self.val:
+            if self.resultValue < len(self.decryptFile.stationList):
                 msg = textSetting.textList["infoList"]["I20"] + textSetting.textList["infoList"]["I21"]
                 result = mb.askokcancel(title=textSetting.textList["warning"], message=msg, icon="warning", parent=self)
                 if result:
@@ -135,7 +134,7 @@ class EditStationCntWidget(CustomSimpleDialog):
         self.reloadFlag = True
 
 
-class EditStationWidget(CustomSimpleDialog):
+class EditStationAmbWidget(CustomSimpleDialog):
     def __init__(self, master, title, decryptFile, stationInfo, rootFrameAppearance):
         self.decryptFile = decryptFile
         self.stationInfo = stationInfo

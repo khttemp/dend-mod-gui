@@ -8,11 +8,11 @@ from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
 
 
 class Else1ListWidget:
-    def __init__(self, root, frame, decryptFile, else1List, rootFrameAppearance, reloadFunc):
+    def __init__(self, root, frame, decryptFile, rootFrameAppearance, reloadFunc):
         self.root = root
         self.frame = frame
         self.decryptFile = decryptFile
-        self.else1List = else1List
+        self.else1List = decryptFile.else1List
         self.rootFrameAppearance = rootFrameAppearance
         self.reloadFunc = reloadFunc
 
@@ -61,7 +61,7 @@ class Else1ListWidget:
                 tempfTextLb = ttkCustomWidget.CustomTtkLabel(txtFrame2, textvariable=self.varList[self.varCnt], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
                 tempfTextLb.grid(row=0, column=i, sticky=tkinter.W + tkinter.E)
                 self.varCnt += 1
-            tempfBtn = ttkCustomWidget.CustomTtkButton(txtFrame2, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=partial(self.editVarList2, self.else1List))
+            tempfBtn = ttkCustomWidget.CustomTtkButton(txtFrame2, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=self.editVarLsList)
             tempfBtn.grid(row=0, column=len(self.else1List), sticky=tkinter.W + tkinter.E)
 
     def editVarList(self, i, valList):
@@ -78,8 +78,8 @@ class Else1ListWidget:
             mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I75"])
             self.reloadFunc()
 
-    def editVarList2(self, valList):
-        result = EditElse1List2Widget(self.root, textSetting.textList["railEditor"]["editElse1Label"], self.decryptFile, valList, self.rootFrameAppearance)
+    def editVarLsList(self):
+        result = EditLsElse1ListWidget(self.root, textSetting.textList["railEditor"]["editElse1Label"], self.decryptFile, self.rootFrameAppearance)
         if result.reloadFlag:
             self.else1List = result.resultValueList
             if not self.decryptFile.saveElse1List(self.else1List):
@@ -155,10 +155,10 @@ class EditElse1ListWidget(CustomSimpleDialog):
         self.reloadFlag = True
 
 
-class EditElse1List2Widget(CustomSimpleDialog):
-    def __init__(self, master, title, decryptFile, valList, rootFrameAppearance):
+class EditLsElse1ListWidget(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, rootFrameAppearance):
         self.decryptFile = decryptFile
-        self.valList = valList
+        self.valList = decryptFile.else1List
         self.varList = []
         self.resultValueList = []
         self.reloadFlag = False
