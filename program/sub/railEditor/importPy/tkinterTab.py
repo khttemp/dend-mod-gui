@@ -18,7 +18,7 @@ from program.sub.railEditor.importPy.tab3.smfListWidget import SmfListWidget
 
 from program.sub.railEditor.importPy.tab4.stationNameWidget import StationNameWidget
 
-# from program.railEditor.importPy.tab5.else2ListWidget import Else2ListWidget
+from program.sub.railEditor.importPy.tab5.else2ListWidget import Else2ListWidget
 
 # from program.railEditor.importPy.tab6.cpuWidget import CpuWidget
 
@@ -83,7 +83,7 @@ def tab4AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc, 
 
 
 def tab5AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc):
-    Else2ListWidget(root, tabFrame, decryptFile, decryptFile.else2List, rootFrameAppearance, reloadFunc)
+    Else2ListWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc)
 
 
 def tab6AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc, selectId):

@@ -2,19 +2,19 @@ from functools import partial
 
 import tkinter
 from tkinter import messagebox as mb
-import program.textSetting as textSetting
-import program.appearance.ttkCustomWidget as ttkCustomWidget
-from program.appearance.customSimpleDialog import CustomSimpleDialog
+import program.sub.textSetting as textSetting
+import program.sub.appearance.ttkCustomWidget as ttkCustomWidget
+from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
 
 from program.tkinterScrollbarFrameClass import ScrollbarFrame
 
 
 class Else2ListWidget:
-    def __init__(self, root, frame, decryptFile, else2List, rootFrameAppearance, reloadFunc):
+    def __init__(self, root, frame, decryptFile, rootFrameAppearance, reloadFunc):
         self.root = root
         self.frame = frame
         self.decryptFile = decryptFile
-        self.else2List = else2List
+        self.else2List = decryptFile.else2List
         self.rootFrameAppearance = rootFrameAppearance
         self.reloadFunc = reloadFunc
         self.varList = []
@@ -38,7 +38,7 @@ class Else2ListWidget:
 
         if self.decryptFile.game in ["BS", "CS", "RS"]:
             else2CntTextLb.config(textvariable=self.varElse2Cnt)
-            else2CntBtn = ttkCustomWidget.CustomTtkButton(txtFrame, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=lambda: self.editElse2Cnt(self.varElse2Cnt.get()))
+            else2CntBtn = ttkCustomWidget.CustomTtkButton(txtFrame, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=self.editElse2Cnt)
             else2CntBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
         else:
             else2CntTextLb.config(text=self.varElse2Cnt.get())
@@ -62,8 +62,8 @@ class Else2ListWidget:
             tempBtn = ttkCustomWidget.CustomTtkButton(txtFrame2, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=partial(self.editElse2List, i, else2Info))
             tempBtn.grid(row=i, column=len(else2Info), sticky=tkinter.W + tkinter.E)
 
-    def editElse2Cnt(self, val):
-        result = EditElse2CntWidget(self.root, textSetting.textList["railEditor"]["modifyElse2CntLabel"], self.decryptFile, val, self.rootFrameAppearance)
+    def editElse2Cnt(self):
+        result = EditElse2CntWidget(self.root, textSetting.textList["railEditor"]["modifyElse2CntLabel"], self.decryptFile, self.rootFrameAppearance)
         if result.reloadFlag:
             if not self.decryptFile.saveElse2Cnt(result.resultValue):
                 self.decryptFile.printError()
@@ -86,9 +86,9 @@ class Else2ListWidget:
 
 
 class EditElse2CntWidget(CustomSimpleDialog):
-    def __init__(self, master, title, decryptFile, val, rootFrameAppearance):
+    def __init__(self, master, title, decryptFile, rootFrameAppearance):
         self.decryptFile = decryptFile
-        self.val = val
+        self.val = len(self.decryptFile.else2List)
         self.resultValue = 0
         self.reloadFlag = False
         super().__init__(master, title, rootFrameAppearance.bgColor)
