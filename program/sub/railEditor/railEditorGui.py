@@ -4,9 +4,9 @@ import program.sub.textSetting as textSetting
 import program.sub.appearance.ttkCustomWidget as ttkCustomWidget
 
 from program.sub.railEditor.importPy.tkinterTab import (
-    tab1AllWidget, tab2AllWidget
+    tab1AllWidget, tab2AllWidget, tab3AllWidget
 )
-#     tab3AllWidget, tab4AllWidget,
+#     tab4AllWidget,
 #     tab5AllWidget, tab6AllWidget, tab7AllWidget, tab8AllWidget,
 #     tab9AllWidget, tab10AllWidget, tab11AllWidget
 # )
@@ -85,8 +85,8 @@ class RailEditorWindow(tkinter.Frame):
             tab1AllWidget(self.root, self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget)
         elif index == 1:
             tab2AllWidget(self.root, self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget)
-        # elif index == 2:
-        #     tab3AllWidget(self.root, self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget, selectId)
+        elif index == 2:
+            tab3AllWidget(self.root, self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget, selectId)
         # elif index == 3:
         #     tab4AllWidget(self.root, self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget, selectId)
         # elif index == 4:

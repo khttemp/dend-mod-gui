@@ -14,7 +14,7 @@ from program.sub.railEditor.importPy.tab2.simpleListWidget import SimpleListWidg
 from program.sub.railEditor.importPy.tab2.stationAmbWidget import StationAmbWidget
 from program.sub.railEditor.importPy.tab2.binAnimeListWidget import BinAnimeListWidget
 
-# from program.railEditor.importPy.tab3.smfListWidget import SmfListWidget
+from program.sub.railEditor.importPy.tab3.smfListWidget import SmfListWidget
 
 # from program.railEditor.importPy.tab4.stationNameWidget import StationNameWidget
 
@@ -57,7 +57,7 @@ def tab1AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc):
 def tab2AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc):
     frame = ScrollbarFrame(tabFrame, bgColor=rootFrameAppearance.bgColor)
     frame.pack(expand=True, fill=tkinter.BOTH)
-    Else1ListWidget(root, frame.interior, decryptFile, decryptFile.else1List, rootFrameAppearance, reloadFunc)
+    Else1ListWidget(root, frame.interior, decryptFile, rootFrameAppearance, reloadFunc)
 
     if decryptFile.game in ["BS", "CS", "RS"]:
         simpleListFrame = ttkCustomWidget.CustomTtkFrame(frame.interior)
@@ -65,17 +65,17 @@ def tab2AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc):
         SimpleListWidget(root, simpleListFrame, textSetting.textList["railEditor"]["lightInfo"], decryptFile, decryptFile.lightList, decryptFile.lightIdx, 1, rootFrameAppearance, reloadFunc)
         if decryptFile.game in ["CS", "RS"]:
             SimpleListWidget(root, simpleListFrame, textSetting.textList["railEditor"]["stationInfo"], decryptFile, decryptFile.pngList, decryptFile.pngIdx, 2, rootFrameAppearance, reloadFunc)
-            StationAmbWidget(root, frame.interior, decryptFile, decryptFile.stationList, rootFrameAppearance, reloadFunc)
+            StationAmbWidget(root, frame.interior, decryptFile, rootFrameAppearance, reloadFunc)
 
     simpleListFrame2 = ttkCustomWidget.CustomTtkFrame(frame.interior)
     simpleListFrame2.pack(anchor=tkinter.NW)
     if decryptFile.game in ["BS", "CS", "RS"]:
         SimpleListWidget(root, simpleListFrame2, textSetting.textList["railEditor"]["baseBinInfo"], decryptFile, decryptFile.baseBinList, decryptFile.binIdx, 1, rootFrameAppearance, reloadFunc)
-    BinAnimeListWidget(root, simpleListFrame2, decryptFile, decryptFile.binAnimeList, rootFrameAppearance, reloadFunc)
+    BinAnimeListWidget(root, simpleListFrame2, decryptFile, rootFrameAppearance, reloadFunc)
 
 
 def tab3AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc, selectId):
-    SmfListWidget(root, tabFrame, decryptFile, decryptFile.smfList, rootFrameAppearance, reloadFunc, selectId)
+    SmfListWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc, selectId)
 
 
 def tab4AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc, selectId):
