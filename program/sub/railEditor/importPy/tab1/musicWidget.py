@@ -135,6 +135,16 @@ class EditMusicList(CustomSimpleDialog):
         self.musicListListbox.bind("<<ListboxSelect>>", lambda e: self.buttonActive(self.musicListListbox.curselection()))
         super().body(master)
 
+    def setListboxInfo(self, musicList):
+        copyMusicList = copy.deepcopy(musicList)
+        if len(copyMusicList) > 0:
+            for i in range(len(copyMusicList)):
+                musicInfo = copyMusicList[i]
+                copyMusicList[i] = "{0:02d}→{1}".format(i, musicInfo)
+        else:
+            copyMusicList = [textSetting.textList["railEditor"]["noList"]]
+        return copyMusicList
+
     def buttonActive(self, value):
         if len(value) == 0:
             self.modifyBtn["state"] = "disabled"
@@ -154,19 +164,9 @@ class EditMusicList(CustomSimpleDialog):
         else:
             self.modifyBtn["state"] = "normal"
 
-    def setListboxInfo(self, musicList):
-        copyMusicList = copy.deepcopy(musicList)
-        if len(copyMusicList) > 0:
-            for i in range(len(copyMusicList)):
-                musicInfo = copyMusicList[i]
-                copyMusicList[i] = "{0:02d}→{1}".format(i, musicInfo)
-        else:
-            copyMusicList = [textSetting.textList["railEditor"]["noList"]]
-
-        return copyMusicList
-
     def modify(self):
-        result = EditMusicListWidget(self.frame, textSetting.textList["railEditor"]["modifyBgmLabel"], self.decryptFile, "modify", self.selectIndexNum, self.musicList, self.rootFrameAppearance)
+        item = self.musicList[self.selectIndexNum]
+        result = EditMusicListWidget(self.frame, textSetting.textList["railEditor"]["modifyBgmLabel"], self.decryptFile, "modify", item, self.rootFrameAppearance)
         if result.dirtyFlag:
             self.dirtyFlag = True
             self.musicList[self.selectIndexNum] = result.resultValueList
@@ -176,7 +176,7 @@ class EditMusicList(CustomSimpleDialog):
             self.musicListListbox.selection_set(self.selectIndexNum)
 
     def insert(self):
-        result = EditMusicListWidget(self.frame, textSetting.textList["railEditor"]["insertBgmLabel"], self.decryptFile, "insert", self.selectIndexNum, self.musicList, self.rootFrameAppearance)
+        result = EditMusicListWidget(self.frame, textSetting.textList["railEditor"]["insertBgmLabel"], self.decryptFile, "insert", None, self.rootFrameAppearance)
         if result.dirtyFlag:
             self.dirtyFlag = True
             self.musicList.insert(self.selectIndexNum + result.insertPos, result.resultValueList)
@@ -209,11 +209,10 @@ class EditMusicList(CustomSimpleDialog):
 
 
 class EditMusicListWidget(CustomSimpleDialog):
-    def __init__(self, master, title, decryptFile, mode, index, musicList, rootFrameAppearance):
+    def __init__(self, master, title, decryptFile, mode, item, rootFrameAppearance):
         self.decryptFile = decryptFile
         self.mode = mode
-        self.index = index
-        self.musicList = musicList
+        self.item = item
         self.varList = []
         self.resultValueList = []
         self.insertPos = -1
@@ -233,19 +232,17 @@ class EditMusicListWidget(CustomSimpleDialog):
             if i == 2 or i == 3:
                 self.varMusic = tkinter.DoubleVar()
                 if self.mode == "modify":
-                    musicInfo = self.musicList[self.index]
-                    self.varMusic.set(musicInfo[i])
+                    self.varMusic.set(self.item[i])
             else:
                 self.varMusic = tkinter.StringVar()
                 if self.mode == "modify":
-                    musicInfo = self.musicList[self.index]
-                    self.varMusic.set(musicInfo[i])
+                    self.varMusic.set(self.item[i])
             self.varList.append(self.varMusic)
             musicEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varMusic, font=textSetting.textList["font2"])
             musicEt.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
 
         if self.mode == "insert":
-            self.setInsertWidget(master, len(musicInfoLb))
+            self.setInsertWidget(master, len(musicInfoLb) + 1)
         super().body(master)
 
     def setInsertWidget(self, master, index):
