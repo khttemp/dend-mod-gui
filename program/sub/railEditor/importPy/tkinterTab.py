@@ -20,7 +20,7 @@ from program.sub.railEditor.importPy.tab4.stationNameWidget import StationNameWi
 
 from program.sub.railEditor.importPy.tab5.else2ListWidget import Else2ListWidget
 
-# from program.railEditor.importPy.tab6.cpuWidget import CpuWidget
+from program.sub.railEditor.importPy.tab6.cpuWidget import CpuWidget
 
 # from program.railEditor.importPy.tab7.comicScriptWidget import ComicScriptWidget
 # from program.railEditor.importPy.tab7.dosansenListWidget import DosansenListWidget
@@ -87,7 +87,7 @@ def tab5AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc):
 
 
 def tab6AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc, selectId):
-    CpuWidget(root, tabFrame, decryptFile, decryptFile.cpuList, rootFrameAppearance, reloadFunc, selectId)
+    CpuWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc, selectId)
 
 
 def tab7AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc):
