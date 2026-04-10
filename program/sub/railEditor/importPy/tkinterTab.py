@@ -25,9 +25,9 @@ from program.sub.railEditor.importPy.tab6.cpuWidget import CpuWidget
 from program.sub.railEditor.importPy.tab7.comicScriptWidget import ComicScriptWidget
 from program.sub.railEditor.importPy.tab7.dosansenListWidget import DosansenListWidget
 
-# from program.railEditor.importPy.tab8.railListWidget import RailListWidget
+# from program.sub.railEditor.importPy.tab8.railListWidget import RailListWidget
 
-# from program.railEditor.importPy.tab9.else3ListWidget import Else3ListWidget
+from program.sub.railEditor.importPy.tab9.else3ListWidget import Else3ListWidget
 
 # from program.railEditor.importPy.tab10.else4ListWidget import Else4ListWidget
 
@@ -103,7 +103,7 @@ def tab8AllWidget(tabFrame, decryptFile, rootFrameAppearance, reloadFunc):
 
 
 def tab9AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc, selectId):
-    Else3ListWidget(root, tabFrame, decryptFile, decryptFile.else3List, rootFrameAppearance, reloadFunc, selectId)
+    Else3ListWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc, selectId)
 
 
 def tab10AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc):

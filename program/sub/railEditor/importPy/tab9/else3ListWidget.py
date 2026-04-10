@@ -1,20 +1,20 @@
 import tkinter
 from tkinter import filedialog as fd
 from tkinter import messagebox as mb
-import program.textSetting as textSetting
-import program.appearance.ttkCustomWidget as ttkCustomWidget
-from program.appearance.customSimpleDialog import CustomSimpleDialog
+import program.sub.textSetting as textSetting
+import program.sub.appearance.ttkCustomWidget as ttkCustomWidget
+from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
 
-from program.railEditor.importPy.tkinterScrollbarTreeviewRailEditor import ScrollbarTreeviewRailEditor
+from program.sub.railEditor.importPy.tkinterScrollbarTreeviewRailEditor import ScrollbarTreeviewRailEditor
 
 
 class Else3ListWidget:
-    def __init__(self, root, frame, decryptFile, else3List, rootFrameAppearance, reloadFunc, selectId):
+    def __init__(self, root, frame, decryptFile, rootFrameAppearance, reloadFunc, selectId):
         self.text = textSetting.textList["railEditor"]["else3Label"]
         self.root = root
         self.frame = frame
         self.decryptFile = decryptFile
-        self.else3List = else3List
+        self.else3List = decryptFile.else3List
         self.copyElse3Info = []
         self.rootFrameAppearance = rootFrameAppearance
         self.reloadFunc = reloadFunc
