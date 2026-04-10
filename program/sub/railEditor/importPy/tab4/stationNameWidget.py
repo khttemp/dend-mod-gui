@@ -364,7 +364,7 @@ class EditStationNameListWidget(CustomSimpleDialog):
         self.rootFrameAppearance = rootFrameAppearance
         self.varList = []
         self.reloadFlag = False
-        self.insertPos = 0
+        self.insertPos = None
         self.resultValueList = []
         super().__init__(master, title, rootFrameAppearance.bgColor)
 

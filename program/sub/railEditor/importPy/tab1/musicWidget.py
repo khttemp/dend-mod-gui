@@ -215,7 +215,7 @@ class EditMusicListWidget(CustomSimpleDialog):
         self.item = item
         self.varList = []
         self.resultValueList = []
-        self.insertPos = -1
+        self.insertPos = None
         self.dirtyFlag = False
         super().__init__(master, title, rootFrameAppearance.bgColor)
 

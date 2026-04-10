@@ -109,6 +109,7 @@ class EditSimpleListWidget(CustomSimpleDialog):
         self.decryptFile = decryptFile
         self.mode = mode
         self.item = item
+        self.insertPos = None
         self.resultValue = ""
         self.reloadFlag = False
         super().__init__(master, title, rootFrameAppearance.bgColor)

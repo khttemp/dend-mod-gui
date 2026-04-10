@@ -339,7 +339,7 @@ class EditCpuListWidget(CustomSimpleDialog):
         self.varList = []
         self.varCnt = 0
         self.reloadFlag = False
-        self.insertPos = 0
+        self.insertPos = None
         self.resultValueList = []
         super().__init__(master, title, rootFrameAppearance.bgColor)
 
