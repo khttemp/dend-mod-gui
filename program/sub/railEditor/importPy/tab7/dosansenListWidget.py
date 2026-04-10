@@ -2,19 +2,19 @@ from functools import partial
 
 import tkinter
 from tkinter import messagebox as mb
-import program.textSetting as textSetting
-import program.appearance.ttkCustomWidget as ttkCustomWidget
-from program.appearance.customSimpleDialog import CustomSimpleDialog
+import program.sub.textSetting as textSetting
+import program.sub.appearance.ttkCustomWidget as ttkCustomWidget
+from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
 
-from program.tkinterScrollbarFrameClass import ScrollbarFrame
+from program.sub.tkinterScrollbarFrameClass import ScrollbarFrame
 
 
 class DosansenListWidget:
-    def __init__(self, root, frame, decryptFile, dosansenList, rootFrameAppearance, reloadFunc):
+    def __init__(self, root, frame, decryptFile, rootFrameAppearance, reloadFunc):
         self.root = root
         self.frame = frame
         self.decryptFile = decryptFile
-        self.dosansenList = dosansenList
+        self.dosansenList = decryptFile.dosansenList
         self.rootFrameAppearance = rootFrameAppearance
         self.reloadFunc = reloadFunc
 
@@ -33,7 +33,7 @@ class DosansenListWidget:
         self.varDosansenCnt.set(len(self.dosansenList))
         dosansenCntTextLb = ttkCustomWidget.CustomTtkLabel(txtFrame, textvariable=self.varDosansenCnt, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
         dosansenCntTextLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
-        dosansenCntBtn = ttkCustomWidget.CustomTtkButton(txtFrame, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=lambda: self.editDosansenCnt(self.varDosansenCnt.get()))
+        dosansenCntBtn = ttkCustomWidget.CustomTtkButton(txtFrame, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=self.editDosansenCnt)
         dosansenCntBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
 
         self.varList = []
@@ -44,44 +44,44 @@ class DosansenListWidget:
 
             dosansenInfo = self.dosansenList[i]
             tempBtn = ttkCustomWidget.CustomTtkButton(txtFrame2, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=partial(self.editDosansenList, i, dosansenInfo))
-            tempBtn.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
+            tempBtn.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
             startLb = ttkCustomWidget.CustomTtkLabel(txtFrame2, text=textSetting.textList["railEditor"]["dosansenStart"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
-            startLb.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+            startLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
             endLb = ttkCustomWidget.CustomTtkLabel(txtFrame2, text=textSetting.textList["railEditor"]["dosansenEnd"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
-            endLb.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
+            endLb.grid(row=1, column=1, sticky=tkinter.W + tkinter.E)
             ele1Lb = ttkCustomWidget.CustomTtkLabel(txtFrame2, text=textSetting.textList["railEditor"]["dosansenE1"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
-            ele1Lb.grid(row=i + 2, column=1, sticky=tkinter.W + tkinter.E)
+            ele1Lb.grid(row=2, column=1, sticky=tkinter.W + tkinter.E)
             endLb = ttkCustomWidget.CustomTtkLabel(txtFrame2, text=textSetting.textList["railEditor"]["dosansenAnime"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
-            endLb.grid(row=i + 3, column=1, sticky=tkinter.W + tkinter.E)
+            endLb.grid(row=3, column=1, sticky=tkinter.W + tkinter.E)
             ele2Lb = ttkCustomWidget.CustomTtkLabel(txtFrame2, text=textSetting.textList["railEditor"]["dosansenE2"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
-            ele2Lb.grid(row=i + 4, column=1, sticky=tkinter.W + tkinter.E)
+            ele2Lb.grid(row=4, column=1, sticky=tkinter.W + tkinter.E)
             f1Lb = ttkCustomWidget.CustomTtkLabel(txtFrame2, text=textSetting.textList["railEditor"]["dosansenF1"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
-            f1Lb.grid(row=i + 5, column=1, sticky=tkinter.W + tkinter.E)
+            f1Lb.grid(row=5, column=1, sticky=tkinter.W + tkinter.E)
             for j in range(len(dosansenInfo)):
                 tempTextLb = ttkCustomWidget.CustomTtkLabel(txtFrame2, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
                 if j in [0, 1, 2]:
                     self.varList.append(tkinter.IntVar(value=int(dosansenInfo[j])))
-                    tempTextLb.grid(row=i, column=2 + j, sticky=tkinter.W + tkinter.E)
+                    tempTextLb.grid(row=0, column=2 + j, sticky=tkinter.W + tkinter.E)
                 elif j in [3, 4, 5]:
                     self.varList.append(tkinter.IntVar(value=int(dosansenInfo[j])))
-                    tempTextLb.grid(row=i + 1, column=j - 1, sticky=tkinter.W + tkinter.E)
+                    tempTextLb.grid(row=1, column=j - 1, sticky=tkinter.W + tkinter.E)
                 elif j == 6:
                     self.varList.append(tkinter.IntVar(value=int(dosansenInfo[j])))
-                    tempTextLb.grid(row=i + 2, column=j - 4, sticky=tkinter.W + tkinter.E)
+                    tempTextLb.grid(row=2, column=j - 4, sticky=tkinter.W + tkinter.E)
                 elif j in [7, 8, 9, 10]:
                     self.varList.append(tkinter.DoubleVar(value=round(float(dosansenInfo[j]), 3)))
-                    tempTextLb.grid(row=i + 3, column=j - 5, sticky=tkinter.W + tkinter.E)
+                    tempTextLb.grid(row=3, column=j - 5, sticky=tkinter.W + tkinter.E)
                 elif j == 11:
                     self.varList.append(tkinter.IntVar(value=int(dosansenInfo[j])))
-                    tempTextLb.grid(row=i + 4, column=j - 9, sticky=tkinter.W + tkinter.E)
+                    tempTextLb.grid(row=4, column=j - 9, sticky=tkinter.W + tkinter.E)
                 elif j == 12:
                     self.varList.append(tkinter.DoubleVar(value=round(float(dosansenInfo[j]), 3)))
-                    tempTextLb.grid(row=i + 5, column=j - 10, sticky=tkinter.W + tkinter.E)
+                    tempTextLb.grid(row=5, column=j - 10, sticky=tkinter.W + tkinter.E)
                 tempTextLb.configure(textvariable=self.varList[self.varCnt])
                 self.varCnt += 1
 
-    def editDosansenCnt(self, val):
-        result = EditDosansenCntWidget(self.root, textSetting.textList["railEditor"]["editDosansenCntLabel"], self.decryptFile, val, self.rootFrameAppearance)
+    def editDosansenCnt(self):
+        result = EditDosansenCntWidget(self.root, textSetting.textList["railEditor"]["editDosansenCntLabel"], self.decryptFile, self.rootFrameAppearance)
         if result.reloadFlag:
             if not self.decryptFile.saveDosansenCnt(result.resultValue):
                 self.decryptFile.printError()
@@ -103,9 +103,9 @@ class DosansenListWidget:
 
 
 class EditDosansenCntWidget(CustomSimpleDialog):
-    def __init__(self, master, title, decryptFile, val, rootFrameAppearance):
+    def __init__(self, master, title, decryptFile, rootFrameAppearance):
         self.decryptFile = decryptFile
-        self.val = val
+        self.val = len(decryptFile.dosansenList)
         self.resultValue = 0
         self.reloadFlag = False
         super().__init__(master, title, rootFrameAppearance.bgColor)
