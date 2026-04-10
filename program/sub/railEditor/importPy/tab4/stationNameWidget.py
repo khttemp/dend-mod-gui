@@ -286,7 +286,7 @@ class StationNameWidget:
         selectItem = self.treeviewFrame.tree.set(selectId)
         num = int(selectItem["treeNum"])
         item = self.stationNameList[num]
-        result = EditStationNameListWidget(self.root, textSetting.textList["railEditor"]["modifyStationNameLabel"], self.decryptFile, "modify", num, headerNameList, item, self.rootFrameAppearance)
+        result = EditStationNameListWidget(self.root, textSetting.textList["railEditor"]["modifyStationNameLabel"], self.decryptFile, "modify", headerNameList, item, self.rootFrameAppearance)
         if result.reloadFlag:
             if not self.decryptFile.saveStationNameInfo(num, "modify", result.resultValueList):
                 self.decryptFile.printError()
@@ -305,7 +305,7 @@ class StationNameWidget:
             selectId = self.treeviewFrame.tree.selection()[0]
             selectItem = self.treeviewFrame.tree.set(selectId)
             num = int(selectItem["treeNum"]) + 1
-        result = EditStationNameListWidget(self.root, textSetting.textList["railEditor"]["insertStationNameLabel"], self.decryptFile, "insert", num, headerNameList, None, self.rootFrameAppearance)
+        result = EditStationNameListWidget(self.root, textSetting.textList["railEditor"]["insertStationNameLabel"], self.decryptFile, "insert", headerNameList, None, self.rootFrameAppearance)
         if result.reloadFlag:
             if not self.decryptFile.saveStationNameInfo(num + result.insertPos, "insert", result.resultValueList):
                 self.decryptFile.printError()
@@ -356,10 +356,9 @@ class StationNameWidget:
 
 
 class EditStationNameListWidget(CustomSimpleDialog):
-    def __init__(self, master, title, decryptFile, mode, num, headerNameList, stationNameInfo, rootFrameAppearance):
+    def __init__(self, master, title, decryptFile, mode, headerNameList, stationNameInfo, rootFrameAppearance):
         self.decryptFile = decryptFile
         self.mode = mode
-        self.num = num
         self.headerNameList = headerNameList
         self.stationNameInfo = stationNameInfo
         self.rootFrameAppearance = rootFrameAppearance

@@ -260,7 +260,7 @@ class CpuWidget:
         selectItem = self.treeviewFrame.tree.set(selectId)
         num = int(selectItem["treeNum"])
         item = self.cpuList[num]
-        result = EditCpuListWidget(self.root, textSetting.textList["railEditor"]["modifyCpuInfoLabel"], self.decryptFile, "modify", num, headerNameList, item, self.rootFrameAppearance)
+        result = EditCpuListWidget(self.root, textSetting.textList["railEditor"]["modifyCpuInfoLabel"], self.decryptFile, "modify", headerNameList, item, self.rootFrameAppearance)
         if result.reloadFlag:
             if not self.decryptFile.saveCpuInfo(num, "modify", result.resultValueList):
                 self.decryptFile.printError()
@@ -279,7 +279,7 @@ class CpuWidget:
             selectId = self.treeviewFrame.tree.selection()[0]
             selectItem = self.treeviewFrame.tree.set(selectId)
             num = int(selectItem["treeNum"]) + 1
-        result = EditCpuListWidget(self.root, textSetting.textList["railEditor"]["insertCpuInfoLabel"], self.decryptFile, "insert", num, headerNameList, None, self.rootFrameAppearance)
+        result = EditCpuListWidget(self.root, textSetting.textList["railEditor"]["insertCpuInfoLabel"], self.decryptFile, "insert", headerNameList, None, self.rootFrameAppearance)
         if result.reloadFlag:
             if not self.decryptFile.saveCpuInfo(num + result.insertPos, "insert", result.resultValueList):
                 self.decryptFile.printError()
@@ -330,10 +330,9 @@ class CpuWidget:
 
 
 class EditCpuListWidget(CustomSimpleDialog):
-    def __init__(self, master, title, decryptFile, mode, num, headerNameList, cpuInfo, rootFrameAppearance):
+    def __init__(self, master, title, decryptFile, mode, headerNameList, cpuInfo, rootFrameAppearance):
         self.decryptFile = decryptFile
         self.mode = mode
-        self.num = num
         self.headerNameList = headerNameList
         self.cpuInfo = cpuInfo
         self.rootFrameAppearance = rootFrameAppearance
