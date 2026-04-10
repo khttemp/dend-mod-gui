@@ -239,32 +239,32 @@ class StationNameWidget:
 
     def setStationNameTableData(self):
         for index, stNameInfo in enumerate(self.stationNameList):
-            if self.decryptFile.game in ["CS", "RS"]:
-                data = (index,)
-                data += (stNameInfo[0], stNameInfo[1], stNameInfo[2])
-                data += (round(float(stNameInfo[3]), 3), round(float(stNameInfo[4]), 3), round(float(stNameInfo[5]), 3))
-                data += (stNameInfo[6], stNameInfo[7], stNameInfo[8], stNameInfo[9])
-                self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data)
-            elif self.decryptFile.game == "BS":
-                data = (index,)
-                data += (stNameInfo[0], stNameInfo[1], stNameInfo[2])
-                self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data)
-            elif self.decryptFile.game == "LS":
-                data = (index,)
-                data += (stNameInfo[0], stNameInfo[1], stNameInfo[2])
-                data += (stNameInfo[3], stNameInfo[4], stNameInfo[5], stNameInfo[6], stNameInfo[7], stNameInfo[8])
-                self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data)
-            elif self.decryptFile.game == "LSTrial":
-                if self.decryptFile.readFlag:
-                    data = (index,)
-                    data += (stNameInfo[0], stNameInfo[1], stNameInfo[2])
-                    data += (stNameInfo[3], stNameInfo[4], stNameInfo[5], stNameInfo[6], stNameInfo[7], stNameInfo[8])
-                    self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data)
-                else:
-                    data = (index,)
-                    data += (stNameInfo[0], stNameInfo[1],)
-                    data += (stNameInfo[2], stNameInfo[3], stNameInfo[4], stNameInfo[5], stNameInfo[6], stNameInfo[7],)
-                    self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data)
+            data = (index,)
+            for j, stNameValue in enumerate(stNameInfo):
+                if self.decryptFile.game in ["CS", "RS"]:
+                    if j in [3, 4, 5]:
+                        data += (round(float(stNameValue), 3),)
+                    else:
+                        data += (stNameValue,)
+                elif self.decryptFile.game == "BS":
+                    data += (stNameValue,)
+                elif self.decryptFile.game == "LS":
+                    if j > 2:
+                        data += (round(float(stNameValue), 3),)
+                    else:
+                        data += (stNameValue,)
+                elif self.decryptFile.game == "LSTrial":
+                    if self.decryptFile.readFlag:
+                        if j > 2:
+                            data += (round(float(stNameValue), 3),)
+                        else:
+                            data += (stNameValue,)
+                    else:
+                        if j > 1:
+                            data += (round(float(stNameValue), 3),)
+                        else:
+                            data += (stNameValue,)
+            self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data)
 
     def jumpToSelect(self):
         if self.selectId is not None:
@@ -392,7 +392,7 @@ class EditStationNameListWidget(CustomSimpleDialog):
                     stationNameInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
                     stationNameInfoEt.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
                     if self.mode == "modify":
-                        varStationNameInfo.set(self.stationNameInfo[i])
+                        varStationNameInfo.set(round(float(self.stationNameInfo[i]), 3))
                 else:
                     varStationNameInfo = tkinter.IntVar()
                     self.varList.append(varStationNameInfo)
@@ -436,7 +436,7 @@ class EditStationNameListWidget(CustomSimpleDialog):
                     stationNameInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
                     stationNameInfoEt.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
                     if self.mode == "modify":
-                        varStationNameInfo.set(self.stationNameInfo[i])
+                        varStationNameInfo.set(round(float(self.stationNameInfo[i]), 3))
             elif self.decryptFile.game == "LSTrial":
                 if self.decryptFile.readFlag:
                     if i == 0:
@@ -459,7 +459,7 @@ class EditStationNameListWidget(CustomSimpleDialog):
                         stationNameInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
                         stationNameInfoEt.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
                         if self.mode == "modify":
-                            varStationNameInfo.set(self.stationNameInfo[i])
+                            varStationNameInfo.set(round(float(self.stationNameInfo[i]), 3))
                 else:
                     if i == 0:
                         varStationNameInfo = tkinter.StringVar()
@@ -481,7 +481,7 @@ class EditStationNameListWidget(CustomSimpleDialog):
                         stationNameInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
                         stationNameInfoEt.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
                         if self.mode == "modify":
-                            varStationNameInfo.set(self.stationNameInfo[i])
+                            varStationNameInfo.set(round(float(self.stationNameInfo[i]), 3))
 
         if self.mode == "insert":
             self.setInsertWidget(master, len(self.headerNameList) + 1)

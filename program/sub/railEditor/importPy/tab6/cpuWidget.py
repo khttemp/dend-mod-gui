@@ -206,36 +206,39 @@ class CpuWidget:
 
     def setCpuTableData(self):
         for index, cpuInfo in enumerate(self.cpuList):
-            if self.decryptFile.game in ["BS", "CS", "RS"]:
-                data = (index,)
-                data += (cpuInfo[0], cpuInfo[1], cpuInfo[2])
-                data += (cpuInfo[3], cpuInfo[4])
-                data += (cpuInfo[5], cpuInfo[6])
-                if self.decryptFile.game == "CS":
-                    data += (cpuInfo[7], )
-                self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data)
-            elif self.decryptFile.game == "LS":
-                data = (index,)
-                data += (cpuInfo[0], )
-                data += (",".join(map(str, cpuInfo[1])), )
-                data += (cpuInfo[2], cpuInfo[3])
-                data += (cpuInfo[4], cpuInfo[5], cpuInfo[6], cpuInfo[7], cpuInfo[8])
-                data += (",".join(map(str, cpuInfo[9])), )
-                self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data)
-            elif self.decryptFile.game == "LSTrial":
-                if self.decryptFile.readFlag:
-                    data = (index,)
-                    data += (cpuInfo[0], )
-                    data += (",".join(map(str, cpuInfo[1])), )
-                    data += (cpuInfo[2], )
-                    data += (cpuInfo[3], cpuInfo[4], cpuInfo[5], cpuInfo[6], cpuInfo[7], )
-                    data += (",".join(map(str, cpuInfo[8])), )
-                    self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data)
-                else:
-                    data = (index,)
-                    data += (",".join(map(str, cpuInfo[0])), )
-                    data += (cpuInfo[1], cpuInfo[2], )
-                    self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data)
+            data = (index,)
+            for j, cpuValue in enumerate(cpuInfo):
+                if self.decryptFile.game in ["BS", "CS", "RS"]:
+                    if j > 2:
+                        data += (round(float(cpuValue), 3),)
+                    else:
+                        data += (cpuValue,)
+                elif self.decryptFile.game == "LS":
+                    if j in [1, 9]:
+                        joinCpuValue = ",".join([str(round(x, 3)) for x in cpuValue])
+                        data += (joinCpuValue,)
+                    elif j in [4, 5, 6, 7, 8]:
+                        data += (round(float(cpuValue), 3),)
+                    else:
+                        data += (cpuValue,)
+                elif self.decryptFile.game == "LSTrial":
+                    if self.decryptFile.readFlag:
+                        if j in [1, 8]:
+                            joinCpuValue = ",".join([str(round(x, 3)) for x in cpuValue])
+                            data += (joinCpuValue,)
+                        elif j in [3, 4, 5, 6, 7]:
+                            data += (round(float(cpuValue), 3),)
+                        else:
+                            data += (cpuValue,)
+                    else:
+                        if j == 0:
+                            joinCpuValue = ",".join([str(round(x, 3)) for x in cpuValue])
+                            data += (joinCpuValue,)
+                        elif j == 2:
+                            data += (round(float(cpuValue), 3),)
+                        else:
+                            data += (cpuValue,)
+            self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data)
 
     def jumpToSelect(self):
         if self.selectId is not None:
@@ -396,7 +399,7 @@ class EditCpuListWidget(CustomSimpleDialog):
                         cpuInfoEt.grid(row=rowNum, column=2 * colNum + 1, sticky=tkinter.W + tkinter.E)
                         rowNum += 1
                         if self.mode == "modify":
-                            varCpuInfo.set(self.cpuInfo[i][j])
+                            varCpuInfo.set(round(float(self.cpuInfo[i][j]), 3))
                         self.varCnt += 1
                     colNum += 1
                     rowNum = 1
@@ -409,7 +412,7 @@ class EditCpuListWidget(CustomSimpleDialog):
                     cpuInfoEt.grid(row=rowNum, column=2 * colNum + 1, sticky=tkinter.W + tkinter.E)
                     rowNum += 1
                     if self.mode == "modify":
-                        varCpuInfo.set(self.cpuInfo[i])
+                        varCpuInfo.set(round(float(self.cpuInfo[i]), 3))
                     self.varCnt += 1
             elif self.decryptFile.game == "LSTrial":
                 if self.decryptFile.readFlag:
@@ -439,7 +442,7 @@ class EditCpuListWidget(CustomSimpleDialog):
                             cpuInfoEt.grid(row=rowNum, column=2 * colNum + 1, sticky=tkinter.W + tkinter.E)
                             rowNum += 1
                             if self.mode == "modify":
-                                varCpuInfo.set(self.cpuInfo[i][j])
+                                varCpuInfo.set(round(float(self.cpuInfo[i][j]), 3))
                             self.varCnt += 1
                         colNum += 1
                         rowNum = 1
@@ -452,7 +455,7 @@ class EditCpuListWidget(CustomSimpleDialog):
                         cpuInfoEt.grid(row=rowNum, column=2 * colNum + 1, sticky=tkinter.W + tkinter.E)
                         rowNum += 1
                         if self.mode == "modify":
-                            varCpuInfo.set(self.cpuInfo[i])
+                            varCpuInfo.set(round(float(self.cpuInfo[i]), 3))
                         self.varCnt += 1
                 else:
                     if i == 1:
@@ -477,7 +480,7 @@ class EditCpuListWidget(CustomSimpleDialog):
                             cpuInfoEt.grid(row=rowNum, column=2 * colNum + 1, sticky=tkinter.W + tkinter.E)
                             rowNum += 1
                             if self.mode == "modify":
-                                varCpuInfo.set(self.cpuInfo[i][j])
+                                varCpuInfo.set(round(float(self.cpuInfo[i][j]), 3))
                             self.varCnt += 1
                         colNum += 1
                         rowNum = 1
@@ -490,7 +493,7 @@ class EditCpuListWidget(CustomSimpleDialog):
                         cpuInfoEt.grid(row=rowNum, column=2 * colNum + 1, sticky=tkinter.W + tkinter.E)
                         rowNum += 1
                         if self.mode == "modify":
-                            varCpuInfo.set(self.cpuInfo[i])
+                            varCpuInfo.set(round(float(self.cpuInfo[i]), 3))
                         self.varCnt += 1
 
         if self.mode == "insert":

@@ -197,30 +197,36 @@ class SmfListWidget:
             else:
                 tags = "amb"
 
-            if self.decryptFile.game in ["CS", "RS"]:
-                data = (index,)
-                data += (smfInfo[0], self.toHex(smfInfo[1]), self.toHex(smfInfo[2]), smfInfo[3], smfInfo[4], smfInfo[5])
-                data += (smfInfo[6], smfInfo[7])
-                self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data, tags=tags)
-            elif self.decryptFile.game == "BS":
-                data = (index,)
-                data += (smfInfo[0], smfInfo[1], smfInfo[2], smfInfo[3], len(smfInfo[4]))
-                self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data, tags=tags)
-            elif self.decryptFile.game in ["LSTrial", "LS"]:
-                if self.decryptFile.game == "LS" or (self.decryptFile.game == "LSTrial" and self.decryptFile.readFlag):
-                    data = (index,)
-                    if len(smfInfo[3]) == 0:
-                        data += (smfInfo[0], smfInfo[1], smfInfo[2], -1)
+            data = (index,)
+            for j, smfValue in enumerate(smfInfo):
+                if self.decryptFile.game in ["CS", "RS"]:
+                    if j in [1, 2]:
+                        data += (self.toHex(smfValue),)
                     else:
-                        data += (smfInfo[0], smfInfo[1], smfInfo[2], len(smfInfo[3]))
-                    self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data, tags=tags)
-                else:
-                    data = (index,)
-                    if len(smfInfo[2]) == 0:
-                        data += (smfInfo[0], smfInfo[1], -1)
+                        data += (smfValue,)
+                elif self.decryptFile.game == "BS":
+                    if j == 4:
+                        data += (len(smfValue),)
                     else:
-                        data += (smfInfo[0], smfInfo[1], len(smfInfo[2]))
-                    self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data, tags=tags)
+                        data += (smfValue,)
+                elif self.decryptFile.game in ["LSTrial", "LS"]:
+                    if self.decryptFile.game == "LS" or (self.decryptFile.game == "LSTrial" and self.decryptFile.readFlag):
+                        if j == 3:
+                            if len(smfValue) == 0:
+                                data += (-1,)
+                            else:
+                                data += (len(smfValue),)
+                        else:
+                            data += (smfValue,)
+                    else:
+                        if j == 2:
+                            if len(smfValue) == 0:
+                                data += (-1,)
+                            else:
+                                data += (len(smfValue),)
+                        else:
+                            data += (smfValue,)
+            self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data, tags=tags)
 
         self.treeviewFrame.tree.tag_configure("notUse", background="#CCCCCC", foreground="black")
         self.treeviewFrame.tree.tag_configure("rail", background="#FFC8C8", foreground="black")
