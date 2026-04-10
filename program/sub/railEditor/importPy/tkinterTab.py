@@ -22,8 +22,8 @@ from program.sub.railEditor.importPy.tab5.else2ListWidget import Else2ListWidget
 
 from program.sub.railEditor.importPy.tab6.cpuWidget import CpuWidget
 
-# from program.railEditor.importPy.tab7.comicScriptWidget import ComicScriptWidget
-# from program.railEditor.importPy.tab7.dosansenListWidget import DosansenListWidget
+from program.sub.railEditor.importPy.tab7.comicScriptWidget import ComicScriptWidget
+from program.sub.railEditor.importPy.tab7.dosansenListWidget import DosansenListWidget
 
 # from program.railEditor.importPy.tab8.railListWidget import RailListWidget
 
@@ -91,9 +91,9 @@ def tab6AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc, 
 
 
 def tab7AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc):
-    ComicScriptWidget(root, tabFrame, decryptFile, decryptFile.comicScriptList, rootFrameAppearance, reloadFunc)
+    ComicScriptWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc)
     if decryptFile.game in ["CS", "RS"]:
-        DosansenListWidget(root, tabFrame, decryptFile, decryptFile.dosansenList, rootFrameAppearance, reloadFunc)
+        DosansenListWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc)
 
 
 def tab8AllWidget(tabFrame, decryptFile, rootFrameAppearance, reloadFunc):

@@ -2,17 +2,17 @@ import copy
 
 import tkinter
 from tkinter import messagebox as mb
-import program.textSetting as textSetting
-import program.appearance.ttkCustomWidget as ttkCustomWidget
-from program.appearance.customSimpleDialog import CustomSimpleDialog
+import program.sub.textSetting as textSetting
+import program.sub.appearance.ttkCustomWidget as ttkCustomWidget
+from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
 
 
 class ComicScriptWidget:
-    def __init__(self, root, frame, decryptFile, comicScriptList, rootFrameAppearance, reloadFunc):
+    def __init__(self, root, frame, decryptFile, rootFrameAppearance, reloadFunc):
         self.root = root
         self.frame = frame
         self.decryptFile = decryptFile
-        self.comicScriptList = comicScriptList
+        self.comicScriptList = decryptFile.comicScriptList
         self.rootFrameAppearance = rootFrameAppearance
         self.reloadFunc = reloadFunc
         self.selectIndexNum = -1
@@ -38,9 +38,30 @@ class ComicScriptWidget:
         listWidth = 25
         if self.decryptFile.game in ["LS", "LSTrial"]:
             listWidth = 80
-        comicScriptListListbox = tkinter.Listbox(listFrame, selectmode="single", height=22, font=textSetting.textList["font2"], width=listWidth, listvariable=self.v_comicScriptList, bg=rootFrameAppearance.bgColor, fg=rootFrameAppearance.fgColor)
+        comicScriptListListbox = tkinter.Listbox(listFrame, selectmode="single", height=20, font=textSetting.textList["font2"], width=listWidth, listvariable=self.v_comicScriptList, bg=rootFrameAppearance.bgColor, fg=rootFrameAppearance.fgColor)
         comicScriptListListbox.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
         comicScriptListListbox.bind("<<ListboxSelect>>", lambda e: self.buttonActive(comicScriptListListbox, comicScriptListListbox.curselection()))
+
+    def setListboxInfo(self, comicScriptList):
+        displayComicScriptList = []
+        if len(comicScriptList) > 0:
+            for i in range(len(comicScriptList)):
+                comicScriptInfo = comicScriptList[i]
+                if self.decryptFile.game in ["BS", "CS", "RS"]:
+                    displayComicScriptList.append("{0:02d}→{1}, [{2}, {3}]".format(i, comicScriptInfo[0], comicScriptInfo[1], comicScriptInfo[2]))
+                elif self.decryptFile.game == "LS":
+                    comicScriptTempList = [round(x, 3) for x in comicScriptInfo[3]]
+                    displayComicScriptList.append("{0:02d}→{1}, [{2}, {3}], {4}".format(i, comicScriptInfo[0], comicScriptInfo[1], comicScriptInfo[2], comicScriptTempList))
+                elif self.decryptFile.game == "LSTrial":
+                    if self.decryptFile.readFlag:
+                        comicScriptTempList = [round(x, 3) for x in comicScriptInfo[3]]
+                        displayComicScriptList.append("{0:02d}→{1}, [{2}, {3}], {4}".format(i, comicScriptInfo[0], comicScriptInfo[1], comicScriptInfo[2], comicScriptTempList))
+                    else:
+                        comicScriptTempList = [round(x, 3) for x in comicScriptInfo[2]]
+                        displayComicScriptList.append("{0:02d}→{1}, [{2}], {3}".format(i, comicScriptInfo[0], comicScriptInfo[1], comicScriptTempList))
+        else:
+            displayComicScriptList = [textSetting.textList["railEditor"]["noList"]]
+        return displayComicScriptList
 
     def buttonActive(self, listbox, value):
         if self.decryptFile.game == "LSTrial":
@@ -65,28 +86,9 @@ class ComicScriptWidget:
             self.deleteBtn["state"] = "normal"
         self.insertBtn["state"] = "normal"
 
-    def setListboxInfo(self, listboxInfo):
-        self.comicScriptList = listboxInfo
-        copyComicScriptList = copy.deepcopy(self.comicScriptList)
-        if len(copyComicScriptList) > 0:
-            for i in range(len(copyComicScriptList)):
-                comicScriptInfo = copyComicScriptList[i]
-                if self.decryptFile.game in ["BS", "CS", "RS"]:
-                    copyComicScriptList[i] = "{0:02d}→{1}, [{2}, {3}]".format(i, comicScriptInfo[0], comicScriptInfo[1], comicScriptInfo[2])
-                elif self.decryptFile.game == "LS":
-                    copyComicScriptList[i] = "{0:02d}→{1}, [{2}, {3}], {4}".format(i, comicScriptInfo[0], comicScriptInfo[1], comicScriptInfo[2], comicScriptInfo[3])
-                elif self.decryptFile.game == "LSTrial":
-                    if self.decryptFile.readFlag:
-                        copyComicScriptList[i] = "{0:02d}→{1}, [{2}, {3}], {4}".format(i, comicScriptInfo[0], comicScriptInfo[1], comicScriptInfo[2], comicScriptInfo[3])
-                    else:
-                        copyComicScriptList[i] = "{0:02d}→{1}, [{2}], {3}".format(i, comicScriptInfo[0], comicScriptInfo[1], comicScriptInfo[2])
-        else:
-            copyComicScriptList = [textSetting.textList["railEditor"]["noList"]]
-
-        return copyComicScriptList
-
     def modify(self):
-        result = EditComicScriptListWidget(self.root, textSetting.textList["railEditor"]["modifyComicScriptLabel"], self.decryptFile, "modify", self.selectIndexNum, self.comicScriptList, self.rootFrameAppearance)
+        item = self.comicScriptList[self.selectIndexNum]
+        result = EditComicScriptListWidget(self.root, textSetting.textList["railEditor"]["modifyComicScriptLabel"], self.decryptFile, "modify", item, self.rootFrameAppearance)
         if result.reloadFlag:
             self.comicScriptList[self.selectIndexNum] = result.resultValueList
             if not self.decryptFile.saveComicScriptList(self.comicScriptList):
@@ -97,11 +99,9 @@ class ComicScriptWidget:
             self.reloadFunc()
 
     def insert(self):
-        result = EditComicScriptListWidget(self.root, textSetting.textList["railEditor"]["insertComicScriptLabel"], self.decryptFile, "insert", self.selectIndexNum, self.comicScriptList, self.rootFrameAppearance)
+        result = EditComicScriptListWidget(self.root, textSetting.textList["railEditor"]["insertComicScriptLabel"], self.decryptFile, "insert", None, self.rootFrameAppearance)
         if result.reloadFlag:
-            if result.insert == 0:
-                self.selectIndexNum += 1
-            self.comicScriptList.insert(self.selectIndexNum, result.resultValueList)
+            self.comicScriptList.insert(self.selectIndexNum + result.insertPos, result.resultValueList)
             if not self.decryptFile.saveComicScriptList(self.comicScriptList):
                 self.decryptFile.printError()
                 mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
@@ -123,15 +123,15 @@ class ComicScriptWidget:
 
 
 class EditComicScriptListWidget(CustomSimpleDialog):
-    def __init__(self, master, title, decryptFile, mode, index, comicScriptList, rootFrameAppearance):
+    def __init__(self, master, title, decryptFile, mode, item, rootFrameAppearance):
         self.decryptFile = decryptFile
         self.mode = mode
-        self.index = index
-        self.comicScriptList = comicScriptList
+        self.item = item
+        self.rootFrameAppearance = rootFrameAppearance
         self.varList = []
         self.varCnt = 0
         self.resultValueList = []
-        self.insert = 0
+        self.insertPos = None
         self.reloadFlag = False
         super().__init__(master, title, rootFrameAppearance.bgColor)
 
@@ -147,40 +147,38 @@ class EditComicScriptListWidget(CustomSimpleDialog):
 
         for i in range(len(self.comicScriptLb)):
             tempNameLb = ttkCustomWidget.CustomTtkLabel(master, text=self.comicScriptLb[i], font=textSetting.textList["font2"], width=15)
-            tempNameLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
+            tempNameLb.grid(row=i + 1, column=0, sticky=tkinter.W + tkinter.E)
             varTemp = tkinter.IntVar()
             self.varList.append(varTemp)
             txtEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[self.varCnt], font=textSetting.textList["font2"])
-            txtEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+            txtEt.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
             if self.mode == "modify":
-                comicScriptInfo = self.comicScriptList[self.index]
-                varTemp.set(comicScriptInfo[i])
+                varTemp.set(self.item[i])
             self.varCnt += 1
 
         if self.decryptFile.game in ["LS", "LSTrial"]:
             xLine = ttkCustomWidget.CustomTtkSeparator(master, orient=tkinter.HORIZONTAL)
-            xLine.grid(row=len(self.comicScriptLb), column=0, columnspan=2, sticky=tkinter.W + tkinter.E, pady=10)
+            xLine.grid(row=len(self.comicScriptLb) + 1, column=0, columnspan=2, sticky=tkinter.W + tkinter.E, pady=10)
 
             for i in range(9):
                 tempNameLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["railEditor"]["editLsComicScriptFLabel"].format(i + 1), font=textSetting.textList["font2"], width=15)
-                tempNameLb.grid(row=len(self.comicScriptLb) + i + 1, column=0, sticky=tkinter.W + tkinter.E)
-                varTemp = tkinter.IntVar()
+                tempNameLb.grid(row=len(self.comicScriptLb) + i + 2, column=0, sticky=tkinter.W + tkinter.E)
+                varTemp = tkinter.DoubleVar()
                 self.varList.append(varTemp)
                 txtEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[self.varCnt], font=textSetting.textList["font2"])
-                txtEt.grid(row=len(self.comicScriptLb) + i + 1, column=1, sticky=tkinter.W + tkinter.E)
+                txtEt.grid(row=len(self.comicScriptLb) + i + 2, column=1, sticky=tkinter.W + tkinter.E)
                 if self.mode == "modify":
-                    comicScriptInfo = self.comicScriptList[self.index]
-                    if self.decryptFile.filenameNum == 7:
-                        varTemp.set(comicScriptInfo[2][i])
+                    if self.decryptFile.game == "LSTrial" and self.decryptFile.filenameNum == 7:
+                        varTemp.set(round(float(self.item[2][i]), 3))
                     else:
-                        varTemp.set(comicScriptInfo[3][i])
+                        varTemp.set(round(float(self.item[3][i]), 3))
                 self.varCnt += 1
 
         if self.mode == "insert":
             if self.decryptFile.game in ["BS", "CS", "RS"]:
-                self.setInsertWidget(master, len(self.comicScriptLb))
+                self.setInsertWidget(master, len(self.comicScriptLb) + 1)
             else:
-                self.setInsertWidget(master, len(self.comicScriptLb) + 10)
+                self.setInsertWidget(master, len(self.comicScriptLb) + 11)
         super().body(master)
 
     def setInsertWidget(self, master, index):
@@ -253,7 +251,9 @@ class EditComicScriptListWidget(CustomSimpleDialog):
                     self.resultValueList.append(tempList)
 
                 if self.mode == "insert":
-                    self.insert = self.insertCb.current()
+                    self.insertPos = 1
+                    if self.insertCb.current() == 1:
+                        self.insertPos = 0
                 return True
             except Exception:
                 errorMsg = textSetting.textList["errorList"]["E14"]
