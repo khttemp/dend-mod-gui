@@ -17,6 +17,10 @@ class ComicScriptWidget:
         self.reloadFunc = reloadFunc
         self.selectIndexNum = -1
 
+        if self.decryptFile.game == "LSTrial":
+            if not (self.decryptFile.readFlag or self.decryptFile.filenameNum == 7):
+                return
+
         comicScriptLf = ttkCustomWidget.CustomTtkLabelFrame(self.frame, text=textSetting.textList["railEditor"]["comicScriptLabel"])
         comicScriptLf.pack(anchor=tkinter.NW, padx=10, side=tkinter.LEFT, fill=tkinter.Y)
 
