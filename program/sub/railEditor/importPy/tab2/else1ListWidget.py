@@ -51,7 +51,7 @@ class Else1ListWidget:
             txtFrame2.pack(anchor=tkinter.NW, pady=5)
 
             for i in range(len(self.else1List)):
-                else1Value = round(float(self.else1List[i]), 5)
+                else1Value = round(float(self.else1List[i]), 3)
                 tempfTextLb = ttkCustomWidget.CustomTtkLabel(txtFrame2, text=else1Value, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
                 tempfTextLb.grid(row=0, column=i, sticky=tkinter.W + tkinter.E)
             tempfBtn = ttkCustomWidget.CustomTtkButton(txtFrame2, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=self.editVarLsList)
@@ -167,7 +167,7 @@ class EditLsElse1ListWidget(CustomSimpleDialog):
             txtLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["railEditor"]["editElse1F1Label"].format(i + 1), font=textSetting.textList["font2"])
             txtLb.grid(row=i + 1, column=0, sticky=tkinter.W + tkinter.E)
             varTemp = tkinter.DoubleVar()
-            varTemp.set(round(float(self.valList[i]), 5))
+            varTemp.set(round(float(self.valList[i]), 3))
             self.varList.append(varTemp)
             txtEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
             txtEt.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
