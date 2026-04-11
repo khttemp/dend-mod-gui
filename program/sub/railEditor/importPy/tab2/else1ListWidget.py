@@ -16,18 +16,18 @@ class Else1ListWidget:
         self.rootFrameAppearance = rootFrameAppearance
         self.reloadFunc = reloadFunc
 
+        if len(self.else1List) == 0:
+            return
+
         else1Lf = ttkCustomWidget.CustomTtkLabelFrame(self.frame, text=textSetting.textList["railEditor"]["else1Label"])
         else1Lf.pack(anchor=tkinter.NW, padx=10, pady=5)
 
         txtFrame = ttkCustomWidget.CustomTtkFrame(else1Lf)
         txtFrame.pack(anchor=tkinter.NW)
 
-        self.varList = []
-        self.varCnt = 0
         if self.decryptFile.game in ["BS", "CS", "RS"]:
-            self.varElse1 = tkinter.DoubleVar()
-            self.varElse1.set(round(float(self.else1List[0]), 3))
-            else1TextLb = ttkCustomWidget.CustomTtkLabel(txtFrame, textvariable=self.varElse1, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
+            else1SingleValue = round(float(self.else1List[0]), 3)
+            else1TextLb = ttkCustomWidget.CustomTtkLabel(txtFrame, text=else1SingleValue, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
             else1TextLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
             else1Btn = ttkCustomWidget.CustomTtkButton(txtFrame, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=partial(self.editVarList, 0, [self.else1List[0]]))
             else1Btn.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
@@ -39,15 +39,11 @@ class Else1ListWidget:
                 else1Info = self.else1List[i]
                 for j in range(len(else1Info)):
                     if j in [0, 1]:
-                        varTemp = tkinter.IntVar()
-                        varTemp.set(round(float(else1Info[j]), 3))
+                        else1Value = round(float(else1Info[j]), 3)
                     else:
-                        varTemp = tkinter.IntVar()
-                        varTemp.set(int(else1Info[j]))
-                    self.varList.append(varTemp)
-                    tempfTextLb = ttkCustomWidget.CustomTtkLabel(txtFrame2, textvariable=self.varList[self.varCnt], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
+                        else1Value = else1Info[j]
+                    tempfTextLb = ttkCustomWidget.CustomTtkLabel(txtFrame2, text=else1Value, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
                     tempfTextLb.grid(row=i, column=j, sticky=tkinter.W + tkinter.E)
-                    self.varCnt += 1
                 tempfBtn = ttkCustomWidget.CustomTtkButton(txtFrame2, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=partial(self.editVarList, i, else1Info))
                 tempfBtn.grid(row=i, column=len(else1Info), sticky=tkinter.W + tkinter.E)
         else:
@@ -55,12 +51,9 @@ class Else1ListWidget:
             txtFrame2.pack(anchor=tkinter.NW, pady=5)
 
             for i in range(len(self.else1List)):
-                varTemp = tkinter.DoubleVar()
-                varTemp.set(round(float(self.else1List[i]), 5))
-                self.varList.append(varTemp)
-                tempfTextLb = ttkCustomWidget.CustomTtkLabel(txtFrame2, textvariable=self.varList[self.varCnt], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
+                else1Value = round(float(self.else1List[i]), 5)
+                tempfTextLb = ttkCustomWidget.CustomTtkLabel(txtFrame2, text=else1Value, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
                 tempfTextLb.grid(row=0, column=i, sticky=tkinter.W + tkinter.E)
-                self.varCnt += 1
             tempfBtn = ttkCustomWidget.CustomTtkButton(txtFrame2, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=self.editVarLsList)
             tempfBtn.grid(row=0, column=len(self.else1List), sticky=tkinter.W + tkinter.E)
 

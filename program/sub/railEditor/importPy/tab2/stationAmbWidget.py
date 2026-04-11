@@ -25,9 +25,7 @@ class StationAmbWidget:
         stationCntLb = ttkCustomWidget.CustomTtkLabel(txtFrame, text=textSetting.textList["railEditor"]["stationInfoCntLabel"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=12, borderwidth=1, relief="solid")
         stationCntLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
 
-        self.varStationCnt = tkinter.IntVar()
-        self.varStationCnt.set(len(self.decryptFile.stationList))
-        stationCntTextLb = ttkCustomWidget.CustomTtkLabel(txtFrame, textvariable=self.varStationCnt, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
+        stationCntTextLb = ttkCustomWidget.CustomTtkLabel(txtFrame, text=len(self.stationList), font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
         stationCntTextLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
         stationCntBtn = ttkCustomWidget.CustomTtkButton(txtFrame, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=self.editStationCnt)
         stationCntBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
@@ -47,15 +45,11 @@ class StationAmbWidget:
             pngNumLb = ttkCustomWidget.CustomTtkLabel(txtFrame2, text=textSetting.textList["railEditor"]["stationImgNoLabel"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=9, borderwidth=1, relief="solid")
             pngNumLb.grid(row=0, column=4, sticky=tkinter.W + tkinter.E)
 
-            self.stationVarList = []
-            self.stationVarCnt = 0
             for i in range(len(self.decryptFile.stationList)):
                 stationInfo = self.decryptFile.stationList[i]
                 for j in range(len(stationInfo)):
-                    self.stationVarList.append(tkinter.IntVar(value=stationInfo[j]))
-                    varStationLb = ttkCustomWidget.CustomTtkLabel(txtFrame2, textvariable=self.stationVarList[self.stationVarCnt], font=textSetting.textList["font6"], anchor=tkinter.CENTER, borderwidth=1, relief="solid")
+                    varStationLb = ttkCustomWidget.CustomTtkLabel(txtFrame2, text=stationInfo[j], font=textSetting.textList["font6"], anchor=tkinter.CENTER, borderwidth=1, relief="solid")
                     varStationLb.grid(row=i + 1, column=j, sticky=tkinter.W + tkinter.E)
-                    self.stationVarCnt += 1
                 varBtn = ttkCustomWidget.CustomTtkButton(txtFrame2, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=partial(self.editStation, i, stationInfo))
                 varBtn.grid(row=i + 1, column=len(stationInfo), sticky=tkinter.W + tkinter.E)
 

@@ -16,17 +16,18 @@ class BinAnimeListWidget:
         self.rootFrameAppearance = rootFrameAppearance
         self.reloadFunc = reloadFunc
 
+        if len(self.binAnimeList) == 0:
+            return
+
         eleLf = ttkCustomWidget.CustomTtkLabelFrame(self.frame, text=textSetting.textList["railEditor"]["editBaseBinAnimeLabel"])
         eleLf.pack(anchor=tkinter.NW, padx=10, pady=5)
 
         txtFrame = ttkCustomWidget.CustomTtkFrame(eleLf)
         txtFrame.pack(anchor=tkinter.NW)
 
-        self.varBinAnimeCnt = tkinter.IntVar()
-        self.varBinAnimeCnt.set(len(self.binAnimeList))
         binAnimeCntTextLb = ttkCustomWidget.CustomTtkLabel(txtFrame, text=textSetting.textList["railEditor"]["animeCntLabel"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=9, borderwidth=1, relief="solid")
         binAnimeCntTextLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
-        binAnimeCntLb = ttkCustomWidget.CustomTtkLabel(txtFrame, textvariable=self.varBinAnimeCnt, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
+        binAnimeCntLb = ttkCustomWidget.CustomTtkLabel(txtFrame, text=len(self.binAnimeList), font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
         binAnimeCntLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
         if self.decryptFile.game in ["BS", "CS", "RS"]:
             binAnimeCntBtn = ttkCustomWidget.CustomTtkButton(txtFrame, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=self.editBinAnimeCnt)
@@ -41,15 +42,12 @@ class BinAnimeListWidget:
                 headerLb = ttkCustomWidget.CustomTtkLabel(txtFrame2, text=binAnimeHeaderLb[i], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
                 headerLb.grid(row=0, column=i, sticky=tkinter.W + tkinter.E)
 
-            self.varList = []
-            self.varCnt = 0
             for i in range(len(self.binAnimeList)):
                 binAnimeInfo = self.binAnimeList[i]
                 for j in range(len(binAnimeInfo)):
-                    self.varList.append(tkinter.IntVar(value=int(binAnimeInfo[j])))
-                    temphTextLb = ttkCustomWidget.CustomTtkLabel(txtFrame2, textvariable=self.varList[self.varCnt], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
+                    binAnimeValue = binAnimeInfo[j]
+                    temphTextLb = ttkCustomWidget.CustomTtkLabel(txtFrame2, text=binAnimeValue, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
                     temphTextLb.grid(row=i + 1, column=j, sticky=tkinter.W + tkinter.E)
-                    self.varCnt += 1
                 temphBtn = ttkCustomWidget.CustomTtkButton(txtFrame2, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=partial(self.editBinAnime, i, binAnimeInfo))
                 temphBtn.grid(row=i + 1, column=len(binAnimeInfo), sticky=tkinter.W + tkinter.E)
 
