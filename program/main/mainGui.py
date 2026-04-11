@@ -41,6 +41,7 @@ class MainWindow(tkinter.Frame):
         self.selectedProgram = None
         self.selectedProgramFrame = None
         self.version = mainProcess.getUpdateVer(self.importDict["rootPath"])
+        self.onlineVersion = mainProcess.getOnlineUpdateVer(self.importDict["configPath"])
 
         self.checkConfig()
         self.drawMenu()
@@ -48,7 +49,7 @@ class MainWindow(tkinter.Frame):
         self.readRootFrameAppearance()
         self.maxMenubarLen = self.menubar.index(tkinter.END)
 
-        self.root.after(100, mainProcess.confirmUpdate, mb, self.version, self.importDict["configPath"])
+        self.root.after(100, self.checkUpdate)
 
     def checkConfig(self):
         configPath = self.importDict["configPath"]
@@ -101,8 +102,10 @@ class MainWindow(tkinter.Frame):
         pass
 
     def checkUpdate(self):
-        configPath = self.importDict["configPath"]
-        mainProcess.confirmUpdate(self.version, configPath)
+        msg = textSetting.textList["update"]["message"].format(self.onlineVersion)
+        result = mb.askyesno(title=textSetting.textList["update"]["title"], message=msg)
+        if result:
+            mainProcess.openReleases()
 
     def clearRootFrame(self):
         children = self.root.winfo_children()

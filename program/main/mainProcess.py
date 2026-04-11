@@ -36,6 +36,43 @@ def getUpdateVer(rootPath):
     return version
 
 
+def getOnlineUpdateVer(configPath):
+    onlineUpdateVer = ""
+    try:
+        url = "https://raw.githubusercontent.com/khttemp/dend-mod-gui/main/ver.txt"
+        response = requests.get(url)
+        if response.status_code != requests.codes.ok:
+            return
+
+        onlineUpdateVer = response.text
+        configCheckOption(configPath, "UPDATE", "time", "2000/01/01")
+
+        configRead = configparser.ConfigParser()
+        configRead.read(configPath, encoding="utf-8")
+
+        localDateStr = configRead.get("UPDATE", "time")
+        localDate = datetime.datetime.strptime(localDateStr, "%Y/%m/%d").date()
+        currentDate = datetime.datetime.now().date()
+        if (currentDate - localDate).days > 0:
+            try:
+                configRead = configparser.ConfigParser()
+                configRead.read(configPath, encoding="utf-8")
+
+                currentTime = datetime.datetime.now()
+                currentDate = datetime.datetime.strftime(currentTime, "%Y/%m/%d")
+                configRead.set("UPDATE", "time", currentDate)
+
+                f = open(configPath, "w", encoding="utf-8")
+                configRead.write(f)
+                f.close()
+            except Exception:
+                errObj.write(traceback.format_exc())
+    except Exception:
+        pass
+
+    return onlineUpdateVer
+
+
 def writeDefaultConfig(configPath):
     try:
         config_ini_folder = os.path.dirname(configPath)
@@ -94,47 +131,9 @@ def configCheckOption(configPath, section, options, defaultValue="0"):
     return False
 
 
-def confirmUpdate(mb, version, configPath):
+def openReleases():
     try:
-        url = "https://raw.githubusercontent.com/khttemp/dend-mod-gui/main/ver.txt"
-        response = requests.get(url)
-        if response.status_code == requests.codes.ok:
-            onlineUpdateVer = response.text
-        else:
-            onlineUpdateVer = ""
-
-        if version == onlineUpdateVer:
-            return
-        
-        configCheckOption(configPath, "UPDATE", "time", "2000/01/01")
-
-        configRead = configparser.ConfigParser()
-        configRead.read(configPath, encoding="utf-8")
-
-        localDateStr = configRead.get("UPDATE", "time")
-        localDate = datetime.datetime.strptime(localDateStr, "%Y/%m/%d").date()
-        currentDate = datetime.datetime.now().date()
-        if (localDate - currentDate).days >= 0:
-            return
-
-        msg = textSetting.textList["update"]["message"].format(onlineUpdateVer)
-        result = mb.askyesno(title=textSetting.textList["update"]["title"], message=msg)
-        if result:
-            webbrowser.open_new("https://github.com/khttemp/dend-mod-gui/releases")
-
-        try:
-            configRead = configparser.ConfigParser()
-            configRead.read(configPath, encoding="utf-8")
-
-            currentTime = datetime.datetime.now()
-            currentDate = datetime.datetime.strftime(currentTime, "%Y/%m/%d")
-            configRead.set("UPDATE", "time", currentDate)
-
-            f = open(configPath, "w", encoding="utf-8")
-            configRead.write(f)
-            f.close()
-        except PermissionError:
-            errObj.write(traceback.format_exc())
+        webbrowser.open_new("https://github.com/khttemp/dend-mod-gui/releases")
     except Exception:
         errObj.write(traceback.format_exc())
 
