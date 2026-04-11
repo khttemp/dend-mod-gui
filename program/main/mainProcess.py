@@ -39,12 +39,6 @@ def getUpdateVer(rootPath):
 def getOnlineUpdateVer(configPath):
     onlineUpdateVer = ""
     try:
-        url = "https://raw.githubusercontent.com/khttemp/dend-mod-gui/main/ver.txt"
-        response = requests.get(url)
-        if response.status_code != requests.codes.ok:
-            return
-
-        onlineUpdateVer = response.text
         configCheckOption(configPath, "UPDATE", "time", "2000/01/01")
 
         configRead = configparser.ConfigParser()
@@ -65,6 +59,13 @@ def getOnlineUpdateVer(configPath):
                 f = open(configPath, "w", encoding="utf-8")
                 configRead.write(f)
                 f.close()
+
+                url = "https://raw.githubusercontent.com/khttemp/dend-mod-gui/main/ver.txt"
+                response = requests.get(url)
+                if response.status_code != requests.codes.ok:
+                    return
+
+                onlineUpdateVer = response.text
             except Exception:
                 errObj.write(traceback.format_exc())
     except Exception:
