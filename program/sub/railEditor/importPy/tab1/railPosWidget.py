@@ -39,7 +39,11 @@ class RailPosWidget:
             playLb = ttkCustomWidget.CustomTtkLabel(railPosLf, text=textSetting.textList["railEditor"]["railPosPlayerNameLabel"].format(i + 1), font=textSetting.textList["font6"], anchor=tkinter.CENTER, borderwidth=1, relief="solid")
             playLb.grid(row=i + 1, column=0, sticky=tkinter.W + tkinter.E)
             for j in range(len(trainInfo)):
-                valLb = ttkCustomWidget.CustomTtkLabel(railPosLf, text=trainInfo[j], font=textSetting.textList["font6"], anchor=tkinter.CENTER, borderwidth=1, relief="solid")
+                if j == 3:
+                    trainValue = round(float(trainInfo[j]), 3)
+                else:
+                    trainValue = trainInfo[j]
+                valLb = ttkCustomWidget.CustomTtkLabel(railPosLf, text=trainValue, font=textSetting.textList["font6"], anchor=tkinter.CENTER, borderwidth=1, relief="solid")
                 valLb.grid(row=i + 1, column=j + 1, sticky=tkinter.W + tkinter.E)
 
             if self.decryptFile.game == "LSTrial" and self.decryptFile.oldFlag and i == 2:
@@ -81,7 +85,7 @@ class EditRailPosWidget(CustomSimpleDialog):
             railLb.grid(row=i + 1, column=0, sticky=tkinter.W + tkinter.E)
             if i == 3:
                 varRail = tkinter.DoubleVar()
-                varRail.set(self.trainInfo[i])
+                varRail.set(round(float(self.trainInfo[i]), 3))
             else:
                 varRail = tkinter.IntVar()
                 varRail.set(self.trainInfo[i])

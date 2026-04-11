@@ -21,15 +21,13 @@ class StationNoWidget:
         stationNoLb = ttkCustomWidget.CustomTtkLabel(txtFrame, text=textSetting.textList["railEditor"]["stationNo"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, borderwidth=1, relief="solid")
         stationNoLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E, ipadx=5)
 
-        self.varStationNo = tkinter.IntVar()
-        self.varStationNo.set(self.stationNo)
-        stationNoTextLb = ttkCustomWidget.CustomTtkLabel(txtFrame, textvariable=self.varStationNo, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
+        stationNoTextLb = ttkCustomWidget.CustomTtkLabel(txtFrame, text=self.stationNo, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
         stationNoTextLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
-        stationNoBtn = ttkCustomWidget.CustomTtkButton(txtFrame, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=lambda: self.editVar(self.varStationNo.get()))
+        stationNoBtn = ttkCustomWidget.CustomTtkButton(txtFrame, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=self.editVar)
         stationNoBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
 
-    def editVar(self, value):
-        result = EditStationNoWidget(self.root, textSetting.textList["railEditor"]["editStationNoLabel"], self.decryptFile, value, self.rootFrameAppearance)
+    def editVar(self):
+        result = EditStationNoWidget(self.root, textSetting.textList["railEditor"]["editStationNoLabel"], self.decryptFile, self.stationNo, self.rootFrameAppearance)
 
         if result.reloadFlag:
             if not self.decryptFile.saveStationNo(self.num, result.resultValue):

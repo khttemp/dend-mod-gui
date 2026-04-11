@@ -20,19 +20,17 @@ class MusicWidget:
         musicLb = ttkCustomWidget.CustomTtkLabel(txtFrame, text=textSetting.textList["railEditor"]["bgmNum"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
         musicLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
 
-        self.varMusic = tkinter.IntVar()
-        self.varMusic.set(self.decryptFile.musicCnt)
-        musicTextLb = ttkCustomWidget.CustomTtkLabel(txtFrame, textvariable=self.varMusic, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
+        musicTextLb = ttkCustomWidget.CustomTtkLabel(txtFrame, text=self.decryptFile.musicCnt, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
         musicTextLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
         if self.decryptFile.game in ["CS", "RS"]:
-            musicBtn = ttkCustomWidget.CustomTtkButton(txtFrame, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=lambda: self.editVar(self.varMusic.get()))
+            musicBtn = ttkCustomWidget.CustomTtkButton(txtFrame, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=self.editVar)
             musicBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
         else:
-            musicBtn = ttkCustomWidget.CustomTtkButton(txtFrame, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=lambda: self.editMusicList())
+            musicBtn = ttkCustomWidget.CustomTtkButton(txtFrame, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=self.editMusicList)
             musicBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
 
-    def editVar(self, value):
-        result = EditMusicCnt(self.root, textSetting.textList["railEditor"]["editBgmNumLabel"], self.decryptFile, value, self.rootFrameAppearance)
+    def editVar(self):
+        result = EditMusicCnt(self.root, textSetting.textList["railEditor"]["editBgmNumLabel"], self.decryptFile, self.rootFrameAppearance)
 
         if result.reloadFlag:
             if not self.decryptFile.saveMusic(result.resultValue):
@@ -54,9 +52,9 @@ class MusicWidget:
 
 
 class EditMusicCnt(CustomSimpleDialog):
-    def __init__(self, master, title, decryptFile, val, rootFrameAppearance):
+    def __init__(self, master, title, decryptFile, rootFrameAppearance):
         self.decryptFile = decryptFile
-        self.val = val
+        self.val = decryptFile.musicCnt
         self.reloadFlag = False
         self.resultValue = 0
         super().__init__(master, title, rootFrameAppearance.bgColor)
@@ -119,7 +117,7 @@ class EditMusicList(CustomSimpleDialog):
         self.modifyBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["modify"], style="custom.listbox.TButton", state="disabled", command=self.modify)
         self.modifyBtn.grid(padx=10, row=0, column=0, sticky=tkinter.W + tkinter.E)
 
-        if self.decryptFile.game != "LS":
+        if self.decryptFile.game not in ["LS", "LSTrial"]:
             self.insertBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["insert"], style="custom.listbox.TButton", state="disabled", command=self.insert)
             self.insertBtn.grid(padx=10, row=0, column=1, sticky=tkinter.W + tkinter.E)
             self.deleteBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["delete"], style="custom.listbox.TButton", state="disabled", command=self.delete)
@@ -148,8 +146,9 @@ class EditMusicList(CustomSimpleDialog):
     def buttonActive(self, value):
         if len(value) == 0:
             self.modifyBtn["state"] = "disabled"
-            self.insertBtn["state"] = "disabled"
-            self.deleteBtn["state"] = "disabled"
+            if self.decryptFile.game in ["BS", "CS", "RS"]:
+                self.insertBtn["state"] = "disabled"
+                self.deleteBtn["state"] = "disabled"
             return
         self.selectIndexNum = value[0]
 
