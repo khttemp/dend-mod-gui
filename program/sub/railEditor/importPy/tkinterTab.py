@@ -29,7 +29,7 @@ from program.sub.railEditor.importPy.tab7.dosansenListWidget import DosansenList
 
 from program.sub.railEditor.importPy.tab9.else3ListWidget import Else3ListWidget
 
-# from program.railEditor.importPy.tab10.else4ListWidget import Else4ListWidget
+from program.sub.railEditor.importPy.tab10.else4ListWidget import Else4ListWidget
 
 # from program.railEditor.importPy.tab11.ambListWidget import AmbListWidget
 
@@ -107,7 +107,7 @@ def tab9AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc, 
 
 
 def tab10AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc):
-    Else4ListWidget(root, tabFrame, decryptFile, decryptFile.else4List, rootFrameAppearance, reloadFunc)
+    Else4ListWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc)
 
 
 def tab11AllWidget(tabFrame, decryptFile, rootFrameAppearance, reloadFunc):

@@ -6,10 +6,10 @@ import program.sub.appearance.ttkCustomWidget as ttkCustomWidget
 from program.sub.railEditor.importPy.tkinterTab import (
     tab1AllWidget, tab2AllWidget, tab3AllWidget, tab4AllWidget,
     tab5AllWidget, tab6AllWidget, tab7AllWidget,
-    tab9AllWidget
+    tab9AllWidget, tab10AllWidget
 )
 #     tab8AllWidget
-#     tab10AllWidget, tab11AllWidget
+#     tab11AllWidget
 # )
 
 import program.sub.railEditor.dendDecrypt.RSdecrypt as dendRs
@@ -100,8 +100,8 @@ class RailEditorWindow(tkinter.Frame):
         #     tab8AllWidget(self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget)
         elif index == 8:
             tab9AllWidget(self.root, self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget, selectId)
-        # elif index == 9:
-        #     tab10AllWidget(self.root, self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget)
+        elif index == 9:
+            tab10AllWidget(self.root, self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget)
         # elif index == 10:
         #     tab11AllWidget(self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget)
 
