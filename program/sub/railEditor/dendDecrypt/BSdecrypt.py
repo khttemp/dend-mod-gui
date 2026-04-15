@@ -1,7 +1,9 @@
 import os
+import csv
 import struct
 import traceback
 import copy
+import program.sub.textSetting as textSetting
 from program.sub.encodingClass import SJISEncodingObject
 from program.sub.errorLogClass import ErrorLogObj
 
@@ -443,7 +445,9 @@ class RailDecrypt:
             railInfo.append(mdl_no)
             index += 1
 
-            mdl_kasen = struct.unpack("<b", self.byteArr[index].to_bytes(1, "little"))[0]
+            mdl_kasen = struct.unpack("<B", self.byteArr[index].to_bytes(1, "little"))[0]
+            if mdl_kasen == 255:
+                mdl_kasen = -1
             railInfo.append(mdl_kasen)
             index += 1
 
@@ -532,54 +536,6 @@ class RailDecrypt:
             railInfo.append(else4Info[1:])
             railInfo.append(ambList)
             self.railList.append(railInfo)
-        return True
-
-    def extractRailCsv(self, file_path):
-        try:
-            w = open(file_path, "w")
-            w.write("index,prev_rail,block,")
-            w.write("dir_x,dir_y,dir_z,")
-            w.write("mdl_no,mdl_kasen,mdl_kasenchu,per,")
-            w.write("flg,flg,flg,flg,")
-            w.write("rail_data,")
-            w.write("next_rail,next_no,prev_rail,prev_no,\n")
-        except PermissionError:
-            return False
-
-        for railInfo in self.railList:
-            for i in range(10):
-                w.write("{0},".format(railInfo[i]))
-            # flg
-            for i in range(4):
-                w.write("0x{0:02x},".format(railInfo[10 + i]))
-            # raildata
-            raildata = railInfo[14]
-            w.write("{0},".format(raildata))
-
-            for i in range(raildata):
-                for j in range(4):
-                    w.write("{0},".format(railInfo[15 + 4*i + j]))
-
-            w.write("\n")
-        w.close()
-        return True
-
-    def extractAmbCsv(self, file_path):
-        try:
-            w = open(file_path, "w")
-            w.write("rail_no,priority,fog,")
-            w.write("mdl_no,mdl_no2,")
-            w.write("pos_x,pos_y,pos_z,")
-            w.write("dir_x,dir_y,dir_z,")
-            w.write("per,\n")
-        except PermissionError:
-            return False
-
-        for ambInfo in self.ambList:
-            for i in range(12):
-                w.write("{0},".format(ambInfo[i]))
-            w.write("\n")
-        w.close()
         return True
 
     def saveMusicList(self, musicList):
@@ -1214,13 +1170,6 @@ class RailDecrypt:
             self.error = traceback.format_exc()
             return False
 
-    def saveElse3Cnt(self, cnt):
-        try:
-            return True
-        except Exception:
-            self.error = traceback.format_exc()
-            return False
-
     def saveElse3List(self, valList):
         try:
             else3RailList = []
@@ -1242,13 +1191,6 @@ class RailDecrypt:
                 copyRailInfo.pop(0)
                 railList.append(copyRailInfo)
             return self.saveRailCsv(railList)
-        except Exception:
-            self.error = traceback.format_exc()
-            return False
-
-    def saveElse4Cnt(self, cnt):
-        try:
-            return True
         except Exception:
             self.error = traceback.format_exc()
             return False
@@ -1276,6 +1218,154 @@ class RailDecrypt:
         except Exception:
             self.error = traceback.format_exc()
             return False
+
+    def extractRailCsv(self, file_path):
+        with open(file_path, mode='w', encoding='utf-8', newline='') as f:
+            writer = csv.writer(f)
+
+            header = [
+                "index",
+                "prev_rail",
+                "block",
+                "dir_x",
+                "dir_y",
+                "dir_z",
+                "mdl_no",
+                "mdl_kasen",
+                "mdl_kasenchu",
+                "per",
+                "flg",
+                "flg",
+                "flg",
+                "flg",
+                "rail_data",
+                "next_rail",
+                "next_no",
+                "prev_rail",
+                "prev_no",
+            ]
+            writer.writerow(header)
+
+            for railInfo in self.railList:
+                csvRailInfo = []
+                # index ~ per
+                for i in range(10):
+                   csvRailInfo.append(railInfo[i])
+                # flg
+                for i in range(4):
+                    flg = "0x{0:02x}".format(railInfo[10 + i])
+                    csvRailInfo.append(flg)
+                # raildata
+                raildata = railInfo[14]
+                csvRailInfo.append(raildata)
+
+                for i in range(raildata):
+                    for j in range(4):
+                        csvRailInfo.append(railInfo[15 + 4*i + j])
+                writer.writerow(csvRailInfo)
+        return True
+
+    def loadRailCsv(self, file_path):
+        count = 0
+        railList = []
+        railInfo = []
+        with open(file_path, mode='r', encoding='utf-8', newline='') as f:
+            reader = csv.reader(f)
+
+            try:
+                count += 1
+                next(reader)
+            except StopIteration:
+                pass
+
+            for row in reader:
+                railInfo = []
+                if len(row) < 15:
+                    errorMsg = textSetting.textList["errorList"]["E15"].format(count + 1)
+                    return None, errorMsg
+
+                originRailInfo = self.railList[int(row[0])]
+                prev_rail = int(row[1])
+                railInfo.append(prev_rail)
+
+                block = int(row[2])
+                railInfo.append(block)
+
+                for i in range(3):
+                    dirF = float(row[3 + i])
+                    railInfo.append(dirF)
+
+                mdl_no = int(row[6])
+                railInfo.append(mdl_no)
+
+                kasen = int(row[7])
+                railInfo.append(kasen)
+
+                kasenchu = int(row[8])
+                railInfo.append(kasenchu)
+
+                per = float(row[9])
+                railInfo.append(per)
+
+                for i in range(4):
+                    flag = int(row[10 + i], 16)
+                    railInfo.append(flag)
+
+                rail_data = int(row[14])
+                railInfo.append(rail_data)
+
+                for i in range(rail_data * 4):
+                    rail = int(row[15 + i])
+                    railInfo.append(rail)
+
+                else3Info = []
+                if int(row[0]) < len(self.railList):
+                    originRailData = originRailInfo[14]
+                    originEndcntIndex = 15 + originRailData * 4
+                    else3Info = originRailInfo[originEndcntIndex]
+                railInfo.append(else3Info)
+
+                else4Info = []
+                if prev_rail == -1:
+                    originPrevRail = originRailInfo[1]
+                    if originPrevRail == -1:
+                        originRailData = originRailInfo[14]
+                        originElse4Index = 16 + originRailData * 4
+                        else4Info = originRailInfo[originElse4Index]
+                    else:
+                        else4Info.append(-1)
+                        for i in range(6):
+                            else4Info.append(0)
+                railInfo.append(else4Info)
+
+                originRailData = originRailInfo[14]
+                ambListIndex = 17 + originRailData * 4
+                ambList = originRailInfo[ambListIndex]
+                railInfo.append(ambList)
+
+                railList.append(railInfo)
+                count += 1
+
+        railObj = {"csvLines":count, "data":railList}
+        return railObj, None
+
+    def extractAmbCsv(self, file_path):
+        try:
+            w = open(file_path, "w")
+            w.write("rail_no,priority,fog,")
+            w.write("mdl_no,mdl_no2,")
+            w.write("pos_x,pos_y,pos_z,")
+            w.write("dir_x,dir_y,dir_z,")
+            w.write("per,\n")
+        except PermissionError:
+            return False
+
+        for ambInfo in self.ambList:
+            for i in range(12):
+                w.write("{0},".format(ambInfo[i]))
+            w.write("\n")
+        w.close()
+        return True
 
     def saveAmbCsv(self, ambList):
         try:
