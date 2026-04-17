@@ -1,9 +1,7 @@
-import os
 import copy
 from functools import partial
 
 import tkinter
-import traceback
 from tkinter import messagebox as mb
 from tkinter import filedialog as fd
 import program.textSetting as textSetting
@@ -53,7 +51,7 @@ class RailListWidget:
         railNoEt = ttkCustomWidget.CustomTtkEntry(railNoFrame, textvariable=self.v_railNo, font=textSetting.textList["font2"], width=7, justify="center")
         railNoEt.grid(row=0, column=1, sticky=tkinter.W + tkinter.E, padx=10)
         # searchRailButton
-        searchBtn = ttkCustomWidget.CustomTtkButton(railNoFrame, text=textSetting.textList["railEditor"]["railSearchBtnLabel"], command=lambda: self.searchRail(self.v_railNo.get()))
+        searchBtn = ttkCustomWidget.CustomTtkButton(railNoFrame, text=textSetting.textList["railEditor"]["railSearchBtnLabel"], command=self.searchRail)
         searchBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E, padx=30)
         # csvExtractButton
         csvExtractBtn = ttkCustomWidget.CustomTtkButton(railNoFrame, width=25, text=textSetting.textList["railEditor"]["railCsvExtractLabel"], command=self.extractCsv)
@@ -551,7 +549,8 @@ class RailListWidget:
             revPrevRailPosEt.grid(row=i, column=5, sticky=tkinter.W + tkinter.E, pady=5)
             self.varRevRailCnt += 1
 
-    def searchRail(self, railNo):
+    def searchRail(self):
+        railNo = self.v_railNo.get()
         if len(self.railList) == 0:
             return
 

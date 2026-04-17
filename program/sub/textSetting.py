@@ -654,6 +654,7 @@ textList = {
         "ambModelInfo": "AMBモデル情報",
         "ambChildModelInfo": "AMB子モデル情報",
         "ambModelSmf": "モデル(smf)",
+        "ambChildModelSmf": "子モデル(smf)[{0}]",
         "ambModelPosX": "xの距離",
         "ambModelPosY": "yの距離",
         "ambModelPosZ": "zの距離",
@@ -664,7 +665,7 @@ textList = {
         "ambModelRotY": "y軸回転",
         "ambModelRotZ": "z軸回転",
         "ambModelPer": "per",
-        "ambModelBsSmf": "モデル1(smf)",
+        "ambModelBsSmf": "モデル(smf)",
         "ambModelBsDetail": "ポーン数",
         "ambCsvFileType": "AMBデータCSV",
         "railComboValue": [
