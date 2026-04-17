@@ -34,8 +34,8 @@ class ExcelWidget:
         self.warningColorFill = PatternFill(patternType="solid", fgColor=textSetting.textList["excel"]["warningColor"])
         self.disableColorFill = PatternFill(patternType="solid", fgColor=textSetting.textList["excel"]["disableColor"])
 
-    def printError(self):
-        self.errObj.write(self.error)
+    def printError(self, error):
+        self.errObj.write(error)
 
     def extractExcel(self):
         self.errorLogList = []
