@@ -1224,19 +1224,49 @@ class RailDecrypt:
         return railObj, None
 
     def extractAmbCsv(self, file_path):
-        try:
-            w = open(file_path, "w")
-            w.write("rail_no,pos,")
-            w.write("rail_pos,smf_no,anime_no,\n")
-        except PermissionError:
-            return False
+        with open(file_path, mode='w', encoding='utf-8', newline='') as f:
+            writer = csv.writer(f)
 
-        for ambInfo in self.ambList:
-            for i in range(5):
-                w.write("{0},".format(ambInfo[i]))
-            w.write("\n")
-        w.close()
+            header = [
+                "rail_no",
+                "pos",
+                "rail_pos",
+                "smf_no",
+                "anime_no"
+            ]
+            writer.writerow(header)
+
+            for ambInfo in self.ambList:
+                writer.writerow(ambInfo)
         return True
+
+    def loadAmbCsv(self, file_path):
+        count = 0
+        ambList = []
+        ambInfo = []
+        with open(file_path, mode='r', encoding='utf-8', newline='') as f:
+            reader = csv.reader(f)
+
+            try:
+                count += 1
+                next(reader)
+            except StopIteration:
+                pass
+
+            for row in reader:
+                ambInfo = []
+                if len(row) < 5:
+                    errorMsg = textSetting.textList["errorList"]["E15"].format(count + 1)
+                    return None, errorMsg
+
+                for i in range(5):
+                    temp = int(row[i])
+                    ambInfo.append(temp)
+                ambList.append(ambInfo)
+                count += 1
+
+        ambObj = {"csvLines":count, "data":ambList}
+        return ambObj, None
 
     def saveAmbCsv(self, ambList):
         try:

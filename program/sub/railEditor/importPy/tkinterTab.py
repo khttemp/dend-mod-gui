@@ -31,7 +31,7 @@ from program.sub.railEditor.importPy.tab9.else3ListWidget import Else3ListWidget
 
 from program.sub.railEditor.importPy.tab10.else4ListWidget import Else4ListWidget
 
-# from program.railEditor.importPy.tab11.ambListWidget import AmbListWidget
+from program.sub.railEditor.importPy.tab11.ambListWidget import AmbListWidget
 
 
 def tab1AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc):
@@ -113,4 +113,4 @@ def tab10AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc)
 def tab11AllWidget(tabFrame, decryptFile, rootFrameAppearance, reloadFunc):
     frame = ScrollbarFrame(tabFrame, bgColor=rootFrameAppearance.bgColor)
     frame.pack(expand=True, fill=tkinter.BOTH)
-    AmbListWidget(frame.interior, decryptFile, decryptFile.ambList, rootFrameAppearance, reloadFunc)
+    AmbListWidget(frame.interior, decryptFile, rootFrameAppearance, reloadFunc)

@@ -1495,44 +1495,122 @@ class RailDecrypt:
         return railObj, None
 
     def extractAmbCsv(self, file_path):
-        if self.oldFlag:
-            try:
-                w = open(file_path, "w")
-                w.write("index,")
-                w.write("pos_x,pos_y,pos_z,")
-                w.write("next_rail,prev_rail,")
-                w.write("dir_x,dir_y,dir_z,")
-                w.write("left_mdl_no,right_mdl_no,mdl_kasenchu,fix_amb_mdl,")
-                w.write("cnt,")
-                w.write("b1,b2,b3,b4,\n")
-            except PermissionError:
-                return False
+        with open(file_path, mode='w', encoding='utf-8', newline='') as f:
+            writer = csv.writer(f)
 
-            for idx, ambInfo in enumerate(self.ambList):
-                w.write("{0},".format(idx))
-                for i in range(12):
-                    w.write("{0},".format(ambInfo[i]))
-                ambCntList = ambInfo[12]
-                w.write("{0},".format(len(ambCntList)))
-                for ambCntInfo in ambCntList:
-                    for b in ambCntInfo:
-                        w.write("{0},".format(b))
-                w.write("\n")
-            w.close()
-        else:
-            try:
-                w = open(file_path, "w")
-                w.write("rail_no,pos,")
-                w.write("rail_pos,smf_no,anime_no,\n")
-            except PermissionError:
-                return False
+            if self.oldFlag:
+                header = [
+                    "index",
+                    "pos_x",
+                    "pos_y",
+                    "pos_z",
+                    "next_rail",
+                    "prev_rail",
+                    "dir_x",
+                    "dir_y",
+                    "dir_z",
+                    "left_mdl_no",
+                    "right_mdl_no",
+                    "mdl_kasenchu",
+                    "fix_amb_mdl",
+                    "cnt",
+                    "b1",
+                    "b2",
+                    "b3",
+                    "b4"
+                ]
+                writer.writerow(header)
 
-            for ambInfo in self.ambList:
-                for i in range(5):
-                    w.write("{0},".format(ambInfo[i]))
-                w.write("\n")
-            w.close()
+                for idx, ambInfo in enumerate(self.ambList):
+                    csvAmbInfo = [idx]
+                    # pos_x ~ fix_amb_mdl
+                    for i in range(12):
+                        csvAmbInfo.append(ambInfo[i])
+                    ambCntList = ambInfo[12]
+                    csvAmbInfo.append(len(ambCntList))
+                    for ambCntInfo in ambCntList:
+                        for b in ambCntInfo:
+                            csvAmbInfo.append(b)
+                    writer.writerow(csvAmbInfo)
+            else:
+                header = [
+                    "rail_no",
+                    "pos",
+                    "rail_pos",
+                    "smf_no",
+                    "anime_no"
+                ]
+                writer.writerow(header)
+
+                for ambInfo in self.ambList:
+                    writer.writerow(ambInfo)
         return True
+
+    def loadAmbCsv(self, file_path):
+        count = 0
+        ambList = []
+        ambInfo = []
+        with open(file_path, mode='r', encoding='utf-8', newline='') as f:
+            reader = csv.reader(f)
+
+            try:
+                count += 1
+                next(reader)
+            except StopIteration:
+                pass
+
+            for row in reader:
+                ambInfo = []
+                if self.oldFlag:
+                    if len(row) < 14:
+                        errorMsg = textSetting.textList["errorList"]["E15"].format(count + 1)
+                        return None, errorMsg
+
+                    ambIdx = 1
+                    # pos
+                    for i in range(3):
+                        temp = float(row[ambIdx])
+                        ambInfo.append(temp)
+                        ambIdx += 1
+                    # next,prev
+                    for i in range(2):
+                        temp = int(row[ambIdx])
+                        ambInfo.append(temp)
+                        ambIdx += 1
+                    # dir
+                    for i in range(3):
+                        temp = float(row[ambIdx])
+                        ambInfo.append(temp)
+                        ambIdx += 1
+                    # model(left, right, kasenchu, fix_amb)
+                    for i in range(4):
+                        temp = int(row[ambIdx])
+                        ambInfo.append(temp)
+                        ambIdx += 1
+                    cnt = int(row[ambIdx])
+                    ambIdx += 1
+                    ambCntList = []
+                    for i in range(cnt):
+                        ambCntInfo = []
+                        for j in range(4):
+                            temp = int(row[ambIdx])
+                            ambCntInfo.append(temp)
+                            ambIdx += 1
+                        ambCntList.append(ambCntInfo)
+                    ambInfo.append(ambCntList)
+                else:
+                    if len(row) < 5:
+                        errorMsg = textSetting.textList["errorList"]["E15"].format(count + 1)
+                        return None, errorMsg
+
+                    for i in range(5):
+                        temp = int(row[i])
+                        ambInfo.append(temp)
+                ambList.append(ambInfo)
+                count += 1
+
+        ambObj = {"csvLines":count, "data":ambList}
+        return ambObj, None
 
     def saveAmbCsv(self, ambList):
         try:

@@ -1350,22 +1350,62 @@ class RailDecrypt:
         return railObj, None
 
     def extractAmbCsv(self, file_path):
-        try:
-            w = open(file_path, "w")
-            w.write("rail_no,priority,fog,")
-            w.write("mdl_no,mdl_no2,")
-            w.write("pos_x,pos_y,pos_z,")
-            w.write("dir_x,dir_y,dir_z,")
-            w.write("per,\n")
-        except PermissionError:
-            return False
+        with open(file_path, mode='w', encoding='utf-8', newline='') as f:
+            writer = csv.writer(f)
 
-        for ambInfo in self.ambList:
-            for i in range(12):
-                w.write("{0},".format(ambInfo[i]))
-            w.write("\n")
-        w.close()
+            header = [
+                "rail_no",
+                "priority",
+                "fog",
+                "mdl_no",
+                "mdl_no2",
+                "pos_x",
+                "pos_y",
+                "pos_z",
+                "dir_x",
+                "dir_y",
+                "dir_z",
+                "per"
+            ]
+            writer.writerow(header)
+
+            for ambInfo in self.ambList:
+                writer.writerow(ambInfo)
         return True
+
+    def loadAmbCsv(self, file_path):
+        count = 0
+        ambList = []
+        ambInfo = []
+        with open(file_path, mode='r', encoding='utf-8', newline='') as f:
+            reader = csv.reader(f)
+
+            try:
+                count += 1
+                next(reader)
+            except StopIteration:
+                pass
+
+            for row in reader:
+                ambInfo = []
+                if len(row) < 12:
+                    errorMsg = textSetting.textList["errorList"]["E15"].format(count + 1)
+                    return None, errorMsg
+
+                # rail_no ~ mdl_no2
+                for i in range(5):
+                    temp = int(row[i])
+                    ambInfo.append(temp)
+
+                # pos_x ~ per
+                for i in range(7):
+                    tempF = float(row[5 + i])
+                    ambInfo.append(tempF)
+                ambList.append(ambInfo)
+                count += 1
+
+        ambObj = {"csvLines":count, "data":ambList}
+        return ambObj, None
 
     def saveAmbCsv(self, ambList):
         try:

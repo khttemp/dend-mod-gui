@@ -1538,41 +1538,159 @@ class RailDecrypt:
         return railObj, None
 
     def extractAmbCsv(self, file_path):
-        try:
-            w = open(file_path, "w")
-            w.write("index,type,length,")
-            w.write("rail_no,rail_pos,")
-            w.write("base_pos_x,base_pos_y,base_pos_z,")
-            w.write("base_dir_x,base_dir_y,base_dir_z,")
-            w.write("priority,fog|child count,")
-            w.write("mdl_no,")
-            w.write("pos_x,pos_y,pos_z,")
-            w.write("dir_x,dir_y,dir_z,")
-            w.write("dir_x2,dir_y2,dir_z2,")
-            w.write("per,\n")
-        except PermissionError:
-            return False
+        with open(file_path, mode='w', encoding='utf-8', newline='') as f:
+            writer = csv.writer(f)
 
-        for ambIdx, ambInfo in enumerate(self.ambList):
-            w.write("{0},".format(ambIdx))
-            for i in range(23):
-                w.write("{0},".format(ambInfo[i]))
-            w.write("\n")
-            w.write("," * 12)
+            header = [
+                "index",
+                "type",
+                "length",
+                "rail_no",
+                "rail_pos",
+                "base_pos_x",
+                "base_pos_y",
+                "base_pos_z",
+                "base_rot_x",
+                "base_rot_y",
+                "base_rot_z",
+                "priority",
+                "fog|child count",
+                "mdl_no",
+                "pos_x",
+                "pos_y",
+                "pos_z",
+                "dir_x",
+                "dir_y",
+                "dir_z",
+                "rot_x",
+                "rot_y",
+                "rot_z",
+                "per",
+            ]
+            writer.writerow(header)
 
-            childCount = ambInfo[23]
-            w.write("{0},".format(childCount))
+            for ambIdx, ambInfo in enumerate(self.ambList):
+                csvAmbInfo = []
+                csvAmbInfo.append(ambIdx)
+                # ambInfo
+                for i in range(23):
+                    csvAmbInfo.append(ambInfo[i])
+                writer.writerow(csvAmbInfo)
 
-            for i in range(childCount):
-                for j in range(11):
-                    w.write("{0},".format(ambInfo[24 + 11*i + j]))
+                csvAmbInfo = [""] * 12
+                childCount = ambInfo[23]
+                csvAmbInfo.append(childCount)
 
-                if i < (childCount - 1):
-                    w.write("\n")
-                    w.write("," * 13)
-            w.write("\n")
-        w.close()
+                ambChildInfo = ambInfo[24:]
+                ambSize = 11
+                ambChunkList = [ambChildInfo[i:i + ambSize] for i in range(0, len(ambChildInfo), ambSize)]
+                if len(ambChunkList) > 0:
+                    csvAmbInfo.extend(ambChunkList[0])
+                    writer.writerow(csvAmbInfo)
+
+                    for ambChunkInfo in ambChunkList[1:]:
+                        csvAmbInfo = [""] * 13
+                        csvAmbInfo.extend(ambChunkInfo)
+                        writer.writerow(csvAmbInfo)
+                else:
+                    writer.writerow(csvAmbInfo)
         return True
+
+    def loadAmbCsv(self, file_path):
+        count = 0
+        ambList = []
+        ambInfo = []
+        childCount = 0
+        childAllCount = 0
+        childFlag = False
+        with open(file_path, mode='r', encoding='utf-8', newline='') as f:
+            reader = csv.reader(f)
+
+            try:
+                count += 1
+                next(reader)
+            except StopIteration:
+                pass
+
+            for row in reader:
+                if not childFlag:
+                    ambInfo = []
+                    if len(row) < 24:
+                        errorMsg = textSetting.textList["errorList"]["E15"].format(count + 1)
+                        return None, errorMsg
+
+                    if row[1] == "":
+                        errorMsg = textSetting.textList["errorList"]["E15"].format(count + 1)
+                        return None, errorMsg
+
+                    type0 = int(float(row[1]))
+                    ambInfo.append(type0)
+
+                    length = int(float(row[2]))
+                    ambInfo.append(length)
+
+                    railNo = int(row[3])
+                    ambInfo.append(railNo)
+
+                    railPos = int(row[4])
+                    ambInfo.append(railPos)
+
+                    # base_pos, base_rot
+                    for i in range(6):
+                        tempF = float(row[5 + i])
+                        ambInfo.append(tempF)
+
+                    priority = int(row[11])
+                    ambInfo.append(priority)
+
+                    fog = int(row[12])
+                    ambInfo.append(fog)
+
+                    mdl_no = int(row[13])
+                    ambInfo.append(mdl_no)
+
+                    for i in range(10):
+                        tempF = float(row[14 + i])
+                        ambInfo.append(tempF)
+
+                    childFlag = True
+                    count += 1
+                    continue
+
+                if childCount == 0:
+                    childAllCount = int(row[12])
+                    ambInfo.append(childAllCount)
+
+                if childAllCount > 0:
+                    if row[13] == "":
+                        errorMsg = textSetting.textList["errorList"]["E15"].format(count + 1)
+                        return None, errorMsg
+
+                    if row[11] != "":
+                        errorMsg = textSetting.textList["errorList"]["E15"].format(count + 1)
+                        return None, errorMsg
+
+                    mdl_no = int(row[13])
+                    ambInfo.append(mdl_no)
+
+                    for i in range(10):
+                        tempF = float(row[14 + i])
+                        ambInfo.append(tempF)
+
+                    childCount += 1
+
+                if childCount == childAllCount:
+                    childFlag = False
+                    childCount = 0
+                    ambList.append(ambInfo)
+                count += 1
+
+            if childFlag:
+                errorMsg = textSetting.textList["errorList"]["E15"].format(count + 1)
+                return None, errorMsg
+
+        ambObj = {"csvLines":count, "data":ambList}
+        return ambObj, None
 
     def saveAmbCsv(self, ambList):
         try:
