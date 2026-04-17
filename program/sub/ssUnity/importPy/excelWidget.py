@@ -70,6 +70,7 @@ class ExcelWidget:
 
             wb.save(self.filePath)
             if len(self.warningLogList) > 0:
+                dirPath = os.path.dirname(self.filePath)
                 warnPath = os.path.join(dirPath, "stageWarning.log")
                 w = open(warnPath, "w", encoding="utf-8")
                 for warn in self.warningLogList:
