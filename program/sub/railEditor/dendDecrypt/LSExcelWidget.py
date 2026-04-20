@@ -425,7 +425,6 @@ class ExcelWidget:
         self.newByteArr = bytearray()
         self.bgmByteArr = bytearray()
         self.railPosByteArr = bytearray()
-        self.ambByteArr = bytearray()
         self.newSmfList = []
         self.else4Dict = {}
         self.ambDict = {}
