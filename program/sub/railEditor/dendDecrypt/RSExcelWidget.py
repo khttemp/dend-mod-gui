@@ -18,8 +18,10 @@ class ExcelWidget:
         self.configPath = configPath
         self.modelNameMode = 0
         self.flagHexMode = 0
+        self.ambReadMode = 0
         self.MODEL_NAME = 0
         self.HEX_FLAG = 1
+        self.AMB_NEWLINE = 0
         self.row = -1
         self.errorLogList = []
         self.errorMessage = ""
@@ -64,6 +66,7 @@ class ExcelWidget:
         configRead.read(self.configPath, encoding="utf-8")
         self.modelNameMode = int(configRead.get("MODEL_NAME_MODE", "mode"))
         self.flagHexMode = int(configRead.get("FLAG_MODE", "mode"))
+        self.ambReadMode = int(configRead.get("AMB_READ_MODE", "mode"))
 
         self.row = 1
         # BGM、配置情報
@@ -109,11 +112,9 @@ class ExcelWidget:
         ws.cell(self.row, 1).value = "BGM"
         ws.cell(self.row, 2).value = self.decryptFile.musicCnt
         self.row += 1
-        for musicInfo in self.decryptFile.musicList:
-            for idx, music in enumerate(musicInfo):
-                ws.cell(self.row, 1 + idx).value = music
-            self.row += 1
-        self.row += 1
+        for idx, musicIndex in enumerate(self.decryptFile.musicList):
+            ws.cell(self.row, 1 + idx).value = musicIndex
+        self.row += 2
 
         # 車両の初期レール位置
         ws.cell(self.row, 1).value = "RailPos"
@@ -146,23 +147,6 @@ class ExcelWidget:
         # 駅表示を始める番号
         ws.cell(self.row, 1).value = "stationNo"
         ws.cell(self.row, 2).value = self.decryptFile.stationNo
-        self.row += 2
-
-        ws.cell(self.row, 1).value = "RailPos4"
-        self.row += 1
-        for trainInfo4 in self.decryptFile.trainList4:
-            for idx, train4 in enumerate(trainInfo4):
-                ws.cell(self.row, 1 + idx).value = train4
-            self.row += 1
-        self.row += 1
-
-        ws.cell(self.row, 1).value = "stationNo2"
-        ws.cell(self.row, 2).value = self.decryptFile.stationNo2
-        self.row += 2
-
-        # レール名
-        ws.cell(self.row, 1).value = "railName"
-        ws.cell(self.row, 2).value = self.decryptFile.railStationName
 
     def extractElse1Info(self, ws):
         ws.cell(self.row, 1).value = "else1-1"
@@ -186,6 +170,27 @@ class ExcelWidget:
 
         for lightName in self.decryptFile.lightList:
             ws.cell(self.row, 1).value = lightName
+            self.row += 1
+        self.row += 1
+
+        # 駅名標画像情報
+        ws.cell(self.row, 1).value = "StageRes"
+        ws.cell(self.row, 2).value = len(self.decryptFile.pngList)
+        self.row += 1
+
+        for pngName in self.decryptFile.pngList:
+            ws.cell(self.row, 1).value = pngName
+            self.row += 1
+        self.row += 1
+
+        # 駅名標AMB情報
+        ws.cell(self.row, 1).value = "SetTexInfo"
+        ws.cell(self.row, 2).value = len(self.decryptFile.stationList)
+        self.row += 1
+
+        for stationAmbInfo in self.decryptFile.stationList:
+            for idx, stationAmb in enumerate(stationAmbInfo):
+                ws.cell(self.row, 1 + idx).value = stationAmb
             self.row += 1
         self.row += 1
         
@@ -215,21 +220,12 @@ class ExcelWidget:
 
         for smfIdx, smfInfo in enumerate(self.decryptFile.smfList):
             ws.cell(self.row, 1).value = smfIdx
-            idx = 0
-            for smf in smfInfo[:-1]:
+            for idx, smf in enumerate(smfInfo):
+                if idx in [1, 2]:
+                    if self.flagHexMode == self.HEX_FLAG:
+                        smf = self.toHex(smf)
                 ws.cell(self.row, 2 + idx).value = smf
-                idx += 1
-            ws.cell(self.row, 2 + idx).value = len(smfInfo[-1])
-            idx += 1
-            animeIdx = idx
-            for smfAnimeInfo in smfInfo[-1]:
-                idx = animeIdx
-                for smfAnime in smfAnimeInfo:
-                    ws.cell(self.row, 2 + idx).value = smfAnime
-                    idx += 1
-                self.row += 1
-            if len(smfInfo[-1]) == 0:
-                self.row += 1
+            self.row += 1
 
     def extractStationInfo(self, ws):
         ws.cell(self.row, 1).value = "STCnt"
@@ -272,6 +268,22 @@ class ExcelWidget:
             ws.cell(self.row, 1).value = scriptIdx
             for idx, comicScript in enumerate(comicScriptInfo):
                 ws.cell(self.row, 2 + idx).value = comicScript
+            self.row += 1
+        self.row += 1
+
+        ws.cell(self.row, 1).value = "DosanInfo"
+        ws.cell(self.row, 2).value = len(self.decryptFile.dosansenList)
+        self.row += 1
+
+        for dosanIdx, dosansenInfo in enumerate(self.decryptFile.dosansenList):
+            ws.cell(self.row, 1).value = dosanIdx
+            for idx, dosansen in enumerate(dosansenInfo):
+                if idx <= 5:
+                    ws.cell(self.row, 2 + idx).value = dosansen
+                    if idx == 5:
+                        self.row += 1
+                else:
+                    ws.cell(self.row, idx - 4).value = dosansen
             self.row += 1
 
     def extractRailInfo(self, ws):
@@ -355,6 +367,11 @@ class ExcelWidget:
             for i in range(raildata):
                 for j in range(4):
                     ws.cell(self.row, 16 + 4*i + j).value = railInfo[15 + 4*i + j]
+            
+            if self.decryptFile.ver == "DEND_MAP_VER0400":
+                for i in range(raildata):
+                    for j in range(4):
+                        ws.cell(self.row, 16 + 4*raildata + 4*i + j).value = railInfo[15 + 4*raildata + 4*i + j]
             self.row += 1
 
     def extractElse3Info(self, ws):
@@ -397,33 +414,103 @@ class ExcelWidget:
         self.row += 2
         mdlList = [x[0] for x in self.decryptFile.smfList]
 
-        titleList = [
-            "index",
-            "rail_no",
-            "priority",
-            "fog",
-            "mdl_no",
-            "rail_pos",
-            "pos_x",
-            "pos_y",
-            "pos_z",
-            "rot_x",
-            "rot_y",
-            "rot_z",
-            "per"
-        ]
+        if self.ambReadMode == self.AMB_NEWLINE:
+            titleList = [
+                "index",
+                "type",
+                "length",
+                "rail_no",
+                "rail_pos",
+                "base_pos_x",
+                "base_pos_y",
+                "base_pos_z",
+                "base_dir_x",
+                "base_dir_y",
+                "base_dir_z",
+                "priority",
+                "fog|child count",
+                "mdl_no",
+                "pos_x",
+                "pos_y",
+                "pos_z",
+                "dir_x",
+                "dir_y",
+                "dir_z",
+                "dir_x2",
+                "dir_y2",
+                "dir_z2",
+                "per"
+            ]
+        else:
+            titleList = [
+                "index",
+                "type",
+                "length",
+                "rail_no",
+                "rail_pos",
+                "base_pos_x",
+                "base_pos_y",
+                "base_pos_z",
+                "base_dir_x",
+                "base_dir_y",
+                "base_dir_z",
+                "priority",
+                "fog",
+                "mdl_no",
+                "pos_x",
+                "pos_y",
+                "pos_z",
+                "dir_x",
+                "dir_y",
+                "dir_z",
+                "dir_x2",
+                "dir_y2",
+                "dir_z2",
+                "per",
+                "child count"
+            ]
         for idx, title in enumerate(titleList):
             ws.cell(self.row, 1 + idx).value = title
         self.row += 1
 
         for ambIdx, ambInfo in enumerate(self.decryptFile.ambList):
             ws.cell(self.row, 1).value = ambIdx
-            for idx, amb in enumerate(ambInfo):
-                # mdl_no
-                if idx == 3:
-                    if self.modelNameMode == self.MODEL_NAME:
-                        amb = self.getSmfModelName(amb, mdlList)
+            idx = 0
+            childFlag = False
+            for amb in ambInfo:
+                if not childFlag:
+                    # mdl_no
+                    if idx == 12:
+                        if self.modelNameMode == self.MODEL_NAME:
+                            amb = self.getSmfModelName(amb, mdlList)
+                    # child count
+                    elif idx == 23:
+                        if self.ambReadMode == self.AMB_NEWLINE:
+                            self.row += 1
+                            ws.cell(self.row, 13).value = amb
+                            childFlag = True
+                            idx = 12
+                        else:
+                            ws.cell(self.row, 2 + idx).value = amb
+                            childFlag = True
+                            idx += 1
+                        continue
+
+                if childFlag:
+                    if self.ambReadMode == self.AMB_NEWLINE:
+                        if idx == 23:
+                            self.row += 1
+                            idx = 12
+
+                        if idx == 12:
+                            if self.modelNameMode == self.MODEL_NAME:
+                                amb = self.getSmfModelName(amb, mdlList)
+                    else:
+                        if idx % 11 == 2:
+                            if self.modelNameMode == self.MODEL_NAME:
+                                amb = self.getSmfModelName(amb, mdlList)
                 ws.cell(self.row, 2 + idx).value = amb
+                idx += 1
             self.row += 1
 
     def toHex(self, num):
@@ -452,12 +539,13 @@ class ExcelWidget:
         configRead.read(self.configPath, encoding="utf-8")
         self.modelNameMode = int(configRead.get("MODEL_NAME_MODE", "mode"))
         self.flagHexMode = int(configRead.get("FLAG_MODE", "mode"))
+        self.ambReadMode = int(configRead.get("AMB_READ_MODE", "mode"))
 
+        self.readFlag = False
         self.newByteArr = bytearray()
+        self.else4ByteArr = bytearray()
         self.newSmfList = []
         self.else4Dict = {}
-        self.ambDict = {}
-        self.else3Dict = {}
         self.excelSheet = ""
         self.excelCell = None
         # TabList
@@ -482,12 +570,13 @@ class ExcelWidget:
             self.getComicScriptInfo(wb[tabList[6]])
             # 要素４
             self.getElse4Info(wb[tabList[9]])
-            # AMB情報
-            self.getAmbInfo(wb[tabList[10]])
-            # 要素３
-            self.getElse3Info(wb[tabList[8]])
             # レール情報
             self.getRailInfo(wb[tabList[7]])
+            # 要素３
+            self.getElse3Info(wb[tabList[8]])
+            self.newByteArr.extend(self.else4ByteArr)
+            # AMB情報
+            self.getAmbInfo(wb[tabList[10]])
 
             if len(self.errorLogList) > 0:
                 dirPath = os.path.dirname(self.filePath)
@@ -514,19 +603,8 @@ class ExcelWidget:
             return
         bVer = self.encObj.convertByteArray(ver)
         self.newByteArr.extend(bVer)
-
-        # レール名
-        search = "railName"
-        row = self.findLabel(search, ws["A"])
-        if row == -1:
-            self.errorLogList.append(textSetting.textList["errorList"]["E100"].format(self.excelSheet, search))
-            return
-
-        self.excelCell = ws.cell(row, 2)
-        railStationName = self.excelCell.value
-        bRailStationName = self.encObj.convertByteArray(railStationName)
-        self.newByteArr.append(len(bRailStationName))
-        self.newByteArr.extend(bRailStationName)
+        if ver == "DEND_MAP_VER0400":
+            self.readFlag = True
 
         # BGM
         search = "BGM"
@@ -540,25 +618,8 @@ class ExcelWidget:
         self.newByteArr.append(musicCnt)
         row += 1
         for i in range(musicCnt):
-            self.excelCell = ws.cell(row, 1)
-            musicFile = self.excelCell.value
-            bMusicFile = self.encObj.convertByteArray(musicFile)
-            self.newByteArr.append(len(bMusicFile))
-            self.newByteArr.extend(bMusicFile)
-
-            self.excelCell = ws.cell(row, 2)
-            musicName = self.excelCell.value
-            bMusicName = self.encObj.convertByteArray(musicName)
-            self.newByteArr.append(len(bMusicName))
-            self.newByteArr.extend(bMusicName)
-
-            self.excelCell = ws.cell(row, 3)
-            start = self.excelCell.value
-            self.newByteArr.extend(struct.pack("<f", start))
-            self.excelCell = ws.cell(row, 4)
-            loopStart = self.excelCell.value
-            self.newByteArr.extend(struct.pack("<f", loopStart))
-            row += 1
+            self.excelCell = ws.cell(row, 1 + i)
+            self.newByteArr.append(self.excelCell.value)
 
         # 車両の初期レール位置
         search = "RailPos"
@@ -656,40 +717,6 @@ class ExcelWidget:
         self.excelCell = ws.cell(row, 2)
         self.newByteArr.append(self.excelCell.value)
 
-        search = "RailPos4"
-        row = self.findLabel(search, ws["A"])
-        if row == -1:
-            self.errorLogList.append(textSetting.textList["errorList"]["E100"].format(self.excelSheet, search))
-            return
-
-        row += 1
-        self.excelCell = ws.cell(row, 1)
-        railNo = self.excelCell.value
-        hRailNo = struct.pack("<h", railNo)
-        self.newByteArr.extend(hRailNo)
-
-        self.excelCell = ws.cell(row, 2)
-        railPos = self.excelCell.value
-        hRailPos = struct.pack("<h", railPos)
-        self.newByteArr.extend(hRailPos)
-
-        self.excelCell = ws.cell(row, 3)
-        self.newByteArr.append(self.excelCell.value)
-
-        self.excelCell = ws.cell(row, 4)
-        f1 = self.excelCell.value
-        tempF = struct.pack("<f", f1)
-        self.newByteArr.extend(tempF)
-
-        search = "stationNo2"
-        row = self.findLabel(search, ws["A"])
-        if row == -1:
-            self.errorLogList.append(textSetting.textList["errorList"]["E100"].format(self.excelSheet, search))
-            return
-
-        self.excelCell = ws.cell(row, 2)
-        self.newByteArr.append(self.excelCell.value)
-
     def getElse1Info(self, ws):
         self.excelSheet = ws.title
 
@@ -739,6 +766,45 @@ class ExcelWidget:
             bLightFile = self.encObj.convertByteArray(lightFile)
             self.newByteArr.append(len(bLightFile))
             self.newByteArr.extend(bLightFile)
+            row += 1
+
+        search = "StageRes"
+        row = self.findLabel(search, ws["A"])
+        if row == -1:
+            self.errorLogList.append(textSetting.textList["errorList"]["E100"].format(self.excelSheet, search))
+            return
+
+        self.excelCell = ws.cell(row, 2)
+        stageResCnt = self.excelCell.value
+        hStageResCnt = struct.pack("<h", stageResCnt)
+        self.newByteArr.extend(hStageResCnt)
+        row += 1
+        for i in range(stageResCnt):
+            self.excelCell = ws.cell(row, 1)
+            stageFile = self.excelCell.value
+            bStageFile = self.encObj.convertByteArray(stageFile)
+            self.newByteArr.append(len(bStageFile))
+            self.newByteArr.extend(bStageFile)
+            row += 1
+
+        search = "SetTexInfo"
+        row = self.findLabel(search, ws["A"])
+        if row == -1:
+            self.errorLogList.append(textSetting.textList["errorList"]["E100"].format(self.excelSheet, search))
+            return
+
+        self.excelCell = ws.cell(row, 2)
+        stageTexCnt = self.excelCell.value
+        hStageTexCnt = struct.pack("<h", stageTexCnt)
+        self.newByteArr.extend(hStageTexCnt)
+        row += 1
+        for i in range(stageTexCnt):
+            self.excelCell = ws.cell(row, 1)
+            self.newByteArr.append(self.excelCell.value)
+            for j in range(4):
+                self.excelCell = ws.cell(row, 2 + j)
+                tempH = struct.pack("<h", self.excelCell.value)
+                self.newByteArr.extend(tempH)
             row += 1
 
         search = "baseBin"
@@ -805,29 +871,28 @@ class ExcelWidget:
             self.newByteArr.append(len(bSmfName))
             self.newByteArr.extend(bSmfName)
 
-            self.excelCell = ws.cell(row, 3)
-            self.newByteArr.append(self.excelCell.value)
-            self.excelCell = ws.cell(row, 4)
-            self.newByteArr.append(self.excelCell.value)
+            for j in range(2):
+                self.excelCell = ws.cell(row, 3 + j)
+                flg = self.getFlagToNumber(self.excelSheet, self.excelCell)
+                if flg is None:
+                    return
+                self.newByteArr.append(flg)
+
             self.excelCell = ws.cell(row, 5)
             self.newByteArr.append(self.excelCell.value)
             self.excelCell = ws.cell(row, 6)
-            cnt = self.excelCell.value
-            self.newByteArr.append(cnt)
-            if cnt == 0:
-                row += 1
-            else:
-                for j in range(cnt):
-                    self.excelCell = ws.cell(row, 7)
-                    tempH = struct.pack("<h", self.excelCell.value)
-                    self.newByteArr.extend(tempH)
-                    self.excelCell = ws.cell(row, 8)
-                    tempH = struct.pack("<h", self.excelCell.value)
-                    self.newByteArr.extend(tempH)
-                    self.excelCell = ws.cell(row, 9)
-                    tempH = struct.pack("<h", self.excelCell.value)
-                    self.newByteArr.extend(tempH)
-                    row += 1
+            self.newByteArr.append(self.excelCell.value)
+            self.excelCell = ws.cell(row, 7)
+            self.newByteArr.append(self.excelCell.value)
+
+            self.excelCell = ws.cell(row, 8)
+            kasenchu = self.excelCell.value
+            self.newByteArr.append(kasenchu)
+            self.excelCell = ws.cell(row, 9)
+            kasen = self.excelCell.value
+            hKasen = struct.pack("<h", kasen)
+            self.newByteArr.extend(hKasen)
+            row += 1
 
     def getStationInfo(self, ws):
         self.excelSheet = ws.title
@@ -845,9 +910,12 @@ class ExcelWidget:
         for i in range(stCnt):
             self.excelCell = ws.cell(row, 2)
             stName = self.excelCell.value
-            bStName = self.encObj.convertByteArray(stName)
-            self.newByteArr.append(len(bStName))
-            self.newByteArr.extend(bStName)
+            if stName is not None:
+                bStName = self.encObj.convertByteArray(stName)
+                self.newByteArr.append(len(bStName))
+                self.newByteArr.extend(bStName)
+            else:
+                self.newByteArr.append(0)
 
             self.excelCell = ws.cell(row, 3)
             stFlag = self.excelCell.value
@@ -856,6 +924,18 @@ class ExcelWidget:
             railNo = self.excelCell.value
             hRailNo = struct.pack("<h", railNo)
             self.newByteArr.extend(hRailNo)
+
+            for j in range(3):
+                self.excelCell = ws.cell(row, 5 + j)
+                tempF = struct.pack("<f", self.excelCell.value)
+                self.newByteArr.extend(tempF)
+            for j in range(3):
+                self.excelCell = ws.cell(row, 8 + j)
+                tempI = struct.pack("<i", self.excelCell.value)
+                self.newByteArr.extend(tempI)
+            self.excelCell = ws.cell(row, 11)
+            tempH = struct.pack("<h", self.excelCell.value)
+            self.newByteArr.extend(tempH)
             row += 1
 
     def getElse2Info(self, ws):
@@ -945,6 +1025,38 @@ class ExcelWidget:
             self.newByteArr.extend(hRailNo)
             row += 1
 
+        search = "DosanInfo"
+        row = self.findLabel(search, ws["A"])
+        if row == -1:
+            self.errorLogList.append(textSetting.textList["errorList"]["E100"].format(self.excelSheet, search))
+            return
+
+        self.excelCell = ws.cell(row, 2)
+        dosansenCnt = self.excelCell.value
+        self.newByteArr.append(dosansenCnt)
+        row += 1
+        for i in range(dosansenCnt):
+            for j in range(6):
+                self.excelCell = ws.cell(row, 2 + j)
+                tempH = struct.pack("<h", self.excelCell.value)
+                self.newByteArr.extend(tempH)
+            row += 1
+
+            self.excelCell = ws.cell(row, 2)
+            tempH = struct.pack("<h", self.excelCell.value)
+            self.newByteArr.extend(tempH)
+            for j in range(4):
+                self.excelCell = ws.cell(row, 3 + j)
+                tempF = struct.pack("<f", self.excelCell.value)
+                self.newByteArr.extend(tempF)
+            self.excelCell = ws.cell(row, 7)
+            tempH = struct.pack("<h", self.excelCell.value)
+            self.newByteArr.extend(tempH)
+            self.excelCell = ws.cell(row, 8)
+            tempF = struct.pack("<f", self.excelCell.value)
+            self.newByteArr.extend(tempF)
+            row += 1
+
     def getElse4Info(self, ws):
         self.excelSheet = ws.title
 
@@ -956,79 +1068,29 @@ class ExcelWidget:
 
         self.excelCell = ws.cell(row, 2)
         else4Cnt = self.excelCell.value
+        hElse4Cnt = struct.pack("<h", else4Cnt)
+        self.else4ByteArr.extend(hElse4Cnt)
         row += 1
         for i in range(else4Cnt):
+            else4Info = []
             self.excelCell = ws.cell(row, 2)
             railNo = self.excelCell.value
-            if railNo not in self.else4Dict:
-                self.else4Dict[railNo] = []
-                for j in range(7):
-                    self.excelCell = ws.cell(row, 3 + j)
-                    self.else4Dict[railNo].append(self.excelCell.value)
-            row += 1
-
-    def getAmbInfo(self, ws):
-        self.excelSheet = ws.title
-        search = "AmbCnt"
-
-        # AMB情報
-        row = self.findLabel(search, ws["A"])
-        if row == -1:
-            self.errorLogList.append(textSetting.textList["errorList"]["E100"].format(self.excelSheet, search))
-            return
-
-        self.excelCell = ws.cell(row, 2)
-        ambCnt = self.excelCell.value
-
-        row = self.findLabel("index", ws["A"])
-        if row == -1:
-            self.errorLogList.append(textSetting.textList["errorList"]["E100"].format(self.excelSheet, "index"))
-            return
-
-        row += 1
-        self.ambDict = {}
-        for i in range(ambCnt):
-            self.excelCell = ws.cell(row, 2)
-            railNo = self.excelCell.value
-            if railNo not in self.ambDict:
-                self.ambDict[railNo] = []
-            ambInfo = []
-            for j in range(11):
-                self.excelCell = ws.cell(row, 3 + j)
-                amb = self.excelCell.value
-                if j == 2:
-                    amb = self.getSmfModelIndex(i, amb, self.newSmfList)
-                ambInfo.append(amb)
-            self.ambDict[railNo].append(ambInfo)
-            row += 1
-
-    def getElse3Info(self, ws):
-        self.excelSheet = ws.title
-
-        search = "else3"
-        row = self.findLabel(search, ws["A"])
-        if row == -1:
-            self.errorLogList.append(textSetting.textList["errorList"]["E100"].format(self.excelSheet, search))
-            return
-
-        self.excelCell = ws.cell(row, 2)
-        else3Cnt = self.excelCell.value
-        row += 1
-        for i in range(else3Cnt):
-            self.excelCell = ws.cell(row, 2)
-            railNo = self.excelCell.value
-            if railNo not in self.else3Dict:
-                self.else3Dict[railNo] = []
+            hRailNo = struct.pack("<h", railNo)
+            self.else4ByteArr.extend(hRailNo)
             self.excelCell = ws.cell(row, 3)
-            cnt = self.excelCell.value
+            prevRailNo = self.excelCell.value
+            else4Info.append(prevRailNo)
+            hPrevRailNo = struct.pack("<h", prevRailNo)
+            self.else4ByteArr.extend(hPrevRailNo)
+            for j in range(6):
+                self.excelCell = ws.cell(row, 4 + j)
+                else4Info.append(self.excelCell.value)
+                tempF = struct.pack("<f", self.excelCell.value)
+                self.else4ByteArr.extend(tempF)
 
-            for j in range(cnt):
-                else3Info = []
-                for k in range(5):
-                    self.excelCell = ws.cell(row, 4 + k)
-                    else3Info.append(self.excelCell.value)
-                self.else3Dict[railNo].append(else3Info)
-                row += 1
+            if railNo not in self.else4Dict:
+                self.else4Dict[railNo] = else4Info
+            row += 1
 
     def getRailInfo(self, ws):
         self.excelSheet = ws.title
@@ -1051,27 +1113,31 @@ class ExcelWidget:
 
         row += 1
         for i in range(railCnt):
+            self.excelCell = ws.cell(row, 14)
+            disableFlagValue = self.getFlagToNumber(self.excelSheet, self.excelCell)
+            if disableFlagValue is None:
+                return
+
+            isDisableFlg = disableFlagValue & 128 > 0
             # prevRail
             self.excelCell = ws.cell(row, 2)
             prevRail = self.excelCell.value
             hPrevRail = struct.pack("<h", prevRail)
             self.newByteArr.extend(hPrevRail)
 
-            if prevRail == -1:
-                if i in self.else4Dict:
-                    prevRail2 = self.else4Dict[i][0]
-                    hPrevRail2 = struct.pack("<h", prevRail2)
-                    self.newByteArr.extend(hPrevRail2)
-                    for else4 in self.else4Dict[i][1:]:
-                        tempF = struct.pack("<f", else4)
-                        self.newByteArr.extend(tempF)
-                else:
+            if prevRail == -1 and i != 0 and not isDisableFlg:
+                if i not in self.else4Dict:
                     self.errorLogList.append(textSetting.textList["errorList"]["E97"].format(i))
                     return
 
             # block
             self.excelCell = ws.cell(row, 3)
-            self.newByteArr.append(self.excelCell.value)
+            block = self.excelCell.value
+            if block > 127:
+                bBlock = struct.pack("<B", block)
+            else:
+                bBlock = struct.pack("<b", block)
+            self.newByteArr.extend(bBlock)
 
             # dir
             for j in range(3):
@@ -1132,7 +1198,6 @@ class ExcelWidget:
             # flg
             for j in range(4):
                 self.excelCell = ws.cell(row, 11 + j)
-                flg = self.excelCell.value
                 flg = self.getFlagToNumber(self.excelSheet, self.excelCell)
                 if flg is None:
                     return
@@ -1160,43 +1225,201 @@ class ExcelWidget:
                 prevRailPos = self.excelCell.value
                 hPrevRailPos = struct.pack("<h", prevRailPos)
                 self.newByteArr.extend(hPrevRailPos)
-
-            # AMB情報
-            if i in self.ambDict:
-                ambList = self.ambDict[i]
-                self.newByteArr.append(len(ambList))
-                for ambInfo in ambList:
-                    for j in range(4):
-                        self.newByteArr.append(ambInfo[j])
-
-                    for j in range(7):
-                        tempF = struct.pack("<f", ambInfo[4 + j])
-                        self.newByteArr.extend(tempF)
-            else:
-                self.newByteArr.append(0)
             
-            # else3情報
-            if i in self.else3Dict:
-                else3List = self.else3Dict[i]
-                self.newByteArr.append(len(else3List))
-                for else3Info in else3List:
-                    pos = else3Info[0]
-                    self.newByteArr.append(pos)
-                    railNo = else3Info[1]
-                    hRailNo = struct.pack("<h", railNo)
-                    self.newByteArr.extend(hRailNo)
-                    binIndex = else3Info[2]
-                    self.newByteArr.append(binIndex)
-
-                    anime1 = else3Info[3]
-                    hAnime1 = struct.pack("<h", anime1)
-                    self.newByteArr.extend(hAnime1)
-                    anime2 = else3Info[4]
-                    hAnime2 = struct.pack("<h", anime2)
-                    self.newByteArr.extend(hAnime2)
-            else:
-                self.newByteArr.append(0)
+            if self.readFlag:
+                for j in range(raildata):
+                    self.excelCell = ws.cell(row, 16 + 4*raildata + 4*j)
+                    nextRailNo = self.excelCell.value
+                    hNextRailNo = struct.pack("<h", nextRailNo)
+                    self.newByteArr.extend(hNextRailNo)
+                    self.excelCell = ws.cell(row, 17 + 4*raildata + 4*j)
+                    nextRailPos = self.excelCell.value
+                    hNextRailPos = struct.pack("<h", nextRailPos)
+                    self.newByteArr.extend(hNextRailPos)
+                    self.excelCell = ws.cell(row, 18 + 4*raildata + 4*j)
+                    prevRailNo = self.excelCell.value
+                    hPrevRailNo = struct.pack("<h", prevRailNo)
+                    self.newByteArr.extend(hPrevRailNo)
+                    self.excelCell = ws.cell(row, 19 + 4*raildata + 4*j)
+                    prevRailPos = self.excelCell.value
+                    hPrevRailPos = struct.pack("<h", prevRailPos)
+                    self.newByteArr.extend(hPrevRailPos)
             row += 1
+
+    def getElse3Info(self, ws):
+        self.excelSheet = ws.title
+
+        search = "else3"
+        row = self.findLabel(search, ws["A"])
+        if row == -1:
+            self.errorLogList.append(textSetting.textList["errorList"]["E100"].format(self.excelSheet, search))
+            return
+
+        self.excelCell = ws.cell(row, 2)
+        else3Cnt = self.excelCell.value
+        hElse3Cnt = struct.pack("<h", else3Cnt)
+        self.newByteArr.extend(hElse3Cnt)
+        row += 1
+        for i in range(else3Cnt):
+            self.excelCell = ws.cell(row, 2)
+            railNo = self.excelCell.value
+            hRailNo = struct.pack("<h", railNo)
+            self.newByteArr.extend(hRailNo)
+
+            self.excelCell = ws.cell(row, 3)
+            cnt = self.excelCell.value
+            self.newByteArr.append(cnt)
+
+            for j in range(cnt):
+                pos = ws.cell(row, 4).value
+                self.newByteArr.append(pos)
+                railNo = ws.cell(row, 5).value
+                hRailNo = struct.pack("<h", railNo)
+                self.newByteArr.extend(hRailNo)
+                binIndex = ws.cell(row, 6).value
+                self.newByteArr.append(binIndex)
+
+                anime1 = ws.cell(row, 7).value
+                hAnime1 = struct.pack("<h", anime1)
+                self.newByteArr.extend(hAnime1)
+                anime2 = ws.cell(row, 8).value
+                hAnime2 = struct.pack("<h", anime2)
+                self.newByteArr.extend(hAnime2)
+                row += 1
+
+    def getAmbInfo(self, ws):
+        self.excelSheet = ws.title
+        search = "AmbCnt"
+
+        # AMB情報
+        row = self.findLabel(search, ws["A"])
+        if row == -1:
+            self.errorLogList.append(textSetting.textList["errorList"]["E100"].format(self.excelSheet, search))
+            return
+
+        self.excelCell = ws.cell(row, 2)
+        ambCnt = self.excelCell.value
+        hAmbCnt = struct.pack("<h", ambCnt)
+        self.newByteArr.extend(hAmbCnt)
+
+        row = self.findLabel("index", ws["A"])
+        if row == -1:
+            self.errorLogList.append(textSetting.textList["errorList"]["E100"].format(self.excelSheet, "index"))
+            return
+
+        row += 1
+        for i in range(ambCnt):
+            # type
+            self.excelCell = ws.cell(row, 2)
+            self.newByteArr.append(self.excelCell.value)
+
+            # length
+            self.excelCell = ws.cell(row, 3)
+            fLength = struct.pack("<f", self.excelCell.value)
+            self.newByteArr.extend(fLength)
+
+            # RailNo, RailPos
+            for j in range(2):
+                self.excelCell = ws.cell(row, 4 + j)
+                tempH = struct.pack("<h", self.excelCell.value)
+                self.newByteArr.extend(tempH)
+
+            # base pos_xyz base rot_xyz
+            for j in range(6):
+                self.excelCell = ws.cell(row, 6 + j)
+                tempF = struct.pack("<f", self.excelCell.value)
+                self.newByteArr.extend(tempF)
+            
+            for j in range(2):
+                self.excelCell = ws.cell(row, 12 + j)
+                self.newByteArr.append(self.excelCell.value)
+
+            # mdl_no
+            self.excelCell = ws.cell(row, 14)
+            mdl_no = self.excelCell.value
+            if self.isModelNameDup(mdl_no, self.newSmfList):
+                dupName = self.excelCell.value
+                self.warningLogList.append(textSetting.textList["infoList"]["I115"].format(i, dupName))
+            mdl_no = self.getSmfModelIndex(i, mdl_no, self.newSmfList)
+            if mdl_no is None:
+                return
+            hMdlNo = struct.pack("<h", mdl_no)
+            self.newByteArr.extend(hMdlNo)
+
+            # pos xyz, dir xyz, rot xyz
+            for j in range(9):
+                self.excelCell = ws.cell(row, 15 + j)
+                tempF = struct.pack("<f", self.excelCell.value)
+                self.newByteArr.extend(tempF)
+
+            # per
+            self.excelCell = ws.cell(row, 24)
+            perF = struct.pack("<f", self.excelCell.value)
+            self.newByteArr.extend(perF)
+
+            if self.ambReadMode == self.AMB_NEWLINE:
+                row += 1
+                self.excelCell = ws.cell(row, 13)
+                childCount = self.excelCell.value
+                self.newByteArr.append(childCount)
+                for j in range(childCount):
+                    # mdl_no
+                    self.excelCell = ws.cell(row, 14)
+                    mdl_no = self.excelCell.value
+                    if self.isModelNameDup(mdl_no, self.newSmfList):
+                        dupName = self.excelCell.value
+                        self.warningLogList.append(textSetting.textList["infoList"]["I115"].format(i, dupName))
+                    mdl_no = self.getSmfModelIndex(i, mdl_no, self.newSmfList)
+                    if mdl_no is None:
+                        return
+                    hMdlNo = struct.pack("<h", mdl_no)
+                    self.newByteArr.extend(hMdlNo)
+
+                    # pos xyz, dir xyz dir2 xyz
+                    for k in range(9):
+                        self.excelCell = ws.cell(row, 15 + k)
+                        tempF = struct.pack("<f", self.excelCell.value)
+                        self.newByteArr.extend(tempF)
+
+                    # per
+                    self.excelCell = ws.cell(row, 24)
+                    perF = struct.pack("<f", self.excelCell.value)
+                    self.newByteArr.extend(perF)
+                    row += 1
+                if childCount == 0:
+                    row += 1
+            else:
+                self.excelCell = ws.cell(row, 25)
+                childCount = self.excelCell.value
+                self.newByteArr.append(childCount)
+                ambChildIdx = 26
+                for j in range(childCount):
+                    # mdl_no
+                    self.excelCell = ws.cell(row, ambChildIdx)
+                    mdl_no = self.excelCell.value
+                    if self.isModelNameDup(mdl_no, self.newSmfList):
+                        dupName = self.excelCell.value
+                        self.warningLogList.append(textSetting.textList["infoList"]["I115"].format(i, dupName))
+                    mdl_no = self.getSmfModelIndex(i, mdl_no, self.newSmfList)
+                    if mdl_no is None:
+                        return
+                    hMdlNo = struct.pack("<h", mdl_no)
+                    self.newByteArr.extend(hMdlNo)
+                    ambChildIdx += 1
+
+                    # pos xyz, dir xyz dir2 xyz
+                    for k in range(9):
+                        self.excelCell = ws.cell(row, ambChildIdx)
+                        tempF = struct.pack("<f", self.excelCell.value)
+                        self.newByteArr.extend(tempF)
+                        ambChildIdx += 1
+
+                    # per
+                    self.excelCell = ws.cell(row, ambChildIdx)
+                    perF = struct.pack("<f", self.excelCell.value)
+                    self.newByteArr.extend(perF)
+                    ambChildIdx += 1
+                row += 1
 
     def findLabel(self, search, columns):
         for column in columns:

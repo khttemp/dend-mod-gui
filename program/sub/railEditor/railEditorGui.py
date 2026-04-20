@@ -10,7 +10,9 @@ from program.sub.railEditor.importPy.tkinterTab import (
 )
 
 import program.sub.railEditor.dendDecrypt.RSdecrypt as dendRs
+import program.sub.railEditor.dendDecrypt.RSExcelWidget as dendRsExcelWidget
 import program.sub.railEditor.dendDecrypt.CSdecrypt as dendCs
+import program.sub.railEditor.dendDecrypt.CSExcelWidget as dendCsExcelWidget
 import program.sub.railEditor.dendDecrypt.BSdecrypt as dendBs
 import program.sub.railEditor.dendDecrypt.BSExcelWidget as dendBsExcelWidget
 import program.sub.railEditor.dendDecrypt.LSdecrypt as dendLs
@@ -166,6 +168,10 @@ class RailEditorWindow(tkinter.Frame):
             excelWidget = dendLsExcelWidget.ExcelWidget(file_path, self.decryptFile, self.importDict["configPath"])
         elif selectedRadioId == self.BS:
             excelWidget = dendBsExcelWidget.ExcelWidget(file_path, self.decryptFile, self.importDict["configPath"])
+        elif selectedRadioId == self.CS:
+            excelWidget = dendCsExcelWidget.ExcelWidget(file_path, self.decryptFile, self.importDict["configPath"])
+        elif selectedRadioId == self.RS:
+            excelWidget = dendRsExcelWidget.ExcelWidget(file_path, self.decryptFile, self.importDict["configPath"])
         else:
             return
 
@@ -190,6 +196,10 @@ class RailEditorWindow(tkinter.Frame):
             excelWidget = dendLsExcelWidget.ExcelWidget(file_path, self.decryptFile, self.importDict["configPath"])
         elif selectedRadioId == self.BS:
             excelWidget = dendBsExcelWidget.ExcelWidget(file_path, self.decryptFile, self.importDict["configPath"])
+        elif selectedRadioId == self.CS:
+            excelWidget = dendCsExcelWidget.ExcelWidget(file_path, self.decryptFile, self.importDict["configPath"])
+        elif selectedRadioId == self.RS:
+            excelWidget = dendRsExcelWidget.ExcelWidget(file_path, self.decryptFile, self.importDict["configPath"])
         else:
             return
 

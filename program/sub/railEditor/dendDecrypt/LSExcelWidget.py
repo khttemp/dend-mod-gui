@@ -803,9 +803,9 @@ class ExcelWidget:
             # flg
             for j in range(4):
                 self.excelCell = ws.cell(row, 17 + j)
-                flg = self.excelCell.value
-                if self.flagHexMode == self.HEX_FLAG:
-                    flg = int(flg, 16)
+                flg = self.getFlagToNumber(self.excelSheet, self.excelCell)
+                if flg is None:
+                    return
                 self.newByteArr.append(flg)
 
             # raildata
@@ -1015,6 +1015,16 @@ class ExcelWidget:
             return modelIndex
         else:
             return modelValue
+
+    def getFlagToNumber(self, sheet, cell):
+        if self.flagHexMode == self.HEX_FLAG:
+            try:
+                return int(cell.value, 16)
+            except TypeError:
+                self.errorLogList.append(textSetting.textList["errorList"]["E129"].format(sheet, cell.coordinate, cell.value))
+                return None
+        else:
+            return cell.value
 
     def saveRailFile(self, filePath, newByteArr):
         w = open(filePath, "wb")
