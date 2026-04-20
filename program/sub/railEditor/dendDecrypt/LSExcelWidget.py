@@ -456,7 +456,7 @@ class ExcelWidget:
                     w.write(err + "\n")
                 w.close()
                 self.errorMessage = textSetting.textList["errorList"]["E118"].format("railError.log")
-                return (False, {"message":self.self.errorMessage})
+                return (False, {"message":self.errorMessage})
 
             return (True, {"message":textSetting.textList["infoList"]["I117"], "data":self.newByteArr})
         except Exception:
@@ -988,7 +988,6 @@ class ExcelWidget:
             comicType = self.excelCell.value
             self.newByteArr.append(comicType)
 
-           
             self.excelCell = ws.cell(row, 4)
             railNo = self.excelCell.value
             hRailNo = struct.pack("<h", railNo)

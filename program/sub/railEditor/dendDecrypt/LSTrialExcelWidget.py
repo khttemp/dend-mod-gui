@@ -575,7 +575,7 @@ class ExcelWidget:
                     w.write(err + "\n")
                 w.close()
                 self.errorMessage = textSetting.textList["errorList"]["E118"].format("railError.log")
-                return (False, {"message":self.self.errorMessage})
+                return (False, {"message":self.errorMessage})
 
             return (True, {"message":textSetting.textList["infoList"]["I117"], "data":self.newByteArr})
         except Exception:
