@@ -42,7 +42,6 @@ class ExcelWidget:
         for sheetName in defSheetNameList:
             wb.remove(wb[sheetName])
 
-        self.mdlList = []
         # TabList
         tabList = textSetting.textList["railEditor"]["railLsComboValue"]
         try:
