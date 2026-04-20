@@ -367,7 +367,6 @@ class ExcelWidget:
             ws.cell(self.row, 1).value = else4Idx
             for idx, else4 in enumerate(else4Info):
                 ws.cell(self.row, 2 + idx).value = else4
-                idx += 1
             self.row += 1
 
     def extractAmbInfo(self, ws):
@@ -391,7 +390,6 @@ class ExcelWidget:
             ws.cell(self.row, 1).value = ambIdx
             for idx, amb in enumerate(ambInfo):
                 ws.cell(self.row, 2 + idx).value = amb
-                idx += 1
             self.row += 1
 
     def toHex(self, num):
