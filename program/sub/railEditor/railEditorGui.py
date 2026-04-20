@@ -14,6 +14,7 @@ import program.sub.railEditor.dendDecrypt.CSdecrypt as dendCs
 import program.sub.railEditor.dendDecrypt.BSdecrypt as dendBs
 import program.sub.railEditor.dendDecrypt.LSdecrypt as dendLs
 import program.sub.railEditor.dendDecrypt.LSTrialDecrypt as dendLsTrial
+import program.sub.railEditor.dendDecrypt.LSTrialExcelWidget as dendLsTrialExcelWidget
 
 import tkinter
 from tkinter import filedialog as fd
@@ -46,9 +47,9 @@ class RailEditorWindow(tkinter.Frame):
         rsRb = ttkCustomWidget.CustomTtkRadiobutton(master, text="Rising Stage", command=self.radioButtonTrigger, variable=self.v_radioGroup, value=self.RS, state="selected")
         rsRb.place(relx=0.86, rely=0.02)
 
-        self.excelExtractButton = ttkCustomWidget.CustomTtkButton(master, text=textSetting.textList["railEditor"]["railDataExtractExcel"], width=30, state="disabled")
+        self.excelExtractButton = ttkCustomWidget.CustomTtkButton(master, text=textSetting.textList["railEditor"]["railDataExtractExcel"], width=30, state="disabled", command=self.excelExtract)
         self.excelExtractButton.place(relx=0.40, rely=0.08)
-        self.excelSaveButton = ttkCustomWidget.CustomTtkButton(master, text=textSetting.textList["railEditor"]["railDataSaveExcel"], width=30, state="disabled")
+        self.excelSaveButton = ttkCustomWidget.CustomTtkButton(master, text=textSetting.textList["railEditor"]["railDataSaveExcel"], width=30, state="disabled", command=self.excelSave)
         self.excelSaveButton.place(relx=0.70, rely=0.08)
 
         self.v_filename = tkinter.StringVar()
@@ -149,3 +150,46 @@ class RailEditorWindow(tkinter.Frame):
             self.excelExtractButton["state"] = "normal"
             self.excelSaveButton["state"] = "normal"
             self.selectInfo(self.tabCombo.current())
+
+    def excelExtract(self):
+        filename = self.decryptFile.filename + ".xlsx"
+        file_path = fd.asksaveasfilename(initialfile=filename, defaultextension="xlsx", filetypes=[("railData", "*.xlsx")])
+        if not file_path:
+            return
+
+        selectedRadioId = self.v_radioGroup.get()
+        if selectedRadioId == self.LSTrial:
+            excelWidget = dendLsTrialExcelWidget.ExcelWidget(file_path, self.decryptFile, self.importDict["configPath"])
+        else:
+            return
+
+        if not excelWidget.extractExcel():
+            if excelWidget.errorMessage:
+                mb.showerror(title=textSetting.textList["error"], message=excelWidget.errorMessage)
+                return
+            mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
+            return
+        mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I113"])
+
+    def excelSave(self):
+        filename = self.decryptFile.filename + ".xlsx"
+        file_path = fd.askopenfilename(initialfile=filename, defaultextension="xlsx", filetypes=[("railData", "*.xlsx")])
+        if not file_path:
+            return
+
+        selectedRadioId = self.v_radioGroup.get()
+        if selectedRadioId == self.LSTrial:
+            excelWidget = dendLsTrialExcelWidget.ExcelWidget(file_path, self.decryptFile, self.importDict["configPath"])
+        else:
+            return
+
+        result, obj = excelWidget.loadExcelData()
+        if not result:
+            mb.showerror(title=textSetting.textList["error"], message=obj["message"])
+            return
+        result = mb.askyesno(title=textSetting.textList["confirm"], message=obj["message"], icon="warning")
+        if result == mb.NO:
+            return
+        excelWidget.saveRailFile(self.decryptFile.filePath, obj["data"])
+        mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I114"])
+        self.reloadWidget()
