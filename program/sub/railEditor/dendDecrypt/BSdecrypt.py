@@ -1354,23 +1354,26 @@ class RailDecrypt:
             writer = csv.writer(f)
 
             header = [
+                "index",
                 "rail_no",
                 "priority",
                 "fog",
                 "mdl_no",
-                "mdl_no2",
+                "rail_pos",
                 "pos_x",
                 "pos_y",
                 "pos_z",
-                "dir_x",
-                "dir_y",
-                "dir_z",
+                "rot_x",
+                "rot_y",
+                "rot_z",
                 "per"
             ]
             writer.writerow(header)
 
-            for ambInfo in self.ambList:
-                writer.writerow(ambInfo)
+            for idx, ambInfo in enumerate(self.ambList):
+                csvAmbInfo = [idx]
+                csvAmbInfo.extend(ambInfo)
+                writer.writerow(csvAmbInfo)
         return True
 
     def loadAmbCsv(self, file_path):
@@ -1388,18 +1391,18 @@ class RailDecrypt:
 
             for row in reader:
                 ambInfo = []
-                if len(row) < 12:
+                if len(row) < 13:
                     errorMsg = textSetting.textList["errorList"]["E15"].format(count + 1)
                     return None, errorMsg
 
                 # rail_no ~ mdl_no2
                 for i in range(5):
-                    temp = int(row[i])
+                    temp = int(row[i + 1])
                     ambInfo.append(temp)
 
                 # pos_x ~ per
                 for i in range(7):
-                    tempF = float(row[5 + i])
+                    tempF = float(row[6 + i])
                     ambInfo.append(tempF)
                 ambList.append(ambInfo)
                 count += 1
