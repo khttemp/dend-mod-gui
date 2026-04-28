@@ -75,16 +75,11 @@ class EditOrgButtonWidget(tkinter.Frame):
         interior = canvas.winfo_children()[0]
 
         for notchWidget in interior.winfo_children():
-            notchFrame = notchWidget.winfo_children()[0]
-            speedButton = notchFrame.winfo_children()[3]
-            speedButton["state"] = "normal"
-            tlkButton = notchFrame.winfo_children()[6]
-            tlkButton["state"] = "normal"
+            notchWidget.speedBtn["state"] = "normal"
+            notchWidget.tlkBtn["state"] = "normal"
             if self.decryptFile.notchContentCnt > 2:
-                soundButton = notchFrame.winfo_children()[9]
-                soundButton["state"] = "normal"
-                addButton = notchFrame.winfo_children()[12]
-                addButton["state"] = "normal"
+                notchWidget.soundBtn["state"] = "normal"
+                notchWidget.addBtn["state"] = "normal"
 
         perfLf = notchPerfFrame.winfo_children()[1]
         scrollbarframe = perfLf.winfo_children()[0]
@@ -92,9 +87,7 @@ class EditOrgButtonWidget(tkinter.Frame):
         interior = canvas.winfo_children()[0]
 
         for perfWidget in interior.winfo_children():
-            perfFrame = perfWidget.winfo_children()[0]
-            button = perfFrame.winfo_children()[2]
-            button["state"] = "normal"
+            perfWidget.perfBtn["state"] = "normal"
 
     def saveTrain(self):
         valueList = []
