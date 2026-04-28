@@ -9,6 +9,7 @@ from program.sub.orgInfoEditor.importPy.tab1.notchWidget import NotchWidget
 from program.sub.orgInfoEditor.importPy.tab1.perfWidget import PerfWidget
 from program.sub.orgInfoEditor.importPy.tab1.hurikoWidget import HurikoWidget
 
+from program.sub.orgInfoEditor.importPy.tab2.notchCountWidget import NotchCountWidget
 from program.sub.orgInfoEditor.importPy.tab2.countWidget import CountWidget
 from program.sub.orgInfoEditor.importPy.tab2.modelWidget import TrainModelWidget
 from program.sub.orgInfoEditor.importPy.tab2.fixedListWidget import FixedListWidget
@@ -63,63 +64,48 @@ def tab1AllWidget(tabFrame, decryptFile, trainIndex, defaultData, rootFrameAppea
     notchPerfFrame.grid_rowconfigure(0, weight=1)
 
 
-def tab2AllWidget(tabFrame, decryptFile, trainIdx, defaultData, rootFrameAppearance, reloadFunc):
-    tab_two_frame = ttkCustomWidget.CustomTtkFrame(tabFrame)
-    tab_two_frame.pack(anchor=tkinter.NW, fill=tkinter.X)
-
+def tab2AllWidget(tabFrame, decryptFile, trainIndex, defaultData, rootFrameAppearance, reloadWidget):
     if decryptFile.game in ["RS", "CS", "BS", "LS"]:
-        countModelLf = ttkCustomWidget.CustomTtkLabelFrame(tab_two_frame, text=textSetting.textList["orgInfoEditor"]["trainLfLabel"], height=250)
-        countModelLf.pack(anchor=tkinter.NW, padx=10, pady=5, fill=tkinter.X)
-        countModelLf.propagate(False)
+        trainLf = ttkCustomWidget.CustomTtkLabelFrame(tabFrame, text=textSetting.textList["orgInfoEditor"]["trainLfLabel"])
+        trainLf.grid(row=0, column=0, padx=10, pady=5, sticky=tkinter.NSEW)
 
-        countWidget = CountWidget(tabFrame, trainIdx, game, countModelLf, decryptFile, rootFrameAppearance, reloadFunc)
+        index = decryptFile.indexList[trainIndex]
+        notchNum = decryptFile.byteArr[index]
+        NotchCountWidget(trainIndex, notchNum, decryptFile, reloadWidget)
 
-        edit_hensei_button = ttkCustomWidget.CustomTtkButton(countWidget.countFrame, text=textSetting.textList["orgInfoEditor"]["orgModify"])
-        edit_hensei_button.grid(columnspan=3, row=3, column=0, sticky=tkinter.W + tkinter.E, pady=15)
+        # countModelLf = ttkCustomWidget.CustomTtkLabelFrame(tab_two_frame, text=textSetting.textList["orgInfoEditor"]["trainLfLabel"], height=250)
+        # countModelLf.pack(anchor=tkinter.NW, padx=10, pady=5, fill=tkinter.X)
+        # countModelLf.propagate(False)
 
-        edit_model_button = ttkCustomWidget.CustomTtkButton(countWidget.countFrame, text=textSetting.textList["orgInfoEditor"]["modelInfoModify"])
-        edit_model_button.grid(columnspan=3, row=4, column=0, sticky=tkinter.W + tkinter.E, pady=5)
+        # countWidget = CountWidget(tabFrame, trainIndex, game, countModelLf, decryptFile, rootFrameAppearance, reloadWidget)
 
-        sep = ttkCustomWidget.CustomTtkSeparator(countModelLf, orient="vertical")
-        sep.pack(side=tkinter.LEFT, fill=tkinter.Y, padx=8)
+        # edit_hensei_button = ttkCustomWidget.CustomTtkButton(countWidget.countFrame, text=textSetting.textList["orgInfoEditor"]["orgModify"])
+        # edit_hensei_button.grid(columnspan=3, row=3, column=0, sticky=tkinter.W + tkinter.E, pady=15)
 
-        countModelScrollFrame = ScrollbarFrame(countModelLf, True, bgColor=rootFrameAppearance.bgColor)
-        countModelScrollFrame.pack(expand=True, fill=tkinter.BOTH)
+        # edit_model_button = ttkCustomWidget.CustomTtkButton(countWidget.countFrame, text=textSetting.textList["orgInfoEditor"]["modelInfoModify"])
+        # edit_model_button.grid(columnspan=3, row=4, column=0, sticky=tkinter.W + tkinter.E, pady=5)
 
-        innerButtonList = [
-            countWidget.notchBtn,
-            countWidget.henseiBtn,
-            countWidget.colorBtn,
-            edit_hensei_button,
-            edit_model_button,
-        ]
+        # sep = ttkCustomWidget.CustomTtkSeparator(countModelLf, orient="vertical")
+        # sep.pack(side=tkinter.LEFT, fill=tkinter.Y, padx=8)
 
-        TrainModelWidget(tabFrame, trainIdx, game, countModelScrollFrame.interior, widgetList, innerButtonList, decryptFile, rootFrameAppearance, reloadFunc)
+        # countModelScrollFrame = ScrollbarFrame(countModelLf, True, bgColor=rootFrameAppearance.bgColor)
+        # countModelScrollFrame.pack(expand=True, fill=tkinter.BOTH)
 
-        if game == gameDefine.LS:
-            elseScrollFrame = ScrollbarFrame(tabFrame, bgColor=rootFrameAppearance.bgColor)
-            elseScrollFrame.pack(expand=True, fill=tkinter.BOTH)
-            elseFrame = elseScrollFrame.interior
+        # TrainModelWidget(tabFrame, trainIndex, game, countModelScrollFrame.interior, widgetList, innerButtonList, decryptFile, rootFrameAppearance, reloadWidget)
 
-            elseFrame2 = elseFrame
-        else:
-            elseFrame = ttkCustomWidget.CustomTtkFrame(tabFrame)
-            elseFrame.pack(anchor=tkinter.NW, fill=tkinter.X)
+        elseScrollFrame = ScrollbarFrame(tabFrame, bgColor=rootFrameAppearance.bgColor)
+        elseScrollFrame.grid(row=1, column=0, sticky=tkinter.NSEW)
 
-            elseFrame2 = ttkCustomWidget.CustomTtkFrame(tabFrame)
-            elseFrame2.pack(anchor=tkinter.NW, fill=tkinter.X)
+        # elseModel = decryptFile.trainModelList[trainIndex]["elseModel"]
+        # else2Model = decryptFile.trainModelList[trainIndex]["else2Model"]
+        # elseList2 = decryptFile.trainModelList[trainIndex]["elseList2"]
 
-        elseModel = decryptFile.trainModelList[trainIdx]["elseModel"]
-        else2Model = decryptFile.trainModelList[trainIdx]["else2Model"]
-
-        if len(elseModel) > 0:
-            FixedListWidget(elseFrame, game, trainIdx, decryptFile, "else1", elseModel, 1, rootFrameAppearance, reloadFunc)
-        FixedListWidget(elseFrame, game, trainIdx, decryptFile, "else2", else2Model, 2, rootFrameAppearance, reloadFunc)
-
-        elseList2 = decryptFile.trainModelList[trainIdx]["elseList2"]
-        FixedList2Widget(elseFrame2, trainIdx, decryptFile, "else3", elseList2, rootFrameAppearance, reloadFunc)
+        # if len(elseModel) > 0:
+        #     FixedListWidget(elseFrame, trainIndex, decryptFile, "else1", elseModel, 1, rootFrameAppearance, reloadWidget)
+        # FixedListWidget(elseFrame, trainIndex, decryptFile, "else2", else2Model, 2, rootFrameAppearance, reloadWidget)
+        # FixedList2Widget(elseFrame2, trainIndex, decryptFile, "else3", elseList2, rootFrameAppearance, reloadWidget)
     else:
-        trainOrgInfo = decryptFile.trainInfoList[trainIdx]
+        trainOrgInfo = decryptFile.trainInfoList[trainIndex]
         if trainOrgInfo is None:
             return
 
@@ -129,35 +115,37 @@ def tab2AllWidget(tabFrame, decryptFile, trainIdx, defaultData, rootFrameAppeara
         scrollMainFrame.pack(expand=True, fill=tkinter.BOTH)
         scrollFrame = scrollMainFrame.interior
 
-        countModelLf = ttkCustomWidget.CustomTtkLabelFrame(scrollFrame, text=textSetting.textList["orgInfoEditor"]["SSTrainLfLabel"])
-        countModelLf.pack(anchor=tkinter.NW, padx=10, pady=3)
+        # countModelLf = ttkCustomWidget.CustomTtkLabelFrame(scrollFrame, text=textSetting.textList["orgInfoEditor"]["SSTrainLfLabel"])
+        # countModelLf.pack(anchor=tkinter.NW, padx=10, pady=3)
 
-        countWidget = CountWidget(tabFrame, trainIdx, game, countModelLf, decryptFile, rootFrameAppearance, reloadFunc)
+        # countWidget = CountWidget(tabFrame, trainIndex, game, countModelLf, decryptFile, rootFrameAppearance, reloadFunc)
 
-        sidePackFrame = ttkCustomWidget.CustomTtkFrame(scrollFrame)
-        sidePackFrame.pack(anchor=tkinter.NW)
-        rainPerfLf = ttkCustomWidget.CustomTtkLabelFrame(sidePackFrame, text=textSetting.textList["orgInfoEditor"]["SSRainLfLabel"])
-        rainPerfLf.pack(side=tkinter.LEFT, anchor=tkinter.NW, padx=10, pady=3)
-        ElsePerfWidget(tabFrame, trainIdx, game, rainPerfLf, "rain", decryptFile.trainRainNameList, trainOrgInfo[2], True, defaultData, decryptFile, rootFrameAppearance, reloadFunc)
+        # sidePackFrame = ttkCustomWidget.CustomTtkFrame(scrollFrame)
+        # sidePackFrame.pack(anchor=tkinter.NW)
+        # rainPerfLf = ttkCustomWidget.CustomTtkLabelFrame(sidePackFrame, text=textSetting.textList["orgInfoEditor"]["SSRainLfLabel"])
+        # rainPerfLf.pack(side=tkinter.LEFT, anchor=tkinter.NW, padx=10, pady=3)
+        # ElsePerfWidget(tabFrame, trainIndex, game, rainPerfLf, "rain", decryptFile.trainRainNameList, trainOrgInfo[2], True, defaultData, decryptFile, rootFrameAppearance, reloadFunc)
 
-        carbPerfLf = ttkCustomWidget.CustomTtkLabelFrame(sidePackFrame, text=textSetting.textList["orgInfoEditor"]["SSCarbLfLabel"])
-        carbPerfLf.pack(side=tkinter.LEFT, anchor=tkinter.NW, padx=10, pady=3)
-        ElsePerfWidget(tabFrame, trainIdx, game, carbPerfLf, "carb", decryptFile.trainCarbNameList, trainOrgInfo[3], True, defaultData, decryptFile, rootFrameAppearance, reloadFunc)
+        # carbPerfLf = ttkCustomWidget.CustomTtkLabelFrame(sidePackFrame, text=textSetting.textList["orgInfoEditor"]["SSCarbLfLabel"])
+        # carbPerfLf.pack(side=tkinter.LEFT, anchor=tkinter.NW, padx=10, pady=3)
+        # ElsePerfWidget(tabFrame, trainIndex, game, carbPerfLf, "carb", decryptFile.trainCarbNameList, trainOrgInfo[3], True, defaultData, decryptFile, rootFrameAppearance, reloadFunc)
 
-        otherPerfLf = ttkCustomWidget.CustomTtkLabelFrame(scrollFrame, text=textSetting.textList["orgInfoEditor"]["SSOtherLfLabel"])
-        otherPerfLf.pack(anchor=tkinter.NW, padx=10, pady=3)
-        ElsePerfWidget(tabFrame, trainIdx, game, otherPerfLf, "other", decryptFile.trainOtherNameList, trainOrgInfo[4], True, defaultData, decryptFile, rootFrameAppearance, reloadFunc)
+        # otherPerfLf = ttkCustomWidget.CustomTtkLabelFrame(scrollFrame, text=textSetting.textList["orgInfoEditor"]["SSOtherLfLabel"])
+        # otherPerfLf.pack(anchor=tkinter.NW, padx=10, pady=3)
+        # ElsePerfWidget(tabFrame, trainIndex, game, otherPerfLf, "other", decryptFile.trainOtherNameList, trainOrgInfo[4], True, defaultData, decryptFile, rootFrameAppearance, reloadFunc)
 
-        sidePackFrame2 = ttkCustomWidget.CustomTtkFrame(scrollFrame)
-        sidePackFrame2.pack(anchor=tkinter.NW)
-        hurikoPerfLf = ttkCustomWidget.CustomTtkLabelFrame(sidePackFrame2, text=textSetting.textList["orgInfoEditor"]["SSHurikoLfLabel"])
-        hurikoPerfLf.pack(side=tkinter.LEFT, anchor=tkinter.NW, padx=8, pady=3)
-        ElsePerfWidget(tabFrame, trainIdx, game, hurikoPerfLf, "huriko", decryptFile.trainHurikoNameList, trainOrgInfo[5], False, defaultData, decryptFile, rootFrameAppearance, reloadFunc)
+        # sidePackFrame2 = ttkCustomWidget.CustomTtkFrame(scrollFrame)
+        # sidePackFrame2.pack(anchor=tkinter.NW)
+        # hurikoPerfLf = ttkCustomWidget.CustomTtkLabelFrame(sidePackFrame2, text=textSetting.textList["orgInfoEditor"]["SSHurikoLfLabel"])
+        # hurikoPerfLf.pack(side=tkinter.LEFT, anchor=tkinter.NW, padx=8, pady=3)
+        # ElsePerfWidget(tabFrame, trainIndex, game, hurikoPerfLf, "huriko", decryptFile.trainHurikoNameList, trainOrgInfo[5], False, defaultData, decryptFile, rootFrameAppearance, reloadFunc)
 
-        oneWheelPerfLf = ttkCustomWidget.CustomTtkLabelFrame(sidePackFrame2, text=textSetting.textList["orgInfoEditor"]["SSOneWheelLfLabel"])
-        oneWheelPerfLf.pack(side=tkinter.LEFT, anchor=tkinter.NW, padx=8, pady=3)
-        ElsePerfWidget(tabFrame, trainIdx, game, oneWheelPerfLf, "oneWheel", decryptFile.trainOneWheelNameList, trainOrgInfo[6], False, defaultData, decryptFile, rootFrameAppearance, reloadFunc)
-
+        # oneWheelPerfLf = ttkCustomWidget.CustomTtkLabelFrame(sidePackFrame2, text=textSetting.textList["orgInfoEditor"]["SSOneWheelLfLabel"])
+        # oneWheelPerfLf.pack(side=tkinter.LEFT, anchor=tkinter.NW, padx=8, pady=3)
+        # ElsePerfWidget(tabFrame, trainIndex, game, oneWheelPerfLf, "oneWheel", decryptFile.trainOneWheelNameList, trainOrgInfo[6], False, defaultData, decryptFile, rootFrameAppearance, reloadFunc)
+    tabFrame.grid_rowconfigure(0, weight=2, uniform="trainOrgData")
+    tabFrame.grid_rowconfigure(1, weight=3, uniform="trainOrgData")
+    tabFrame.grid_columnconfigure(0, weight=1)
 
 def tab3AllWidget(tabFrame, decryptFile, trainIdx, rootFrameAppearance, reloadFunc):
     tab3frame = ttkCustomWidget.CustomTtkFrame(tabFrame)
