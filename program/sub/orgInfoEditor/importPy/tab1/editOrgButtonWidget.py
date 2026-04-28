@@ -4,6 +4,7 @@ import program.sub.textSetting as textSetting
 import program.sub.appearance.ttkCustomWidget as ttkCustomWidget
 
 from program.sub.orgInfoEditor.importPy.tab1.setDefaultWidget import SetDefaultEdit
+from program.sub.orgInfoEditor.importPy.tab1.editAllTrainInfoWidget import AllEdit
 
 
 class EditOrgButtonWidget(tkinter.Frame):
@@ -44,8 +45,7 @@ class EditOrgButtonWidget(tkinter.Frame):
         self.save_button = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["orgInfoEditor"]["trainSave"], command=self.saveTrain)
         self.save_button.grid_remove()
 
-        self.edit_all_button = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["orgInfoEditor"]["allSave"])
-        # command=lambda: editAllTrain(tabFrame, decryptFile, rootFrameAppearance, reloadFunc)
+        self.edit_all_button = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["orgInfoEditor"]["allSave"], command=self.editAllTrain)
         self.edit_all_button.grid(row=0, column=4, padx=5, sticky=tkinter.NSEW)
 
         btnFrame.grid_columnconfigure(0, weight=1, uniform="button")
@@ -57,7 +57,7 @@ class EditOrgButtonWidget(tkinter.Frame):
     def setDefault(self):
         orgInfoEditorWindow = self.root.master.winfo_children()[2]
         trainIndex = orgInfoEditorWindow.trainCb.current()
-        result = SetDefaultEdit(self, textSetting.textList["orgInfoEditor"]["setDefaultBtnLabel"], trainIndex, self.decryptFile, self.defaultData, self.rootFrameAppearance)
+        result = SetDefaultEdit(self.root, textSetting.textList["orgInfoEditor"]["setDefaultBtnLabel"], trainIndex, self.decryptFile, self.defaultData, self.rootFrameAppearance)
         if result.reloadFlag:
             self.reloadWidget()
 
@@ -148,3 +148,8 @@ class EditOrgButtonWidget(tkinter.Frame):
 
         mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I49"])
         self.reloadWidget()
+
+    def editAllTrain(self):
+        result = AllEdit(self.root, textSetting.textList["orgInfoEditor"]["allSaveLabel"], self.decryptFile, self.rootFrameAppearance)
+        if result.reloadFlag:
+            self.reloadWidget()
