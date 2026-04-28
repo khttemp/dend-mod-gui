@@ -8,7 +8,6 @@ from program.sub.orgInfoEditor.importPy.tab1.editOrgButtonWidget import EditOrgB
 from program.sub.orgInfoEditor.importPy.tab1.notchWidget import NotchWidget
 from program.sub.orgInfoEditor.importPy.tab1.perfWidget import PerfWidget
 from program.sub.orgInfoEditor.importPy.tab1.hurikoWidget import HurikoWidget
-from program.sub.orgInfoEditor.importPy.tab1.tab1EditWidget import setDefault, extractCsvTrainInfo, saveCsvTrainInfo, editTrain, editAllTrain
 
 from program.sub.orgInfoEditor.importPy.tab2.countWidget import CountWidget
 from program.sub.orgInfoEditor.importPy.tab2.modelWidget import TrainModelWidget
