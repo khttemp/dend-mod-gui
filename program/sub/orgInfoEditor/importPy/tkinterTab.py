@@ -26,7 +26,7 @@ def tab1AllWidget(tabFrame, decryptFile, trainIndex, defaultData, rootFrameAppea
         return
     selectDefaultData = defaultData[trainIndex]
 
-    EditOrgButtonWidget(tabFrame, decryptFile, defaultData, reloadWidget)
+    EditOrgButtonWidget(tabFrame, decryptFile, defaultData, rootFrameAppearance, reloadWidget)
 
     notchPerfFrame = ttkCustomWidget.CustomTtkFrame(tabFrame)
     notchPerfFrame.pack(anchor=tkinter.NW, padx=10, pady=5, expand=True, fill=tkinter.BOTH)

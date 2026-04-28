@@ -3,20 +3,23 @@ from tkinter import messagebox as mb
 import program.sub.textSetting as textSetting
 import program.sub.appearance.ttkCustomWidget as ttkCustomWidget
 
+from program.sub.orgInfoEditor.importPy.tab1.setDefaultWidget import SetDefaultEdit
+
+
 class EditOrgButtonWidget(tkinter.Frame):
-    def __init__(self, master, decryptFile, defaultData, reloadWidget):
+    def __init__(self, master, decryptFile, defaultData, rootFrameAppearance, reloadWidget):
         super().__init__(master)
         self.root = master
         self.decryptFile = decryptFile
         self.defaultData = defaultData
+        self.rootFrameAppearance = rootFrameAppearance
         self.reloadWidget = reloadWidget
         self.oldGameList = ["RS", "CS", "BS", "LS"]
 
         btnFrame = ttkCustomWidget.CustomTtkFrame(master)
         btnFrame.pack(fill=tkinter.X, anchor=tkinter.NW, padx=10, pady=5)
 
-        self.set_default_train_info_button = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["orgInfoEditor"]["setDefaultBtnLabel"])
-        # command=lambda: setDefault(tabFrame, decryptFile, game, trainIdx, defaultData, rootFrameAppearance, reloadFunc), 
+        self.set_default_train_info_button = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["orgInfoEditor"]["setDefaultBtnLabel"], command=self.setDefault)
         self.set_default_train_info_button.grid(row=0, column=0, padx=5, sticky=tkinter.NSEW)
 
         if decryptFile.game in self.oldGameList:
@@ -50,6 +53,13 @@ class EditOrgButtonWidget(tkinter.Frame):
         btnFrame.grid_columnconfigure(2, weight=1, uniform="button")
         btnFrame.grid_columnconfigure(3, weight=1, uniform="button")
         btnFrame.grid_columnconfigure(4, weight=1, uniform="button")
+
+    def setDefault(self):
+        orgInfoEditorWindow = self.root.master.winfo_children()[2]
+        trainIndex = orgInfoEditorWindow.trainCb.current()
+        result = SetDefaultEdit(self, textSetting.textList["orgInfoEditor"]["setDefaultBtnLabel"], trainIndex, self.decryptFile, self.defaultData, self.rootFrameAppearance)
+        if result.reloadFlag:
+            self.reloadWidget()
 
     def editTrain(self):
         orgInfoEditorWindow = self.root.master.winfo_children()[2]
