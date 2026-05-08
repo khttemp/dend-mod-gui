@@ -34,66 +34,66 @@ from program.sub.railEditor.importPy.tab10.else4ListWidget import Else4ListWidge
 from program.sub.railEditor.importPy.tab11.ambListWidget import AmbListWidget
 
 
-def tab1AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc):
+def tab1AllWidget(tabFrame, decryptFile, rootFrameAppearance, reloadFunc):
     frame = ScrollbarFrame(tabFrame, bgColor=rootFrameAppearance.bgColor)
     frame.pack(expand=True, fill=tkinter.BOTH)
 
-    MusicWidget(root, frame.interior, decryptFile, rootFrameAppearance, reloadFunc)
-    TrainCountWidget(root, frame.interior, decryptFile, rootFrameAppearance, reloadFunc)
-    RailPosWidget(root, frame.interior, textSetting.textList["railEditor"]["initPos"], 0, decryptFile, decryptFile.trainList, rootFrameAppearance, reloadFunc)
+    MusicWidget(frame.interior, decryptFile, rootFrameAppearance, reloadFunc)
+    TrainCountWidget(frame.interior, decryptFile, rootFrameAppearance, reloadFunc)
+    RailPosWidget(frame.interior, textSetting.textList["railEditor"]["initPos"], 0, decryptFile, decryptFile.trainList, rootFrameAppearance, reloadFunc)
 
     if decryptFile.game in ["BS", "CS", "RS"]:
-        RailPosWidget(root, frame.interior, textSetting.textList["railEditor"]["dummyPos"], 1, decryptFile, decryptFile.trainList2, rootFrameAppearance, reloadFunc)
-        RailPosWidget(root, frame.interior, textSetting.textList["railEditor"]["pracOrVsPos"], 2, decryptFile, decryptFile.trainList3, rootFrameAppearance, reloadFunc)
-        StationNoWidget(root, frame.interior, 0, decryptFile, decryptFile.stationNo, rootFrameAppearance, reloadFunc)
+        RailPosWidget(frame.interior, textSetting.textList["railEditor"]["dummyPos"], 1, decryptFile, decryptFile.trainList2, rootFrameAppearance, reloadFunc)
+        RailPosWidget(frame.interior, textSetting.textList["railEditor"]["pracOrVsPos"], 2, decryptFile, decryptFile.trainList3, rootFrameAppearance, reloadFunc)
+        StationNoWidget(frame.interior, 0, decryptFile, decryptFile.stationNo, rootFrameAppearance, reloadFunc)
 
         if decryptFile.game == "BS":
             separator = ttkCustomWidget.CustomTtkSeparator(frame.interior, orient="horizontal")
             separator.pack(fill=tkinter.X)
-            RailPosWidget(root, frame.interior, textSetting.textList["railEditor"]["dummyPos"], 3, decryptFile, decryptFile.trainList4, rootFrameAppearance, reloadFunc)
-            StationNoWidget(root, frame.interior, 1, decryptFile, decryptFile.stationNo2, rootFrameAppearance, reloadFunc)
+            RailPosWidget(frame.interior, textSetting.textList["railEditor"]["dummyPos"], 3, decryptFile, decryptFile.trainList4, rootFrameAppearance, reloadFunc)
+            StationNoWidget(frame.interior, 1, decryptFile, decryptFile.stationNo2, rootFrameAppearance, reloadFunc)
 
 
-def tab2AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc):
+def tab2AllWidget(tabFrame, decryptFile, rootFrameAppearance, reloadFunc):
     frame = ScrollbarFrame(tabFrame, bgColor=rootFrameAppearance.bgColor)
     frame.pack(expand=True, fill=tkinter.BOTH)
-    Else1ListWidget(root, frame.interior, decryptFile, rootFrameAppearance, reloadFunc)
+    Else1ListWidget(frame.interior, decryptFile, rootFrameAppearance, reloadFunc)
 
     if decryptFile.game in ["BS", "CS", "RS"]:
         simpleListFrame = ttkCustomWidget.CustomTtkFrame(frame.interior)
         simpleListFrame.pack(anchor=tkinter.NW)
-        SimpleListWidget(root, simpleListFrame, textSetting.textList["railEditor"]["lightInfo"], decryptFile, decryptFile.lightList, decryptFile.lightIdx, 1, rootFrameAppearance, reloadFunc)
+        SimpleListWidget(simpleListFrame, textSetting.textList["railEditor"]["lightInfo"], decryptFile, decryptFile.lightList, decryptFile.lightIdx, 1, rootFrameAppearance, reloadFunc)
         if decryptFile.game in ["CS", "RS"]:
-            SimpleListWidget(root, simpleListFrame, textSetting.textList["railEditor"]["stationInfo"], decryptFile, decryptFile.pngList, decryptFile.pngIdx, 2, rootFrameAppearance, reloadFunc)
-            StationAmbWidget(root, frame.interior, decryptFile, rootFrameAppearance, reloadFunc)
+            SimpleListWidget(simpleListFrame, textSetting.textList["railEditor"]["stationInfo"], decryptFile, decryptFile.pngList, decryptFile.pngIdx, 2, rootFrameAppearance, reloadFunc)
+            StationAmbWidget(frame.interior, decryptFile, rootFrameAppearance, reloadFunc)
 
     simpleListFrame2 = ttkCustomWidget.CustomTtkFrame(frame.interior)
     simpleListFrame2.pack(anchor=tkinter.NW)
     if decryptFile.game in ["BS", "CS", "RS"]:
-        SimpleListWidget(root, simpleListFrame2, textSetting.textList["railEditor"]["baseBinInfo"], decryptFile, decryptFile.baseBinList, decryptFile.binIdx, 1, rootFrameAppearance, reloadFunc)
-    BinAnimeListWidget(root, simpleListFrame2, decryptFile, rootFrameAppearance, reloadFunc)
+        SimpleListWidget(simpleListFrame2, textSetting.textList["railEditor"]["baseBinInfo"], decryptFile, decryptFile.baseBinList, decryptFile.binIdx, 1, rootFrameAppearance, reloadFunc)
+    BinAnimeListWidget(simpleListFrame2, decryptFile, rootFrameAppearance, reloadFunc)
 
 
-def tab3AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc, selectId):
-    SmfListWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc, selectId)
+def tab3AllWidget(tabFrame, decryptFile, rootFrameAppearance, reloadFunc, selectId):
+    SmfListWidget(tabFrame, decryptFile, rootFrameAppearance, reloadFunc, selectId)
 
 
-def tab4AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc, selectId):
-    StationNameWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc, selectId)
+def tab4AllWidget(tabFrame, decryptFile, rootFrameAppearance, reloadFunc, selectId):
+    StationNameWidget(tabFrame, decryptFile, rootFrameAppearance, reloadFunc, selectId)
 
 
-def tab5AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc):
-    Else2ListWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc)
+def tab5AllWidget(tabFrame, decryptFile, rootFrameAppearance, reloadFunc):
+    Else2ListWidget(tabFrame, decryptFile, rootFrameAppearance, reloadFunc)
 
 
-def tab6AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc, selectId):
-    CpuWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc, selectId)
+def tab6AllWidget(tabFrame, decryptFile, rootFrameAppearance, reloadFunc, selectId):
+    CpuWidget(tabFrame, decryptFile, rootFrameAppearance, reloadFunc, selectId)
 
 
-def tab7AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc):
-    ComicScriptWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc)
+def tab7AllWidget(tabFrame, decryptFile, rootFrameAppearance, reloadFunc):
+    ComicScriptWidget(tabFrame, decryptFile, rootFrameAppearance, reloadFunc)
     if decryptFile.game in ["CS", "RS"]:
-        DosansenListWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc)
+        DosansenListWidget(tabFrame, decryptFile, rootFrameAppearance, reloadFunc)
 
 
 def tab8AllWidget(tabFrame, decryptFile, rootFrameAppearance, reloadFunc):
@@ -102,12 +102,12 @@ def tab8AllWidget(tabFrame, decryptFile, rootFrameAppearance, reloadFunc):
     RailListWidget(frame.interior, decryptFile, rootFrameAppearance, reloadFunc)
 
 
-def tab9AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc, selectId):
-    Else3ListWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc, selectId)
+def tab9AllWidget(tabFrame, decryptFile, rootFrameAppearance, reloadFunc, selectId):
+    Else3ListWidget(tabFrame, decryptFile, rootFrameAppearance, reloadFunc, selectId)
 
 
-def tab10AllWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc):
-    Else4ListWidget(root, tabFrame, decryptFile, rootFrameAppearance, reloadFunc)
+def tab10AllWidget(tabFrame, decryptFile, rootFrameAppearance, reloadFunc):
+    Else4ListWidget(tabFrame, decryptFile, rootFrameAppearance, reloadFunc)
 
 
 def tab11AllWidget(tabFrame, decryptFile, rootFrameAppearance, reloadFunc):

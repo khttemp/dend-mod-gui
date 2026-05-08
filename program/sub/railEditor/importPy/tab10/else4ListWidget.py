@@ -10,8 +10,7 @@ from program.sub.tkinterScrollbarFrameClass import ScrollbarFrame
 
 
 class Else4ListWidget:
-    def __init__(self, root, frame, decryptFile, rootFrameAppearance, reloadFunc):
-        self.root = root
+    def __init__(self, frame, decryptFile, rootFrameAppearance, reloadFunc):
         self.frame = frame
         self.decryptFile = decryptFile
         self.else4List = decryptFile.else4List
@@ -67,7 +66,7 @@ class Else4ListWidget:
             rowNum += 1
 
     def editElse4Cnt(self):
-        result = EditElse4CntWidget(self.root, textSetting.textList["railEditor"]["editElse4CntLabel"], self.decryptFile, self.rootFrameAppearance)
+        result = EditElse4CntWidget(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["editElse4CntLabel"], self.decryptFile, self.rootFrameAppearance)
         if result.reloadFlag:
             if not self.decryptFile.saveElse4Cnt(result.resultValue):
                 self.decryptFile.printError()
@@ -77,7 +76,7 @@ class Else4ListWidget:
             self.reloadFunc()
 
     def editElse4List(self, i, valList):
-        result = EditElse4ListWidget(self.root, textSetting.textList["railEditor"]["editElse4Label"], self.decryptFile, valList, self.rootFrameAppearance)
+        result = EditElse4ListWidget(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["editElse4Label"], self.decryptFile, valList, self.rootFrameAppearance)
         if result.reloadFlag:
             self.else4List[i] = result.resultValueList
             if not self.decryptFile.saveElse4List(self.else4List):

@@ -6,8 +6,7 @@ from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
 
 
 class StationNoWidget:
-    def __init__(self, root, frame, num, decryptFile, stationNo, rootFrameAppearance, reloadFunc):
-        self.root = root
+    def __init__(self, frame, num, decryptFile, stationNo, rootFrameAppearance, reloadFunc):
         self.frame = frame
         self.num = num
         self.decryptFile = decryptFile
@@ -27,7 +26,7 @@ class StationNoWidget:
         stationNoBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
 
     def editVar(self):
-        result = EditStationNoWidget(self.root, textSetting.textList["railEditor"]["editStationNoLabel"], self.decryptFile, self.stationNo, self.rootFrameAppearance)
+        result = EditStationNoWidget(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["editStationNoLabel"], self.decryptFile, self.stationNo, self.rootFrameAppearance)
 
         if result.reloadFlag:
             if not self.decryptFile.saveStationNo(self.num, result.resultValue):

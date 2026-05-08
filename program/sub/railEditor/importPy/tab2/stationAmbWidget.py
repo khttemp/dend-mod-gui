@@ -8,8 +8,7 @@ from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
 
 
 class StationAmbWidget:
-    def __init__(self, root, frame, decryptFile, rootFrameAppearance, reloadFunc):
-        self.root = root
+    def __init__(self, frame, decryptFile, rootFrameAppearance, reloadFunc):
         self.frame = frame
         self.decryptFile = decryptFile
         self.stationList = decryptFile.stationList
@@ -54,7 +53,7 @@ class StationAmbWidget:
                 varBtn.grid(row=i + 1, column=len(stationInfo), sticky=tkinter.W + tkinter.E)
 
     def editStationCnt(self):
-        result = EditStationAmbCntWidget(self.root, textSetting.textList["railEditor"]["editStationCntLabel"], self.decryptFile, self.rootFrameAppearance)
+        result = EditStationAmbCntWidget(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["editStationCntLabel"], self.decryptFile, self.rootFrameAppearance)
         if result.reloadFlag:
             if not self.decryptFile.saveStationCnt(result.resultValue):
                 self.decryptFile.printError()
@@ -64,7 +63,7 @@ class StationAmbWidget:
             self.reloadFunc()
 
     def editStation(self, i, stationInfo):
-        result = EditStationAmbWidget(self.root, textSetting.textList["railEditor"]["editStationInfoLabel"], self.decryptFile, stationInfo, self.rootFrameAppearance)
+        result = EditStationAmbWidget(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["editStationInfoLabel"], self.decryptFile, stationInfo, self.rootFrameAppearance)
         if result.reloadFlag:
             self.stationList[i] = result.resultValueList
             if not self.decryptFile.saveStation(self.stationList):

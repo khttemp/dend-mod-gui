@@ -8,8 +8,7 @@ from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
 
 
 class RailPosWidget:
-    def __init__(self, root, frame, title, num, decryptFile, trainList, rootFrameAppearance, reloadFunc):
-        self.root = root
+    def __init__(self, frame, title, num, decryptFile, trainList, rootFrameAppearance, reloadFunc):
         self.frame = frame
         self.title = title
         self.num = num
@@ -52,7 +51,7 @@ class RailPosWidget:
             railBtn.grid(row=i + 1, column=len(trainInfo) + 1, sticky=tkinter.W + tkinter.E)
 
     def editVar(self, i, trainInfo):
-        result = EditRailPosWidget(self.root, self.title + textSetting.textList["railEditor"]["commonModifyLabel"], self.decryptFile, trainInfo, self.rootFrameAppearance)
+        result = EditRailPosWidget(self.frame.winfo_toplevel(), self.title + textSetting.textList["railEditor"]["commonModifyLabel"], self.decryptFile, trainInfo, self.rootFrameAppearance)
 
         if result.reloadFlag:
             self.trainList[i] = result.resultValueList

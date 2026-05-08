@@ -6,8 +6,7 @@ from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
 
 
 class TrainCountWidget:
-    def __init__(self, root, frame, decryptFile, rootFrameAppearance, reloadFunc):
-        self.root = root
+    def __init__(self, frame, decryptFile, rootFrameAppearance, reloadFunc):
         self.frame = frame
         self.decryptFile = decryptFile
         self.rootFrameAppearance = rootFrameAppearance
@@ -26,7 +25,7 @@ class TrainCountWidget:
             trainCntBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
 
     def editVar(self):
-        result = EditTrainCountWidget(self.root, textSetting.textList["railEditor"]["editTrainCountLabel"], self.decryptFile, self.rootFrameAppearance)
+        result = EditTrainCountWidget(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["editTrainCountLabel"], self.decryptFile, self.rootFrameAppearance)
 
         if result.reloadFlag:
             if not self.decryptFile.saveTrainCnt(result.resultValue):

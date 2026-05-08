@@ -8,8 +8,7 @@ from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
 
 
 class ComicScriptWidget:
-    def __init__(self, root, frame, decryptFile, rootFrameAppearance, reloadFunc):
-        self.root = root
+    def __init__(self, frame, decryptFile, rootFrameAppearance, reloadFunc):
         self.frame = frame
         self.decryptFile = decryptFile
         self.comicScriptList = decryptFile.comicScriptList
@@ -92,7 +91,7 @@ class ComicScriptWidget:
 
     def modify(self):
         item = self.comicScriptList[self.selectIndexNum]
-        result = EditComicScriptListWidget(self.root, textSetting.textList["railEditor"]["modifyComicScriptLabel"], self.decryptFile, "modify", item, self.rootFrameAppearance)
+        result = EditComicScriptListWidget(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["modifyComicScriptLabel"], self.decryptFile, "modify", item, self.rootFrameAppearance)
         if result.reloadFlag:
             self.comicScriptList[self.selectIndexNum] = result.resultValueList
             if not self.decryptFile.saveComicScriptList(self.comicScriptList):
@@ -103,7 +102,7 @@ class ComicScriptWidget:
             self.reloadFunc()
 
     def insert(self):
-        result = EditComicScriptListWidget(self.root, textSetting.textList["railEditor"]["insertComicScriptLabel"], self.decryptFile, "insert", None, self.rootFrameAppearance)
+        result = EditComicScriptListWidget(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["insertComicScriptLabel"], self.decryptFile, "insert", None, self.rootFrameAppearance)
         if result.reloadFlag:
             self.comicScriptList.insert(self.selectIndexNum + result.insertPos, result.resultValueList)
             if not self.decryptFile.saveComicScriptList(self.comicScriptList):

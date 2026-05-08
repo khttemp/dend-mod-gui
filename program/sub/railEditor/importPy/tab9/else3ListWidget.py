@@ -12,9 +12,8 @@ from program.sub.railEditor.importPy.tkinterScrollbarTreeviewRailEditor import S
 
 
 class Else3ListWidget:
-    def __init__(self, root, frame, decryptFile, rootFrameAppearance, reloadFunc, selectId):
+    def __init__(self, frame, decryptFile, rootFrameAppearance, reloadFunc, selectId):
         self.text = textSetting.textList["railEditor"]["else3Label"]
-        self.root = root
         self.frame = frame
         self.decryptFile = decryptFile
         self.else3List = decryptFile.else3List
@@ -168,7 +167,7 @@ class Else3ListWidget:
         selectItem = self.treeviewFrame.tree.set(selectId)
         num = int(selectItem["treeNum"])
         item = self.else3List[num]
-        result = EditElse3ListWidget(self.root, textSetting.textList["railEditor"]["editElse3Label"].format(self.text), self.decryptFile, "modify", headerNameList, item, self.rootFrameAppearance)
+        result = EditElse3ListWidget(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["editElse3Label"].format(self.text), self.decryptFile, "modify", headerNameList, item, self.rootFrameAppearance)
         if result.reloadFlag:
             self.else3List[num] = result.resultValueList
             if not self.decryptFile.saveElse3List(self.else3List):
@@ -189,7 +188,7 @@ class Else3ListWidget:
             selectId = self.treeviewFrame.tree.selection()[0]
             selectItem = self.treeviewFrame.tree.set(selectId)
             num = int(selectItem["treeNum"]) + 1
-        result = EditElse3ListWidget(self.root, textSetting.textList["railEditor"]["insertElse3Label"].format(self.text), self.decryptFile, "insert", headerNameList, None, self.rootFrameAppearance)
+        result = EditElse3ListWidget(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["insertElse3Label"].format(self.text), self.decryptFile, "insert", headerNameList, None, self.rootFrameAppearance)
         if result.reloadFlag:
             self.else3List.insert(num + result.insertPos, result.resultValueList)
             if not self.decryptFile.saveElse3List(self.else3List):
@@ -236,7 +235,7 @@ class Else3ListWidget:
         selectId = self.treeviewFrame.tree.selection()[0]
         selectItem = self.treeviewFrame.tree.set(selectId)
         num = int(selectItem["treeNum"])
-        result = PasteElse3ListDialog(self.root, textSetting.textList["railEditor"]["pasteElse3InfoLabel"].format(self.text), self.decryptFile, num, self.copyElse3Info, self.rootFrameAppearance)
+        result = PasteElse3ListDialog(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["pasteElse3InfoLabel"].format(self.text), self.decryptFile, num, self.copyElse3Info, self.rootFrameAppearance)
         if result.reloadFlag:
             self.reloadFunc(selectId)
 
@@ -248,7 +247,7 @@ class Else3ListWidget:
         selectItem = self.treeviewFrame.tree.set(selectId)
         num = int(selectItem["treeNum"])
         item = self.else3List[num]
-        result = Else3ElementWidget(self.root, textSetting.textList["railEditor"]["editElse3ElementLabel"].format(self.text), self.decryptFile, num, item, self.rootFrameAppearance)
+        result = Else3ElementWidget(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["editElse3ElementLabel"].format(self.text), self.decryptFile, num, item, self.rootFrameAppearance)
         if result.dirtyFlag:
             self.reloadFunc(selectId)
 
@@ -650,7 +649,7 @@ class Else3ElementWidget(CustomSimpleDialog):
         selectItem = self.treeviewFrame.tree.set(selectId)
         num = int(selectItem["treeNum"])
         item = self.else3ElementList[num]
-        result = EditElse3ElementWidget(self.master, textSetting.textList["railEditor"]["editElse3ElementModifyLabel"].format(self.text), self.decryptFile, "modify", headerNameList, item, self.rootFrameAppearance)
+        result = EditElse3ElementWidget(self.winfo_toplevel(), textSetting.textList["railEditor"]["editElse3ElementModifyLabel"].format(self.text), self.decryptFile, "modify", headerNameList, item, self.rootFrameAppearance)
         if result.reloadFlag:
             else3List = self.decryptFile.else3List
             else3List[self.else3Num][-1][num] = result.resultValueList
@@ -672,7 +671,7 @@ class Else3ElementWidget(CustomSimpleDialog):
             selectId = self.treeviewFrame.tree.selection()[0]
             selectItem = self.treeviewFrame.tree.set(selectId)
             num = int(selectItem["treeNum"]) + 1
-        result = EditElse3ElementWidget(self.master, textSetting.textList["railEditor"]["editElse3ElementInsertLabel"].format(self.text), self.decryptFile, "insert", headerNameList, None, self.rootFrameAppearance)
+        result = EditElse3ElementWidget(self.winfo_toplevel(), textSetting.textList["railEditor"]["editElse3ElementInsertLabel"].format(self.text), self.decryptFile, "insert", headerNameList, None, self.rootFrameAppearance)
         if result.reloadFlag:
             else3List = self.decryptFile.else3List
             else3List[self.else3Num][-1].insert(num + result.insertPos, result.resultValueList)
@@ -726,7 +725,7 @@ class Else3ElementWidget(CustomSimpleDialog):
         selectId = self.treeviewFrame.tree.selection()[0]
         selectItem = self.treeviewFrame.tree.set(selectId)
         num = int(selectItem["treeNum"])
-        result = PasteElse3ElementDialog(self.master, textSetting.textList["railEditor"]["pasteElse3InfoLabel"].format(self.text), self.decryptFile, self.else3Num, num, self.copyElse3ElementInfo, self.rootFrameAppearance)
+        result = PasteElse3ElementDialog(self.winfo_toplevel(), textSetting.textList["railEditor"]["pasteElse3InfoLabel"].format(self.text), self.decryptFile, self.else3Num, num, self.copyElse3ElementInfo, self.rootFrameAppearance)
         if result.reloadFlag:
             self.reloadFunc(num)
             self.dirtyFlag = True

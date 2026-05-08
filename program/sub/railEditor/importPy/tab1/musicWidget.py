@@ -7,8 +7,7 @@ from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
 
 
 class MusicWidget:
-    def __init__(self, root, frame, decryptFile, rootFrameAppearance, reloadFunc):
-        self.root = root
+    def __init__(self, frame, decryptFile, rootFrameAppearance, reloadFunc):
         self.frame = frame
         self.decryptFile = decryptFile
         self.rootFrameAppearance = rootFrameAppearance
@@ -30,7 +29,7 @@ class MusicWidget:
             musicBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
 
     def editVar(self):
-        result = EditMusicCnt(self.root, textSetting.textList["railEditor"]["editBgmNumLabel"], self.decryptFile, self.rootFrameAppearance)
+        result = EditMusicCnt(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["editBgmNumLabel"], self.decryptFile, self.rootFrameAppearance)
 
         if result.reloadFlag:
             if not self.decryptFile.saveMusic(result.resultValue):
@@ -41,7 +40,7 @@ class MusicWidget:
             self.reloadFunc()
 
     def editMusicList(self):
-        result = EditMusicList(self.root, textSetting.textList["railEditor"]["editBgmListLabel"], self.decryptFile, self.rootFrameAppearance)
+        result = EditMusicList(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["editBgmListLabel"], self.decryptFile, self.rootFrameAppearance)
         if result.reloadFlag:
             if not self.decryptFile.saveMusicList(result.musicList):
                 self.decryptFile.printError()
@@ -165,7 +164,7 @@ class EditMusicList(CustomSimpleDialog):
 
     def modify(self):
         item = self.musicList[self.selectIndexNum]
-        result = EditMusicListWidget(self.frame, textSetting.textList["railEditor"]["modifyBgmLabel"], self.decryptFile, "modify", item, self.rootFrameAppearance)
+        result = EditMusicListWidget(self.winfo_toplevel(), textSetting.textList["railEditor"]["modifyBgmLabel"], self.decryptFile, "modify", item, self.rootFrameAppearance)
         if result.dirtyFlag:
             self.dirtyFlag = True
             self.musicList[self.selectIndexNum] = result.resultValueList
@@ -175,7 +174,7 @@ class EditMusicList(CustomSimpleDialog):
             self.musicListListbox.selection_set(self.selectIndexNum)
 
     def insert(self):
-        result = EditMusicListWidget(self.frame, textSetting.textList["railEditor"]["insertBgmLabel"], self.decryptFile, "insert", None, self.rootFrameAppearance)
+        result = EditMusicListWidget(self.winfo_toplevel(), textSetting.textList["railEditor"]["insertBgmLabel"], self.decryptFile, "insert", None, self.rootFrameAppearance)
         if result.dirtyFlag:
             self.dirtyFlag = True
             self.musicList.insert(self.selectIndexNum + result.insertPos, result.resultValueList)

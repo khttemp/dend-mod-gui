@@ -10,8 +10,7 @@ from program.sub.tkinterScrollbarFrameClass import ScrollbarFrame
 
 
 class DosansenListWidget:
-    def __init__(self, root, frame, decryptFile, rootFrameAppearance, reloadFunc):
-        self.root = root
+    def __init__(self, frame, decryptFile, rootFrameAppearance, reloadFunc):
         self.frame = frame
         self.decryptFile = decryptFile
         self.dosansenList = decryptFile.dosansenList
@@ -76,7 +75,7 @@ class DosansenListWidget:
                 tempTextLb.configure(text=dosansenValue)
 
     def editDosansenCnt(self):
-        result = EditDosansenCntWidget(self.root, textSetting.textList["railEditor"]["editDosansenCntLabel"], self.decryptFile, self.rootFrameAppearance)
+        result = EditDosansenCntWidget(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["editDosansenCntLabel"], self.decryptFile, self.rootFrameAppearance)
         if result.reloadFlag:
             if not self.decryptFile.saveDosansenCnt(result.resultValue):
                 self.decryptFile.printError()
@@ -86,7 +85,7 @@ class DosansenListWidget:
             self.reloadFunc()
 
     def editDosansenList(self, i, valList):
-        result = EditDosansenWidget(self.root, textSetting.textList["railEditor"]["editDosansenInfoLabel"], self.decryptFile, valList, self.rootFrameAppearance)
+        result = EditDosansenWidget(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["editDosansenInfoLabel"], self.decryptFile, valList, self.rootFrameAppearance)
         if result.reloadFlag:
             self.dosansenList[i] = result.resultValueList
             if not self.decryptFile.saveDosansenList(self.dosansenList):

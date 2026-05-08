@@ -8,8 +8,7 @@ from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
 
 
 class SimpleListWidget:
-    def __init__(self, root, frame, text, decryptFile, listInfo, index, listCntVer, rootFrameAppearance, reloadFunc):
-        self.root = root
+    def __init__(self, frame, text, decryptFile, listInfo, index, listCntVer, rootFrameAppearance, reloadFunc):
         self.frame = frame
         self.text = text
         self.decryptFile = decryptFile
@@ -70,7 +69,7 @@ class SimpleListWidget:
 
     def modify(self):
         item = self.simpleList[self.selectIndexNum]
-        result = EditSimpleListWidget(self.root, self.text + textSetting.textList["railEditor"]["commonModifyLabel"], self.decryptFile, "modify", item, self.rootFrameAppearance)
+        result = EditSimpleListWidget(self.frame.winfo_toplevel(), self.text + textSetting.textList["railEditor"]["commonModifyLabel"], self.decryptFile, "modify", item, self.rootFrameAppearance)
         if result.reloadFlag:
             self.simpleList[self.selectIndexNum] = result.resultValue
             if not self.decryptFile.saveSimpleList(self.index, self.listCntVer, self.simpleList):
@@ -81,7 +80,7 @@ class SimpleListWidget:
             self.reloadFunc()
 
     def insert(self):
-        result = EditSimpleListWidget(self.root, self.text + textSetting.textList["railEditor"]["commonInsertLabel"], self.decryptFile, "insert", None, self.rootFrameAppearance)
+        result = EditSimpleListWidget(self.frame.winfo_toplevel(), self.text + textSetting.textList["railEditor"]["commonInsertLabel"], self.decryptFile, "insert", None, self.rootFrameAppearance)
         if result.reloadFlag:
             self.simpleList.insert(self.selectIndexNum + result.insertPos, result.resultValue)
             if not self.decryptFile.saveSimpleList(self.index, self.listCntVer, self.simpleList):

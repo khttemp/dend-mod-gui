@@ -10,8 +10,7 @@ from program.tkinterScrollbarFrameClass import ScrollbarFrame
 
 
 class Else2ListWidget:
-    def __init__(self, root, frame, decryptFile, rootFrameAppearance, reloadFunc):
-        self.root = root
+    def __init__(self, frame, decryptFile, rootFrameAppearance, reloadFunc):
         self.frame = frame
         self.decryptFile = decryptFile
         self.else2List = decryptFile.else2List
@@ -54,7 +53,7 @@ class Else2ListWidget:
             tempBtn.grid(row=i, column=len(else2Info), sticky=tkinter.W + tkinter.E)
 
     def editElse2Cnt(self):
-        result = EditElse2CntWidget(self.root, textSetting.textList["railEditor"]["modifyElse2CntLabel"], self.decryptFile, self.rootFrameAppearance)
+        result = EditElse2CntWidget(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["modifyElse2CntLabel"], self.decryptFile, self.rootFrameAppearance)
         if result.reloadFlag:
             if not self.decryptFile.saveElse2Cnt(result.resultValue):
                 self.decryptFile.printError()
@@ -64,7 +63,7 @@ class Else2ListWidget:
             self.reloadFunc()
 
     def editElse2List(self, i, valList):
-        result = EditElse2ListWidget(self.frame, textSetting.textList["railEditor"]["modifyElse2InfoLabel"], self.decryptFile, valList, self.rootFrameAppearance)
+        result = EditElse2ListWidget(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["modifyElse2InfoLabel"], self.decryptFile, valList, self.rootFrameAppearance)
         if result.reloadFlag:
             self.else2List[i] = result.resultValueList
             if not self.decryptFile.saveElse2List(self.else2List):
@@ -141,10 +140,13 @@ class EditElse2ListWidget(CustomSimpleDialog):
     def body(self, master):
         self.resizable(False, False)
 
+        valLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
+        valLb.grid(columnspan=2, row=0, column=0, sticky=tkinter.W + tkinter.E)
+
         else2InfoLbList = textSetting.textList["railEditor"]["editElse2LabelList"]
         for i in range(len(self.else2Info)):
             else2Lb = ttkCustomWidget.CustomTtkLabel(master, text=else2InfoLbList[i], font=textSetting.textList["font2"])
-            else2Lb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
+            else2Lb.grid(row=i + 1, column=0, sticky=tkinter.W + tkinter.E)
             if i in [2, 3, 4]:
                 varElse2 = tkinter.DoubleVar()
                 varElse2.set(round(float(self.else2Info[i]), 3))
@@ -153,7 +155,7 @@ class EditElse2ListWidget(CustomSimpleDialog):
                 varElse2.set(self.else2Info[i])
             self.varList.append(varElse2)
             else2Et = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
-            else2Et.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+            else2Et.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
         super().body(master)
 
     def validate(self):

@@ -10,8 +10,7 @@ from program.sub.railEditor.importPy.tkinterScrollbarTreeviewRailEditor import S
 
 
 class StationNameWidget:
-    def __init__(self, root, frame, decryptFile, rootFrameAppearance, reloadFunc, selectId):
-        self.root = root
+    def __init__(self, frame, decryptFile, rootFrameAppearance, reloadFunc, selectId):
         self.frame = frame
         self.decryptFile = decryptFile
         self.stationNameList = decryptFile.stationNameList
@@ -286,7 +285,7 @@ class StationNameWidget:
         selectItem = self.treeviewFrame.tree.set(selectId)
         num = int(selectItem["treeNum"])
         item = self.stationNameList[num]
-        result = EditStationNameListWidget(self.root, textSetting.textList["railEditor"]["modifyStationNameLabel"], self.decryptFile, "modify", headerNameList, item, self.rootFrameAppearance)
+        result = EditStationNameListWidget(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["modifyStationNameLabel"], self.decryptFile, "modify", headerNameList, item, self.rootFrameAppearance)
         if result.reloadFlag:
             if not self.decryptFile.saveStationNameInfo(num, "modify", result.resultValueList):
                 self.decryptFile.printError()
@@ -305,7 +304,7 @@ class StationNameWidget:
             selectId = self.treeviewFrame.tree.selection()[0]
             selectItem = self.treeviewFrame.tree.set(selectId)
             num = int(selectItem["treeNum"]) + 1
-        result = EditStationNameListWidget(self.root, textSetting.textList["railEditor"]["insertStationNameLabel"], self.decryptFile, "insert", headerNameList, None, self.rootFrameAppearance)
+        result = EditStationNameListWidget(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["insertStationNameLabel"], self.decryptFile, "insert", headerNameList, None, self.rootFrameAppearance)
         if result.reloadFlag:
             if not self.decryptFile.saveStationNameInfo(num + result.insertPos, "insert", result.resultValueList):
                 self.decryptFile.printError()
@@ -350,7 +349,7 @@ class StationNameWidget:
         selectId = self.treeviewFrame.tree.selection()[0]
         selectItem = self.treeviewFrame.tree.set(selectId)
         num = int(selectItem["treeNum"])
-        result = PasteStationNameDialog(self.root, textSetting.textList["railEditor"]["pasteStationNameLabel"], self.decryptFile, num, self.copyStationNameInfo, self.rootFrameAppearance)
+        result = PasteStationNameDialog(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["pasteStationNameLabel"], self.decryptFile, num, self.copyStationNameInfo, self.rootFrameAppearance)
         if result.reloadFlag:
             self.reloadFunc(selectId)
 

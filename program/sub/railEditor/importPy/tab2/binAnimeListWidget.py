@@ -8,8 +8,7 @@ from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
 
 
 class BinAnimeListWidget:
-    def __init__(self, root, frame, decryptFile, rootFrameAppearance, reloadFunc):
-        self.root = root
+    def __init__(self, frame, decryptFile, rootFrameAppearance, reloadFunc):
         self.frame = frame
         self.decryptFile = decryptFile
         self.binAnimeList = decryptFile.binAnimeList
@@ -52,7 +51,7 @@ class BinAnimeListWidget:
                 temphBtn.grid(row=i + 1, column=len(binAnimeInfo), sticky=tkinter.W + tkinter.E)
 
     def editBinAnimeCnt(self):
-        result = EditBinAnimeCntWidget(self.root, textSetting.textList["railEditor"]["editAnimeCntLabel"], self.decryptFile, self.rootFrameAppearance)
+        result = EditBinAnimeCntWidget(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["editAnimeCntLabel"], self.decryptFile, self.rootFrameAppearance)
         if result.reloadFlag:
             if not self.decryptFile.saveBinAnimeCnt(result.resultValue):
                 self.decryptFile.printError()
@@ -62,7 +61,7 @@ class BinAnimeListWidget:
             self.reloadFunc()
 
     def editBinAnime(self, i, binAnimeInfo):
-        result = EditBinAnimeWidget(self.root, textSetting.textList["railEditor"]["editAnimeCntLabel"], self.decryptFile, binAnimeInfo, self.rootFrameAppearance)
+        result = EditBinAnimeWidget(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["editAnimeCntLabel"], self.decryptFile, binAnimeInfo, self.rootFrameAppearance)
         if result.reloadFlag:
             self.binAnimeList[i] = result.resultValueList
             if not self.decryptFile.saveBinAnime(self.binAnimeList):

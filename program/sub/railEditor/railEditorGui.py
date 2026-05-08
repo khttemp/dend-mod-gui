@@ -27,7 +27,6 @@ from tkinter import messagebox as mb
 class RailEditorWindow(tkinter.Frame):
     def __init__(self, master, importDict, appearance):
         super().__init__(master)
-        self.root = master
         self.importDict = importDict
         self.rootFrameAppearance = appearance
         self.decryptFile = None
@@ -85,25 +84,25 @@ class RailEditorWindow(tkinter.Frame):
         self.deleteAllWidget()
 
         if index == 0:
-            tab1AllWidget(self.root, self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget)
+            tab1AllWidget(self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget)
         elif index == 1:
-            tab2AllWidget(self.root, self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget)
+            tab2AllWidget(self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget)
         elif index == 2:
-            tab3AllWidget(self.root, self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget, selectId)
+            tab3AllWidget(self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget, selectId)
         elif index == 3:
-            tab4AllWidget(self.root, self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget, selectId)
+            tab4AllWidget(self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget, selectId)
         elif index == 4:
-            tab5AllWidget(self.root, self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget)
+            tab5AllWidget(self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget)
         elif index == 5:
-            tab6AllWidget(self.root, self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget, selectId)
+            tab6AllWidget(self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget, selectId)
         elif index == 6:
-            tab7AllWidget(self.root, self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget)
+            tab7AllWidget(self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget)
         elif index == 7:
             tab8AllWidget(self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget)
         elif index == 8:
-            tab9AllWidget(self.root, self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget, selectId)
+            tab9AllWidget(self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget, selectId)
         elif index == 9:
-            tab10AllWidget(self.root, self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget)
+            tab10AllWidget(self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget)
         elif index == 10:
             tab11AllWidget(self.tabFrame, self.decryptFile, self.rootFrameAppearance, self.reloadWidget)
 

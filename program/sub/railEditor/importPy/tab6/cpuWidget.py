@@ -10,8 +10,7 @@ from program.sub.railEditor.importPy.tkinterScrollbarTreeviewRailEditor import S
 
 
 class CpuWidget:
-    def __init__(self, root, frame, decryptFile, rootFrameAppearance, reloadFunc, selectId):
-        self.root = root
+    def __init__(self, frame, decryptFile, rootFrameAppearance, reloadFunc, selectId):
         self.frame = frame
         self.decryptFile = decryptFile
         self.cpuList = decryptFile.cpuList
@@ -260,7 +259,7 @@ class CpuWidget:
         selectItem = self.treeviewFrame.tree.set(selectId)
         num = int(selectItem["treeNum"])
         item = self.cpuList[num]
-        result = EditCpuListWidget(self.root, textSetting.textList["railEditor"]["modifyCpuInfoLabel"], self.decryptFile, "modify", headerNameList, item, self.rootFrameAppearance)
+        result = EditCpuListWidget(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["modifyCpuInfoLabel"], self.decryptFile, "modify", headerNameList, item, self.rootFrameAppearance)
         if result.reloadFlag:
             if not self.decryptFile.saveCpuInfo(num, "modify", result.resultValueList):
                 self.decryptFile.printError()
@@ -279,7 +278,7 @@ class CpuWidget:
             selectId = self.treeviewFrame.tree.selection()[0]
             selectItem = self.treeviewFrame.tree.set(selectId)
             num = int(selectItem["treeNum"]) + 1
-        result = EditCpuListWidget(self.root, textSetting.textList["railEditor"]["insertCpuInfoLabel"], self.decryptFile, "insert", headerNameList, None, self.rootFrameAppearance)
+        result = EditCpuListWidget(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["insertCpuInfoLabel"], self.decryptFile, "insert", headerNameList, None, self.rootFrameAppearance)
         if result.reloadFlag:
             if not self.decryptFile.saveCpuInfo(num + result.insertPos, "insert", result.resultValueList):
                 self.decryptFile.printError()
@@ -324,7 +323,7 @@ class CpuWidget:
         selectId = self.treeviewFrame.tree.selection()[0]
         selectItem = self.treeviewFrame.tree.set(selectId)
         num = int(selectItem["treeNum"])
-        result = PasteCpuDialog(self.root, textSetting.textList["railEditor"]["pasteCpuInfoLabel"], self.decryptFile, num, self.copyCpuInfo, self.rootFrameAppearance)
+        result = PasteCpuDialog(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["pasteCpuInfoLabel"], self.decryptFile, num, self.copyCpuInfo, self.rootFrameAppearance)
         if result.reloadFlag:
             self.reloadFunc(selectId)
 

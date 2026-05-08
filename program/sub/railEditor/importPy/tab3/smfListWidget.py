@@ -9,8 +9,7 @@ from program.sub.railEditor.importPy.tkinterScrollbarTreeviewRailEditor import S
 
 
 class SmfListWidget:
-    def __init__(self, root, frame, decryptFile, rootFrameAppearance, reloadFunc, selectId):
-        self.root = root
+    def __init__(self, frame, decryptFile, rootFrameAppearance, reloadFunc, selectId):
         self.frame = frame
         self.decryptFile = decryptFile
         self.smfList = decryptFile.smfList
@@ -483,7 +482,7 @@ class SmfListWidget:
         selectItem = self.treeviewFrame.tree.set(selectId)
         num = int(selectItem["treeNum"])
         item = self.smfList[num]
-        result = EditSmfListWidget(self.root, textSetting.textList["railEditor"]["modifySmfInfo"], self.decryptFile, "modify", num, headerNameList, item, self.rootFrameAppearance)
+        result = EditSmfListWidget(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["modifySmfInfo"], self.decryptFile, "modify", num, headerNameList, item, self.rootFrameAppearance)
         if result.reloadFlag:
             if not self.decryptFile.saveSmfInfo(num, "modify", result.resultValueList):
                 self.decryptFile.printError()
@@ -502,7 +501,7 @@ class SmfListWidget:
             selectId = self.treeviewFrame.tree.selection()[0]
             selectItem = self.treeviewFrame.tree.set(selectId)
             num = int(selectItem["treeNum"]) + 1
-        result = EditSmfListWidget(self.root, textSetting.textList["railEditor"]["insertSmfInfo"], self.decryptFile, "insert", num, headerNameList, None, self.rootFrameAppearance)
+        result = EditSmfListWidget(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["insertSmfInfo"], self.decryptFile, "insert", num, headerNameList, None, self.rootFrameAppearance)
         if result.reloadFlag:
             if not self.decryptFile.saveSmfInfo(num + result.insertPos, "insert", result.resultValueList):
                 self.decryptFile.printError()
@@ -547,7 +546,7 @@ class SmfListWidget:
         selectId = self.treeviewFrame.tree.selection()[0]
         selectItem = self.treeviewFrame.tree.set(selectId)
         num = int(selectItem["treeNum"])
-        result = PasteSmfListDialog(self.root, textSetting.textList["railEditor"]["pasteSmfInfo"], self.decryptFile, num, self.copySmfInfo, self.rootFrameAppearance)
+        result = PasteSmfListDialog(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["pasteSmfInfo"], self.decryptFile, num, self.copySmfInfo, self.rootFrameAppearance)
         if result.reloadFlag:
             self.reloadFunc(selectId)
 
@@ -558,7 +557,7 @@ class SmfListWidget:
         selectId = self.treeviewFrame.tree.selection()[0]
         num = int(selectId)
         originTempList = self.decryptFile.smfList[num][-1]
-        result = EditListElement(self.root, textSetting.textList["railEditor"]["editSmfElementList"], self.decryptFile, originTempList, self.rootFrameAppearance)
+        result = EditListElement(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["editSmfElementList"], self.decryptFile, originTempList, self.rootFrameAppearance)
         if result.reloadFlag:
             if not self.decryptFile.saveSmfListElement(num, result.tempList):
                 self.decryptFile.printError()
@@ -867,7 +866,7 @@ class EditListElement(CustomSimpleDialog):
 
     def modify(self):
         item = self.tempList[self.selectIndexNum]
-        result = EditListElementWidget(self.frame, textSetting.textList["railEditor"]["modifySmfElementListLabel"], self.decryptFile, "modify", item, self.rootFrameAppearance)
+        result = EditListElementWidget(self.winfo_toplevel(), textSetting.textList["railEditor"]["modifySmfElementListLabel"], self.decryptFile, "modify", item, self.rootFrameAppearance)
         if result.dirtyFlag:
             self.dirtyFlag = True
             self.tempList[self.selectIndexNum] = result.resultValueList
@@ -875,7 +874,7 @@ class EditListElement(CustomSimpleDialog):
             self.v_tempList.set(copyTempList)
 
     def insert(self):
-        result = EditListElementWidget(self.frame, textSetting.textList["railEditor"]["insertSmfElementListLabel"], self.decryptFile, "insert", None, self.rootFrameAppearance)
+        result = EditListElementWidget(self.winfo_toplevel(), textSetting.textList["railEditor"]["insertSmfElementListLabel"], self.decryptFile, "insert", None, self.rootFrameAppearance)
         if result.dirtyFlag:
             self.dirtyFlag = True
             self.tempList.insert(self.selectIndexNum + result.insertPos, result.resultValueList)
