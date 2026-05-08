@@ -13,6 +13,8 @@ class AllEdit(CustomSimpleDialog):
         super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
+        self.resizable(False, False)
+
         self.eleLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["orgInfoEditor"]["perfElement"], width=5, font=textSetting.textList["font2"])
         self.eleLb.grid(row=0, column=0, sticky=tkinter.N + tkinter.S, padx=3)
         self.v_ele = tkinter.StringVar()

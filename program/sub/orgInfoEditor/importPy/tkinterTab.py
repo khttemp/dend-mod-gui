@@ -69,15 +69,16 @@ def tab2AllWidget(tabFrame, decryptFile, trainIndex, defaultData, rootFrameAppea
         trainLf = ttkCustomWidget.CustomTtkLabelFrame(tabFrame, text=textSetting.textList["orgInfoEditor"]["trainLfLabel"])
         trainLf.grid(row=0, column=0, padx=10, pady=5, sticky=tkinter.NSEW)
 
+        countFrame = ttkCustomWidget.CustomTtkFrame(trainLf)
+        countFrame.grid(row=0, column=0, pady=5, sticky=tkinter.NSEW)
+
         index = decryptFile.indexList[trainIndex]
         notchNum = decryptFile.byteArr[index]
-        NotchCountWidget(trainIndex, notchNum, decryptFile, reloadWidget)
+        notchCountWidget = NotchCountWidget(countFrame, trainIndex, notchNum, decryptFile, rootFrameAppearance, reloadWidget)
+        notchCountWidget.pack()
 
-        # countModelLf = ttkCustomWidget.CustomTtkLabelFrame(tab_two_frame, text=textSetting.textList["orgInfoEditor"]["trainLfLabel"], height=250)
-        # countModelLf.pack(anchor=tkinter.NW, padx=10, pady=5, fill=tkinter.X)
-        # countModelLf.propagate(False)
-
-        # countWidget = CountWidget(tabFrame, trainIndex, game, countModelLf, decryptFile, rootFrameAppearance, reloadWidget)
+        countWidget = CountWidget(countFrame, trainIndex, decryptFile, rootFrameAppearance, reloadWidget)
+        countWidget.pack()
 
         # edit_hensei_button = ttkCustomWidget.CustomTtkButton(countWidget.countFrame, text=textSetting.textList["orgInfoEditor"]["orgModify"])
         # edit_hensei_button.grid(columnspan=3, row=3, column=0, sticky=tkinter.W + tkinter.E, pady=15)
@@ -85,11 +86,15 @@ def tab2AllWidget(tabFrame, decryptFile, trainIndex, defaultData, rootFrameAppea
         # edit_model_button = ttkCustomWidget.CustomTtkButton(countWidget.countFrame, text=textSetting.textList["orgInfoEditor"]["modelInfoModify"])
         # edit_model_button.grid(columnspan=3, row=4, column=0, sticky=tkinter.W + tkinter.E, pady=5)
 
-        # sep = ttkCustomWidget.CustomTtkSeparator(countModelLf, orient="vertical")
-        # sep.pack(side=tkinter.LEFT, fill=tkinter.Y, padx=8)
+        sep = ttkCustomWidget.CustomTtkSeparator(trainLf, orient="vertical")
+        sep.grid(row=0, column=1, padx=8, sticky=tkinter.NS)
 
-        # countModelScrollFrame = ScrollbarFrame(countModelLf, True, bgColor=rootFrameAppearance.bgColor)
-        # countModelScrollFrame.pack(expand=True, fill=tkinter.BOTH)
+        countModelScrollFrame = ScrollbarFrame(trainLf, True, bgColor=rootFrameAppearance.bgColor)
+        countModelScrollFrame.grid(row=0, column=2, sticky=tkinter.NSEW)
+
+        trainLf.rowconfigure(0, weight=1)
+        trainLf.columnconfigure(0, weight=4, uniform="trainLf")
+        trainLf.columnconfigure(2, weight=11, uniform="trainLf")
 
         # TrainModelWidget(tabFrame, trainIndex, game, countModelScrollFrame.interior, widgetList, innerButtonList, decryptFile, rootFrameAppearance, reloadWidget)
 
@@ -115,8 +120,13 @@ def tab2AllWidget(tabFrame, decryptFile, trainIndex, defaultData, rootFrameAppea
         scrollMainFrame.pack(expand=True, fill=tkinter.BOTH)
         scrollFrame = scrollMainFrame.interior
 
-        # countModelLf = ttkCustomWidget.CustomTtkLabelFrame(scrollFrame, text=textSetting.textList["orgInfoEditor"]["SSTrainLfLabel"])
-        # countModelLf.pack(anchor=tkinter.NW, padx=10, pady=3)
+        countModelLf = ttkCustomWidget.CustomTtkLabelFrame(scrollFrame, text=textSetting.textList["orgInfoEditor"]["SSTrainLfLabel"])
+        countModelLf.pack(anchor=tkinter.NW, padx=10, pady=3)
+
+        speedList = trainOrgInfo[0]
+        notchNum = len(speedList) // decryptFile.notchContentCnt
+        notchCountWidget = NotchCountWidget(countModelLf, trainIndex, notchNum, decryptFile, rootFrameAppearance, reloadWidget)
+        notchCountWidget.pack(anchor=tkinter.NW)
 
         # countWidget = CountWidget(tabFrame, trainIndex, game, countModelLf, decryptFile, rootFrameAppearance, reloadFunc)
 

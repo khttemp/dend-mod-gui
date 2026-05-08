@@ -167,34 +167,36 @@ class EditNotchVarInfo(CustomSimpleDialog):
         self.inputFlag = False
         super().__init__(master, title, rootFrameAppearance.bgColor)
 
-    def body(self, frame):
-        self.defaultLb = ttkCustomWidget.CustomTtkLabel(frame, text=textSetting.textList["orgInfoEditor"]["defaultValueLabel"] + str(self.defaultValue), font=textSetting.textList["font2"])
+    def body(self, master):
+        self.resizable(False, False)
+
+        self.defaultLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["orgInfoEditor"]["defaultValueLabel"] + str(self.defaultValue), font=textSetting.textList["font2"])
         self.defaultLb.pack()
 
-        sep = ttkCustomWidget.CustomTtkSeparator(frame, orient="horizontal")
+        sep = ttkCustomWidget.CustomTtkSeparator(master, orient="horizontal")
         sep.pack(fill=tkinter.X, ipady=5)
 
         self.v_calcMinSpeed = tkinter.DoubleVar()
         self.v_calcMinSpeed.set(0.0)
         if self.calcFlag:
-            calcMinSpeedLb = ttkCustomWidget.CustomTtkLabel(frame, text=textSetting.textList["orgInfoEditor"]["calcMinSpeedLabel"].format(self.notchIndex, self.notchIndex + 1), font=textSetting.textList["font2"])
+            calcMinSpeedLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["orgInfoEditor"]["calcMinSpeedLabel"].format(self.notchIndex, self.notchIndex + 1), font=textSetting.textList["font2"])
             calcMinSpeedLb.pack()
-            calcMinSpeedValue = ttkCustomWidget.CustomTtkLabel(frame, textvariable=self.v_calcMinSpeed, font=textSetting.textList["font2"])
+            calcMinSpeedValue = ttkCustomWidget.CustomTtkLabel(master, textvariable=self.v_calcMinSpeed, font=textSetting.textList["font2"])
             calcMinSpeedValue.pack()
-            sep = ttkCustomWidget.CustomTtkSeparator(frame, orient="horizontal")
+            sep = ttkCustomWidget.CustomTtkSeparator(master, orient="horizontal")
             sep.pack(fill=tkinter.X, ipady=5)
 
-        self.inputLb = ttkCustomWidget.CustomTtkLabel(frame, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
+        self.inputLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
         self.inputLb.pack()
 
         self.v_val = tkinter.StringVar()
         self.v_val.set(self.value)
-        self.inputEt = ttkCustomWidget.CustomTtkEntry(frame, textvariable=self.v_val, font=textSetting.textList["font2"])
+        self.inputEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.v_val, font=textSetting.textList["font2"])
         self.inputEt.pack()
         if self.calcFlag:
             self.inputEt.bind("<KeyRelease>", self.calcMinSpeedHandler)
             self.calcMinSpeed()
-        super().body(frame)
+        super().body(master)
 
     def calcMinSpeedHandler(self, event):
         self.calcMinSpeed()

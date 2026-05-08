@@ -1,211 +1,196 @@
 import tkinter
 from tkinter import messagebox as mb
-import program.textSetting as textSetting
-import program.appearance.ttkCustomWidget as ttkCustomWidget
-from program.appearance.customSimpleDialog import CustomSimpleDialog, CustomAskstring
-
-import program.orgInfoEditor.importPy.gameDefine as gameDefine
-gameDefine.load()
+import program.sub.textSetting as textSetting
+import program.sub.appearance.ttkCustomWidget as ttkCustomWidget
+from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
 
 
-class CountWidget():
-    def __init__(self, root, trainIdx, game, frame, decryptFile, rootFrameAppearance, reloadFunc):
-        self.root = root
-        self.trainIdx = trainIdx
-        self.game = game
-        self.frame = frame
+class CountWidget(tkinter.Frame):
+    def __init__(self, frame, trainIndex, decryptFile, rootFrameAppearance, reloadWidget):
+        super().__init__(frame)
+        self.trainIndex = trainIndex
         self.decryptFile = decryptFile
         self.notchContentCnt = decryptFile.notchContentCnt
         self.rootFrameAppearance = rootFrameAppearance
-        self.reloadFunc = reloadFunc
+        self.reloadWidget = reloadWidget
 
-        if self.game in [gameDefine.LS, gameDefine.BS, gameDefine.CS, gameDefine.RS]:
-            index = self.decryptFile.indexList[self.trainIdx]
-            notchNum = self.decryptFile.byteArr[index]
+        self.modelInfo = self.decryptFile.trainModelList[self.trainIndex]
 
-            modelInfo = self.decryptFile.trainModelList[self.trainIdx]
+        countFrame = ttkCustomWidget.CustomTtkFrame(frame)
+        countFrame.pack()
 
-            self.countFrame = ttkCustomWidget.CustomTtkFrame(self.frame)
-            self.countFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT, padx=15, pady=5)
+        henseiLb = ttkCustomWidget.CustomTtkLabel(countFrame, text=textSetting.textList["orgInfoEditor"]["csvOrgNumTitle"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=8, borderwidth=1, relief="solid")
+        henseiLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
+        henseiTextLb = ttkCustomWidget.CustomTtkLabel(countFrame, text=self.modelInfo["mdlCnt"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
+        henseiTextLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
+        henseiBtn = ttkCustomWidget.CustomTtkButton(countFrame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=self.editHenseiCount)
+        henseiBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
 
-            self.notchLb = ttkCustomWidget.CustomTtkLabel(self.countFrame, text=textSetting.textList["orgInfoEditor"]["notchLabel"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
-            self.notchLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
-            self.varNotch = tkinter.IntVar()
-            self.varNotch.set(notchNum)
-            self.notchTextLb = ttkCustomWidget.CustomTtkLabel(self.countFrame, textvariable=self.varNotch, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
-            self.notchTextLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
-            self.notchBtn = ttkCustomWidget.CustomTtkButton(self.countFrame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=lambda: self.editNotchVar())
-            self.notchBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
+        colorLb = ttkCustomWidget.CustomTtkLabel(countFrame, text=textSetting.textList["orgInfoEditor"]["colorCnt"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=8, borderwidth=1, relief="solid")
+        colorLb.grid(row=1, column=0, sticky=tkinter.W + tkinter.E)
+        colorTextLb = ttkCustomWidget.CustomTtkLabel(countFrame, text=self.modelInfo["colorCnt"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
+        colorTextLb.grid(row=1, column=1, sticky=tkinter.W + tkinter.E)
+        if decryptFile.game in ["CS", "RS"]:
+            colorBtn = ttkCustomWidget.CustomTtkButton(countFrame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=self.editColorCount)
+            colorBtn.grid(row=1, column=2, sticky=tkinter.W + tkinter.E)
 
-            self.henseiLb = ttkCustomWidget.CustomTtkLabel(self.countFrame, text=textSetting.textList["orgInfoEditor"]["csvOrgNumTitle"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
-            self.henseiLb.grid(row=1, column=0, sticky=tkinter.W + tkinter.E)
-            self.varHensei = tkinter.IntVar()
-            self.varHensei.set(modelInfo["mdlCnt"])
-            self.henseiTextLb = ttkCustomWidget.CustomTtkLabel(self.countFrame, textvariable=self.varHensei, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
-            self.henseiTextLb.grid(row=1, column=1, sticky=tkinter.W + tkinter.E)
-            self.henseiBtn = ttkCustomWidget.CustomTtkButton(self.countFrame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=lambda: self.editHenseiVar(self.varHensei.get()))
-            self.henseiBtn.grid(row=1, column=2, sticky=tkinter.W + tkinter.E)
+        if decryptFile.game in ["LS", "BS"]:
+            daishaCountText = textSetting.textList["orgInfoEditor"]["trackCnt"]
+            daishaCountText = daishaCountText[:5] + "\n" + daishaCountText[5:]
+            daishaLb = ttkCustomWidget.CustomTtkLabel(countFrame, text=daishaCountText, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=8, borderwidth=1, relief="solid")
+            daishaLb.grid(row=2, column=0, sticky=tkinter.W + tkinter.E)
+            daishaTextLb = ttkCustomWidget.CustomTtkLabel(countFrame, text=self.modelInfo["daishaCnt"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
+            daishaTextLb.grid(row=2, column=1, sticky=tkinter.NSEW)
+            daishaBtn = ttkCustomWidget.CustomTtkButton(countFrame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=self.editDaishaCount)
+            daishaBtn.grid(row=2, column=2, sticky=tkinter.NSEW)
 
-            self.colorLb = ttkCustomWidget.CustomTtkLabel(self.countFrame, text=textSetting.textList["orgInfoEditor"]["colorCnt"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
-            self.colorLb.grid(row=2, column=0, sticky=tkinter.W + tkinter.E)
-            self.varColor = tkinter.IntVar()
-            self.varColor.set(modelInfo["colorCnt"])
-            self.colorTextLb = ttkCustomWidget.CustomTtkLabel(self.countFrame, textvariable=self.varColor, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
-            self.colorTextLb.grid(row=2, column=1, sticky=tkinter.W + tkinter.E)
-            self.colorBtn = ttkCustomWidget.CustomTtkButton(self.countFrame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=lambda: self.editVar(self.varColor.get()))
-            self.colorBtn.grid(row=2, column=2, sticky=tkinter.W + tkinter.E)
-        else:
-            trainOrgInfo = self.decryptFile.trainInfoList[self.trainIdx]
-            speedList = trainOrgInfo[0]
-            notchNum = len(speedList) // self.notchContentCnt
-
-            self.notchLb = ttkCustomWidget.CustomTtkLabel(self.frame, text=textSetting.textList["orgInfoEditor"]["notchLabel"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
-            self.notchLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
-            self.varNotch = tkinter.IntVar()
-            self.varNotch.set(notchNum)
-            self.notchTextLb = ttkCustomWidget.CustomTtkLabel(self.frame, textvariable=self.varNotch, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
-            self.notchTextLb.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
-            self.notchBtn = ttkCustomWidget.CustomTtkButton(self.frame, text=textSetting.textList["orgInfoEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=lambda: self.editNotchVar())
-            self.notchBtn.grid(row=0, column=2, sticky=tkinter.W + tkinter.E)
-
-    def editNotchVar(self):
-        result = EditNotchInfo(self.root, textSetting.textList["orgInfoEditor"]["editNotchLabel"], self.trainIdx, self.game, self.decryptFile, self.notchContentCnt, self.rootFrameAppearance)
+    def editHenseiCount(self):
+        result = EditHenseiCountDialog(self, textSetting.textList["orgInfoEditor"]["valueModify"], self.trainIndex, self.modelInfo["mdlCnt"], self.decryptFile, self.rootFrameAppearance)
         if result.reloadFlag:
-            self.reloadFunc()
+            self.reloadWidget()
 
-    def editHenseiVar(self, value):
-        resultObj = CustomAskstring(self.root, title=textSetting.textList["orgInfoEditor"]["valueModify"], prompt=textSetting.textList["infoList"]["I44"], initialvalue=value, bgColor=self.rootFrameAppearance.bgColor)
-        resultValue = resultObj.result
+    def editColorCount(self):
+        result = EditColorCountDialog(self, textSetting.textList["orgInfoEditor"]["valueModify"], self.trainIndex, self.modelInfo["colorCnt"], self.decryptFile, self.rootFrameAppearance)
+        if result.reloadFlag:
+            self.reloadWidget()
 
-        if resultValue:
-            try:
-                try:
-                    resultValue = int(resultValue)
-                except Exception:
-                    errorMsg = textSetting.textList["errorList"]["E60"]
-                    mb.showerror(title=textSetting.textList["numberError"], message=errorMsg)
-                    return
-
-                if resultValue <= 0:
-                    errorMsg = textSetting.textList["errorList"]["E61"].format(1)
-                    mb.showerror(title=textSetting.textList["numberError"], message=errorMsg)
-                    return
-
-                if resultValue < value:
-                    msg = textSetting.textList["infoList"]["I20"] + textSetting.textList["infoList"]["I21"]
-                    result = mb.askokcancel(title=textSetting.textList["warning"], message=msg, icon="warning")
-                    if not result:
-                        return
-
-                if not self.decryptFile.saveHenseiNum(self.trainIdx, resultValue):
-                    self.decryptFile.printError()
-                    errorMsg = textSetting.textList["errorList"]["E4"]
-                    mb.showerror(title=textSetting.textList["saveError"], message=errorMsg)
-                    return False
-
-                mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I55"])
-                self.reloadFunc()
-            except Exception:
-                errorMsg = textSetting.textList["errorList"]["E14"]
-                mb.showerror(title=textSetting.textList["error"], message=errorMsg)
-
-    def editVar(self, value):
-        if self.game in [gameDefine.LS, gameDefine.BS]:
-            if self.game == gameDefine.LS:
-                errorMsg = textSetting.textList["errorList"]["E65"]
-            else:
-                errorMsg = textSetting.textList["errorList"]["E66"]
-            mb.showerror(title=textSetting.textList["error"], message=errorMsg)
-            return
-        resultObj = CustomAskstring(self.root, title=textSetting.textList["orgInfoEditor"]["valueModify"], prompt=textSetting.textList["infoList"]["I44"], initialvalue=value, bgColor=self.rootFrameAppearance.bgColor)
-        result = resultObj.result
-
-        if result:
-            try:
-                try:
-                    result = int(result)
-                except Exception:
-                    errorMsg = textSetting.textList["errorList"]["E60"]
-                    mb.showerror(title=textSetting.textList["numberError"], message=errorMsg)
-                    return
-
-                if result < 0:
-                    errorMsg = textSetting.textList["errorList"]["E61"].format(0)
-                    mb.showerror(title=textSetting.textList["numberError"], message=errorMsg)
-                    return
-
-                if not self.decryptFile.saveColor(self.trainIdx, result):
-                    self.decryptFile.printError()
-                    errorMsg = textSetting.textList["errorList"]["E4"]
-                    mb.showerror(title=textSetting.textList["saveError"], message=errorMsg)
-                    return False
-
-                mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I56"])
-                self.reloadFunc()
-
-            except Exception:
-                errorMsg = textSetting.textList["errorList"]["E14"]
-                mb.showerror(title=textSetting.textList["error"], message=errorMsg)
+    def editDaishaCount(self):
+        result = EditDaishaCountDialog(self, textSetting.textList["orgInfoEditor"]["valueModify"], self.trainIndex, self.modelInfo["daishaCnt"], self.decryptFile, self.rootFrameAppearance)
+        if result.reloadFlag:
+            self.reloadWidget()
 
 
-class EditNotchInfo(CustomSimpleDialog):
-    def __init__(self, master, title, trainIdx, game, decryptFile, notchContentCnt, rootFrameAppearance):
-        self.trainIdx = trainIdx
-        self.game = game
+class EditHenseiCountDialog(CustomSimpleDialog):
+    def __init__(self, master, title, trainIndex, henseiCount, decryptFile, rootFrameAppearance):
+        self.trainIndex = trainIndex
+        self.henseiCount = henseiCount
         self.decryptFile = decryptFile
-        self.notchContentCnt = notchContentCnt
         self.reloadFlag = False
         super().__init__(master, title, rootFrameAppearance.bgColor)
 
-    def body(self, frame):
-        if self.game in [gameDefine.LS, gameDefine.BS, gameDefine.CS, gameDefine.RS]:
-            index = self.decryptFile.indexList[self.trainIdx]
-            notchNum = self.decryptFile.byteArr[index]
-        else:
-            trainOrgInfo = self.decryptFile.trainInfoList[self.trainIdx]
-            speedList = trainOrgInfo[0]
-            notchNum = len(speedList) // self.notchContentCnt
+    def body(self, master):
+        self.resizable(False, False)
 
-        if notchNum == 4:
-            notchIdx = 0
-        elif notchNum == 5:
-            notchIdx = 1
-        elif notchNum == 12:
-            notchIdx = 2
-
-        self.notchLb = ttkCustomWidget.CustomTtkLabel(frame, text=textSetting.textList["infoList"]["I57"], font=textSetting.textList["font2"], anchor=tkinter.CENTER)
-        self.notchLb.grid(row=0, column=0)
-        notchList = textSetting.textList["orgInfoEditor"]["editNotchList"]
-        self.notchCb = ttkCustomWidget.CustomTtkCombobox(frame, width=12, value=notchList, state="readonly", font=textSetting.textList["font2"])
-        self.notchCb.current(notchIdx)
-        self.notchCb.grid(row=1, column=0)
-        super().body(frame)
+        valLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
+        valLb.pack()
+        self.varHenseiCount = tkinter.IntVar()
+        self.varHenseiCount.set(self.henseiCount)
+        valEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varHenseiCount, font=textSetting.textList["font2"], width=16)
+        valEt.pack()
+        super().body(master)
 
     def validate(self):
-        if self.game in [gameDefine.LS, gameDefine.BS]:
-            if self.notchCb.current() == 2:
-                mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E23"].format(12))
-                return False
-        warnMsg = textSetting.textList["infoList"]["I58"]
-        result = mb.askokcancel(title=textSetting.textList["confirm"], message=warnMsg, icon="warning", parent=self)
-        if result:
-            newNotchNum = -1
-            notchIdx = self.notchCb.current()
-            if notchIdx == 0:
-                newNotchNum = 4
-            elif notchIdx == 1:
-                newNotchNum = 5
-            elif notchIdx == 2:
-                newNotchNum = 12
+        try:
+            try:
+                resultValue = int(self.varHenseiCount.get())
+            except Exception:
+                mb.showerror(title=textSetting.textList["numberError"], message=textSetting.textList["errorList"]["E60"])
+                return
 
-            if not self.decryptFile.saveNotchInfo(self.trainIdx, newNotchNum):
+            if resultValue <= 0:
+                errorMsg = textSetting.textList["errorList"]["E61"].format(1)
+                mb.showerror(title=textSetting.textList["numberError"], message=errorMsg)
+                return
+
+            if resultValue < self.henseiCount:
+                msg = textSetting.textList["infoList"]["I20"] + textSetting.textList["infoList"]["I21"]
+                result = mb.askokcancel(title=textSetting.textList["warning"], message=msg, icon="warning")
+                if not result:
+                    return
+
+            if not self.decryptFile.saveHenseiNum(self.trainIndex, resultValue):
                 self.decryptFile.printError()
-                errorMsg = textSetting.textList["errorList"]["E4"]
-                mb.showerror(title=textSetting.textList["saveError"], message=errorMsg)
+                mb.showerror(title=textSetting.textList["saveError"], message=textSetting.textList["errorList"]["E4"])
                 return False
-            else:
-                return True
+            return True
+        except Exception:
+            mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
 
     def apply(self):
-        mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I59"])
+        mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I55"])
+        self.reloadFlag = True
+
+
+class EditColorCountDialog(CustomSimpleDialog):
+    def __init__(self, master, title, trainIndex, colorCount, decryptFile, rootFrameAppearance):
+        self.trainIndex = trainIndex
+        self.colorCount = colorCount
+        self.decryptFile = decryptFile
+        self.reloadFlag = False
+        super().__init__(master, title, rootFrameAppearance.bgColor)
+
+    def body(self, master):
+        self.resizable(False, False)
+
+        valLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
+        valLb.pack()
+        self.varColorCount = tkinter.IntVar()
+        self.varColorCount.set(self.colorCount)
+        valEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varColorCount, font=textSetting.textList["font2"], width=16)
+        valEt.pack()
+        super().body(master)
+
+    def validate(self):
+        try:
+            try:
+                resultValue = int(self.varColorCount.get())
+            except Exception:
+                mb.showerror(title=textSetting.textList["numberError"], message=textSetting.textList["errorList"]["E60"])
+                return
+
+            if resultValue < 0:
+                errorMsg = textSetting.textList["errorList"]["E61"].format(0)
+                mb.showerror(title=textSetting.textList["numberError"], message=errorMsg)
+                return
+
+            if not self.decryptFile.saveColor(self.trainIndex, resultValue):
+                self.decryptFile.printError()
+                mb.showerror(title=textSetting.textList["saveError"], message=textSetting.textList["errorList"]["E4"])
+                return False
+            return True
+        except Exception:
+            mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
+
+    def apply(self):
+        mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I56"])
+        self.reloadFlag = True
+
+
+class EditDaishaCountDialog(CustomSimpleDialog):
+    def __init__(self, master, title, trainIndex, daishaCount, decryptFile, rootFrameAppearance):
+        self.trainIndex = trainIndex
+        self.daishaCount = daishaCount
+        self.decryptFile = decryptFile
+        self.reloadFlag = False
+        super().__init__(master, title, rootFrameAppearance.bgColor)
+
+    def body(self, master):
+        self.resizable(False, False)
+
+        valLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
+        valLb.pack()
+        self.varDaishaCount = tkinter.IntVar()
+        self.varDaishaCount.set(self.daishaCount)
+        valEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varDaishaCount, font=textSetting.textList["font2"], width=16)
+        valEt.pack()
+        super().body(master)
+
+    def validate(self):
+        try:
+            try:
+                resultValue = int(self.varDaishaCount.get())
+            except Exception:
+                mb.showerror(title=textSetting.textList["numberError"], message=textSetting.textList["errorList"]["E60"])
+                return
+
+            if not self.decryptFile.saveDaishaCnt(self.trainIndex, resultValue):
+                self.decryptFile.printError()
+                mb.showerror(title=textSetting.textList["saveError"], message=textSetting.textList["errorList"]["E4"])
+                return False
+            return True
+        except Exception:
+            mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
+
+    def apply(self):
+        mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I61"])
         self.reloadFlag = True

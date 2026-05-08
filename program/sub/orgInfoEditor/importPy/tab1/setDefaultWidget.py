@@ -14,6 +14,8 @@ class SetDefaultEdit(CustomSimpleDialog):
         super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
+        self.resizable(False, False)
+
         self.copySrcCb = ttkCustomWidget.CustomTtkCombobox(master, width=12, font=textSetting.textList["font2"], value=self.decryptFile.trainNameList, state="readonly")
         self.copySrcCb.grid(row=0, column=0, sticky=tkinter.N + tkinter.S, padx=3)
         if self.decryptFile.game in ["SS"]:
