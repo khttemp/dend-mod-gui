@@ -9,17 +9,16 @@ from program.sub.orgInfoEditor.importPy.tab1.editAllTrainInfoWidget import AllEd
 import program.sub.orgInfoEditor.importPy.tab1.trainInfoProcess as trainInfoProcess
 
 
-class EditOrgButtonWidget(tkinter.Frame):
+class EditOrgButtonWidget(ttkCustomWidget.CustomTtkFrame):
     def __init__(self, master, decryptFile, defaultData, rootFrameAppearance, reloadWidget):
         super().__init__(master)
-        self.root = master
         self.decryptFile = decryptFile
         self.defaultData = defaultData
         self.rootFrameAppearance = rootFrameAppearance
         self.reloadWidget = reloadWidget
         self.oldGameList = ["RS", "CS", "BS", "LS"]
 
-        btnFrame = ttkCustomWidget.CustomTtkFrame(master)
+        btnFrame = ttkCustomWidget.CustomTtkFrame(self)
         btnFrame.pack(fill=tkinter.X, anchor=tkinter.NW, padx=10, pady=5)
 
         self.set_default_train_info_button = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["orgInfoEditor"]["setDefaultBtnLabel"], command=self.setDefault)
@@ -55,14 +54,16 @@ class EditOrgButtonWidget(tkinter.Frame):
         btnFrame.grid_columnconfigure(4, weight=1, uniform="button")
 
     def setDefault(self):
-        orgInfoEditorWindow = self.root.master.winfo_children()[2]
+        root = self.winfo_toplevel()
+        orgInfoEditorWindow = root.winfo_children()[2]
         trainIndex = orgInfoEditorWindow.trainCb.current()
-        result = SetDefaultEdit(self.root, textSetting.textList["orgInfoEditor"]["setDefaultBtnLabel"], trainIndex, self.decryptFile, self.defaultData, self.rootFrameAppearance)
+        result = SetDefaultEdit(self.winfo_toplevel(), textSetting.textList["orgInfoEditor"]["setDefaultBtnLabel"], trainIndex, self.decryptFile, self.defaultData, self.rootFrameAppearance)
         if result.reloadFlag:
             self.reloadWidget()
 
     def extractCsvTrainInfo(self):
-        orgInfoEditorWindow = self.root.master.winfo_children()[2]
+        root = self.winfo_toplevel()
+        orgInfoEditorWindow = root.winfo_children()[2]
         trainIndex = orgInfoEditorWindow.trainCb.current()
 
         filename = self.decryptFile.trainNameList[trainIndex]
@@ -84,7 +85,8 @@ class EditOrgButtonWidget(tkinter.Frame):
                 mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I48"])
 
     def saveCsvTrainInfo(self):
-        orgInfoEditorWindow = self.root.master.winfo_children()[2]
+        root = self.winfo_toplevel()
+        orgInfoEditorWindow = root.winfo_children()[2]
         trainIndex = orgInfoEditorWindow.trainCb.current()
 
         if self.decryptFile.game in self.oldGameList:
@@ -127,7 +129,8 @@ class EditOrgButtonWidget(tkinter.Frame):
             self.reloadWidget()
 
     def editTrain(self):
-        orgInfoEditorWindow = self.root.master.winfo_children()[2]
+        root = self.winfo_toplevel()
+        orgInfoEditorWindow = root.winfo_children()[2]
         orgInfoEditorWindow.gameCb["state"] = "disabled"
         orgInfoEditorWindow.trainCb["state"] = "disabled"
         orgInfoEditorWindow.menuCb["state"] = "disabled"
@@ -141,8 +144,8 @@ class EditOrgButtonWidget(tkinter.Frame):
         self.edit_button.grid_remove()
         self.save_button.grid(row=0, column=3, padx=5, sticky=tkinter.NSEW)
 
-        tabFrame = self.root.master.winfo_children()[4]
-        notchPerfFrame = tabFrame.winfo_children()[2]
+        tabFrame = root.winfo_children()[4]
+        notchPerfFrame = tabFrame.winfo_children()[1]
 
         speedLf = notchPerfFrame.winfo_children()[0]
         scrollbarframe = speedLf.winfo_children()[0]
@@ -161,22 +164,23 @@ class EditOrgButtonWidget(tkinter.Frame):
         canvas = scrollbarframe.winfo_children()[1]
         interior = canvas.winfo_children()[0]
 
-        for perfWidget in interior.winfo_children():
-            perfWidget.perfBtn["state"] = "normal"
+        for idx, perfWidget in enumerate(interior.winfo_children()):
+            if idx >= len(self.decryptFile.trainPerfNameList):
+                perfWidget.hurikoBtn["state"] = "normal"
+            else:
+                perfWidget.perfBtn["state"] = "normal"
 
     def saveTrain(self):
         valueList = []
-        orgInfoEditorWindow = self.root.master.winfo_children()[2]
+        root = self.winfo_toplevel()
+        orgInfoEditorWindow = root.winfo_children()[2]
         orgInfoEditorWindow.gameCb["state"] = "readonly"
         orgInfoEditorWindow.trainCb["state"] = "readonly"
         orgInfoEditorWindow.menuCb["state"] = "readonly"
         orgInfoEditorWindow.edit_stage_train_button["state"] = "normal"
 
-        self.edit_button.grid(row=0, column=3, padx=5, sticky=tkinter.NSEW)
-        self.save_button.grid_remove()
-
-        tabFrame = self.root.master.winfo_children()[4]
-        notchPerfFrame = tabFrame.winfo_children()[2]
+        tabFrame = root.winfo_children()[4]
+        notchPerfFrame = tabFrame.winfo_children()[1]
 
         speedLf = notchPerfFrame.winfo_children()[0]
         scrollbarframe = speedLf.winfo_children()[0]
@@ -215,6 +219,6 @@ class EditOrgButtonWidget(tkinter.Frame):
         self.reloadWidget()
 
     def editAllTrain(self):
-        result = AllEdit(self.root, textSetting.textList["orgInfoEditor"]["allSaveLabel"], self.decryptFile, self.rootFrameAppearance)
+        result = AllEdit(self.winfo_toplevel(), textSetting.textList["orgInfoEditor"]["allSaveLabel"], self.decryptFile, self.rootFrameAppearance)
         if result.reloadFlag:
             self.reloadWidget()

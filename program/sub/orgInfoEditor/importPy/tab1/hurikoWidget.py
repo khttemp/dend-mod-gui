@@ -8,9 +8,8 @@ from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
 
 
 class HurikoWidget(tkinter.Frame):
-    def __init__(self, root, frame, decryptFile, hurikoName, hurikoValue, defaultValue, rootFrameAppearance):
+    def __init__(self, frame, decryptFile, hurikoName, hurikoValue, defaultValue, rootFrameAppearance):
         super().__init__(frame)
-        self.root = root
         self.decryptFile = decryptFile
         self.rootFrameAppearance = rootFrameAppearance
 
@@ -41,7 +40,7 @@ class HurikoWidget(tkinter.Frame):
         label.setFgColor(color)
 
     def editVar(self, defaultValue):
-        result = EditHurikoVarInfo(self.root, textSetting.textList["orgInfoEditor"]["valueModify"], self.hurikoValue, defaultValue, self.rootFrameAppearance)
+        result = EditHurikoVarInfo(self.winfo_toplevel(), textSetting.textList["orgInfoEditor"]["valueModify"], self.hurikoValue, defaultValue, self.rootFrameAppearance)
         if result.inputFlag:
             self.hurikoValue = result.resultValue
             self.varHuriko.set(self.hurikoValue)

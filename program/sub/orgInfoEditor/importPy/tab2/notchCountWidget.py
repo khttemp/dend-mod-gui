@@ -29,7 +29,7 @@ class NotchCountWidget(tkinter.Frame):
             mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E23"].format(self.notchNum))
             return
 
-        result = EditNotchCountDialog(self, textSetting.textList["orgInfoEditor"]["editNotchLabel"], self.trainIndex, self.notchNum, self.decryptFile, self.rootFrameAppearance)
+        result = EditNotchCountDialog(self.winfo_toplevel(), textSetting.textList["orgInfoEditor"]["editNotchLabel"], self.trainIndex, self.notchNum, self.decryptFile, self.rootFrameAppearance)
         if result.reloadFlag:
             self.reloadWidget()
 

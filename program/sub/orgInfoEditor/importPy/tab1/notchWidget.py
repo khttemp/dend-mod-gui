@@ -8,9 +8,8 @@ from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
 
 
 class NotchWidget(tkinter.Frame):
-    def __init__(self, root, frame, notchIndex, decryptFile, notchCnt, speed, defaultData, rootFrameAppearance):
+    def __init__(self, frame, notchIndex, decryptFile, notchCnt, speed, defaultData, rootFrameAppearance):
         super().__init__(frame)
-        self.root = root
         self.notchIndex = notchIndex
         self.decryptFile = decryptFile
         self.rootFrameAppearance = rootFrameAppearance
@@ -107,15 +106,16 @@ class NotchWidget(tkinter.Frame):
         label.setFgColor(color)
 
     def editSpeedVar(self, defaultValue):
-        result = EditNotchVarInfo(self.root, textSetting.textList["orgInfoEditor"]["valueModify"], self.speedValue, defaultValue, self.rootFrameAppearance)
+        result = EditNotchVarInfo(self.winfo_toplevel(), textSetting.textList["orgInfoEditor"]["valueModify"], self.speedValue, defaultValue, self.rootFrameAppearance)
         if result.inputFlag:
             self.speedValue = result.resultValue
             self.varSpeed.set(self.speedValue)
             self.setLabelColor(self.speedNameLb, self.speedLb, self.speedValue, defaultValue)
 
     def editTlkVar(self, defaultValue):
-        tabFrame = self.root.master.winfo_children()[4]
-        notchPerfFrame = tabFrame.winfo_children()[2]
+        root = self.winfo_toplevel()
+        tabFrame = root.winfo_children()[4]
+        notchPerfFrame = tabFrame.winfo_children()[1]
         perfLf = notchPerfFrame.winfo_children()[1]
         scrollbarframe = perfLf.winfo_children()[0]
         canvas = scrollbarframe.winfo_children()[1]
@@ -132,21 +132,21 @@ class NotchWidget(tkinter.Frame):
         weightWidgetLabel = weightWidgetFrame.winfo_children()[1]
         weightValue = weightWidgetLabel.getvar(weightWidgetLabel.cget("textvariable"))
 
-        result = EditNotchVarInfo(self.root, textSetting.textList["orgInfoEditor"]["valueModify"], self.tlkValue, defaultValue, self.rootFrameAppearance, calcFlag=True, notchIndex=self.notchIndex, noneTlkValue=noneTlkValue, weightValue=weightValue)
+        result = EditNotchVarInfo(self.winfo_toplevel(), textSetting.textList["orgInfoEditor"]["valueModify"], self.tlkValue, defaultValue, self.rootFrameAppearance, calcFlag=True, notchIndex=self.notchIndex, noneTlkValue=noneTlkValue, weightValue=weightValue)
         if result.inputFlag:
             self.tlkValue = result.resultValue
             self.varTlk.set(self.tlkValue)
             self.setLabelColor(self.tlkNameLb, self.tlkLb, self.tlkValue, defaultValue)
 
     def editSoundVar(self, defaultValue):
-        result = EditNotchVarInfo(self.root, textSetting.textList["orgInfoEditor"]["valueModify"], self.soundValue, defaultValue, self.rootFrameAppearance, isSound=True)
+        result = EditNotchVarInfo(self.winfo_toplevel(), textSetting.textList["orgInfoEditor"]["valueModify"], self.soundValue, defaultValue, self.rootFrameAppearance, isSound=True)
         if result.inputFlag:
             self.soundValue = result.resultValue
             self.varSound.set(self.soundValue)
             self.setLabelColor(self.soundNameLb, self.soundLb, self.soundValue, defaultValue)
 
     def editAddVar(self, defaultValue):
-        result = EditNotchVarInfo(self.root, textSetting.textList["orgInfoEditor"]["valueModify"], self.addValue, defaultValue, self.rootFrameAppearance)
+        result = EditNotchVarInfo(self.winfo_toplevel(), textSetting.textList["orgInfoEditor"]["valueModify"], self.addValue, defaultValue, self.rootFrameAppearance)
         if result.inputFlag:
             self.addValue = result.resultValue
             self.varAdd.set(self.addValue)

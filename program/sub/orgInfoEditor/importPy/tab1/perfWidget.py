@@ -8,9 +8,8 @@ from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
 
 
 class PerfWidget(tkinter.Frame):
-    def __init__(self, root, frame, decryptFile, perfName, perfValue, defaultValue, rootFrameAppearance):
+    def __init__(self, frame, decryptFile, perfName, perfValue, defaultValue, rootFrameAppearance):
         super().__init__(frame)
-        self.root = root
         self.decryptFile = decryptFile
         self.rootFrameAppearance = rootFrameAppearance
 
@@ -41,7 +40,7 @@ class PerfWidget(tkinter.Frame):
         label.setFgColor(color)
 
     def editVar(self, defaultValue):
-        result = EditPerfVarInfo(self.root, textSetting.textList["orgInfoEditor"]["valueModify"], self.perfValue, defaultValue, self.rootFrameAppearance)
+        result = EditPerfVarInfo(self.winfo_toplevel(), textSetting.textList["orgInfoEditor"]["valueModify"], self.perfValue, defaultValue, self.rootFrameAppearance)
         if result.inputFlag:
             self.perfValue = result.resultValue
             self.varPerf.set(self.perfValue)

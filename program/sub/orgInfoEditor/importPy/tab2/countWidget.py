@@ -16,7 +16,7 @@ class CountWidget(tkinter.Frame):
 
         self.modelInfo = self.decryptFile.trainModelList[self.trainIndex]
 
-        countFrame = ttkCustomWidget.CustomTtkFrame(frame)
+        countFrame = ttkCustomWidget.CustomTtkFrame(self)
         countFrame.pack()
 
         henseiLb = ttkCustomWidget.CustomTtkLabel(countFrame, text=textSetting.textList["orgInfoEditor"]["csvOrgNumTitle"], font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=8, borderwidth=1, relief="solid")
@@ -45,17 +45,17 @@ class CountWidget(tkinter.Frame):
             daishaBtn.grid(row=2, column=2, sticky=tkinter.NSEW)
 
     def editHenseiCount(self):
-        result = EditHenseiCountDialog(self, textSetting.textList["orgInfoEditor"]["valueModify"], self.trainIndex, self.modelInfo["mdlCnt"], self.decryptFile, self.rootFrameAppearance)
+        result = EditHenseiCountDialog(self.winfo_toplevel(), textSetting.textList["orgInfoEditor"]["valueModify"], self.trainIndex, self.modelInfo["mdlCnt"], self.decryptFile, self.rootFrameAppearance)
         if result.reloadFlag:
             self.reloadWidget()
 
     def editColorCount(self):
-        result = EditColorCountDialog(self, textSetting.textList["orgInfoEditor"]["valueModify"], self.trainIndex, self.modelInfo["colorCnt"], self.decryptFile, self.rootFrameAppearance)
+        result = EditColorCountDialog(self.winfo_toplevel(), textSetting.textList["orgInfoEditor"]["valueModify"], self.trainIndex, self.modelInfo["colorCnt"], self.decryptFile, self.rootFrameAppearance)
         if result.reloadFlag:
             self.reloadWidget()
 
     def editDaishaCount(self):
-        result = EditDaishaCountDialog(self, textSetting.textList["orgInfoEditor"]["valueModify"], self.trainIndex, self.modelInfo["daishaCnt"], self.decryptFile, self.rootFrameAppearance)
+        result = EditDaishaCountDialog(self.winfo_toplevel(), textSetting.textList["orgInfoEditor"]["valueModify"], self.trainIndex, self.modelInfo["daishaCnt"], self.decryptFile, self.rootFrameAppearance)
         if result.reloadFlag:
             self.reloadWidget()
 

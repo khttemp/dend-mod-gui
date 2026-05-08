@@ -11,7 +11,8 @@ from program.sub.orgInfoEditor.importPy.tab1.hurikoWidget import HurikoWidget
 
 from program.sub.orgInfoEditor.importPy.tab2.notchCountWidget import NotchCountWidget
 from program.sub.orgInfoEditor.importPy.tab2.countWidget import CountWidget
-from program.sub.orgInfoEditor.importPy.tab2.modelWidget import TrainModelWidget
+from program.sub.orgInfoEditor.importPy.tab2.trainModelWidget import TrainModelWidget
+from program.sub.orgInfoEditor.importPy.tab2.editModelWidget import EditModelWidget
 from program.sub.orgInfoEditor.importPy.tab2.fixedListWidget import FixedListWidget
 from program.sub.orgInfoEditor.importPy.tab2.fixedList2Widget import FixedList2Widget
 from program.sub.orgInfoEditor.importPy.tab2.elsePerfWidget import ElsePerfWidget
@@ -26,7 +27,8 @@ def tab1AllWidget(tabFrame, decryptFile, trainIndex, defaultData, rootFrameAppea
         return
     selectDefaultData = defaultData[trainIndex]
 
-    EditOrgButtonWidget(tabFrame, decryptFile, defaultData, rootFrameAppearance, reloadWidget)
+    editOrgButtonWidget = EditOrgButtonWidget(tabFrame, decryptFile, defaultData, rootFrameAppearance, reloadWidget)
+    editOrgButtonWidget.pack(fill=tkinter.X)
 
     notchPerfFrame = ttkCustomWidget.CustomTtkFrame(tabFrame)
     notchPerfFrame.pack(anchor=tkinter.NW, padx=10, pady=5, expand=True, fill=tkinter.BOTH)
@@ -39,7 +41,7 @@ def tab1AllWidget(tabFrame, decryptFile, trainIndex, defaultData, rootFrameAppea
     speed = trainInfo[0]
     notchCnt = len(speed) // decryptFile.notchContentCnt
     for notchIndex in range(notchCnt):
-        notchWidget = NotchWidget(tabFrame, speedScrollFrame.interior, notchIndex, decryptFile, notchCnt, speed, selectDefaultData, rootFrameAppearance)
+        notchWidget = NotchWidget(speedScrollFrame.interior, notchIndex, decryptFile, notchCnt, speed, selectDefaultData, rootFrameAppearance)
         notchWidget.pack(expand=True, fill=tkinter.BOTH)
 
     perfLf = ttkCustomWidget.CustomTtkLabelFrame(notchPerfFrame, text=textSetting.textList["orgInfoEditor"]["perfLfLabel"])
@@ -50,13 +52,13 @@ def tab1AllWidget(tabFrame, decryptFile, trainIndex, defaultData, rootFrameAppea
     perf = trainInfo[1]
     perfCnt = len(perf)
     for i in range(perfCnt):
-        perfWidget = PerfWidget(tabFrame, perfScrollFrame.interior, decryptFile, decryptFile.trainPerfNameList[i], perf[i], selectDefaultData["att"][i], rootFrameAppearance)
+        perfWidget = PerfWidget(perfScrollFrame.interior, decryptFile, decryptFile.trainPerfNameList[i], perf[i], selectDefaultData["att"][i], rootFrameAppearance)
         perfWidget.pack(expand=True, fill=tkinter.BOTH)
 
     if decryptFile.game in ["CS", "RS"]:
         huriko = trainInfo[2]
         for i in range(len(huriko)):
-            hurikoWidget = HurikoWidget(tabFrame, perfScrollFrame.interior, decryptFile, decryptFile.trainHurikoNameList[i], huriko[i], selectDefaultData["huriko"][i], rootFrameAppearance)
+            hurikoWidget = HurikoWidget(perfScrollFrame.interior, decryptFile, decryptFile.trainHurikoNameList[i], huriko[i], selectDefaultData["huriko"][i], rootFrameAppearance)
             hurikoWidget.pack(expand=True, fill=tkinter.BOTH)
 
     notchPerfFrame.grid_columnconfigure(0, weight=2, uniform="trainOrgData")
@@ -80,11 +82,8 @@ def tab2AllWidget(tabFrame, decryptFile, trainIndex, defaultData, rootFrameAppea
         countWidget = CountWidget(countFrame, trainIndex, decryptFile, rootFrameAppearance, reloadWidget)
         countWidget.pack()
 
-        # edit_hensei_button = ttkCustomWidget.CustomTtkButton(countWidget.countFrame, text=textSetting.textList["orgInfoEditor"]["orgModify"])
-        # edit_hensei_button.grid(columnspan=3, row=3, column=0, sticky=tkinter.W + tkinter.E, pady=15)
-
-        # edit_model_button = ttkCustomWidget.CustomTtkButton(countWidget.countFrame, text=textSetting.textList["orgInfoEditor"]["modelInfoModify"])
-        # edit_model_button.grid(columnspan=3, row=4, column=0, sticky=tkinter.W + tkinter.E, pady=5)
+        buttonFrame = ttkCustomWidget.CustomTtkFrame(countFrame)
+        buttonFrame.pack(expand=True, fill=tkinter.BOTH)
 
         sep = ttkCustomWidget.CustomTtkSeparator(trainLf, orient="vertical")
         sep.grid(row=0, column=1, padx=8, sticky=tkinter.NS)
@@ -92,11 +91,15 @@ def tab2AllWidget(tabFrame, decryptFile, trainIndex, defaultData, rootFrameAppea
         countModelScrollFrame = ScrollbarFrame(trainLf, True, bgColor=rootFrameAppearance.bgColor)
         countModelScrollFrame.grid(row=0, column=2, sticky=tkinter.NSEW)
 
+        trainModelWidget = TrainModelWidget(countModelScrollFrame.interior, trainIndex, buttonFrame, decryptFile, rootFrameAppearance, reloadWidget)
+        trainModelWidget.pack()
+
+        editModelButton = EditModelWidget(buttonFrame, trainIndex, decryptFile, rootFrameAppearance, reloadWidget)
+        editModelButton.grid(row=1, column=0, sticky=tkinter.W + tkinter.E, pady=5)
+
         trainLf.rowconfigure(0, weight=1)
         trainLf.columnconfigure(0, weight=4, uniform="trainLf")
         trainLf.columnconfigure(2, weight=11, uniform="trainLf")
-
-        # TrainModelWidget(tabFrame, trainIndex, game, countModelScrollFrame.interior, widgetList, innerButtonList, decryptFile, rootFrameAppearance, reloadWidget)
 
         elseScrollFrame = ScrollbarFrame(tabFrame, bgColor=rootFrameAppearance.bgColor)
         elseScrollFrame.grid(row=1, column=0, sticky=tkinter.NSEW)
