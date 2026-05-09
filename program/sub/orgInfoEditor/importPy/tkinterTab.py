@@ -116,6 +116,7 @@ def tab2AllWidget(tabFrame, decryptFile, trainIndex, defaultData, rootFrameAppea
         trainOrgInfo = decryptFile.trainInfoList[trainIndex]
         if trainOrgInfo is None:
             return
+        selectDefaultData = defaultData[trainIndex]
 
         mainFrame = ttkCustomWidget.CustomTtkFrame(tabFrame)
         mainFrame.pack(fill=tkinter.BOTH, expand=True)
@@ -131,31 +132,34 @@ def tab2AllWidget(tabFrame, decryptFile, trainIndex, defaultData, rootFrameAppea
         notchCountWidget = NotchCountWidget(countModelLf, trainIndex, notchNum, decryptFile, rootFrameAppearance, reloadWidget)
         notchCountWidget.pack(anchor=tkinter.NW)
 
-        # countWidget = CountWidget(tabFrame, trainIndex, game, countModelLf, decryptFile, rootFrameAppearance, reloadFunc)
+        sidePackFrame = ttkCustomWidget.CustomTtkFrame(scrollFrame)
+        sidePackFrame.pack(anchor=tkinter.NW)
+        rainPerfLf = ttkCustomWidget.CustomTtkLabelFrame(sidePackFrame, text=textSetting.textList["orgInfoEditor"]["SSRainLfLabel"])
+        rainPerfLf.pack(side=tkinter.LEFT, anchor=tkinter.NW, padx=10, pady=3)
+        rainPerfWidget = ElsePerfWidget(rainPerfLf, trainIndex, decryptFile, "rain", decryptFile.trainRainNameList, trainOrgInfo[2], True, selectDefaultData, rootFrameAppearance, reloadWidget)
+        rainPerfWidget.pack()
 
-        # sidePackFrame = ttkCustomWidget.CustomTtkFrame(scrollFrame)
-        # sidePackFrame.pack(anchor=tkinter.NW)
-        # rainPerfLf = ttkCustomWidget.CustomTtkLabelFrame(sidePackFrame, text=textSetting.textList["orgInfoEditor"]["SSRainLfLabel"])
-        # rainPerfLf.pack(side=tkinter.LEFT, anchor=tkinter.NW, padx=10, pady=3)
-        # ElsePerfWidget(tabFrame, trainIndex, game, rainPerfLf, "rain", decryptFile.trainRainNameList, trainOrgInfo[2], True, defaultData, decryptFile, rootFrameAppearance, reloadFunc)
+        carbPerfLf = ttkCustomWidget.CustomTtkLabelFrame(sidePackFrame, text=textSetting.textList["orgInfoEditor"]["SSCarbLfLabel"])
+        carbPerfLf.pack(side=tkinter.LEFT, anchor=tkinter.NW, padx=10, pady=3)
+        carbPerfWidget = ElsePerfWidget(carbPerfLf, trainIndex, decryptFile, "carb", decryptFile.trainCarbNameList, trainOrgInfo[3], True, selectDefaultData, rootFrameAppearance, reloadWidget)
+        carbPerfWidget.pack()
 
-        # carbPerfLf = ttkCustomWidget.CustomTtkLabelFrame(sidePackFrame, text=textSetting.textList["orgInfoEditor"]["SSCarbLfLabel"])
-        # carbPerfLf.pack(side=tkinter.LEFT, anchor=tkinter.NW, padx=10, pady=3)
-        # ElsePerfWidget(tabFrame, trainIndex, game, carbPerfLf, "carb", decryptFile.trainCarbNameList, trainOrgInfo[3], True, defaultData, decryptFile, rootFrameAppearance, reloadFunc)
+        otherPerfLf = ttkCustomWidget.CustomTtkLabelFrame(scrollFrame, text=textSetting.textList["orgInfoEditor"]["SSOtherLfLabel"])
+        otherPerfLf.pack(anchor=tkinter.NW, padx=10, pady=3)
+        otherPerfWidget = ElsePerfWidget(otherPerfLf, trainIndex, decryptFile, "other", decryptFile.trainOtherNameList, trainOrgInfo[4], True, selectDefaultData, rootFrameAppearance, reloadWidget)
+        otherPerfWidget.pack()
 
-        # otherPerfLf = ttkCustomWidget.CustomTtkLabelFrame(scrollFrame, text=textSetting.textList["orgInfoEditor"]["SSOtherLfLabel"])
-        # otherPerfLf.pack(anchor=tkinter.NW, padx=10, pady=3)
-        # ElsePerfWidget(tabFrame, trainIndex, game, otherPerfLf, "other", decryptFile.trainOtherNameList, trainOrgInfo[4], True, defaultData, decryptFile, rootFrameAppearance, reloadFunc)
+        sidePackFrame2 = ttkCustomWidget.CustomTtkFrame(scrollFrame)
+        sidePackFrame2.pack(anchor=tkinter.NW)
+        hurikoPerfLf = ttkCustomWidget.CustomTtkLabelFrame(sidePackFrame2, text=textSetting.textList["orgInfoEditor"]["SSHurikoLfLabel"])
+        hurikoPerfLf.pack(side=tkinter.LEFT, anchor=tkinter.NW, padx=8, pady=3)
+        hurikoPerfWidget = ElsePerfWidget(hurikoPerfLf, trainIndex, decryptFile, "huriko", decryptFile.trainHurikoNameList, trainOrgInfo[5], False, selectDefaultData, rootFrameAppearance, reloadWidget)
+        hurikoPerfWidget.pack()
 
-        # sidePackFrame2 = ttkCustomWidget.CustomTtkFrame(scrollFrame)
-        # sidePackFrame2.pack(anchor=tkinter.NW)
-        # hurikoPerfLf = ttkCustomWidget.CustomTtkLabelFrame(sidePackFrame2, text=textSetting.textList["orgInfoEditor"]["SSHurikoLfLabel"])
-        # hurikoPerfLf.pack(side=tkinter.LEFT, anchor=tkinter.NW, padx=8, pady=3)
-        # ElsePerfWidget(tabFrame, trainIndex, game, hurikoPerfLf, "huriko", decryptFile.trainHurikoNameList, trainOrgInfo[5], False, defaultData, decryptFile, rootFrameAppearance, reloadFunc)
-
-        # oneWheelPerfLf = ttkCustomWidget.CustomTtkLabelFrame(sidePackFrame2, text=textSetting.textList["orgInfoEditor"]["SSOneWheelLfLabel"])
-        # oneWheelPerfLf.pack(side=tkinter.LEFT, anchor=tkinter.NW, padx=8, pady=3)
-        # ElsePerfWidget(tabFrame, trainIndex, game, oneWheelPerfLf, "oneWheel", decryptFile.trainOneWheelNameList, trainOrgInfo[6], False, defaultData, decryptFile, rootFrameAppearance, reloadFunc)
+        oneWheelPerfLf = ttkCustomWidget.CustomTtkLabelFrame(sidePackFrame2, text=textSetting.textList["orgInfoEditor"]["SSOneWheelLfLabel"])
+        oneWheelPerfLf.pack(side=tkinter.LEFT, anchor=tkinter.NW, padx=8, pady=3)
+        oneWheelPerfWidget = ElsePerfWidget(oneWheelPerfLf, trainIndex, decryptFile, "oneWheel", decryptFile.trainOneWheelNameList, trainOrgInfo[6], False, selectDefaultData, rootFrameAppearance, reloadWidget)
+        oneWheelPerfWidget.pack()
     tabFrame.grid_rowconfigure(0, weight=2, uniform="trainOrgData")
     tabFrame.grid_rowconfigure(1, weight=3, uniform="trainOrgData")
     tabFrame.grid_columnconfigure(0, weight=1)
