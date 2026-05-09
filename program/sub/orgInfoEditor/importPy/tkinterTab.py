@@ -72,7 +72,7 @@ def tab2AllWidget(tabFrame, decryptFile, trainIndex, defaultData, rootFrameAppea
         trainLf.grid(row=0, column=0, padx=10, pady=5, sticky=tkinter.NSEW)
 
         countFrame = ttkCustomWidget.CustomTtkFrame(trainLf)
-        countFrame.grid(row=0, column=0, pady=5, sticky=tkinter.NSEW)
+        countFrame.grid(row=0, column=0, padx=(15, 0), pady=5, sticky=tkinter.NSEW)
 
         index = decryptFile.indexList[trainIndex]
         notchNum = decryptFile.byteArr[index]
@@ -104,14 +104,14 @@ def tab2AllWidget(tabFrame, decryptFile, trainIndex, defaultData, rootFrameAppea
         elseScrollFrame = ScrollbarFrame(tabFrame, bgColor=rootFrameAppearance.bgColor)
         elseScrollFrame.grid(row=1, column=0, sticky=tkinter.NSEW)
 
-        # elseModel = decryptFile.trainModelList[trainIndex]["elseModel"]
-        # else2Model = decryptFile.trainModelList[trainIndex]["else2Model"]
-        # elseList2 = decryptFile.trainModelList[trainIndex]["elseList2"]
+        elseModel = decryptFile.trainModelList[trainIndex]["elseModel"]
+        else2Model = decryptFile.trainModelList[trainIndex]["else2Model"]
+        elseList2 = decryptFile.trainModelList[trainIndex]["elseList2"]
 
-        # if len(elseModel) > 0:
-        #     FixedListWidget(elseFrame, trainIndex, decryptFile, "else1", elseModel, 1, rootFrameAppearance, reloadWidget)
-        # FixedListWidget(elseFrame, trainIndex, decryptFile, "else2", else2Model, 2, rootFrameAppearance, reloadWidget)
-        # FixedList2Widget(elseFrame2, trainIndex, decryptFile, "else3", elseList2, rootFrameAppearance, reloadWidget)
+        if len(elseModel) > 0:
+            FixedListWidget(elseScrollFrame.interior, trainIndex, decryptFile, "else1", elseModel, 1, rootFrameAppearance, reloadWidget)
+        FixedListWidget(elseScrollFrame.interior, trainIndex, decryptFile, "else2", else2Model, 2, rootFrameAppearance, reloadWidget)
+        FixedList2Widget(elseScrollFrame.interior, trainIndex, decryptFile, "else3", elseList2, rootFrameAppearance, reloadWidget)
     else:
         trainOrgInfo = decryptFile.trainInfoList[trainIndex]
         if trainOrgInfo is None:

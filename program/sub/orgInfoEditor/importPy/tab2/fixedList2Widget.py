@@ -4,17 +4,17 @@ import tkinter
 from tkinter import messagebox as mb
 import program.textSetting as textSetting
 import program.appearance.ttkCustomWidget as ttkCustomWidget
-from program.appearance.customSimpleDialog import CustomSimpleDialog, CustomAskstring
+from program.appearance.customSimpleDialog import CustomSimpleDialog
 
 
 class FixedList2Widget:
-    def __init__(self, frame, trainIdx, decryptFile, text, elseList, rootFrameAppearance, reloadFunc):
+    def __init__(self, frame, trainIndex, decryptFile, text, elseList, rootFrameAppearance, reloadWidget):
         self.frame = frame
-        self.trainIdx = trainIdx
+        self.trainIndex = trainIndex
         self.decryptFile = decryptFile
         self.elseList = elseList
         self.rootFrameAppearance = rootFrameAppearance
-        self.reloadFunc = reloadFunc
+        self.reloadWidget = reloadWidget
 
         elseLf = ttkCustomWidget.CustomTtkLabelFrame(self.frame, text=text)
         elseLf.pack(side=tkinter.LEFT, anchor=tkinter.NW, padx=10)
@@ -37,16 +37,15 @@ class FixedList2Widget:
             tempBtn.grid(row=i, column=2, sticky=tkinter.W + tkinter.E)
 
     def editVar(self, i, elseInfo):
-        result = EditFixedList2Widget(self.frame, textSetting.textList["orgInfoEditor"]["fixedList2ModifyLabel"], self.decryptFile, elseInfo, self.rootFrameAppearance)
+        result = EditFixedList2Widget(self.frame.winfo_toplevel(), textSetting.textList["orgInfoEditor"]["fixedList2ModifyLabel"], self.decryptFile, elseInfo, self.rootFrameAppearance)
         if result.reloadFlag:
             self.elseList[i] = result.resultValueList
-            if not self.decryptFile.saveElse2List(self.trainIdx, self.elseList):
+            if not self.decryptFile.saveElse2List(self.trainIndex, self.elseList):
                 self.decryptFile.printError()
                 mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
                 return
             mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I61"])
-
-            self.reloadFunc()
+            self.reloadWidget()
 
 
 class EditFixedList2Widget(CustomSimpleDialog):
@@ -67,10 +66,10 @@ class EditFixedList2Widget(CustomSimpleDialog):
         for i in range(len(self.valList)):
             if i == 0:
                 txtLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["orgInfoEditor"]["fixedList2NumLabel"], font=textSetting.textList["font2"])
-                txtLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
+                txtLb.grid(row=i + 1, column=0, sticky=tkinter.W + tkinter.E)
             else:
                 txtLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["orgInfoEditor"]["fixedList2NameLabel"], font=textSetting.textList["font2"])
-                txtLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
+                txtLb.grid(row=i + 1, column=0, sticky=tkinter.W + tkinter.E)
 
             if i == 0:
                 self.varTemp = tkinter.IntVar()
@@ -79,7 +78,7 @@ class EditFixedList2Widget(CustomSimpleDialog):
             self.varTemp.set(self.valList[i])
             self.varList.append(self.varTemp)
             txtEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varTemp, font=textSetting.textList["font2"])
-            txtEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+            txtEt.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
         super().body(master)
 
     def validate(self):
@@ -97,15 +96,13 @@ class EditFixedList2Widget(CustomSimpleDialog):
                                 return False
                         else:
                             res = self.varList[i].get()
-
                         self.resultValueList.append(res)
                     except Exception:
-                        errorMsg = textSetting.textList["errorList"]["E3"]
-                        mb.showerror(title=textSetting.textList["error"], message=errorMsg)
+                        mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E3"])
+                        return False
                 return True
             except Exception:
-                errorMsg = textSetting.textList["errorList"]["E14"]
-                mb.showerror(title=textSetting.textList["error"], message=errorMsg)
+                mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
 
     def apply(self):
         self.reloadFlag = True
