@@ -9,18 +9,17 @@ from program.appearance.customSimpleDialog import CustomSimpleDialog
 from program.tkinterScrollbarFrameClass import ScrollbarFrame
 
 
-class LensListWidget:
-    def __init__(self, frame, decryptFile, trainIdx, lensList, rootFrameAppearance, reloadFunc):
+class LensListWidget(ttkCustomWidget.CustomTtkLabelFrame):
+    def __init__(self, frame, decryptFile, trainIndex, rootFrameAppearance, reloadWidget):
+        super().__init__(frame, text=textSetting.textList["orgInfoEditor"]["lensInfoLabel"])
         self.frame = frame
         self.decryptFile = decryptFile
-        self.trainIdx = trainIdx
-        self.lensList = lensList
-        self.reloadFunc = reloadFunc
+        self.trainIndex = trainIndex
+        self.lensList = decryptFile.trainModelList[trainIndex]["lensList"]
+        self.reloadWidget = reloadWidget
         self.rootFrameAppearance = rootFrameAppearance
 
-        lensListLf = ttkCustomWidget.CustomTtkLabelFrame(self.frame, text=textSetting.textList["orgInfoEditor"]["lensInfoLabel"])
-        lensListLf.pack(anchor=tkinter.NW, padx=10, expand=True, fill=tkinter.BOTH)
-        scrollbarFrame = ScrollbarFrame(lensListLf, bgColor=rootFrameAppearance.bgColor)
+        scrollbarFrame = ScrollbarFrame(self, bgColor=rootFrameAppearance.bgColor)
         scrollbarFrame.pack(expand=True, fill=tkinter.BOTH)
 
         txtFrame = ttkCustomWidget.CustomTtkFrame(scrollbarFrame.interior)
@@ -78,25 +77,25 @@ class LensListWidget:
                         varCnt += 1
 
     def editLensCnt(self, val):
-        result = EditLensCntWidget(self.frame, textSetting.textList["orgInfoEditor"]["lensEditCntLabel"], self.decryptFile, val, self.rootFrameAppearance)
+        result = EditLensCntWidget(self.frame.winfo_toplevel(), textSetting.textList["orgInfoEditor"]["lensEditCntLabel"], self.decryptFile, val, self.rootFrameAppearance)
         if result.reloadFlag:
-            if not self.decryptFile.saveLensCnt(self.trainIdx, result.resultValue):
+            if not self.decryptFile.saveLensCnt(self.trainIndex, result.resultValue):
                 self.decryptFile.printError()
                 mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
                 return
             mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I65"])
-            self.reloadFunc()
+            self.reloadWidget()
 
     def editLensList(self, i, valList):
-        result = EditLensWidget(self.frame, textSetting.textList["orgInfoEditor"]["lensEditLabel"], self.decryptFile, valList, self.rootFrameAppearance)
+        result = EditLensWidget(self.frame.winfo_toplevel(), textSetting.textList["orgInfoEditor"]["lensEditLabel"], self.decryptFile, valList, self.rootFrameAppearance)
         if result.reloadFlag:
             self.lensList[i] = result.resultValueList
-            if not self.decryptFile.saveLensList(self.trainIdx, self.lensList):
+            if not self.decryptFile.saveLensList(self.trainIndex, self.lensList):
                 self.decryptFile.printError()
                 mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
                 return
             mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I66"])
-            self.reloadFunc()
+            self.reloadWidget()
 
 
 class EditLensCntWidget(CustomSimpleDialog):
@@ -163,30 +162,33 @@ class EditLensWidget(CustomSimpleDialog):
     def body(self, master):
         self.resizable(False, False)
 
+        self.valLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
+        self.valLb.grid(columnspan=2, row=0, column=0, sticky=tkinter.W + tkinter.E)
+
         lensInfoLbList = textSetting.textList["orgInfoEditor"]["lensInfoLabelList"]
         for i in range(len(self.lensInfo)):
             if i in [0, 1]:
                 self.lensLb = ttkCustomWidget.CustomTtkLabel(master, text=lensInfoLbList[i], font=textSetting.textList["font2"])
-                self.lensLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
+                self.lensLb.grid(row=i + 1, column=0, sticky=tkinter.W + tkinter.E)
                 self.varList.append(tkinter.StringVar(value=self.lensInfo[i]))
                 self.lensEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[self.varCnt], font=textSetting.textList["font2"])
-                self.lensEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                self.lensEt.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
                 self.varCnt += 1
             elif i in [2, 3]:
                 self.lensLb = ttkCustomWidget.CustomTtkLabel(master, text=lensInfoLbList[i], font=textSetting.textList["font2"])
-                self.lensLb.grid(row=i, column=0, sticky=tkinter.W + tkinter.E)
+                self.lensLb.grid(row=i + 1, column=0, sticky=tkinter.W + tkinter.E)
                 self.varList.append(tkinter.DoubleVar(value=round(float(self.lensInfo[i]), 3)))
                 self.lensEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[self.varCnt], font=textSetting.textList["font2"])
-                self.lensEt.grid(row=i, column=1, sticky=tkinter.W + tkinter.E)
+                self.lensEt.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
                 self.varCnt += 1
             elif i == 4:
                 varList = []
                 for j in range(len(self.lensInfo[i])):
                     self.lensLb = ttkCustomWidget.CustomTtkLabel(master, text=lensInfoLbList[i + j], font=textSetting.textList["font2"])
-                    self.lensLb.grid(row=i + j, column=0, sticky=tkinter.W + tkinter.E)
+                    self.lensLb.grid(row=i + j + 1, column=0, sticky=tkinter.W + tkinter.E)
                     varList.append(tkinter.IntVar(value=self.lensInfo[i][j]))
                     self.lensEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=varList[j], font=textSetting.textList["font2"])
-                    self.lensEt.grid(row=i + j, column=1, sticky=tkinter.W + tkinter.E)
+                    self.lensEt.grid(row=i + j + 1, column=1, sticky=tkinter.W + tkinter.E)
                     self.varCnt += 1
                 self.varList.append(varList)
         super().body(master)

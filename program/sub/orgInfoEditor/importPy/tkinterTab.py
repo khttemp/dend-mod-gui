@@ -164,12 +164,12 @@ def tab2AllWidget(tabFrame, decryptFile, trainIndex, defaultData, rootFrameAppea
     tabFrame.grid_rowconfigure(1, weight=3, uniform="trainOrgData")
     tabFrame.grid_columnconfigure(0, weight=1)
 
-def tab3AllWidget(tabFrame, decryptFile, trainIdx, rootFrameAppearance, reloadFunc):
+def tab3AllWidget(tabFrame, decryptFile, trainIdx, rootFrameAppearance, reloadWidget):
     tab3frame = ttkCustomWidget.CustomTtkFrame(tabFrame)
     tab3frame.pack(anchor=tkinter.NW, fill=tkinter.BOTH, expand=True)
 
-    lensList = decryptFile.trainModelList[trainIdx]["lensList"]
-    LensListWidget(tab3frame, decryptFile, trainIdx, lensList, rootFrameAppearance, reloadFunc)
+    lensListWidget = LensListWidget(tab3frame, decryptFile, trainIdx, rootFrameAppearance, reloadWidget)
+    lensListWidget.pack(anchor=tkinter.NW, padx=10, expand=True, fill=tkinter.BOTH)
 
-    tailList = decryptFile.trainModelList[trainIdx]["tailList"]
-    TailListWidget(tab3frame, decryptFile, trainIdx, tailList, rootFrameAppearance, reloadFunc)
+    tailListWidget = TailListWidget(tab3frame, decryptFile, trainIdx, rootFrameAppearance, reloadWidget)
+    tailListWidget.pack(anchor=tkinter.NW, padx=10, expand=True, fill=tkinter.BOTH)
