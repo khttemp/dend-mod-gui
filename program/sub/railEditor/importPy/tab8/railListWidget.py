@@ -4,9 +4,8 @@ from functools import partial
 import tkinter
 from tkinter import messagebox as mb
 from tkinter import filedialog as fd
-import program.textSetting as textSetting
-import program.appearance.ttkCustomWidget as ttkCustomWidget
-from program.errorLogClass import ErrorLogObj
+import program.sub.textSetting as textSetting
+import program.sub.appearance.ttkCustomWidget as ttkCustomWidget
 
 
 class RailListWidget:
@@ -19,7 +18,6 @@ class RailListWidget:
         self.reloadFunc = reloadFunc
         self.varRailList = []
         self.varRevRailList = []
-        self.errObj = ErrorLogObj()
 
         if self.decryptFile.game in ["CS", "RS"]:
             self.smfList.extend(textSetting.textList["railEditor"]["smfListAddList1"])
