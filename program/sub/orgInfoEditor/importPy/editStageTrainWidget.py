@@ -2,17 +2,13 @@ import copy
 
 import tkinter
 from tkinter import messagebox as mb
-import program.textSetting as textSetting
-import program.appearance.ttkCustomWidget as ttkCustomWidget
-from program.appearance.customSimpleDialog import CustomSimpleDialog, CustomAskstring
-
-import program.orgInfoEditor.importPy.gameDefine as gameDefine
-gameDefine.load()
+import program.sub.textSetting as textSetting
+import program.sub.appearance.ttkCustomWidget as ttkCustomWidget
+from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
 
 
-class EditStageInfo(CustomSimpleDialog):
-    def __init__(self, master, title, game, decryptFile, rootFrameAppearance):
-        self.game = game
+class EditStageDialog(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, rootFrameAppearance):
         self.decryptFile = decryptFile
         super().__init__(master, title, rootFrameAppearance.bgColor)
 
@@ -28,7 +24,7 @@ class EditStageInfo(CustomSimpleDialog):
 
         trackComboList = textSetting.textList["orgInfoEditor"]["trackComboList"]
 
-        if self.game in [gameDefine.CS, gameDefine.RS]:
+        if self.decryptFile.game in ["CS", "RS"]:
             self.trackLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["orgInfoEditor"]["stageTrackName"], font=textSetting.textList["font2"], anchor=tkinter.CENTER)
             self.trackLb.grid(row=0, column=4, sticky=tkinter.W + tkinter.E)
 
@@ -56,7 +52,7 @@ class EditStageInfo(CustomSimpleDialog):
                 self.train_3pCb.current(info[3])
             self.trainList.append(self.train_3pCb)
 
-            if self.game in [gameDefine.CS, gameDefine.RS]:
+            if self.decryptFile.game in ["CS", "RS"]:
                 self.trackCb = ttkCustomWidget.CustomTtkCombobox(master, font=textSetting.textList["font2"], width=8, value=trackComboList)
                 self.trackCb.grid(row=i + 1, column=4, sticky=tkinter.W + tkinter.E)
                 self.trackCb.current(info[4])
@@ -74,7 +70,7 @@ class EditStageInfo(CustomSimpleDialog):
             stageList = self.decryptFile.stageList
 
             infoCnt = 4
-            if self.game == gameDefine.BS:
+            if self.decryptFile.game == "BS":
                 infoCnt = 3
 
             for i in range(self.decryptFile.stageCnt):
@@ -93,14 +89,13 @@ class EditStageInfo(CustomSimpleDialog):
                     train_3pCb = -1
                 stageList[self.decryptFile.stageEditIdx + i][3] = train_3pCb
 
-                if self.game in [gameDefine.CS, gameDefine.RS]:
+                if self.decryptFile.game in ["CS", "RS"]:
                     trackCb = self.trainList[infoCnt * i + 3].current()
                     stageList[self.decryptFile.stageEditIdx + i][4] = trackCb
 
-            errorMsg = textSetting.textList["errorList"]["E4"]
             if not self.decryptFile.saveStageInfo(stageList):
                 self.decryptFile.printError()
-                mb.showerror(title=textSetting.textList["saveError"], message=errorMsg)
+                mb.showerror(title=textSetting.textList["saveError"], message=textSetting.textList["errorList"]["E4"])
                 return False
             return True
 

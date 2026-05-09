@@ -12,7 +12,7 @@ from program.sub.orgInfoEditor.dendDecrypt import CSdecrypt as dendCs
 from program.sub.orgInfoEditor.dendDecrypt import RSdecrypt as dendRs
 from program.sub.orgInfoEditor.dendDecrypt import SSdecrypt as dendSs
 
-from program.sub.orgInfoEditor.importPy.tkinterStageWidget import EditStageInfo
+from program.sub.orgInfoEditor.importPy.editStageTrainWidget import EditStageDialog
 from program.sub.orgInfoEditor.importPy.tkinterTab import (
     tab1AllWidget, tab2AllWidget, tab3AllWidget
 )
@@ -21,7 +21,6 @@ from program.sub.orgInfoEditor.importPy.tkinterTab import (
 class OrgInfoEditorWindow(tkinter.Frame):
     def __init__(self, master, importDict, appearance):
         super().__init__(master)
-        self.root = master
         self.importDict = importDict
         self.rootFrameAppearance = appearance
         self.decryptFile = None
@@ -103,7 +102,7 @@ class OrgInfoEditorWindow(tkinter.Frame):
             tab3AllWidget(self.tabFrame, self.decryptFile, trainIndex, self.rootFrameAppearance, self.reloadWidget)
 
     def editStageTrain(self):
-        EditStageInfo(self.root, textSetting.textList["orgInfoEditor"]["editStageLabel"], self.decryptFile, self.rootFrameAppearance)
+        EditStageDialog(self.winfo_toplevel(), textSetting.textList["orgInfoEditor"]["editStageLabel"], self.decryptFile, self.rootFrameAppearance)
 
     def modifiedTrainNameList(self):
         copyTrainNameList = copy.deepcopy(self.decryptFile.trainNameList)
