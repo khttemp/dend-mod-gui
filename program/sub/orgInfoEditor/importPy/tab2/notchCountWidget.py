@@ -5,7 +5,7 @@ import program.sub.appearance.ttkCustomWidget as ttkCustomWidget
 from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
 
 
-class NotchCountWidget(tkinter.Frame):
+class NotchCountWidget(ttkCustomWidget.CustomTtkFrame):
     def __init__(self, frame, trainIndex, notchNum, decryptFile, rootFrameAppearance, reloadWidget):
         super().__init__(frame)
         self.trainIndex = trainIndex

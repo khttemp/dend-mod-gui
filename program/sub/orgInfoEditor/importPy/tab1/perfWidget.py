@@ -7,7 +7,7 @@ import program.sub.appearance.ttkCustomWidget as ttkCustomWidget
 from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
 
 
-class PerfWidget(tkinter.Frame):
+class PerfWidget(ttkCustomWidget.CustomTtkFrame):
     def __init__(self, frame, decryptFile, perfName, perfValue, defaultValue, rootFrameAppearance):
         super().__init__(frame)
         self.decryptFile = decryptFile

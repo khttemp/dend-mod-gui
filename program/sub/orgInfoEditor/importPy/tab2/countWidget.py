@@ -5,7 +5,7 @@ import program.sub.appearance.ttkCustomWidget as ttkCustomWidget
 from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
 
 
-class CountWidget(tkinter.Frame):
+class CountWidget(ttkCustomWidget.CustomTtkFrame):
     def __init__(self, frame, trainIndex, decryptFile, rootFrameAppearance, reloadWidget):
         super().__init__(frame)
         self.trainIndex = trainIndex

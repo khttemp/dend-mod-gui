@@ -18,7 +18,7 @@ from program.sub.orgInfoEditor.importPy.tkinterTab import (
 )
 
 
-class OrgInfoEditorWindow(tkinter.Frame):
+class OrgInfoEditorWindow(ttkCustomWidget.CustomTtkFrame):
     def __init__(self, master, importDict, appearance):
         super().__init__(master)
         self.importDict = importDict

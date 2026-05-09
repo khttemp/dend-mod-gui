@@ -18,7 +18,7 @@ from tkinter import messagebox as mb
 errObj = errorLogClass.ErrorLogObj()
 
 
-class SSUnityWindow(tkinter.Frame):
+class SSUnityWindow(ttkCustomWidget.CustomTtkFrame):
     def __init__(self, master, importDict):
         super().__init__(master)
         self.importDict = importDict

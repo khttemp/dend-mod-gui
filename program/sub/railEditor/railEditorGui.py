@@ -24,7 +24,7 @@ import tkinter
 from tkinter import filedialog as fd
 from tkinter import messagebox as mb
 
-class RailEditorWindow(tkinter.Frame):
+class RailEditorWindow(ttkCustomWidget.CustomTtkFrame):
     def __init__(self, master, importDict, appearance):
         super().__init__(master)
         self.importDict = importDict

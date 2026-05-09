@@ -7,7 +7,7 @@ import program.sub.appearance.ttkCustomWidget as ttkCustomWidget
 from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
 
 
-class HurikoWidget(tkinter.Frame):
+class HurikoWidget(ttkCustomWidget.CustomTtkFrame):
     def __init__(self, frame, decryptFile, hurikoName, hurikoValue, defaultValue, rootFrameAppearance):
         super().__init__(frame)
         self.decryptFile = decryptFile
