@@ -1,6 +1,5 @@
 import os
 import csv
-import shutil
 import struct
 import traceback
 import copy
