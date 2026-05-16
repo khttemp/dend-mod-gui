@@ -314,20 +314,13 @@ class SSUnityWindow(ttkCustomWidget.CustomTtkFrame):
                 self.filterData()
 
             if selectId is not None:
-                findFlag = False
                 for idx, itemId in enumerate(self.frame.tree.get_children()):
                     item = self.frame.tree.item(itemId)
                     num = item["values"][0]
                     if selectId == num:
+                        self.frame.tree.see(idx)
                         self.frame.tree.selection_set(itemId)
-                        findFlag = True
                         break
-
-                if findFlag:
-                    if idx - 3 < 0:
-                        self.frame.tree.see(0)
-                    else:
-                        self.frame.tree.see(idx - 3)
         except Exception:
             errObj.write(traceback.format_exc())
             mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])

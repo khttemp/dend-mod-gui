@@ -466,10 +466,7 @@ class SmfListWidget:
         if self.selectId is not None:
             if self.selectId >= len(self.smfList):
                 self.selectId = len(self.smfList) - 1
-            if self.selectId - 3 < 0:
-                self.treeviewFrame.tree.see(0)
-            else:
-                self.treeviewFrame.tree.see(self.selectId - 3)
+            self.treeviewFrame.tree.see(self.selectId)
             self.treeviewFrame.tree.selection_set(self.selectId)
 
     def editLine(self):

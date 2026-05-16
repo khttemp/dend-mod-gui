@@ -151,10 +151,7 @@ class Else3ListWidget:
         if self.selectId is not None:
             if self.selectId >= len(self.else3List):
                 self.selectId = len(self.else3List) - 1
-            if self.selectId - 3 < 0:
-                self.treeviewFrame.tree.see(0)
-            else:
-                self.treeviewFrame.tree.see(self.selectId - 3)
+            self.treeviewFrame.tree.see(self.selectId)
             self.treeviewFrame.tree.selection_set(self.selectId)
 
     def editLine(self):
@@ -622,10 +619,7 @@ class Else3ElementWidget(CustomSimpleDialog):
         if selectId is not None:
             if selectId >= len(self.else3ElementList):
                 selectId = len(self.else3ElementList) - 1
-            if selectId - 3 < 0:
-                self.treeviewFrame.tree.see(0)
-            else:
-                self.treeviewFrame.tree.see(selectId - 3)
+            self.treeviewFrame.tree.see(selectId)
             self.treeviewFrame.tree.selection_set(selectId)
 
     def clearTable(self):
