@@ -8,7 +8,7 @@ import program.sub.errorLogClass as errorLogClass
 
 import program.comicscript.comicscript as comicscriptProgram
 import program.mdlBin.mdlBin as mdlBinProgram
-import program.mdlinfo.mdlinfo as mdlinfoProgram
+import program.sub.mdlinfo.mdlinfoGui as mdlinfoGui
 import program.sub.orgInfoEditor.orgInfoEditorGui as orgInfoEditorGui
 import program.musicEditor.musicEditor as musicEditorProgram
 import program.fvtMaker.fvtMaker as fvtMakerProgram
@@ -236,7 +236,7 @@ class MainWindow(tkinter.Frame):
         elif self.selectedProgram == "mdlBin":
             mdlBinProgram.call_mdlBin(self.root, self.rootFrameAppearance)
         elif self.selectedProgram == "mdlinfo":
-            mdlinfoProgram.call_mdlinfo(self.root, self.rootFrameAppearance)
+            self.selectedProgramFrame = mdlinfoGui.MdlinfoWindow(self.root, self.rootFrameAppearance)
         elif self.selectedProgram == "comicscript":
             comicscriptProgram.call_comicscript(self.root, self.rootFrameAppearance)
         elif self.selectedProgram == "musicEditor":
@@ -294,7 +294,7 @@ class MainWindow(tkinter.Frame):
         elif self.selectedProgram == "mdlBin":
             mdlBinProgram.openFile()
         elif self.selectedProgram == "mdlinfo":
-            mdlinfoProgram.openFile()
+            self.selectedProgramFrame.openFile()
         elif self.selectedProgram == "comicscript":
             comicscriptProgram.openFile(self.v_comicscriptCheck.get())
         elif self.selectedProgram == "musicEditor":
