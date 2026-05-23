@@ -8,10 +8,9 @@ from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
 
 
 class SimpleListWidget(ttkCustomWidget.CustomTtkFrame):
-    def __init__(self, frame, text, decryptFile, listInfo, rootFrameAppearance):
+    def __init__(self, frame, text, listInfo, rootFrameAppearance):
         super().__init__(frame)
         self.text = text
-        self.decryptFile = decryptFile
         self.simpleList = copy.deepcopy(listInfo)
         self.rootFrameAppearance = rootFrameAppearance
         self.dirtyFlag = False
@@ -66,7 +65,7 @@ class SimpleListWidget(ttkCustomWidget.CustomTtkFrame):
 
     def modify(self):
         item = self.simpleList[self.selectIndexNum]
-        result = EditSimpleListDialog(self.winfo_toplevel(), self.text + textSetting.textList["orgInfoEditor"]["commonModifyLabel"], self.decryptFile, "modify", item, self.rootFrameAppearance)
+        result = EditSimpleListDialog(self.winfo_toplevel(), self.text + textSetting.textList["orgInfoEditor"]["commonModifyLabel"], "modify", item, self.rootFrameAppearance)
         if result.reloadFlag:
             self.simpleList[self.selectIndexNum] = result.resultValue
             displaySimpleList = self.setListboxInfo(self.simpleList)
@@ -78,7 +77,7 @@ class SimpleListWidget(ttkCustomWidget.CustomTtkFrame):
             self.simpleListListbox.selection_clear(0, tkinter.END)
 
     def insert(self):
-        result = EditSimpleListDialog(self.winfo_toplevel(), self.text + textSetting.textList["orgInfoEditor"]["commonInsertLabel"], self.decryptFile, "insert", None, self.rootFrameAppearance)
+        result = EditSimpleListDialog(self.winfo_toplevel(), self.text + textSetting.textList["orgInfoEditor"]["commonInsertLabel"], "insert", None, self.rootFrameAppearance)
         if result.reloadFlag:
             self.simpleList.insert(self.selectIndexNum + result.insertPos, result.resultValue)
             displaySimpleList = self.setListboxInfo(self.simpleList)
@@ -104,8 +103,7 @@ class SimpleListWidget(ttkCustomWidget.CustomTtkFrame):
 
 
 class EditSimpleListDialog(CustomSimpleDialog):
-    def __init__(self, master, title, decryptFile, mode, item, rootFrameAppearance):
-        self.decryptFile = decryptFile
+    def __init__(self, master, title, mode, item, rootFrameAppearance):
         self.mode = mode
         self.item = item
         self.insertPos = None
@@ -203,7 +201,7 @@ class EditModelDialog(CustomSimpleDialog):
         modelInfo = self.decryptFile.trainModelList[self.trainIndex]
         noText = textSetting.textList["orgInfoEditor"]["noList"]
 
-        self.trackModelList = SimpleListWidget(listFrame, textSetting.textList["orgInfoEditor"]["csvDaishaTitle"], self.decryptFile, modelInfo["trackNames"], self.rootFrameAppearance)
+        self.trackModelList = SimpleListWidget(listFrame, textSetting.textList["orgInfoEditor"]["csvDaishaTitle"], modelInfo["trackNames"], self.rootFrameAppearance)
         self.trackModelList.grid(row=0, column=0)
         # LS、BSの場合、台車の数は変更不可
         if self.decryptFile.game in ["LS", "BS"]:
@@ -214,7 +212,7 @@ class EditModelDialog(CustomSimpleDialog):
         if noText in trainModelNameList:
             noIndex = trainModelNameList.index(noText)
             trainModelNameList.pop(noIndex)
-        self.trainModelList = SimpleListWidget(listFrame, textSetting.textList["orgInfoEditor"]["csvMdlTitle"], self.decryptFile, trainModelNameList, self.rootFrameAppearance)
+        self.trainModelList = SimpleListWidget(listFrame, textSetting.textList["orgInfoEditor"]["csvMdlTitle"], trainModelNameList, self.rootFrameAppearance)
         self.trainModelList.grid(row=0, column=1)
         # LSの場合、モデルの数は変更不可
         if self.decryptFile.game == "LS":
@@ -225,14 +223,14 @@ class EditModelDialog(CustomSimpleDialog):
         if noText in pantaModelNameList:
             noIndex = pantaModelNameList.index(noText)
             pantaModelNameList.pop(noIndex)
-        self.pantaModelList = SimpleListWidget(listFrame, textSetting.textList["orgInfoEditor"]["csvPantaTitle"], self.decryptFile, pantaModelNameList, self.rootFrameAppearance) 
+        self.pantaModelList = SimpleListWidget(listFrame, textSetting.textList["orgInfoEditor"]["csvPantaTitle"], pantaModelNameList, self.rootFrameAppearance)
         self.pantaModelList.grid(row=1, column=0)
 
         colModelNameList = copy.deepcopy(modelInfo["colNames"])
         if noText in colModelNameList:
             noIndex = colModelNameList.index(noText)
             colModelNameList.pop(noIndex)
-        self.colModelList = SimpleListWidget(listFrame, textSetting.textList["orgInfoEditor"]["csvColTitle"], self.decryptFile, colModelNameList, self.rootFrameAppearance) 
+        self.colModelList = SimpleListWidget(listFrame, textSetting.textList["orgInfoEditor"]["csvColTitle"], colModelNameList, self.rootFrameAppearance)
         self.colModelList.grid(row=1, column=1)
         super().body(master)
 
@@ -285,11 +283,11 @@ class EditModelDialog(CustomSimpleDialog):
 
             if self.trackModelList.dirtyFlag:
                 if self.decryptFile.game in ["LS", "BS"]:
-                    if trackModelCount <= 1:
+                    if trackModelCount < 1:
                         mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E67"].format(1))
                         return
                 elif self.decryptFile.game in ["CS", "RS"]:
-                    if trackModelCount <= 2:
+                    if trackModelCount < 2:
                         mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E67"].format(2))
                         return
             
