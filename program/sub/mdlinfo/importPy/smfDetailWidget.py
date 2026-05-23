@@ -4,7 +4,7 @@ import program.sub.textSetting as textSetting
 import program.sub.appearance.ttkCustomWidget as ttkCustomWidget
 from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
 
-from program.mdlinfo.importPy.tkinterScrollbarTreeviewMdlinfo import ScrollbarTreeviewMdlinfo
+from program.sub.mdlinfo.importPy.tkinterScrollbarTreeviewMdlinfo import ScrollbarTreeviewMdlinfo
 
 
 class SmfDetailDialog(CustomSimpleDialog):
