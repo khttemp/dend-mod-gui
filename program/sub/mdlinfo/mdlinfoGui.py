@@ -20,8 +20,9 @@ errObj = ErrorLogObj
 
 
 class MdlinfoWindow(ttkCustomWidget.CustomTtkFrame):
-    def __init__(self, master, rootFrameAppearance):
+    def __init__(self, master, importDict, rootFrameAppearance):
         super().__init__(master)
+        self.importDict = importDict
         self.rootFrameAppearance = rootFrameAppearance
         self.decryptFile = None
         self.selectId = None
