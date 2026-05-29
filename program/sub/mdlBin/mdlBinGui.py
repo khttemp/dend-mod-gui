@@ -230,6 +230,7 @@ class MdlBinWindow(ttkCustomWidget.CustomTtkFrame):
         self.headerEditBtn["state"] = "normal"
         self.csvExtractBtn["state"] = "normal"
         self.csvLoadAndSaveBtn["state"] = "normal"
+        self.pasteLineBtn["state"] = "disabled"
 
     def getScriptData(self, itemId):
         arr = itemId.split(",")
