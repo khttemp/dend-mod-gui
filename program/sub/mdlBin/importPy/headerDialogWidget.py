@@ -926,7 +926,7 @@ class HeaderDialog(CustomSimpleDialog):
         super().__init__(master, title, rootFrameAppearance.bgColor)
 
     def body(self, master):
-        self.resizable(True, True)
+        self.resizable(False, False)
 
         # imageList
         self.imageSimpleList = ImageListWidget(master, textSetting.textList["mdlBin"]["imgInfo"], self.imgList, self.decryptFile.ver, self.rootFrameAppearance)
