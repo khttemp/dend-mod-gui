@@ -638,7 +638,7 @@ class EditWavListWidget(CustomSimpleDialog):
     def __init__(self, master, title, mode, item, rootFrameAppearance):
         self.mode = mode
         self.item = item
-        self.resultValue = ""
+        self.resultValueList = []
         self.insertPos = 0
         self.reloadFlag = False
         super().__init__(master, title, rootFrameAppearance.bgColor)
