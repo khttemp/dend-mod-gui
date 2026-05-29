@@ -3,7 +3,6 @@ import copy
 import traceback
 
 import tkinter
-from tkinter import ttk
 from tkinter import filedialog as fd
 from tkinter import messagebox as mb
 import program.sub.textSetting as textSetting
