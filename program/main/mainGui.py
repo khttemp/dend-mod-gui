@@ -6,7 +6,7 @@ import program.main.mainProcess as mainProcess
 import program.sub.textSetting as textSetting
 import program.sub.errorLogClass as errorLogClass
 
-import program.comicscript.comicscript as comicscriptProgram
+import program.sub.comicscript.comicscriptGui as comicscriptGui
 import program.sub.mdlBin.mdlBinGui as mdlBinGui
 import program.sub.mdlinfo.mdlinfoGui as mdlinfoGui
 import program.sub.orgInfoEditor.orgInfoEditorGui as orgInfoEditorGui
@@ -42,6 +42,8 @@ class MainWindow(tkinter.Frame):
         self.selectedProgramFrame = None
         self.version = mainProcess.getUpdateVer(self.importDict["rootPath"])
         self.onlineVersion = mainProcess.getOnlineUpdateVer(self.importDict["configPath"])
+        cmdJsonInfo = mainProcess.readCmdJsonInfo(self.importDict["rootPath"])
+        self.importDict["cmdJsonInfo"] = cmdJsonInfo
 
         self.checkConfig()
         self.drawMenu()
@@ -94,9 +96,6 @@ class MainWindow(tkinter.Frame):
         self.menubar.add_cascade(label=textSetting.textList["menu"]["file"]["name"], menu=filemenu)
 
         self.root.config(menu=self.menubar)
-
-    def add_comicscriptOptionMenu(self):
-        pass
 
     def add_smfWriteOptionMenu(self):
         pass
@@ -238,7 +237,7 @@ class MainWindow(tkinter.Frame):
         elif self.selectedProgram == "mdlinfo":
             self.selectedProgramFrame = mdlinfoGui.MdlinfoWindow(self.root, self.importDict, self.rootFrameAppearance)
         elif self.selectedProgram == "comicscript":
-            comicscriptProgram.call_comicscript(self.root, self.rootFrameAppearance)
+            self.selectedProgramFrame = comicscriptGui.ComicscriptWindow(self.root, self.importDict, self.rootFrameAppearance)
         elif self.selectedProgram == "musicEditor":
             musicEditorProgram.call_musicEditor(self.root, self.rootFrameAppearance)
         elif self.selectedProgram == "fvtMaker":
@@ -262,6 +261,10 @@ class MainWindow(tkinter.Frame):
             if self.menubar.entryconfig(tkinter.END) == self.menubar.entryconfig(self.maxMenubarLen):
                 configMenu = self.addXlsxWriteOptionMenu()
                 self.menubar.add_cascade(label=textSetting.textList["menu"]["SSUnity"]["name"], menu=configMenu)
+        elif selectedProgram == "comicscript":
+            if self.menubar.entryconfig(tkinter.END) == self.menubar.entryconfig(self.maxMenubarLen):
+                configMenu = self.addComicscriptOptionMenu()
+                self.menubar.add_cascade(label=textSetting.textList["menu"]["comicscript"]["name"], menu=configMenu)
 
     def addXlsxWriteOptionMenu(self):
         configPath = self.importDict["configPath"]
@@ -284,6 +287,18 @@ class MainWindow(tkinter.Frame):
         xlsxWriteOptionMenu.add_radiobutton(label=textSetting.textList["menu"]["SSUnity"]["write"]["ambRead2"], variable=self.v_ambReadMode, value=1, command=partial(mainProcess.writeXlsxConfig, configPath, "amb", 1))
         return xlsxWriteOptionMenu
 
+    def addComicscriptOptionMenu(self):
+        configPath = self.importDict["configPath"]
+        game = mainProcess.readComicscriptConfig(configPath)
+
+        self.v_comicscriptCheck = tkinter.IntVar()
+        self.v_comicscriptCheck.set(game)
+
+        comicscriptOptionMenu = tkinter.Menu(self.menubar, tearoff=False)
+        for i in range(5):
+            comicscriptOptionMenu.add_radiobutton(label=textSetting.textList["menu"]["comicscript"]["gameList"][i], value=i, variable=self.v_comicscriptCheck, command=partial(mainProcess.writeComicscriptConfig, configPath, i))
+        return comicscriptOptionMenu
+
     def loadFile(self):
         if self.selectedProgram is None:
             mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E1"])
@@ -296,7 +311,7 @@ class MainWindow(tkinter.Frame):
         elif self.selectedProgram == "mdlinfo":
             self.selectedProgramFrame.openFile()
         elif self.selectedProgram == "comicscript":
-            comicscriptProgram.openFile(self.v_comicscriptCheck.get())
+            self.selectedProgramFrame.openFile()
         elif self.selectedProgram == "musicEditor":
             musicEditorProgram.openFile()
         elif self.selectedProgram == "fvtMaker":

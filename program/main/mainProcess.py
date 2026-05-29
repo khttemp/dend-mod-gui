@@ -5,6 +5,7 @@ import datetime
 import traceback
 import webbrowser
 import requests
+import json
 
 import program.sub.textSetting as textSetting
 import program.sub.errorLogClass as errorLogClass
@@ -180,3 +181,55 @@ def writeXlsxConfig(configPath, section, value):
         f.close()
     except PermissionError:
         errObj.write(traceback.format_exc())
+
+
+def readComicscriptConfig(configPath):
+    if not os.path.exists(configPath):
+        writeDefaultConfig(configPath)
+
+    configRead = configparser.ConfigParser()
+    configRead.read(configPath, encoding="utf-8")
+
+    reReadFlag = False
+    if configCheckOption(configPath, "COMICSCRIPT_GAME", "mode"):
+        reReadFlag = True
+
+    if reReadFlag:
+        configRead.read(configPath, encoding="utf-8")
+
+    game = int(configRead.get("COMICSCRIPT_GAME", "mode"))
+    return game
+
+
+def writeComicscriptConfig(configPath, value):
+    configRead = configparser.ConfigParser()
+    configRead.read(configPath, encoding="utf-8")
+
+    configRead.set("COMICSCRIPT_GAME", "mode", str(value))
+
+    try:
+        f = open(configPath, "w", encoding="utf-8")
+        configRead.write(f)
+        f.close()
+    except PermissionError:
+        errObj.write(traceback.format_exc())
+
+
+def readCmdJsonInfo(rootPath):
+    jsonName = "cmd.json"
+    cmdJsonInfo = None
+    try:
+        url = "https://raw.githubusercontent.com/khttemp/dendData/refs/heads/main/comicscript/js/" + jsonName
+        response = requests.get(url)
+        if response.status_code == requests.codes.ok:
+            cmdJsonInfo = json.loads(response.text)
+        else:
+            filePath = os.path.join(rootPath, "program", "sub", "comicscript", "importPy")
+            path = resource_path(filePath, jsonName)
+            f = open(path, "r", encoding="utf-8")
+            cmdJsonInfo = json.load(f)
+            f.close()
+    except Exception:
+        pass
+
+    return cmdJsonInfo

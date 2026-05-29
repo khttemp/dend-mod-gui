@@ -55,6 +55,8 @@ textList = {
         "csvExtractLabel": "CSVで取り出す",
         "csvSaveLabel": "CSVで上書きする",
         "scriptLabel": "スクリプト内容",
+        "commonModifyLabel": "の変更",
+        "commonInsertLabel": "の挿入",
     },
     "fvtMaker": {
         "fileType": "CSVファイル",
