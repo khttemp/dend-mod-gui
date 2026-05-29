@@ -103,6 +103,9 @@ class MdlBinWindow(ttkCustomWidget.CustomTtkFrame):
         self.scriptLf.pack(expand=True, fill=tkinter.BOTH, padx=25, pady=(0, 25))
 
     def deleteWidget(self):
+        for btn in self.btnList:
+            btn["state"] = "disabled"
+
         children = self.scriptLf.winfo_children()
         for child in children:
             child.destroy()
