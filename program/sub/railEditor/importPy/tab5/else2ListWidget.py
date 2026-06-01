@@ -6,7 +6,7 @@ import program.sub.textSetting as textSetting
 import program.sub.appearance.ttkCustomWidget as ttkCustomWidget
 from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
 
-from program.tkinterScrollbarFrameClass import ScrollbarFrame
+from program.sub.tkinterScrollbarFrameClass import ScrollbarFrame
 
 
 class Else2ListWidget:

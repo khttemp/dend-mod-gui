@@ -1,4 +1,4 @@
-from program.tkinterScrollbarTreeviewClass import ScrollbarTreeview
+from program.sub.tkinterScrollbarTreeviewClass import ScrollbarTreeview
 
 
 class ScrollbarTreeviewComicscript(ScrollbarTreeview):
