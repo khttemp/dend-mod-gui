@@ -10,7 +10,7 @@ import program.sub.comicscript.comicscriptGui as comicscriptGui
 import program.sub.mdlBin.mdlBinGui as mdlBinGui
 import program.sub.mdlinfo.mdlinfoGui as mdlinfoGui
 import program.sub.orgInfoEditor.orgInfoEditorGui as orgInfoEditorGui
-import program.musicEditor.musicEditor as musicEditorProgram
+import program.sub.musicEditor.musicEditorGui as musicEditorGui
 import program.fvtMaker.fvtMaker as fvtMakerProgram
 import program.sub.railEditor.railEditorGui as railEditorGui
 import program.sub.smf.smfGui as smfGui
@@ -235,7 +235,7 @@ class MainWindow(tkinter.Frame):
         elif self.selectedProgram == "comicscript":
             self.selectedProgramFrame = comicscriptGui.ComicscriptWindow(self.root, self.importDict, self.rootFrameAppearance)
         elif self.selectedProgram == "musicEditor":
-            musicEditorProgram.call_musicEditor(self.root, self.rootFrameAppearance)
+            self.selectedProgramFrame = musicEditorGui.MusicEditorWindow(self.root, self.importDict, self.rootFrameAppearance)
         elif self.selectedProgram == "fvtMaker":
             fvtMakerProgram.call_fvtMaker(self.root, self.rootFrameAppearance)
         elif self.selectedProgram == "railEditor":
@@ -339,7 +339,7 @@ class MainWindow(tkinter.Frame):
         elif self.selectedProgram == "comicscript":
             self.selectedProgramFrame.openFile()
         elif self.selectedProgram == "musicEditor":
-            musicEditorProgram.openFile()
+            self.selectedProgramFrame.openFile()
         elif self.selectedProgram == "fvtMaker":
             fvtMakerProgram.openFile()
         elif self.selectedProgram == "railEditor":
