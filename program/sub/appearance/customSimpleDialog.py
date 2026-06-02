@@ -1,5 +1,4 @@
 import tkinter
-import program.textSetting as textSetting
 import program.sub.appearance.ttkCustomWidget as ttkCustomWidget
 from tkinter import simpledialog as sd
 
@@ -35,26 +34,3 @@ class CustomSimpleDialog(sd.Dialog):
         if styleName is not None:
             w.configure(style=styleName)
         self.buttonList = self.box.winfo_children()
-
-
-class CustomAskstring(CustomSimpleDialog):
-    def __init__(self, master, title, prompt, initialvalue, bgColor):
-        self.prompt = prompt
-        self.initialvalue = initialvalue
-        super().__init__(master, title, bgColor)
-
-    def body(self, master):
-        w = ttkCustomWidget.CustomTtkLabel(master, text=self.prompt, justify=tkinter.LEFT, font=textSetting.textList["font2"])
-        w.grid(row=0, padx=5, sticky=tkinter.W)
-
-        self.entry = ttkCustomWidget.CustomTtkEntry(master, font=textSetting.textList["font2"])
-        self.entry.grid(row=1, padx=5, sticky=tkinter.W+tkinter.E)
-
-        if self.initialvalue is not None:
-            self.entry.insert(0, self.initialvalue)
-            self.entry.select_range(0, tkinter.END)
-        super().body(master)
-
-    def validate(self):
-        self.result = self.entry.get()
-        return True

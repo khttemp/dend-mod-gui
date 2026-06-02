@@ -4,8 +4,7 @@ import tkinter
 from tkinter import ttk
 from tkinter import colorchooser
 from tkinter import messagebox as mb
-from tkinter import simpledialog as sd
-import program.textSetting as textSetting
+import program.sub.textSetting as textSetting
 import program.sub.appearance.ttkCustomWidget as ttkCustomWidget
 from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
 
