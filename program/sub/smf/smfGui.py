@@ -570,11 +570,14 @@ class EditFrameInfoDialog(CustomSimpleDialog):
     def body(self, master):
         self.resizable(False, False)
 
+        valLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
+        valLb.grid(columnspan=2, row=0, column=0, sticky=tkinter.W + tkinter.E)
+
         eleLabelList = ["Name", "pos", "rot", "meshNo"]
         self.varList = []
         self.varCnt = 0
         self.entryWidth = 20
-        index = 0
+        index = 1
         matrix = self.frameObj["matrix"]
         for label in eleLabelList:
             if label == "Name":
