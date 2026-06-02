@@ -11,7 +11,7 @@ from program.sub.errorLogClass import ErrorLogObj
 
 
 class SmfDecrypt:
-    def __init__(self, filePath, flagList=[], v_process=None, processBar=None):
+    def __init__(self, filePath, flagList=[], progressBarUpdate=None):
         self.encObj = SJISEncodingObject()
         self.errObj = ErrorLogObj()
         self.filePath = filePath
@@ -82,9 +82,7 @@ class SmfDecrypt:
         self.printMESH = meshFlag
         self.printXYZ = xyzFlag
         self.printMTRL = mtrlFlag
-        self.processFlag = False
-        self.v_process = v_process
-        self.processBar = processBar
+        self.progressBarUpdate = progressBarUpdate
         self.standardGuageList = [
             "H2000_TRACK.SMF",
             "K8000_TRACK.SMF",
@@ -164,9 +162,9 @@ class SmfDecrypt:
             f.close()
 
     def decrypt(self):
-        self.processFlag = False
-        if self.v_process is not None or self.processBar is not None:
-            self.processFlag = True
+        if self.progressBarUpdate is not None:
+            self.progressBarUpdate(0)
+
         if self.writeFlag:
             w = open(os.path.join(self.directory, self.originFilename), "w", encoding="utf-8")
             w.close()
@@ -182,9 +180,8 @@ class SmfDecrypt:
         if not self.readSMF(nameAndLength[1]):
             return False
 
-        if self.processFlag:
-            self.v_process.set(25)
-            self.processBar.update()
+        if self.progressBarUpdate is not None:
+            self.progressBarUpdate(25)
 
         self.frameStartIdx = self.index
         for frameNo in range(self.frameCount):
@@ -198,12 +195,10 @@ class SmfDecrypt:
             if not self.readFRM(frameNo, nameAndLength[1]):
                 return False
 
-            if self.processFlag:
-                self.v_process.set(25 + 25 * (frameNo / self.frameCount))
-                self.processBar.update()
-        if self.processFlag:
-            self.v_process.set(50)
-            self.processBar.update()
+            if self.progressBarUpdate is not None:
+                self.progressBarUpdate(25 + 25 * (frameNo / self.frameCount))
+        if self.progressBarUpdate is not None:
+            self.progressBarUpdate(50)
 
         self.anisStartIdx = self.index
         for anis in range(self.animationSetCount):
@@ -229,11 +224,8 @@ class SmfDecrypt:
                 self.writeInfo("{0}, 0x{1:02x}".format(nameAndLength[0], nameAndLength[1]))
             if not self.readMESH(meshNo, nameAndLength[1]):
                 return False
-            if self.processFlag:
-                self.processBar.update()
-        if self.processFlag:
-            self.v_process.set(100)
-            self.processBar.update()
+        if self.progressBarUpdate is not None:
+            self.progressBarUpdate(100)
         return True
 
     def getStructNameAndLength(self):
@@ -296,6 +288,7 @@ class SmfDecrypt:
         startIndex = self.index
         startName = self.checkChunkName
         frameObj = {}
+        frameObj["frameNo"] = frameNo
 
         if self.printFRM:
             self.writeInfo(textSetting.textList["smf"]["frameNumFormat"].format(frameNo, self.frameCount-1))
@@ -539,8 +532,6 @@ class SmfDecrypt:
         if nextNameAndLength[0] in self.meshFormatList:
             subName = nextNameAndLength[0]
 
-        if self.processFlag:
-            v_process = self.v_process.get()
         obbInfo = []
         if subName == "OBB":
             index = self.index
@@ -581,10 +572,8 @@ class SmfDecrypt:
                 self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, self.index, subLength, subRealLength)
                 return False
 
-        if self.processFlag:
-            v_process += (meshCountRatio / len(self.meshFormatList))
-            self.v_process.set(round(v_process))
-            self.processBar.update()
+        if self.progressBarUpdate is not None:
+            self.progressBarUpdate((meshCountRatio / len(self.meshFormatList)), True)
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -638,10 +627,8 @@ class SmfDecrypt:
                 return False
 
         self.meshInfo["boneList"] = boneList
-        if self.processFlag:
-            v_process += (meshCountRatio / len(self.meshFormatList))
-            self.v_process.set(round(v_process))
-            self.processBar.update()
+        if self.progressBarUpdate is not None:
+            self.progressBarUpdate((meshCountRatio / len(self.meshFormatList)), True)
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -692,10 +679,8 @@ class SmfDecrypt:
 
         self.meshInfo["coordList"] = coordList
         self.meshInfo["colorInfoList"] = colorInfoList
-        if self.processFlag:
-            v_process += (meshCountRatio / len(self.meshFormatList))
-            self.v_process.set(round(v_process))
-            self.processBar.update()
+        if self.progressBarUpdate is not None:
+            self.progressBarUpdate((meshCountRatio / len(self.meshFormatList)), True)
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -733,10 +718,8 @@ class SmfDecrypt:
                 return False
 
         self.meshInfo["normalList"] = vNInfo
-        if self.processFlag:
-            v_process += (meshCountRatio / len(self.meshFormatList))
-            self.v_process.set(round(v_process))
-            self.processBar.update()
+        if self.progressBarUpdate is not None:
+            self.progressBarUpdate((meshCountRatio / len(self.meshFormatList)), True)
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -773,10 +756,8 @@ class SmfDecrypt:
                 self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, self.index, subLength, subRealLength)
                 return False
 
-        if self.processFlag:
-            v_process += (meshCountRatio / len(self.meshFormatList))
-            self.v_process.set(round(v_process))
-            self.processBar.update()
+        if self.progressBarUpdate is not None:
+            self.progressBarUpdate((meshCountRatio / len(self.meshFormatList)), True)
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -818,10 +799,8 @@ class SmfDecrypt:
                 return False
 
         self.meshInfo["boneWeightList"] = vAInfo
-        if self.processFlag:
-            v_process += (meshCountRatio / len(self.meshFormatList))
-            self.v_process.set(round(v_process))
-            self.processBar.update()
+        if self.progressBarUpdate is not None:
+            self.progressBarUpdate((meshCountRatio / len(self.meshFormatList)), True)
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -872,10 +851,8 @@ class SmfDecrypt:
                 return False
 
         self.meshInfo["uvList"] = vUVInfo
-        if self.processFlag:
-            v_process += (meshCountRatio / len(self.meshFormatList))
-            self.v_process.set(round(v_process))
-            self.processBar.update()
+        if self.progressBarUpdate is not None:
+            self.progressBarUpdate((meshCountRatio / len(self.meshFormatList)), True)
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -916,10 +893,8 @@ class SmfDecrypt:
         if len(idx2Info) > 0:
             coordIndexList.extend(idx2Info)
 
-        if self.processFlag:
-            v_process += (meshCountRatio / len(self.meshFormatList))
-            self.v_process.set(round(v_process))
-            self.processBar.update()
+        if self.progressBarUpdate is not None:
+            self.progressBarUpdate((meshCountRatio / len(self.meshFormatList)), True)
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -958,10 +933,8 @@ class SmfDecrypt:
         if len(idx4Info) > 0:
             coordIndexList.extend(idx4Info)
         self.meshInfo["coordIndexList"] = coordIndexList
-        if self.processFlag:
-            v_process += (meshCountRatio / len(self.meshFormatList))
-            self.v_process.set(round(v_process))
-            self.processBar.update()
+        if self.progressBarUpdate is not None:
+            self.progressBarUpdate((meshCountRatio / len(self.meshFormatList)), True)
 
         mtrlList = []
         for i in range(materialCount):
@@ -987,10 +960,8 @@ class SmfDecrypt:
                 if self.printMTRL:
                     self.writeInfo()
         self.meshInfo["mtrlList"] = mtrlList
-        if self.processFlag:
-            v_process += (meshCountRatio / len(self.meshFormatList))
-            self.v_process.set(round(v_process))
-            self.processBar.update()
+        if self.progressBarUpdate is not None:
+            self.progressBarUpdate((meshCountRatio / len(self.meshFormatList)), True)
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -1036,10 +1007,8 @@ class SmfDecrypt:
                 self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, self.index, subLength, subRealLength)
                 return False
 
-        if self.processFlag:
-            v_process += (meshCountRatio / len(self.meshFormatList))
-            self.v_process.set(round(v_process))
-            self.processBar.update()
+        if self.progressBarUpdate is not None:
+            self.progressBarUpdate((meshCountRatio / len(self.meshFormatList)), True)
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -1091,10 +1060,8 @@ class SmfDecrypt:
                 self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, self.index, subLength, subRealLength)
                 return False
 
-        if self.processFlag:
-            v_process += (meshCountRatio / len(self.meshFormatList))
-            self.v_process.set(round(v_process))
-            self.processBar.update()
+        if self.progressBarUpdate is not None:
+            self.progressBarUpdate((meshCountRatio / len(self.meshFormatList)), True)
 
         self.index = index
         nextNameAndLength = self.getStructNameAndLength()
@@ -1146,10 +1113,8 @@ class SmfDecrypt:
                 self.error = textSetting.textList["smf"]["errorList"]["E4"].format(self.checkChunkName, self.index, subLength, subRealLength)
                 return False
 
-        if self.processFlag:
-            v_process += (meshCountRatio / len(self.meshFormatList))
-            self.v_process.set(round(v_process))
-            self.processBar.update()
+        if self.progressBarUpdate is not None:
+            self.progressBarUpdate((meshCountRatio / len(self.meshFormatList)), True)
 
         self.meshList.append(self.meshInfo)
         if startIndex + length == index:
@@ -2864,3 +2829,7 @@ class SmfDecrypt:
         w.write(newByteArr)
         w.close()
         return True
+
+    def reload(self):
+        self.open()
+        return self

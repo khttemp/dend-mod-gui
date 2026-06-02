@@ -233,3 +233,73 @@ def readCmdJsonInfo(rootPath):
         pass
 
     return cmdJsonInfo
+
+
+def writeSmfFlagConfig(checked, configPath, section):
+    configRead = configparser.ConfigParser()
+    configRead.read(configPath, encoding="utf-8")
+
+    value = 0
+    if checked.get():
+        value = 1
+
+    if section == "frame":
+        configRead.set("SMF_FRAME", "mode", str(value))
+    if section == "mesh":
+        configRead.set("SMF_MESH", "mode", str(value))
+    if section == "xyz":
+        configRead.set("SMF_XYZ", "mode", str(value))
+    if section == "mtrl":
+        configRead.set("SMF_MTRL", "mode", str(value))
+
+    try:
+        f = open(configPath, "w", encoding="utf-8")
+        configRead.write(f)
+        f.close()
+    except PermissionError:
+        errObj.write(traceback.format_exc())
+
+
+def writeGlbConfig(configPath, value):
+    configRead = configparser.ConfigParser()
+    configRead.read(configPath, encoding="utf-8")
+
+    configRead.set("GLB_WRITE", "mode", str(value))
+
+    try:
+        f = open(configPath, "w", encoding="utf-8")
+        configRead.write(f)
+        f.close()
+    except PermissionError:
+        errObj.write(traceback.format_exc())
+
+
+def readSmfWriteConfig(configPath):
+    if not os.path.exists(configPath):
+        writeDefaultConfig(configPath)
+
+    configRead = configparser.ConfigParser()
+    configRead.read(configPath, encoding="utf-8")
+
+    reReadFlag = False
+    if configCheckOption(configPath, "SMF_FRAME", "mode"):
+        reReadFlag = True
+    if configCheckOption(configPath, "SMF_MESH", "mode"):
+        reReadFlag = True
+    if configCheckOption(configPath, "SMF_XYZ", "mode"):
+        reReadFlag = True
+    if configCheckOption(configPath, "SMF_MTRL", "mode"):
+        reReadFlag = True
+    if configCheckOption(configPath, "GLB_WRITE", "mode"):
+        reReadFlag = True
+
+    if reReadFlag:
+        configRead.read(configPath, encoding="utf-8")
+
+    frameFlag = int(configRead.get("SMF_FRAME", "mode"))
+    meshFlag = int(configRead.get("SMF_MESH", "mode"))
+    xyzFlag = int(configRead.get("SMF_XYZ", "mode"))
+    mtrlFlag = int(configRead.get("SMF_MTRL", "mode"))
+    glb = int(configRead.get("GLB_WRITE", "mode"))
+
+    return ([frameFlag, meshFlag, xyzFlag, mtrlFlag], glb)

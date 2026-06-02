@@ -13,7 +13,7 @@ import program.sub.orgInfoEditor.orgInfoEditorGui as orgInfoEditorGui
 import program.musicEditor.musicEditor as musicEditorProgram
 import program.fvtMaker.fvtMaker as fvtMakerProgram
 import program.sub.railEditor.railEditorGui as railEditorGui
-import program.smf.smf as smfProgram
+import program.sub.smf.smfGui as smfGui
 import program.sub.ssUnity.ssUnityGui as ssUnityGui
 import program.rsRail.rsRail as rsRailProgram
 import program.appearance.rootFrameWidget as rootFrameWidget
@@ -96,9 +96,6 @@ class MainWindow(tkinter.Frame):
         self.menubar.add_cascade(label=textSetting.textList["menu"]["file"]["name"], menu=filemenu)
 
         self.root.config(menu=self.menubar)
-
-    def add_smfWriteOptionMenu(self):
-        pass
 
     def checkUpdate(self):
         if self.onlineVersion == "":
@@ -226,7 +223,6 @@ class MainWindow(tkinter.Frame):
         pass
 
     def callProgram(self, programName):
-        configPath = self.importDict["configPath"]
         self.clearRootFrame()
 
         self.selectedProgram = programName
@@ -245,7 +241,7 @@ class MainWindow(tkinter.Frame):
         elif self.selectedProgram == "railEditor":
             self.selectedProgramFrame = railEditorGui.RailEditorWindow(self.root, self.importDict, self.rootFrameAppearance)
         elif self.selectedProgram == "smf":
-            smfProgram.call_smf(self.root, configPath, self.rootFrameAppearance)
+            self.selectedProgramFrame = smfGui.SmfWindow(self.root, self.importDict, self.rootFrameAppearance)
         elif self.selectedProgram == "SSUnity":
             self.selectedProgramFrame = ssUnityGui.SSUnityWindow(self.root, self.importDict)
         elif self.selectedProgram == "rsRail":
@@ -265,6 +261,10 @@ class MainWindow(tkinter.Frame):
             if self.menubar.entryconfig(tkinter.END) == self.menubar.entryconfig(self.maxMenubarLen):
                 configMenu = self.addComicscriptOptionMenu()
                 self.menubar.add_cascade(label=textSetting.textList["menu"]["comicscript"]["name"], menu=configMenu)
+        elif selectedProgram == "smf":
+            if self.menubar.entryconfig(tkinter.END) == self.menubar.entryconfig(self.maxMenubarLen):
+                configMenu = self.addSmfWriteOptionMenu()
+                self.menubar.add_cascade(label=textSetting.textList["menu"]["smf"]["name"], menu=configMenu)
 
     def addXlsxWriteOptionMenu(self):
         configPath = self.importDict["configPath"]
@@ -299,6 +299,32 @@ class MainWindow(tkinter.Frame):
             comicscriptOptionMenu.add_radiobutton(label=textSetting.textList["menu"]["comicscript"]["gameList"][i], value=i, variable=self.v_comicscriptCheck, command=partial(mainProcess.writeComicscriptConfig, configPath, i))
         return comicscriptOptionMenu
 
+    def addSmfWriteOptionMenu(self):
+        configPath = self.importDict["configPath"]
+        flagList, glb = mainProcess.readSmfWriteConfig(configPath)
+
+        self.v_frameCheck = tkinter.IntVar()
+        self.v_frameCheck.set(flagList[0])
+        self.v_meshCheck = tkinter.IntVar()
+        self.v_meshCheck.set(flagList[1])
+        self.v_XYZCheck = tkinter.IntVar()
+        self.v_XYZCheck.set(flagList[2])
+        self.v_mtrlCheck = tkinter.IntVar()
+        self.v_mtrlCheck.set(flagList[3])
+        self.v_flagGlbMode = tkinter.IntVar()
+        self.v_flagGlbMode.set(glb)
+
+        smfWriteOptionMenu = tkinter.Menu(self.menubar, tearoff=False)
+        smfWriteOptionMenu.add_checkbutton(label=textSetting.textList["menu"]["smf"]["write"]["opt1"], variable=self.v_frameCheck, command=partial(mainProcess.writeSmfFlagConfig, self.v_frameCheck, configPath, "frame"))
+        smfWriteOptionMenu.add_checkbutton(label=textSetting.textList["menu"]["smf"]["write"]["opt2"], variable=self.v_meshCheck, command=partial(mainProcess.writeSmfFlagConfig, self.v_meshCheck, configPath, "mesh"))
+        smfWriteOptionMenu.add_checkbutton(label=textSetting.textList["menu"]["smf"]["write"]["opt3"], variable=self.v_XYZCheck, command=partial(mainProcess.writeSmfFlagConfig, self.v_XYZCheck, configPath, "xyz"))
+        smfWriteOptionMenu.add_checkbutton(label=textSetting.textList["menu"]["smf"]["write"]["opt4"], variable=self.v_mtrlCheck, command=partial(mainProcess.writeSmfFlagConfig, self.v_mtrlCheck, configPath, "mtrl"))
+        smfWriteOptionMenu.add_separator()
+        smfWriteOptionMenu.add_radiobutton(label=textSetting.textList["menu"]["smf"]["glb"]["opt1"], variable=self.v_flagGlbMode, value=0, command=partial(mainProcess.writeGlbConfig, configPath, 0))
+        smfWriteOptionMenu.add_radiobutton(label=textSetting.textList["menu"]["smf"]["glb"]["opt2"], variable=self.v_flagGlbMode, value=1, command=partial(mainProcess.writeGlbConfig, configPath, 1))
+
+        return smfWriteOptionMenu
+
     def loadFile(self):
         if self.selectedProgram is None:
             mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E1"])
@@ -319,7 +345,7 @@ class MainWindow(tkinter.Frame):
         elif self.selectedProgram == "railEditor":
             self.selectedProgramFrame.openFile()
         elif self.selectedProgram == "smf":
-            smfProgram.openFile(self.v_frameCheck.get(), self.v_meshCheck.get(), self.v_XYZCheck.get(), self.v_mtrlCheck.get())
+            self.selectedProgramFrame.openFile()
         elif self.selectedProgram == "SSUnity":
             self.selectedProgramFrame.openFile()
         elif self.selectedProgram == "rsRail":
