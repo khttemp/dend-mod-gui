@@ -6,11 +6,14 @@ import traceback
 import webbrowser
 import requests
 import json
+import csv
 
 import program.sub.textSetting as textSetting
 import program.sub.errorLogClass as errorLogClass
+import program.sub.encodingClass as encodingClass
 
 errObj = errorLogClass.ErrorLogObj()
+encObj = encodingClass.SJISEncodingObject()
 
 
 def resource_path(localDir, relative_path):
@@ -303,3 +306,43 @@ def readSmfWriteConfig(configPath):
     glb = int(configRead.get("GLB_WRITE", "mode"))
 
     return ([frameFlag, meshFlag, xyzFlag, mtrlFlag], glb)
+
+
+def readFvtInfo(rootPath):
+    fvtInfo = {
+        "LS": None,
+        "BS": None,
+        "CS": None,
+        "RS": None,
+    }
+    try:
+        for key in fvtInfo.keys():
+            filename = "{0}.csv".format(key)
+            filePath = os.path.join(rootPath, "program", "sub", "fvtMaker", "importPy", "resource")
+            path = resource_path(filePath, filename)
+            with open(path, mode='r', encoding=encObj.enc, newline='') as f:
+                reader = csv.reader(f)
+                fvtInfo[key] = list(reader)
+    except Exception:
+        pass
+
+    return fvtInfo
+
+
+def readFvtImagePath(rootPath):
+    fvtImageInfo = {
+        "LS": "",
+        "BS": "",
+        "CS": "",
+        "RS": "",
+    }
+    try:
+        for key in fvtImageInfo.keys():
+            filename = "{0}.png".format(key)
+            filePath = os.path.join(rootPath, "program", "sub", "fvtMaker", "importPy", "resource")
+            path = resource_path(filePath, filename)
+            fvtImageInfo[key] = path
+    except Exception:
+        pass
+
+    return fvtImageInfo

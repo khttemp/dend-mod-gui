@@ -11,7 +11,7 @@ import program.sub.mdlBin.mdlBinGui as mdlBinGui
 import program.sub.mdlinfo.mdlinfoGui as mdlinfoGui
 import program.sub.orgInfoEditor.orgInfoEditorGui as orgInfoEditorGui
 import program.sub.musicEditor.musicEditorGui as musicEditorGui
-import program.fvtMaker.fvtMaker as fvtMakerProgram
+import program.sub.fvtMaker.fvtMakerGui as fvtMakerGui
 import program.sub.railEditor.railEditorGui as railEditorGui
 import program.sub.smf.smfGui as smfGui
 import program.sub.ssUnity.ssUnityGui as ssUnityGui
@@ -44,6 +44,10 @@ class MainWindow(tkinter.Frame):
         self.onlineVersion = mainProcess.getOnlineUpdateVer(self.importDict["configPath"])
         cmdJsonInfo = mainProcess.readCmdJsonInfo(self.importDict["rootPath"])
         self.importDict["cmdJsonInfo"] = cmdJsonInfo
+        fvtInfo = mainProcess.readFvtInfo(self.importDict["rootPath"])
+        self.importDict["fvtInfo"] = fvtInfo
+        fvtImageInfo = mainProcess.readFvtImagePath(self.importDict["rootPath"])
+        self.importDict["fvtImageInfo"] = fvtImageInfo
 
         self.checkConfig()
         self.drawMenu()
@@ -237,7 +241,7 @@ class MainWindow(tkinter.Frame):
         elif self.selectedProgram == "musicEditor":
             self.selectedProgramFrame = musicEditorGui.MusicEditorWindow(self.root, self.importDict, self.rootFrameAppearance)
         elif self.selectedProgram == "fvtMaker":
-            fvtMakerProgram.call_fvtMaker(self.root, self.rootFrameAppearance)
+            self.selectedProgramFrame = fvtMakerGui.FvtMakerWindow(self.root, self.importDict, self.rootFrameAppearance)
         elif self.selectedProgram == "railEditor":
             self.selectedProgramFrame = railEditorGui.RailEditorWindow(self.root, self.importDict, self.rootFrameAppearance)
         elif self.selectedProgram == "smf":
@@ -341,7 +345,7 @@ class MainWindow(tkinter.Frame):
         elif self.selectedProgram == "musicEditor":
             self.selectedProgramFrame.openFile()
         elif self.selectedProgram == "fvtMaker":
-            fvtMakerProgram.openFile()
+            self.selectedProgramFrame.openFile()
         elif self.selectedProgram == "railEditor":
             self.selectedProgramFrame.openFile()
         elif self.selectedProgram == "smf":
