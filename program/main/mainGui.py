@@ -15,7 +15,7 @@ import program.sub.fvtMaker.fvtMakerGui as fvtMakerGui
 import program.sub.railEditor.railEditorGui as railEditorGui
 import program.sub.smf.smfGui as smfGui
 import program.sub.ssUnity.ssUnityGui as ssUnityGui
-import program.rsRail.rsRail as rsRailProgram
+import program.sub.rsRail.rsRailGui as rsRailGui
 import program.appearance.rootFrameWidget as rootFrameWidget
 
 import configparser
@@ -249,8 +249,8 @@ class MainWindow(tkinter.Frame):
         elif self.selectedProgram == "SSUnity":
             self.selectedProgramFrame = ssUnityGui.SSUnityWindow(self.root, self.importDict)
         elif self.selectedProgram == "rsRail":
-            rsRailProgram.call_rsRail(self.root, self.rootFrameAppearance)
-        
+            self.selectedProgramFrame = rsRailGui.RsRailWindow(self.root, self.importDict)
+
         self.setConfigMenu(self.selectedProgram)
 
     def setConfigMenu(self, selectedProgram):
@@ -353,7 +353,7 @@ class MainWindow(tkinter.Frame):
         elif self.selectedProgram == "SSUnity":
             self.selectedProgramFrame.openFile()
         elif self.selectedProgram == "rsRail":
-            rsRailProgram.openFile()
+            self.selectedProgramFrame.openFile()
 
 
 def guiMain(importDict):
