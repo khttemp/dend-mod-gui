@@ -6,14 +6,9 @@ import program.sub.textSetting as textSetting
 from program.sub.ssUnity.importPy.excelWidget import ExcelWidget
 
 
-def resource_path(localDir, relative_path):
-    bundle_dir = getattr(sys, "_MEIPASS", localDir)
-    return os.path.join(bundle_dir, relative_path)
-
-
-def readModelInfo(jsonName):
-    filePath = os.path.join(os.path.abspath(os.path.dirname(__file__)), "importPy")
-    path = resource_path(filePath, jsonName)
+def readModelInfo(rootPath, jsonName):
+    filePath = os.path.join(rootPath, "program", "sub", "ssUnity", "importPy")
+    path = os.path.join(filePath, jsonName)
     f = open(path, "r", encoding="utf-8")
     modelDict = json.load(f)
     f.close()
@@ -45,16 +40,16 @@ def extractDenFile(filePath, fileType, data):
     return False
 
 
-def extractDenFileByExcel(filePath, data, configPath):
-    railModelInfo, ambModelInfo = readModelInfo("model.json")
+def extractDenFileByExcel(filePath, data, rootPath, configPath):
+    railModelInfo, ambModelInfo = readModelInfo(rootPath, "model.json")
     excelWidget = ExcelWidget(data.script.tobytes().decode(), filePath, configPath, railModelInfo, ambModelInfo)
     if not excelWidget.extractExcel():
         return (False, excelWidget.errorMessage)
     return (True, excelWidget.warningMessage)
 
 
-def loadExcelData(filePath, data, configPath):
-    railModelInfo, ambModelInfo = readModelInfo("model.json")
+def loadExcelData(filePath, data, rootPath, configPath):
+    railModelInfo, ambModelInfo = readModelInfo(rootPath, "model.json")
     excelWidget = ExcelWidget(data.script.tobytes().decode(), filePath, configPath, railModelInfo, ambModelInfo)
     if not excelWidget.loadExcelAndMerge():
         return (False, {"message":excelWidget.errorMessage})

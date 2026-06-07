@@ -18,10 +18,6 @@ import program.sub.ssUnity.ssUnityGui as ssUnityGui
 import program.sub.rsRail.rsRailGui as rsRailGui
 import program.sub.appearance.rootFrameWidget as rootFrameWidget
 
-import configparser
-import platform
-import ctypes
-import traceback
 import tkinter
 from tkinter import ttk
 from tkinter import messagebox as mb
@@ -33,9 +29,7 @@ class MainWindow(tkinter.Frame):
     def __init__(self, master, importDict):
         super().__init__(master)
         self.root = master
-        self.rootFrameAppearance = None
-        self.darkModeDllPath = None
-        self.darkModeDll = None
+        self.rootFrameAppearance = rootFrameWidget.RootFrameAppearance(master, importDict)
         self.importDict = importDict
 
         self.selectedProgram = None
@@ -51,8 +45,9 @@ class MainWindow(tkinter.Frame):
 
         self.checkConfig()
         self.drawMenu()
+        self.rootFrameAppearance.readRootFrameAppearance()
+        self.setConfigStyle()
 
-        self.readRootFrameAppearance()
         self.maxMenubarLen = self.menubar.index(tkinter.END)
 
         self.root.after(100, self.checkUpdate)
@@ -90,7 +85,7 @@ class MainWindow(tkinter.Frame):
         progmenu.add_separator()
         progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["smf"], value=9, variable=self.v_prog, command=partial(self.callProgram, "smf"))
         progmenu.add_separator()
-        progmenu.add_command(label=textSetting.textList["menu"]["appearance"]["rootFrame"], command=self.editRootFrameAppearance)
+        progmenu.add_command(label=textSetting.textList["menu"]["appearance"]["rootFrame"], command=self.rootFrameAppearance.editRootFrameAppearance)
         progmenu.add_radiobutton(label=textSetting.textList["menu"]["program"]["exit"], value=-2, variable=self.v_prog, command=sys.exit)
 
         filemenu = tkinter.Menu(self.menubar, tearoff=False)
@@ -120,111 +115,41 @@ class MainWindow(tkinter.Frame):
                 continue
             child.destroy()
 
-    def readRootFrameAppearance(self):
-        configPath = self.importDict["configPath"]
-        mainProcess.configCheckOption(configPath, "ROOT_FRAME", "bg_color", "SystemButtonFace")
-        mainProcess.configCheckOption(configPath, "ROOT_FRAME", "dark_mode")
-        mainProcess.configCheckOption(configPath, "ROOT_FRAME", "theme", "vista")
-        mainProcess.configCheckOption(configPath, "LABEL", "fg_color", "SystemWindowText")
-        mainProcess.configCheckOption(configPath, "LABELFRAME_LABEL", "fg_color", "SystemWindowText")
-        mainProcess.configCheckOption(configPath, "RADIO", "fg_color", "SystemWindowText")
-        mainProcess.configCheckOption(configPath, "TREEVIEW", "bg_color", "SystemWindow")
-        mainProcess.configCheckOption(configPath, "TREEVIEW", "fg_color", "SystemWindowText")
-        mainProcess.configCheckOption(configPath, "TREEVIEW", "sel_bg_color", "SystemHighlight")
-        mainProcess.configCheckOption(configPath, "TREEVIEW", "sel_fg_color", "SystemWindow")
-        mainProcess.configCheckOption(configPath, "BUTTON", "fg_color", "SystemWindowText")
-        mainProcess.configCheckOption(configPath, "ENTRY", "fg_color", "SystemWindowText")
-        mainProcess.configCheckOption(configPath, "TREEVIEW", "field_bg_color", "SystemWindow")
-        mainProcess.configCheckOption(configPath, "TREEVIEW_HEADER", "bg_color", "SystemButtonFace")
-        mainProcess.configCheckOption(configPath, "TREEVIEW_HEADER", "fg_color", "SystemWindowText")
-        mainProcess.configCheckOption(configPath, "COMBOBOX", "bg_color", "SystemWindow")
-        mainProcess.configCheckOption(configPath, "COMBOBOX", "fg_color", "SystemWindowText")
-        mainProcess.configCheckOption(configPath, "COMBOBOX", "sel_bg_color", "SystemHighlight")
-        mainProcess.configCheckOption(configPath, "COMBOBOX", "sel_fg_color", "SystemWindow")
-        mainProcess.configCheckOption(configPath, "RADIO", "indicator_color", "SystemWindow")
-        mainProcess.configCheckOption(configPath, "RADIO", "sel_indicator_color", "SystemWindowText")
-
-        configRead = configparser.ConfigParser()
-        configRead.read(configPath, encoding="utf-8")
-        rootDarkModeFlag = int(configRead.get("ROOT_FRAME", "dark_mode")) > 0
-        rootFrameBackgroundColor = configRead.get("ROOT_FRAME", "bg_color")
-        self.root["bg"] = rootFrameBackgroundColor
-
-        labelForegroundColor = configRead.get("LABEL", "fg_color")
-        labelframeLabelForegroundColor = configRead.get("LABELFRAME_LABEL", "fg_color")
-        radioForegroundColor = configRead.get("RADIO", "fg_color")
-
-        treeviewBackgroundColor = configRead.get("TREEVIEW", "bg_color")
-        treeviewForegroundColor = configRead.get("TREEVIEW", "fg_color")
-        treeviewSelectedBackgroundColor = configRead.get("TREEVIEW", "sel_bg_color")
-        treeviewSelectedForegroundColor = configRead.get("TREEVIEW", "sel_fg_color")
-
-        buttonForegroundColor = configRead.get("BUTTON", "fg_color")
-        entryForegroundColor = configRead.get("ENTRY", "fg_color")
-
-        treeviewFieldBackgroundColor = configRead.get("TREEVIEW", "field_bg_color")
-        treeviewHeaderBackgroundColor = configRead.get("TREEVIEW_HEADER", "bg_color")
-        treeviewHeaderForegroundColor = configRead.get("TREEVIEW_HEADER", "fg_color")
-
-        comboboxBackgroundColor = configRead.get("COMBOBOX", "bg_color")
-        comboboxForegroundColor = configRead.get("COMBOBOX", "fg_color")
-        comboboxSelectedBackgroundColor = configRead.get("COMBOBOX", "sel_bg_color")
-        comboboxSelectedForegroundColor = configRead.get("COMBOBOX", "sel_fg_color")
-
-        indicatorColor = configRead.get("RADIO", "indicator_color")
-        indicatorSelectedColor = configRead.get("RADIO", "sel_indicator_color")
-
-        if platform.system() == "Windows":
-            try:
-                if rootDarkModeFlag:
-                    self.darkModeDllPath = mainProcess.dll_path(self.importDict["rootPath"], "tablacusdark64.dll")
-                    self.darkModeDll = ctypes.CDLL(self.darkModeDllPath)
-                    rootDarkModeFlag = True
-            except Exception:
-                rootDarkModeFlag = False
-                errObj.write(traceback.format_exc())
-
-        themeName = configRead.get("ROOT_FRAME", "theme")
-        self.style.theme_use(themeName)
-
-        self.style.configure("custom.TLabel", background=rootFrameBackgroundColor, foreground=labelForegroundColor)
-        self.style.configure("custom.red.TLabel", background=rootFrameBackgroundColor, foreground="red")
-        self.style.configure("custom.blue.TLabel", background=rootFrameBackgroundColor, foreground="blue")
-        self.style.configure("custom.green.TLabel", background=rootFrameBackgroundColor, foreground="green")
-        self.style.configure("custom.444444.TLabel", background=rootFrameBackgroundColor, foreground="#444444")
-        self.style.configure("custom.TButton", background=rootFrameBackgroundColor, foreground=buttonForegroundColor)
-        self.style.configure("custom.update.TButton", background=rootFrameBackgroundColor, foreground=buttonForegroundColor, font=textSetting.textList["font7"], width=5, disabledbackground=rootFrameBackgroundColor)
-        self.style.configure("custom.listbox.TButton", background=rootFrameBackgroundColor, foreground=buttonForegroundColor, font=textSetting.textList["font2"], width=5)
-        self.style.configure("custom.paste.TButton", background=rootFrameBackgroundColor, foreground=buttonForegroundColor, font=textSetting.textList["font2"], width=10)
-        self.style.configure("custom.elsePerf.TButton", background=rootFrameBackgroundColor, foreground=buttonForegroundColor, font=textSetting.textList["font7"])
-        self.style.configure("custom.TRadiobutton", background=rootFrameBackgroundColor, foreground=radioForegroundColor)
-        self.style.configure("custom.TCheckbutton", background=rootFrameBackgroundColor, foreground=radioForegroundColor, font=textSetting.textList["font2"])
-        self.style.configure("custom.railFlag.TCheckbutton", background=rootFrameBackgroundColor, foreground=radioForegroundColor)
-        self.style.configure("custom.TLabelframe", background=rootFrameBackgroundColor)
-        self.style.configure("custom.TLabelframe.Label", background=rootFrameBackgroundColor, foreground=labelframeLabelForegroundColor)
-        self.style.configure("custom.TFrame", background=rootFrameBackgroundColor)
-        self.style.configure("custom.TSeparator", background=rootFrameBackgroundColor)
-        self.style.configure("custom.Treeview", background=treeviewBackgroundColor, foreground=treeviewForegroundColor, fieldbackground=treeviewFieldBackgroundColor)
-        self.style.configure("custom.Treeview.Heading", background=treeviewHeaderBackgroundColor, foreground=treeviewHeaderForegroundColor)
-        self.style.configure("custom.TMenubutton", background=rootFrameBackgroundColor, foreground=buttonForegroundColor)
-        self.style.configure("custom.TSpinbox", fieldbackground=rootFrameBackgroundColor, foreground=buttonForegroundColor)
-        self.style.map("custom.TRadiobutton", indicatorcolor=[("!selected", indicatorColor), ("selected", indicatorSelectedColor)])
-        self.style.map("custom.TCheckbutton", indicatorcolor=[("!selected", indicatorColor), ("selected", indicatorSelectedColor)])
-        self.style.map("custom.railFlag.TCheckbutton", indicatorcolor=[("!selected", indicatorColor), ("selected", indicatorSelectedColor)])
-        self.style.map("custom.TEntry", background=[("!readonly", rootFrameBackgroundColor), ("readonly", rootFrameBackgroundColor)], fieldbackground=[("!readonly", rootFrameBackgroundColor), ("readonly", rootFrameBackgroundColor)], foreground=[("!readonly", entryForegroundColor), ("readonly", entryForegroundColor)])
-        self.style.map("custom.Horizontal.TScrollbar", background=[("!disabled", rootFrameBackgroundColor), ("disabled", rootFrameBackgroundColor)])
-        self.style.map("custom.Vertical.TScrollbar", background=[("!disabled", rootFrameBackgroundColor), ("disabled", rootFrameBackgroundColor)])
-        self.style.map("custom.TCombobox", background=[("readonly", rootFrameBackgroundColor), ("disabled", rootFrameBackgroundColor)], fieldbackground=[("readonly", comboboxBackgroundColor), ("disabled", comboboxBackgroundColor)], foreground=[("readonly", comboboxForegroundColor), ("disabled", comboboxForegroundColor)])
-        self.style.map("custom.Treeview", background=[("selected", treeviewSelectedBackgroundColor)], foreground=[("selected", treeviewSelectedForegroundColor)])
-        self.root.option_add("*TCombobox*Listbox.background", comboboxBackgroundColor)
-        self.root.option_add("*TCombobox*Listbox.foreground", comboboxForegroundColor)
-        self.root.option_add("*TCombobox*Listbox.selectBackground", comboboxSelectedBackgroundColor)
-        self.root.option_add("*TCombobox*Listbox.selectForeground", comboboxSelectedForegroundColor)
-
-        self.rootFrameAppearance = rootFrameWidget.RootFrameAppearance(self.root, configPath, labelForegroundColor, rootFrameBackgroundColor, configRead)
-
-    def editRootFrameAppearance(self):
-        pass
+    def setConfigStyle(self):
+        self.style.theme_use(self.rootFrameAppearance.configStyle.themeName)
+        self.style.configure("custom.TLabel", background=self.rootFrameAppearance.bgColor, foreground=self.rootFrameAppearance.configStyle.labelForegroundColor)
+        self.style.configure("custom.red.TLabel", background=self.rootFrameAppearance.bgColor, foreground="red")
+        self.style.configure("custom.blue.TLabel", background=self.rootFrameAppearance.bgColor, foreground="blue")
+        self.style.configure("custom.green.TLabel", background=self.rootFrameAppearance.bgColor, foreground="green")
+        self.style.configure("custom.444444.TLabel", background=self.rootFrameAppearance.bgColor, foreground="#444444")
+        self.style.configure("custom.TButton", background=self.rootFrameAppearance.bgColor, foreground=self.rootFrameAppearance.configStyle.buttonForegroundColor)
+        self.style.configure("custom.update.TButton", background=self.rootFrameAppearance.bgColor, foreground=self.rootFrameAppearance.configStyle.buttonForegroundColor, font=textSetting.textList["font7"], width=5, disabledbackground=self.rootFrameAppearance.bgColor)
+        self.style.configure("custom.listbox.TButton", background=self.rootFrameAppearance.bgColor, foreground=self.rootFrameAppearance.configStyle.buttonForegroundColor, font=textSetting.textList["font2"], width=5)
+        self.style.configure("custom.paste.TButton", background=self.rootFrameAppearance.bgColor, foreground=self.rootFrameAppearance.configStyle.buttonForegroundColor, font=textSetting.textList["font2"], width=10)
+        self.style.configure("custom.elsePerf.TButton", background=self.rootFrameAppearance.bgColor, foreground=self.rootFrameAppearance.configStyle.buttonForegroundColor, font=textSetting.textList["font7"])
+        self.style.configure("custom.TRadiobutton", background=self.rootFrameAppearance.bgColor, foreground=self.rootFrameAppearance.configStyle.radioForegroundColor)
+        self.style.configure("custom.TCheckbutton", background=self.rootFrameAppearance.bgColor, foreground=self.rootFrameAppearance.configStyle.radioForegroundColor, font=textSetting.textList["font2"])
+        self.style.configure("custom.railFlag.TCheckbutton", background=self.rootFrameAppearance.bgColor, foreground=self.rootFrameAppearance.configStyle.radioForegroundColor)
+        self.style.configure("custom.TLabelframe", background=self.rootFrameAppearance.bgColor)
+        self.style.configure("custom.TLabelframe.Label", background=self.rootFrameAppearance.bgColor, foreground=self.rootFrameAppearance.configStyle.labelframeLabelForegroundColor)
+        self.style.configure("custom.TFrame", background=self.rootFrameAppearance.bgColor)
+        self.style.configure("custom.TSeparator", background=self.rootFrameAppearance.bgColor)
+        self.style.configure("custom.Treeview", background=self.rootFrameAppearance.configStyle.treeviewBackgroundColor, foreground=self.rootFrameAppearance.configStyle.treeviewForegroundColor, fieldbackground=self.rootFrameAppearance.configStyle.treeviewFieldBackgroundColor)
+        self.style.configure("custom.Treeview.Heading", background=self.rootFrameAppearance.configStyle.treeviewHeaderBackgroundColor, foreground=self.rootFrameAppearance.configStyle.treeviewHeaderForegroundColor)
+        self.style.configure("custom.TMenubutton", background=self.rootFrameAppearance.bgColor, foreground=self.rootFrameAppearance.configStyle.buttonForegroundColor)
+        self.style.configure("custom.TSpinbox", fieldbackground=self.rootFrameAppearance.bgColor, foreground=self.rootFrameAppearance.configStyle.buttonForegroundColor)
+        self.style.map("custom.TRadiobutton", indicatorcolor=[("!selected", self.rootFrameAppearance.configStyle.indicatorColor), ("selected", self.rootFrameAppearance.configStyle.indicatorSelectedColor)])
+        self.style.map("custom.TCheckbutton", indicatorcolor=[("!selected", self.rootFrameAppearance.configStyle.indicatorColor), ("selected", self.rootFrameAppearance.configStyle.indicatorSelectedColor)])
+        self.style.map("custom.railFlag.TCheckbutton", indicatorcolor=[("!selected", self.rootFrameAppearance.configStyle.indicatorColor), ("selected", self.rootFrameAppearance.configStyle.indicatorSelectedColor)])
+        self.style.map("custom.TEntry", background=[("!readonly", self.rootFrameAppearance.bgColor), ("readonly", self.rootFrameAppearance.bgColor)], fieldbackground=[("!readonly", self.rootFrameAppearance.bgColor), ("readonly", self.rootFrameAppearance.bgColor)], foreground=[("!readonly", self.rootFrameAppearance.configStyle.entryForegroundColor), ("readonly", self.rootFrameAppearance.configStyle.entryForegroundColor)])
+        self.style.map("custom.Horizontal.TScrollbar", background=[("!disabled", self.rootFrameAppearance.bgColor), ("disabled", self.rootFrameAppearance.bgColor)])
+        self.style.map("custom.Vertical.TScrollbar", background=[("!disabled", self.rootFrameAppearance.bgColor), ("disabled", self.rootFrameAppearance.bgColor)])
+        self.style.map("custom.TCombobox", background=[("readonly", self.rootFrameAppearance.bgColor), ("disabled", self.rootFrameAppearance.bgColor)], fieldbackground=[("readonly", self.rootFrameAppearance.configStyle.comboboxBackgroundColor), ("disabled", self.rootFrameAppearance.configStyle.comboboxBackgroundColor)], foreground=[("readonly", self.rootFrameAppearance.configStyle.comboboxForegroundColor), ("disabled", self.rootFrameAppearance.configStyle.comboboxForegroundColor)])
+        self.style.map("custom.Treeview", background=[("selected", self.rootFrameAppearance.configStyle.treeviewSelectedBackgroundColor)], foreground=[("selected", self.rootFrameAppearance.configStyle.treeviewSelectedForegroundColor)])
+        self.root.option_add("*TCombobox*Listbox.background", self.rootFrameAppearance.configStyle.comboboxBackgroundColor)
+        self.root.option_add("*TCombobox*Listbox.foreground", self.rootFrameAppearance.configStyle.comboboxForegroundColor)
+        self.root.option_add("*TCombobox*Listbox.selectBackground", self.rootFrameAppearance.configStyle.comboboxSelectedBackgroundColor)
+        self.root.option_add("*TCombobox*Listbox.selectForeground", self.rootFrameAppearance.configStyle.comboboxSelectedForegroundColor)
 
     def callProgram(self, programName):
         self.clearRootFrame()

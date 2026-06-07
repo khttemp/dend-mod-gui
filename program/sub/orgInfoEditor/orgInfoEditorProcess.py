@@ -1,5 +1,4 @@
 import os
-import sys
 
 import program.sub.textSetting as textSetting
 from program.sub.orgInfoEditor.dendDecrypt import LSdecrypt as dendLs
@@ -9,30 +8,25 @@ from program.sub.orgInfoEditor.dendDecrypt import RSdecrypt as dendRs
 from program.sub.orgInfoEditor.dendDecrypt import SSdecrypt as dendSs
 
 
-def resource_path(localDir, relative_path):
-    bundle_dir = getattr(sys, "_MEIPASS", localDir)
-    return os.path.join(bundle_dir, relative_path)
-
-
-def readDefaultData(game):
-    filePath = os.path.join(os.path.abspath(os.path.dirname(__file__)), "dendData")
+def readDefaultData(rootPath, game):
+    filePath = os.path.join(rootPath, "program", "sub", "orgInfoEditor", "dendData")
     errorMsg = textSetting.textList["errorList"]["E4"]
     defaultData = []
     path = ""
     if game == "SS":
-        path = resource_path(filePath, "train_org_data.den")
+        path = os.path.join(filePath, "train_org_data.den")
         defaultDecrypt = dendSs.SSdecrypt(path)
     elif game == "RS":
-        path = resource_path(filePath, "TRAIN_DATA4TH.BIN")
+        path = os.path.join(filePath, "TRAIN_DATA4TH.BIN")
         defaultDecrypt = dendRs.RSdecrypt(path)
     elif game == "CS":
-        path = resource_path(filePath, "TRAIN_DATA3RD.BIN")
+        path = os.path.join(filePath, "TRAIN_DATA3RD.BIN")
         defaultDecrypt = dendCs.CSdecrypt(path)
     elif game == "BS":
-        path = resource_path(filePath, "TRAIN_DATA2ND.BIN")
+        path = os.path.join(filePath, "TRAIN_DATA2ND.BIN")
         defaultDecrypt = dendBs.BSdecrypt(path)
     elif game == "LS":
-        path = resource_path(filePath, "TRAIN_DATA.BIN")
+        path = os.path.join(filePath, "TRAIN_DATA.BIN")
         defaultDecrypt = dendLs.LSdecrypt(path)
     else:
         return False, {"message":errorMsg }

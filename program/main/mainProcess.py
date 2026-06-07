@@ -1,5 +1,4 @@
 import os
-import sys
 import configparser
 import datetime
 import traceback
@@ -8,7 +7,6 @@ import requests
 import json
 import csv
 
-import program.sub.textSetting as textSetting
 import program.sub.errorLogClass as errorLogClass
 import program.sub.encodingClass as encodingClass
 
@@ -16,19 +14,13 @@ errObj = errorLogClass.ErrorLogObj()
 encObj = encodingClass.SJISEncodingObject()
 
 
-def resource_path(localDir, relative_path):
-    bundle_dir = getattr(sys, "_MEIPASS", localDir)
-    return os.path.join(bundle_dir, relative_path)
-
-
-def dll_path(rootPath, relative_path):
-    bundle_dir = getattr(sys, "_MEIPASS", os.path.join(rootPath, "program", "appearance", "dllData"))
-    return os.path.join(bundle_dir, relative_path)
+def dll_path(rootPath, fileName):
+    return os.path.join(rootPath, "program", "sub", "appearance", "dllData", fileName)
 
 
 def getUpdateVer(rootPath):
     try:
-        path = resource_path(rootPath, "ver.txt")
+        path = os.path.join(rootPath, "ver.txt")
         f = open(path, "r", encoding="utf-8")
         line = f.read()
         f.close()
@@ -228,7 +220,7 @@ def readCmdJsonInfo(rootPath):
             cmdJsonInfo = json.loads(response.text)
         else:
             filePath = os.path.join(rootPath, "program", "sub", "comicscript", "importPy")
-            path = resource_path(filePath, jsonName)
+            path = os.path.join(filePath, jsonName)
             f = open(path, "r", encoding="utf-8")
             cmdJsonInfo = json.load(f)
             f.close()
@@ -319,7 +311,7 @@ def readFvtInfo(rootPath):
         for key in fvtInfo.keys():
             filename = "{0}.csv".format(key)
             filePath = os.path.join(rootPath, "program", "sub", "fvtMaker", "importPy", "resource")
-            path = resource_path(filePath, filename)
+            path = os.path.join(filePath, filename)
             with open(path, mode='r', encoding=encObj.enc, newline='') as f:
                 reader = csv.reader(f)
                 fvtInfo[key] = list(reader)
@@ -340,9 +332,43 @@ def readFvtImagePath(rootPath):
         for key in fvtImageInfo.keys():
             filename = "{0}.png".format(key)
             filePath = os.path.join(rootPath, "program", "sub", "fvtMaker", "importPy", "resource")
-            path = resource_path(filePath, filename)
+            path = os.path.join(filePath, filename)
             fvtImageInfo[key] = path
     except Exception:
         pass
 
     return fvtImageInfo
+
+
+def writeConfigAppearance(configPath, configStyle):
+    configRead = configparser.ConfigParser()
+    configRead.read(configPath, encoding="utf-8")
+
+    configRead.set("ROOT_FRAME", "bg_color", configStyle.bgColor)
+    configRead.set("ROOT_FRAME", "dark_mode", str(int(configStyle.rootDarkModeFlag)))
+    configRead.set("ROOT_FRAME", "theme", configStyle.themeName)
+    configRead.set("LABEL", "fg_color", configStyle.labelForegroundColor)
+    configRead.set("LABELFRAME_LABEL", "fg_color", configStyle.labelframeLabelForegroundColor)
+    configRead.set("RADIO", "fg_color", configStyle.radioForegroundColor)
+    configRead.set("TREEVIEW", "bg_color", configStyle.treeviewBackgroundColor)
+    configRead.set("TREEVIEW", "fg_color", configStyle.treeviewForegroundColor)
+    configRead.set("TREEVIEW", "sel_bg_color", configStyle.treeviewSelectedBackgroundColor)
+    configRead.set("TREEVIEW", "sel_fg_color", configStyle.treeviewSelectedForegroundColor)
+    configRead.set("BUTTON", "fg_color", configStyle.buttonForegroundColor)
+    configRead.set("ENTRY", "fg_color", configStyle.entryForegroundColor)
+    configRead.set("TREEVIEW", "field_bg_color", configStyle.treeviewFieldBackgroundColor)
+    configRead.set("TREEVIEW_HEADER", "bg_color", configStyle.treeviewHeaderBackgroundColor)
+    configRead.set("TREEVIEW_HEADER", "fg_color", configStyle.treeviewHeaderForegroundColor)
+    configRead.set("COMBOBOX", "bg_color", configStyle.comboboxBackgroundColor)
+    configRead.set("COMBOBOX", "fg_color", configStyle.comboboxForegroundColor)
+    configRead.set("COMBOBOX", "sel_bg_color", configStyle.comboboxSelectedBackgroundColor)
+    configRead.set("COMBOBOX", "sel_fg_color", configStyle.comboboxSelectedForegroundColor)
+    configRead.set("RADIO", "indicator_color", configStyle.indicatorColor)
+    configRead.set("RADIO", "sel_indicator_color", configStyle.indicatorSelectedColor)
+
+    try:
+        f = open(configPath, "w", encoding="utf-8")
+        configRead.write(f)
+        f.close()
+    except PermissionError:
+        errObj.write(traceback.format_exc())
