@@ -16,7 +16,7 @@ import program.sub.railEditor.railEditorGui as railEditorGui
 import program.sub.smf.smfGui as smfGui
 import program.sub.ssUnity.ssUnityGui as ssUnityGui
 import program.sub.rsRail.rsRailGui as rsRailGui
-import program.appearance.rootFrameWidget as rootFrameWidget
+import program.sub.appearance.rootFrameWidget as rootFrameWidget
 
 import configparser
 import platform
