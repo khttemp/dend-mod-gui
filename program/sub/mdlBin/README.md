@@ -1,6 +1,6 @@
 # モデルバイナリ
 
-車両以外に関するバイナリの説明は[【こちら】](/program/mdlBin/mdlBin.md)のリンクを参照
+車両以外に関するバイナリの説明は[【こちら】](/program/sub/mdlBin/mdlBin.md)のリンクを参照
 
 ## 実行方法
 

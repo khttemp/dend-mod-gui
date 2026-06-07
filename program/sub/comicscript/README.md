@@ -2,7 +2,7 @@
 
 ## コミックスクリプトの仕組み
 
-スクリプトの仕組みについては、[【こちら】](/program/comicscript/script.md)のリンクを参照
+スクリプトの仕組みについては、[【こちら】](/program/sub/comicscript/script.md)のリンクを参照
 
 ## コマンドリスト
 

@@ -2,7 +2,7 @@
 
 SSのSetTexInfoついて解説する。
 
-![texInfo](/program/ssUnity/image/texInfo.png)
+![texInfo](/program/sub/ssUnity/image/texInfo.png)
 
 普段、駅番号とか駅表などを設定するときに使う。
 
@@ -30,7 +30,7 @@ amb番号が-1で、全体的にモデルに適用する場合
 
 tex_typeは10、11のみ適用される。
 
-![TqLEDBord](/program/ssUnity/image/TqLEDBord.png)
+![TqLEDBord](/program/sub/ssUnity/image/TqLEDBord.png)
 
 【10】：時刻表示案内
 
@@ -59,7 +59,7 @@ mTqLEDBordがあるAMBは、下記の通りである。
 | Yane_W | 1 |
 
 
-![HQLEDBord](/program/ssUnity/image/HQLEDBord.png)
+![HQLEDBord](/program/sub/ssUnity/image/HQLEDBord.png)
 
 【11】：阪急LED
 
@@ -87,7 +87,7 @@ mHqLEDBordがあるAMBは、下記の通りである。
 
 tex_typeは「0、1、2、20、30、31、32」のみ適用される。
 
-![Ekihyo](/program/ssUnity/image/Ekihyo.png)
+![Ekihyo](/program/sub/ssUnity/image/Ekihyo.png)
 
 【0】：駅表 表
 
@@ -148,7 +148,7 @@ mEkihyoがあるAMBは、下記の通りである。
 
 【20】：ホーム
 
-![HomeNo](/program/ssUnity/image/HomeNo.png)
+![HomeNo](/program/sub/ssUnity/image/HomeNo.png)
 
 AMBモデルに、「mHomeNo」がある場合適用される。
 
@@ -184,7 +184,7 @@ mHomeNoがあるAMBは、下記の通りである。
 
 <br><br>
 
-![TexUV](/program/ssUnity/image/TexUV.png)
+![TexUV](/program/sub/ssUnity/image/TexUV.png)
 
 【30】：テクスチャー変更
 

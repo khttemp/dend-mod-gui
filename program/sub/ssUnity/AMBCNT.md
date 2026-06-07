@@ -68,11 +68,11 @@ AMBのモデルを、モデルの中心から車両の位置までの距離が
 
 MdlCntで定義されている、AMBのモデル番号
 
-AMBに出来るモデルのリストは[【こちら】](/program/ssUnity/AMBLIST.md)のリンクを参照
+AMBに出来るモデルのリストは[【こちら】](/program/sub/ssUnity/AMBLIST.md)のリンクを参照
 
 ## parentIndex
 
-![parentIndex](/program/ssUnity/image/parentIndex.png)
+![parentIndex](/program/sub/ssUnity/image/parentIndex.png)
 
 1個のAMBが抱えるモデルの中から、自分の親のAMB_index
 
@@ -86,7 +86,7 @@ AMBに出来るモデルのリストは[【こちら】](/program/ssUnity/AMBLIS
 
 ## pox_x, pox_y, pos_z
 
-![AMB_pos](/program/ssUnity/image/AMB_pos.png)
+![AMB_pos](/program/sub/ssUnity/image/AMB_pos.png)
 
 レールのpos_x, pos_y, pos_zと同じく
 
@@ -94,7 +94,7 @@ AMBに出来るモデルのリストは[【こちら】](/program/ssUnity/AMBLIS
 
 ## dir_x, dir_y, dir_z
 
-![AMB_dir](/program/ssUnity/image/AMB_dir.png)
+![AMB_dir](/program/sub/ssUnity/image/AMB_dir.png)
 
 ちょっと名称が紛らわしいが、
 
@@ -106,7 +106,7 @@ AMBに出来るモデルのリストは[【こちら】](/program/ssUnity/AMBLIS
 
 ## joint_dir_x, joint_dir_y, joint_dir_z
 
-![AMB_joint_dir](/program/ssUnity/image/AMB_joint_dir.png)
+![AMB_joint_dir](/program/sub/ssUnity/image/AMB_joint_dir.png)
 
 こっちの方が
 
@@ -134,13 +134,13 @@ AMBに出来るモデルのリストは[【こちら】](/program/ssUnity/AMBLIS
 
 perと同じく、それをどれほど伸ばすかの倍率である。
 
-![kasenchu_per](/program/ssUnity/image/kasenchu_per.png)
+![kasenchu_per](/program/sub/ssUnity/image/kasenchu_per.png)
 
 この項目があるモデルは
 
 例えば、AMB_Kasenchu_Shortというモデルである。
 
-![kasenchu_per2](/program/ssUnity/image/kasenchu_per2.png)
+![kasenchu_per2](/program/sub/ssUnity/image/kasenchu_per2.png)
 
 perで1.0より大きく設定すると、横に伸びる仕様になる。
 

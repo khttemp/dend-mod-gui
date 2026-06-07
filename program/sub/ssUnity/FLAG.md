@@ -10,13 +10,13 @@ SSのレールフラグでは、バイナリで展開して
 
 それぞれの位置が0か1かのみ判断するようにしている。
 
-![flag](/program/ssUnity/image/flag.png)
+![flag](/program/sub/ssUnity/image/flag.png)
 
 Windowsの電卓で、プログラマーのタップを選択し
 
 画像の四角いところをクリックすると、バイナリの状態で見れる
 
-![flag2](/program/ssUnity/image/flag2.png)
+![flag2](/program/sub/ssUnity/image/flag2.png)
 
 その中で、レールデータは
 
@@ -24,7 +24,7 @@ Windowsの電卓で、プログラマーのタップを選択し
 
 基本的に最大32通りの判定をしている。
 
-![flag3](/program/ssUnity/image/flag3.png)
+![flag3](/program/sub/ssUnity/image/flag3.png)
 
 例えば、レールデータでフラグがこのように定義されているときは
 
@@ -32,7 +32,7 @@ Windowsの電卓で、プログラマーのタップを選択し
 
 ### 1番目のflg
 
-![flagNum1](/program/ssUnity/image/flagNum1.png)
+![flagNum1](/program/sub/ssUnity/image/flagNum1.png)
 
 ~~【8番目】~~
 
@@ -42,7 +42,7 @@ Windowsの電卓で、プログラマーのタップを選択し
 
 複線ドリフトすると、飛びながら自走不能になる
 
-※他のぶつけ判定については、[【こちら】](/program/ssUnity/AMBCNT.md)リンクを参照
+※他のぶつけ判定については、[【こちら】](/program/sub/ssUnity/AMBCNT.md)リンクを参照
 
 ~~【6番目】~~
 
@@ -70,7 +70,7 @@ Noドリフト。ドリフトできないようにする。
 
 ### 2番目のflg
 
-![flagNum2](/program/ssUnity/image/flagNum2.png)
+![flagNum2](/program/sub/ssUnity/image/flagNum2.png)
 
 ~~【8番目】~~
 
@@ -108,7 +108,7 @@ CPUを左側に片輪ドリフトさせる。
 
 ### 3番目のflg
 
-![flagNum3](/program/ssUnity/image/flagNum3.png)
+![flagNum3](/program/sub/ssUnity/image/flagNum3.png)
 
 【8番目】(128)
 
@@ -144,7 +144,7 @@ CPUを左側に片輪ドリフトさせる。
 
 ### 4番目のflg
 
-![flagNum4](/program/ssUnity/image/flagNum4.png)
+![flagNum4](/program/sub/ssUnity/image/flagNum4.png)
 
 【8番目】(128)
 
@@ -185,13 +185,13 @@ CPUを左側にドリフトさせる。
 
 ## モデルのフラグ
 
-![mdlFlg](/program/ssUnity/image/mdlFlg.png)
+![mdlFlg](/program/sub/ssUnity/image/mdlFlg.png)
 
 モデルのフラグは、２つの要素を使う。
 
 ### モデルの1番目のflg
 
-![mdlFlagNum1](/program/ssUnity/image/mdlFlagNum1.png)
+![mdlFlagNum1](/program/sub/ssUnity/image/mdlFlagNum1.png)
 
 【4番目？】(8)
 
@@ -209,7 +209,7 @@ AMBの設定。
 
 ### モデルの2番目のflg
 
-![mdlFlagNum2](/program/ssUnity/image/mdlFlagNum2.png)
+![mdlFlagNum2](/program/sub/ssUnity/image/mdlFlagNum2.png)
 
 【8番目】(128)
 

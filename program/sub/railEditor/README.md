@@ -316,7 +316,7 @@ CS、RSの場合、土讃線スペシャルラインを調整できる
 
 修正するには、エクセルかCSVを利用して調整する
 
-RSのレール情報の要素についは、[【こちら】](/program/railEditor/raildata.md)のリンクを参照
+RSのレール情報の要素についは、[【こちら】](/program/sub/railEditor/raildata.md)のリンクを参照
 
 ### 要素３(LSの場合、Cam)
 
@@ -368,7 +368,7 @@ RSのレール情報の要素についは、[【こちら】](/program/railEdito
 
 ![else4](image/else4.png)
 
-[【こちら】](/program/railEditor/raildata.md)のリンクを参照
+[【こちら】](/program/sub/railEditor/raildata.md)のリンクを参照
 
 ### AMB情報
 
@@ -378,7 +378,7 @@ RSのレール情報の要素についは、[【こちら】](/program/railEdito
 
 修正するには、エクセルかCSVを利用して調整する
 
-RSのAMB情報の要素についは、[【こちら】](/program/railEditor/ambdata.md)のリンクを参照
+RSのAMB情報の要素についは、[【こちら】](/program/sub/railEditor/ambdata.md)のリンクを参照
 
  * LSの場合
 

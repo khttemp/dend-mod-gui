@@ -4,9 +4,9 @@ SSのステージデータについて解説する。
 
 ここには、レールデータやAMBの解説が書かれてないので
 
-レールデータは[【こちら】](/program/ssUnity/RAILCNT.md)のリンクを参照
+レールデータは[【こちら】](/program/sub/ssUnity/RAILCNT.md)のリンクを参照
 
-AMBは[【こちら】](/program/ssUnity/AMBCNT.md)のリンクを参照
+AMBは[【こちら】](/program/sub/ssUnity/AMBCNT.md)のリンクを参照
 
 ## Story:
 
@@ -138,7 +138,7 @@ Tab区切りで読込む数字を決め、すぐ下の文字列を読み込む�
 
 AMBで設定したモデルの画像を設定するためのもの。
 
-詳しい解説は[【こちら】](/program/ssUnity/TEXINFO.md)のリンクを参照
+詳しい解説は[【こちら】](/program/sub/ssUnity/TEXINFO.md)のリンクを参照
 
 ## STCnt:
 
@@ -184,11 +184,11 @@ AMBで設定したモデルの画像を設定するためのもの。
 
 勝手に発動しないように、レール位置を-1にする。
 
-もっと詳しい仕様は[【こちら】](/program/ssUnity/COMICSCRIPT.md)のリンクを参照
+もっと詳しい仕様は[【こちら】](/program/sub/ssUnity/COMICSCRIPT.md)のリンクを参照
 
 ## RainChecker:
 
-![RainChecker](/program/ssUnity/image/RainChecker.png)
+![RainChecker](/program/sub/ssUnity/image/RainChecker.png)
 
 雨のイベント情報・・・のみのように見えるが
 
@@ -268,7 +268,7 @@ AMBで設定したモデルの画像を設定するためのもの。
 
 ## DosanInfo:
 
-![DosanInfo](/program/ssUnity/image/DosanInfo.png)
+![DosanInfo](/program/sub/ssUnity/image/DosanInfo.png)
 
 土讃線スペシャル領域・・・と書いているが
 
@@ -315,7 +315,7 @@ num2 = (現在速度 - パラメータ1番目) / (パラメータ2番目 - パ�
 
 このフラグは、後にレールのフラグと連携させる
 
-詳しい説明は、[【こちら】](/program/ssUnity/FLAG.md)のリンクを参照
+詳しい説明は、[【こちら】](/program/sub/ssUnity/FLAG.md)のリンクを参照
 
 5番目の要素は、デフォルトの架線柱番号
 

@@ -44,43 +44,43 @@ Issue に上げられたバグ情報が必ず修正されるものではない�
 
 ### SS改造
 
-実行方法は、[【こちら】](/program/ssUnity/README.md)のリンクを参照
+実行方法は、[【こちら】](/program/sub/ssUnity/README.md)のリンクを参照
 
 ### 車両改造
 
-実行方法は、[【こちら】](/program/orgInfoEditor/README.md)のリンクを参照
+実行方法は、[【こちら】](/program/sub/orgInfoEditor/README.md)のリンクを参照
 
 ### モデルバイナリ
 
-実行方法は、[【こちら】](/program/mdlBin/README.md)のリンクを参照
+実行方法は、[【こちら】](/program/sub/mdlBin/README.md)のリンクを参照
 
 ### MDLINFO
 
-実行方法は、[【こちら】](/program/mdlinfo/README.md)のリンクを参照
+実行方法は、[【こちら】](/program/sub/mdlinfo/README.md)のリンクを参照
 
 ### コミックスクリプト
 
-実行方法は、[【こちら】](/program/comicscript/README.md)のリンクを参照
+実行方法は、[【こちら】](/program/sub/comicscript/README.md)のリンクを参照
 
 ### BGMリスト
 
-実行方法は、[【こちら】](/program/musicEditor/README.md)のリンクを参照
+実行方法は、[【こちら】](/program/sub/musicEditor/README.md)のリンクを参照
 
 ### FVT作成
 
-実行方法は、[【こちら】](/program/fvtMaker/README.md)のリンクを参照
+実行方法は、[【こちら】](/program/sub/fvtMaker/README.md)のリンクを参照
 
 ### レールエディター
 
-実行方法は、[【こちら】](/program/railEditor/README.md)のリンクを参照
+実行方法は、[【こちら】](/program/sub/railEditor/README.md)のリンクを参照
 
 ### RSのレール・AMB
 
-実行方法は、[【こちら】](/program/rsRail/README.md)のリンクを参照
+実行方法は、[【こちら】](/program/sub/rsRail/README.md)のリンクを参照
 
 ### SMF
 
-実行方法は、[【こちら】](/program/smf/README.md)のリンクを参照
+実行方法は、[【こちら】](/program/sub/smf/README.md)のリンクを参照
 
 ### 外観設定
 

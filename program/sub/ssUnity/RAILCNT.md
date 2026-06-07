@@ -8,18 +8,18 @@ SSのレールデータについて解説する。
 
 これを覚えておかないといけない。
 
-![model](/program/ssUnity/image/model.png)
+![model](/program/sub/ssUnity/image/model.png)
 
 図のようなモデルがあるとき、
 
-![model_bone](/program/ssUnity/image/model_bone.png)
+![model_bone](/program/sub/ssUnity/image/model_bone.png)
 
 このモデルは、まるで背骨のように、8つの部分に分かれてそれぞれ動く
 
 この８つの部分をそれぞれ **【ボーン】** と呼ぶ。
 
 
-![model_bone2](/program/ssUnity/image/model_bone2.png)
+![model_bone2](/program/sub/ssUnity/image/model_bone2.png)
 
 単線、複線のボーンはそれぞれこう構成されている。
 
@@ -31,11 +31,11 @@ SSのレールデータについて解説する。
 
 <br>
 
-![xyz](/program/ssUnity/image/xyz.png)
+![xyz](/program/sub/ssUnity/image/xyz.png)
 
 UnityのXYZ座標系は、こうなっている。
 
-![xyz2](/program/ssUnity/image/xyz2.png)
+![xyz2](/program/sub/ssUnity/image/xyz2.png)
 
 blenderのような、このXYZではないので注意すること。
 
@@ -56,11 +56,11 @@ blenderのような、このXYZではないので注意すること。
 
 -1の場合、原点から置く
 
-![prev_rail](/program/ssUnity/image/prev_rail.png)
+![prev_rail](/program/sub/ssUnity/image/prev_rail.png)
 
 つまり、もし52番のレールが、こう置いている場合
 
-![prev_rail2](/program/ssUnity/image/prev_rail2.png)
+![prev_rail2](/program/sub/ssUnity/image/prev_rail2.png)
 
 レールの<br>index：53<br>prev_rail：52<br>と指定すると、こう置かれる
 
@@ -80,13 +80,13 @@ blenderのような、このXYZではないので注意すること。
 
 並行移動させるXYZの数値
 
-![pos](/program/ssUnity/image/pos.png)
+![pos](/program/sub/ssUnity/image/pos.png)
 
 これが必要な理由は、prev_railで配置したとき
 
 図のように **【必ず中央寄せ】** で配置するので、pos_xの調整が必要になる。
 
-![pos2](/program/ssUnity/image/pos2.png)
+![pos2](/program/sub/ssUnity/image/pos2.png)
 
 図は、pos_xに数値を入れた調整したもの。
 
@@ -116,7 +116,7 @@ blenderのような、このXYZではないので注意すること。
 
 回転させるXYZの数値
 
-![dir](/program/ssUnity/image/dir.png)
+![dir](/program/sub/ssUnity/image/dir.png)
 
 少し極端な数値で適用した結果であるが
 
@@ -126,7 +126,7 @@ blenderのような、このXYZではないので注意すること。
 
 MdlCntで定義されている、レールのモデル番号
 
-レールに出来るモデルのリストは[【こちら】](/program/ssUnity/RAILLIST.md)のリンクを参照
+レールに出来るモデルのリストは[【こちら】](/program/sub/ssUnity/RAILLIST.md)のリンクを参照
 
 ## mdl_kasenchu
 
@@ -158,7 +158,7 @@ MdlCntで定義されている、レールの架線柱モデル番号
 
 レールをどのような状態にさせるかのフラグ
 
-フラグについては、[【こちら】](/program/ssUnity/FLAG.md)のリンクを参照
+フラグについては、[【こちら】](/program/sub/ssUnity/FLAG.md)のリンクを参照
 
 よく分からないなら、まずは４つ全部０（0x00）にしても良い。
 
@@ -194,14 +194,14 @@ next_railを【-1】にすると、現在のレールで終わり
 
 （※next_railが-1だと、next_noはどんな数字でも良いが-1として合わせるのが普通）
 
-![raildata](/program/ssUnity/image/raildata.png)
+![raildata](/program/sub/ssUnity/image/raildata.png)
 
 このようなレールデータがある場合
 
-![raildata2](/program/ssUnity/image/raildata2.png)
+![raildata2](/program/sub/ssUnity/image/raildata2.png)
 
 40番の複線レールの進み方の解説
 
-![raildata3](/program/ssUnity/image/raildata3.png)
+![raildata3](/program/sub/ssUnity/image/raildata3.png)
 
 41番の単線レールの進み方の解説
