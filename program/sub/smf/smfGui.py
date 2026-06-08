@@ -642,10 +642,9 @@ class EditFrameInfoDialog(CustomSimpleDialog):
                 warnMsg = textSetting.textList["infoList"]["I134"].format(inputMeshNo) + textSetting.textList["infoList"]["I130"]
             else:
                 if originMeshNo != inputMeshNo:
-                    if inputMeshNo < self.decryptFile.meshCount:
-                        warnMsg = textSetting.textList["infoList"]["I132"].format(inputMeshNo) + textSetting.textList["infoList"]["I130"]
-                    else:
-                        warnMsg = textSetting.textList["infoList"]["I135"].format(originMeshNo, inputMeshNo) + textSetting.textList["infoList"]["I130"]
+                    errorMsg = textSetting.textList["errorList"]["E144"].format(originMeshNo, inputMeshNo)
+                    mb.showerror(title=textSetting.textList["numberError"], message=errorMsg)
+                    return
 
         if warnMsg:
             result = mb.askokcancel(title=textSetting.textList["confirm"], message=warnMsg, icon="warning", parent=self)
