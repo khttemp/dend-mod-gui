@@ -160,6 +160,7 @@ class RootFrameAppearance:
                     errObj.write(traceback.format_exc())
 
             mainProcess.writeConfigAppearance(self.configPath, self.bgColor, self.configStyle)
+            mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["appearance"]["success"])
 
 
 class EditRootFrameAppearance(CustomSimpleDialog):
