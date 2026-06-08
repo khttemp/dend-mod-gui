@@ -1,0 +1,649 @@
+import copy
+
+import tkinter
+from tkinter import messagebox as mb
+import program.sub.textSetting as textSetting
+import program.sub.appearance.ttkCustomWidget as ttkCustomWidget
+from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
+
+from program.sub.railEditor.importPy.tkinterScrollbarTreeviewRailEditor import ScrollbarTreeviewRailEditor
+
+
+class CpuWidget:
+    def __init__(self, frame, decryptFile, rootFrameAppearance, reloadFunc, selectId):
+        self.frame = frame
+        self.decryptFile = decryptFile
+        self.cpuList = decryptFile.cpuList
+        self.rootFrameAppearance = rootFrameAppearance
+        self.reloadFunc = reloadFunc
+        self.selectId = selectId
+        self.copyCpuInfo = []
+        cpuLf = ttkCustomWidget.CustomTtkLabelFrame(self.frame, text=textSetting.textList["railEditor"]["cpuInfoLabel"])
+        cpuLf.pack(anchor=tkinter.NW, padx=10, pady=5, fill=tkinter.BOTH, expand=True)
+
+        headerFrame = ttkCustomWidget.CustomTtkFrame(cpuLf)
+        headerFrame.pack()
+
+        selectLbFrame = ttkCustomWidget.CustomTtkFrame(headerFrame)
+        selectLbFrame.pack(anchor=tkinter.NW, side=tkinter.LEFT)
+
+        selectLb = ttkCustomWidget.CustomTtkLabel(selectLbFrame, text=textSetting.textList["railEditor"]["selectNum"], font=textSetting.textList["font2"])
+        selectLb.pack(side=tkinter.LEFT, padx=15, pady=15)
+
+        self.v_select = tkinter.StringVar()
+        selectEt = ttkCustomWidget.CustomTtkEntry(selectLbFrame, textvariable=self.v_select, font=textSetting.textList["font2"], width=5, state="readonly", justify="center")
+        selectEt.pack(side=tkinter.LEFT, padx=5, pady=15)
+
+        btnFrame = ttkCustomWidget.CustomTtkFrame(headerFrame)
+        btnFrame.pack(anchor=tkinter.NE, padx=15)
+
+        editLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["railEditor"]["commonEditLineLabel"], width=25, state="disabled", command=self.editLine)
+        editLineBtn.grid(row=0, column=0, padx=10, pady=15)
+
+        self.insertLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["railEditor"]["commonInsertLineLabel"], width=25, state="disabled", command=self.insertLine)
+        self.insertLineBtn.grid(row=0, column=1, padx=10, pady=15)
+
+        deleteLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["railEditor"]["commonDeleteLineLabel"], width=25, state="disabled", command=self.deleteLine)
+        deleteLineBtn.grid(row=0, column=2, padx=10, pady=15)
+
+        copyLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["railEditor"]["commonCopyLineLabel"], width=25, state="disabled", command=self.copyLine)
+        copyLineBtn.grid(row=1, column=0, padx=10, pady=15)
+
+        self.pasteLineBtn = ttkCustomWidget.CustomTtkButton(btnFrame, text=textSetting.textList["railEditor"]["commonPasteLineLabel"], width=25, state="disabled", command=self.pasteLine)
+        self.pasteLineBtn.grid(row=1, column=1, padx=10, pady=15)
+
+        btnList = [
+            editLineBtn,
+            self.insertLineBtn,
+            deleteLineBtn,
+            copyLineBtn
+        ]
+        self.treeviewFrame = ScrollbarTreeviewRailEditor(cpuLf, self.v_select, btnList)
+
+        self.createCpuTable()
+        self.jumpToSelect()
+
+    def createCpuTable(self):
+        self.setCpuTableHeader()
+        self.setCpuTableData()
+        if len(self.cpuList) == 0:
+            self.insertLineBtn["state"] = "normal"
+
+    def setCpuTableHeader(self):
+        if self.decryptFile.game in ["BS", "CS", "RS"]:
+            col_tuple = (
+                "treeNum",
+                "cpuInfoRailNo",
+                "cpuInfoConst1",
+                "cpuInfoMode",
+                "cpuInfoMinLen",
+                "cpuInfoMaxLen",
+                "cpuInfoMaxSpeed",
+                "cpuInfoMinSpeed"
+            )
+            if self.decryptFile.game == "CS":
+                col_tuple += ("cpuInfoDefSpeed", )
+
+            self.treeviewFrame.tree["columns"] = col_tuple
+            self.treeviewFrame.tree.column("#0", width=0, stretch=False)
+            self.treeviewFrame.tree.column("treeNum", anchor=tkinter.CENTER, width=50, stretch=False)
+            self.treeviewFrame.tree.column("cpuInfoRailNo", anchor=tkinter.CENTER, width=50)
+            self.treeviewFrame.tree.column("cpuInfoConst1", anchor=tkinter.CENTER, width=50)
+            self.treeviewFrame.tree.column("cpuInfoMode", anchor=tkinter.CENTER, width=50)
+            self.treeviewFrame.tree.column("cpuInfoMinLen", anchor=tkinter.CENTER, width=50)
+            self.treeviewFrame.tree.column("cpuInfoMaxLen", anchor=tkinter.CENTER, width=50)
+            self.treeviewFrame.tree.column("cpuInfoMaxSpeed", anchor=tkinter.CENTER, width=50)
+            self.treeviewFrame.tree.column("cpuInfoMinSpeed", anchor=tkinter.CENTER, width=50)
+            if self.decryptFile.game == "CS":
+                self.treeviewFrame.tree.column("cpuInfoDefSpeed", anchor=tkinter.CENTER, width=50)
+
+            self.treeviewFrame.tree.heading("treeNum", text=textSetting.textList["railEditor"]["cpuInfoNum"], anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("cpuInfoRailNo", text=textSetting.textList["railEditor"]["cpuInfoRailNo"], anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("cpuInfoConst1", text=textSetting.textList["railEditor"]["cpuInfoConst1"], anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("cpuInfoMode", text=textSetting.textList["railEditor"]["cpuInfoMode"], anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("cpuInfoMinLen", text=textSetting.textList["railEditor"]["cpuInfoMinLen"], anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("cpuInfoMaxLen", text=textSetting.textList["railEditor"]["cpuInfoMaxLen"], anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("cpuInfoMaxSpeed", text=textSetting.textList["railEditor"]["cpuInfoMaxSpeed"], anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("cpuInfoMinSpeed", text=textSetting.textList["railEditor"]["cpuInfoMinSpeed"], anchor=tkinter.CENTER)
+            if self.decryptFile.game == "CS":
+                self.treeviewFrame.tree.heading("cpuInfoDefSpeed", text=textSetting.textList["railEditor"]["cpuInfoDefSpeed"], anchor=tkinter.CENTER)
+        elif self.decryptFile.game == "LS":
+            col_tuple = (
+                "treeNum",
+                "cpuInfoRailNo",
+                "cpuInfoList",
+                "cpuInfoConst1",
+                "cpuInfoMode",
+                "cpuInfoMinLen",
+                "cpuInfoMaxLen",
+                "cpuInfoMaxSpeed",
+                "cpuInfoMinSpeed",
+                "cpuInfoDefSpeed",
+                "cpuInfoList2"
+            )
+            self.treeviewFrame.tree["columns"] = col_tuple
+            self.treeviewFrame.tree.column("#0", width=0, stretch=False)
+            self.treeviewFrame.tree.column("treeNum", anchor=tkinter.CENTER, width=50, stretch=False)
+            self.treeviewFrame.tree.column("cpuInfoRailNo", anchor=tkinter.CENTER, width=50)
+            self.treeviewFrame.tree.column("cpuInfoList", anchor=tkinter.CENTER, width=100)
+            self.treeviewFrame.tree.column("cpuInfoConst1", anchor=tkinter.CENTER, width=50)
+            self.treeviewFrame.tree.column("cpuInfoMode", anchor=tkinter.CENTER, width=50)
+            self.treeviewFrame.tree.column("cpuInfoMinLen", anchor=tkinter.CENTER, width=50)
+            self.treeviewFrame.tree.column("cpuInfoMaxLen", anchor=tkinter.CENTER, width=50)
+            self.treeviewFrame.tree.column("cpuInfoMaxSpeed", anchor=tkinter.CENTER, width=50)
+            self.treeviewFrame.tree.column("cpuInfoMinSpeed", anchor=tkinter.CENTER, width=50)
+            self.treeviewFrame.tree.column("cpuInfoDefSpeed", anchor=tkinter.CENTER, width=50)
+            self.treeviewFrame.tree.column("cpuInfoList2", anchor=tkinter.CENTER, width=100)
+
+            self.treeviewFrame.tree.heading("treeNum", text=textSetting.textList["railEditor"]["cpuInfoNum"], anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("cpuInfoRailNo", text=textSetting.textList["railEditor"]["cpuInfoRailNo"], anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("cpuInfoList", text=textSetting.textList["railEditor"]["cpuInfoList"], anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("cpuInfoConst1", text=textSetting.textList["railEditor"]["cpuInfoConst1"], anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("cpuInfoMode", text=textSetting.textList["railEditor"]["cpuInfoMode"], anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("cpuInfoMinLen", text=textSetting.textList["railEditor"]["cpuInfoMinLen"], anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("cpuInfoMaxLen", text=textSetting.textList["railEditor"]["cpuInfoMaxLen"], anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("cpuInfoMaxSpeed", text=textSetting.textList["railEditor"]["cpuInfoMaxSpeed"], anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("cpuInfoMinSpeed", text=textSetting.textList["railEditor"]["cpuInfoMinSpeed"], anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("cpuInfoDefSpeed", text=textSetting.textList["railEditor"]["cpuInfoDefSpeed"], anchor=tkinter.CENTER)
+            self.treeviewFrame.tree.heading("cpuInfoList2", text=textSetting.textList["railEditor"]["cpuInfoList2"], anchor=tkinter.CENTER)
+        elif self.decryptFile.game == "LSTrial":
+            if self.decryptFile.readFlag:
+                col_tuple = (
+                    "treeNum",
+                    "cpuInfoRailNo",
+                    "cpuInfoList",
+                    "cpuInfoMode",
+                    "cpuInfoMinLen",
+                    "cpuInfoMaxLen",
+                    "cpuInfoMaxSpeed",
+                    "cpuInfoMinSpeed",
+                    "cpuInfoDefSpeed",
+                    "cpuInfoList2"
+                )
+                self.treeviewFrame.tree["columns"] = col_tuple
+                self.treeviewFrame.tree.column("#0", width=0, stretch=False)
+                self.treeviewFrame.tree.column("treeNum", anchor=tkinter.CENTER, width=50, stretch=False)
+                self.treeviewFrame.tree.column("cpuInfoRailNo", anchor=tkinter.CENTER, width=50)
+                self.treeviewFrame.tree.column("cpuInfoList", anchor=tkinter.CENTER, width=100)
+                self.treeviewFrame.tree.column("cpuInfoMode", anchor=tkinter.CENTER, width=50)
+                self.treeviewFrame.tree.column("cpuInfoMinLen", anchor=tkinter.CENTER, width=50)
+                self.treeviewFrame.tree.column("cpuInfoMaxLen", anchor=tkinter.CENTER, width=50)
+                self.treeviewFrame.tree.column("cpuInfoMaxSpeed", anchor=tkinter.CENTER, width=50)
+                self.treeviewFrame.tree.column("cpuInfoMinSpeed", anchor=tkinter.CENTER, width=50)
+                self.treeviewFrame.tree.column("cpuInfoDefSpeed", anchor=tkinter.CENTER, width=50)
+                self.treeviewFrame.tree.column("cpuInfoList2", anchor=tkinter.CENTER, width=100)
+
+                self.treeviewFrame.tree.heading("treeNum", text=textSetting.textList["railEditor"]["cpuInfoNum"], anchor=tkinter.CENTER)
+                self.treeviewFrame.tree.heading("cpuInfoRailNo", text=textSetting.textList["railEditor"]["cpuInfoRailNo"], anchor=tkinter.CENTER)
+                self.treeviewFrame.tree.heading("cpuInfoList", text=textSetting.textList["railEditor"]["cpuInfoList"], anchor=tkinter.CENTER)
+                self.treeviewFrame.tree.heading("cpuInfoMode", text=textSetting.textList["railEditor"]["cpuInfoMode"], anchor=tkinter.CENTER)
+                self.treeviewFrame.tree.heading("cpuInfoMinLen", text=textSetting.textList["railEditor"]["cpuInfoMinLen"], anchor=tkinter.CENTER)
+                self.treeviewFrame.tree.heading("cpuInfoMaxLen", text=textSetting.textList["railEditor"]["cpuInfoMaxLen"], anchor=tkinter.CENTER)
+                self.treeviewFrame.tree.heading("cpuInfoMaxSpeed", text=textSetting.textList["railEditor"]["cpuInfoMaxSpeed"], anchor=tkinter.CENTER)
+                self.treeviewFrame.tree.heading("cpuInfoMinSpeed", text=textSetting.textList["railEditor"]["cpuInfoMinSpeed"], anchor=tkinter.CENTER)
+                self.treeviewFrame.tree.heading("cpuInfoDefSpeed", text=textSetting.textList["railEditor"]["cpuInfoDefSpeed"], anchor=tkinter.CENTER)
+                self.treeviewFrame.tree.heading("cpuInfoList2", text=textSetting.textList["railEditor"]["cpuInfoList2"], anchor=tkinter.CENTER)
+            else:
+                col_tuple = (
+                    "treeNum",
+                    "cpuInfoList",
+                    "cpuInfoMode",
+                    "cpuInfoMinLen"
+                )
+                self.treeviewFrame.tree["columns"] = col_tuple
+                self.treeviewFrame.tree.column("#0", width=0, stretch=False)
+                self.treeviewFrame.tree.column("treeNum", anchor=tkinter.CENTER, width=50, stretch=False)
+                self.treeviewFrame.tree.column("cpuInfoList", anchor=tkinter.CENTER, width=100)
+                self.treeviewFrame.tree.column("cpuInfoMode", anchor=tkinter.CENTER, width=50)
+                self.treeviewFrame.tree.column("cpuInfoMinLen", anchor=tkinter.CENTER, width=50)
+
+                self.treeviewFrame.tree.heading("treeNum", text=textSetting.textList["railEditor"]["cpuInfoNum"], anchor=tkinter.CENTER)
+                self.treeviewFrame.tree.heading("cpuInfoList", text=textSetting.textList["railEditor"]["cpuInfoList"], anchor=tkinter.CENTER)
+                self.treeviewFrame.tree.heading("cpuInfoMode", text=textSetting.textList["railEditor"]["cpuInfoMode"], anchor=tkinter.CENTER)
+                self.treeviewFrame.tree.heading("cpuInfoMinLen", text=textSetting.textList["railEditor"]["cpuInfoMinLen"], anchor=tkinter.CENTER)
+        self.treeviewFrame.tree["displaycolumns"] = col_tuple
+
+    def setCpuTableData(self):
+        for index, cpuInfo in enumerate(self.cpuList):
+            data = (index,)
+            for j, cpuValue in enumerate(cpuInfo):
+                if self.decryptFile.game in ["BS", "CS", "RS"]:
+                    if j > 2:
+                        data += (round(float(cpuValue), 3),)
+                    else:
+                        data += (cpuValue,)
+                elif self.decryptFile.game == "LS":
+                    if j in [1, 9]:
+                        joinCpuValue = ",".join([str(round(x, 3)) for x in cpuValue])
+                        data += (joinCpuValue,)
+                    elif j in [4, 5, 6, 7, 8]:
+                        data += (round(float(cpuValue), 3),)
+                    else:
+                        data += (cpuValue,)
+                elif self.decryptFile.game == "LSTrial":
+                    if self.decryptFile.readFlag:
+                        if j in [1, 8]:
+                            joinCpuValue = ",".join([str(round(x, 3)) for x in cpuValue])
+                            data += (joinCpuValue,)
+                        elif j in [3, 4, 5, 6, 7]:
+                            data += (round(float(cpuValue), 3),)
+                        else:
+                            data += (cpuValue,)
+                    else:
+                        if j == 0:
+                            joinCpuValue = ",".join([str(round(x, 3)) for x in cpuValue])
+                            data += (joinCpuValue,)
+                        elif j == 2:
+                            data += (round(float(cpuValue), 3),)
+                        else:
+                            data += (cpuValue,)
+            self.treeviewFrame.tree.insert(parent="", index="end", iid=index, values=data)
+
+    def jumpToSelect(self):
+        if self.selectId is not None:
+            if self.selectId >= len(self.cpuList):
+                self.selectId = len(self.cpuList) - 1
+            self.treeviewFrame.tree.see(self.selectId)
+            self.treeviewFrame.tree.selection_set(self.selectId)
+
+    def editLine(self):
+        if not self.treeviewFrame.tree.selection():
+            return
+
+        headerNameList = [self.treeviewFrame.tree.heading(col)["text"] for col in self.treeviewFrame.tree.cget("columns")]
+        headerNameList.pop(0)
+        selectId = self.treeviewFrame.tree.selection()[0]
+        selectItem = self.treeviewFrame.tree.set(selectId)
+        num = int(selectItem["treeNum"])
+        item = self.cpuList[num]
+        result = EditCpuListWidget(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["modifyCpuInfoLabel"], self.decryptFile, "modify", headerNameList, item, self.rootFrameAppearance)
+        if result.reloadFlag:
+            if not self.decryptFile.saveCpuInfo(num, "modify", result.resultValueList):
+                self.decryptFile.printError()
+                mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
+                return
+            mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I84"])
+            self.reloadFunc(selectId)
+
+    def insertLine(self):
+        headerNameList = [self.treeviewFrame.tree.heading(col)["text"] for col in self.treeviewFrame.tree.cget("columns")]
+        headerNameList.pop(0)
+        if not self.treeviewFrame.tree.selection():
+            selectId = None
+            num = 0
+        else:
+            selectId = self.treeviewFrame.tree.selection()[0]
+            selectItem = self.treeviewFrame.tree.set(selectId)
+            num = int(selectItem["treeNum"]) + 1
+        result = EditCpuListWidget(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["insertCpuInfoLabel"], self.decryptFile, "insert", headerNameList, None, self.rootFrameAppearance)
+        if result.reloadFlag:
+            if not self.decryptFile.saveCpuInfo(num + result.insertPos, "insert", result.resultValueList):
+                self.decryptFile.printError()
+                mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
+                return
+            mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I84"])
+            self.reloadFunc(selectId)
+
+    def deleteLine(self):
+        if not self.treeviewFrame.tree.selection():
+            return
+
+        selectId = self.treeviewFrame.tree.selection()[0]
+        selectItem = self.treeviewFrame.tree.set(selectId)
+        num = int(selectItem["treeNum"])
+        result = mb.askokcancel(title=textSetting.textList["warning"], message=textSetting.textList["infoList"]["I9"], icon="warning")
+        if result:
+            if not self.decryptFile.saveCpuInfo(num, "delete", []):
+                self.decryptFile.printError()
+                mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
+                return
+            mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I84"])
+            if len(self.cpuList) == 1:
+                selectId = None
+            self.reloadFunc(selectId)
+
+    def copyLine(self):
+        if not self.treeviewFrame.tree.selection():
+            return
+
+        selectId = self.treeviewFrame.tree.selection()[0]
+        selectItem = self.treeviewFrame.tree.set(selectId)
+        num = int(selectItem["treeNum"])
+        self.copyCpuInfo = copy.deepcopy(self.cpuList[num])
+        mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I12"])
+        self.pasteLineBtn["state"] = "normal"
+
+    def pasteLine(self):
+        if not self.treeviewFrame.tree.selection():
+            return
+
+        selectId = self.treeviewFrame.tree.selection()[0]
+        selectItem = self.treeviewFrame.tree.set(selectId)
+        num = int(selectItem["treeNum"])
+        result = PasteCpuDialog(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["pasteCpuInfoLabel"], self.decryptFile, num, self.copyCpuInfo, self.rootFrameAppearance)
+        if result.reloadFlag:
+            self.reloadFunc(selectId)
+
+
+class EditCpuListWidget(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, mode, headerNameList, cpuInfo, rootFrameAppearance):
+        self.decryptFile = decryptFile
+        self.mode = mode
+        self.headerNameList = headerNameList
+        self.cpuInfo = cpuInfo
+        self.rootFrameAppearance = rootFrameAppearance
+        self.varList = []
+        self.varCnt = 0
+        self.reloadFlag = False
+        self.insertPos = None
+        self.resultValueList = []
+        super().__init__(master, title, rootFrameAppearance.bgColor)
+
+    def body(self, master):
+        self.resizable(False, False)
+
+        valLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
+        valLb.grid(columnspan=2, row=0, column=0, sticky=tkinter.W + tkinter.E)
+
+        rowNum = 1
+        colNum = 0
+        for i, headerName in enumerate(self.headerNameList):
+            if self.decryptFile.game in ["BS", "CS", "RS"]:
+                cpuInfoLb = ttkCustomWidget.CustomTtkLabel(master, text=headerName, font=textSetting.textList["font2"])
+                cpuInfoLb.grid(row=i + 1, column=0, sticky=tkinter.W + tkinter.E)
+                if i > 2:
+                    varCpuInfo = tkinter.DoubleVar()
+                    self.varList.append(varCpuInfo)
+                    cpuInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[self.varCnt], font=textSetting.textList["font2"])
+                    cpuInfoEt.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
+                    if self.mode == "modify":
+                        varCpuInfo.set(round(float(self.cpuInfo[i]), 3))
+                    self.varCnt += 1
+                else:
+                    varCpuInfo = tkinter.IntVar()
+                    self.varList.append(varCpuInfo)
+                    cpuInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[self.varCnt], font=textSetting.textList["font2"])
+                    cpuInfoEt.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
+                    if self.mode == "modify":
+                        varCpuInfo.set(self.cpuInfo[i])
+                    self.varCnt += 1
+            elif self.decryptFile.game == "LS":
+                if i in [0, 2, 3]:
+                    cpuInfoLb = ttkCustomWidget.CustomTtkLabel(master, text=headerName, font=textSetting.textList["font2"])
+                    cpuInfoLb.grid(row=rowNum, column=2 * colNum, sticky=tkinter.W + tkinter.E)
+                    varCpuInfo = tkinter.IntVar()
+                    self.varList.append(varCpuInfo)
+                    cpuInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[self.varCnt], font=textSetting.textList["font2"])
+                    cpuInfoEt.grid(row=rowNum, column=2 * colNum + 1, sticky=tkinter.W + tkinter.E)
+                    rowNum += 1
+                    if self.mode == "modify":
+                        varCpuInfo.set(self.cpuInfo[i])
+                    self.varCnt += 1
+                elif i in [1, 9]:
+                    if i == 1:
+                        tempListLen = 6
+                    else:
+                        tempListLen = 3
+
+                    for j in range(tempListLen):
+                        cpuInfoLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["railEditor"]["cpuInfoLsListLabel"].format(colNum + 1, j), font=textSetting.textList["font2"])
+                        cpuInfoLb.grid(row=rowNum, column=2 * colNum, sticky=tkinter.W + tkinter.E)
+                        varCpuInfo = tkinter.DoubleVar()
+                        self.varList.append(varCpuInfo)
+                        cpuInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[self.varCnt], font=textSetting.textList["font2"])
+                        cpuInfoEt.grid(row=rowNum, column=2 * colNum + 1, sticky=tkinter.W + tkinter.E)
+                        rowNum += 1
+                        if self.mode == "modify":
+                            varCpuInfo.set(round(float(self.cpuInfo[i][j]), 3))
+                        self.varCnt += 1
+                    colNum += 1
+                    rowNum = 1
+                else:
+                    cpuInfoLb = ttkCustomWidget.CustomTtkLabel(master, text=headerName, font=textSetting.textList["font2"])
+                    cpuInfoLb.grid(row=rowNum, column=2 * colNum, sticky=tkinter.W + tkinter.E)
+                    varCpuInfo = tkinter.DoubleVar()
+                    self.varList.append(varCpuInfo)
+                    cpuInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[self.varCnt], font=textSetting.textList["font2"])
+                    cpuInfoEt.grid(row=rowNum, column=2 * colNum + 1, sticky=tkinter.W + tkinter.E)
+                    rowNum += 1
+                    if self.mode == "modify":
+                        varCpuInfo.set(round(float(self.cpuInfo[i]), 3))
+                    self.varCnt += 1
+            elif self.decryptFile.game == "LSTrial":
+                if self.decryptFile.readFlag:
+                    if i in [0, 2]:
+                        cpuInfoLb = ttkCustomWidget.CustomTtkLabel(master, text=headerName, font=textSetting.textList["font2"])
+                        cpuInfoLb.grid(row=rowNum, column=2 * colNum, sticky=tkinter.W + tkinter.E)
+                        varCpuInfo = tkinter.IntVar()
+                        self.varList.append(varCpuInfo)
+                        cpuInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[self.varCnt], font=textSetting.textList["font2"])
+                        cpuInfoEt.grid(row=rowNum, column=2 * colNum + 1, sticky=tkinter.W + tkinter.E)
+                        rowNum += 1
+                        if self.mode == "modify":
+                            varCpuInfo.set(self.cpuInfo[i])
+                        self.varCnt += 1
+                    elif i in [1, 8]:
+                        if i == 1:
+                            tempListLen = 6
+                        else:
+                            tempListLen = 3
+
+                        for j in range(tempListLen):
+                            cpuInfoLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["railEditor"]["cpuInfoLsListLabel"].format(colNum + 1, j), font=textSetting.textList["font2"])
+                            cpuInfoLb.grid(row=rowNum, column=2 * colNum, sticky=tkinter.W + tkinter.E)
+                            varCpuInfo = tkinter.DoubleVar()
+                            self.varList.append(varCpuInfo)
+                            cpuInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[self.varCnt], font=textSetting.textList["font2"])
+                            cpuInfoEt.grid(row=rowNum, column=2 * colNum + 1, sticky=tkinter.W + tkinter.E)
+                            rowNum += 1
+                            if self.mode == "modify":
+                                varCpuInfo.set(round(float(self.cpuInfo[i][j]), 3))
+                            self.varCnt += 1
+                        colNum += 1
+                        rowNum = 1
+                    else:
+                        cpuInfoLb = ttkCustomWidget.CustomTtkLabel(master, text=headerName, font=textSetting.textList["font2"])
+                        cpuInfoLb.grid(row=rowNum, column=2 * colNum, sticky=tkinter.W + tkinter.E)
+                        varCpuInfo = tkinter.DoubleVar()
+                        self.varList.append(varCpuInfo)
+                        cpuInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[self.varCnt], font=textSetting.textList["font2"])
+                        cpuInfoEt.grid(row=rowNum, column=2 * colNum + 1, sticky=tkinter.W + tkinter.E)
+                        rowNum += 1
+                        if self.mode == "modify":
+                            varCpuInfo.set(round(float(self.cpuInfo[i]), 3))
+                        self.varCnt += 1
+                else:
+                    if i == 1:
+                        cpuInfoLb = ttkCustomWidget.CustomTtkLabel(master, text=headerName, font=textSetting.textList["font2"])
+                        cpuInfoLb.grid(row=rowNum, column=2 * colNum, sticky=tkinter.W + tkinter.E)
+                        varCpuInfo = tkinter.IntVar()
+                        self.varList.append(varCpuInfo)
+                        cpuInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[self.varCnt], font=textSetting.textList["font2"])
+                        cpuInfoEt.grid(row=rowNum, column=2 * colNum + 1, sticky=tkinter.W + tkinter.E)
+                        rowNum += 1
+                        if self.mode == "modify":
+                            varCpuInfo.set(self.cpuInfo[i])
+                        self.varCnt += 1
+                    elif i == 0:
+                        tempListLen = 6
+                        for j in range(tempListLen):
+                            cpuInfoLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["railEditor"]["cpuInfoLsListLabel"].format(colNum + 1, j), font=textSetting.textList["font2"])
+                            cpuInfoLb.grid(row=rowNum, column=2 * colNum, sticky=tkinter.W + tkinter.E)
+                            varCpuInfo = tkinter.DoubleVar()
+                            self.varList.append(varCpuInfo)
+                            cpuInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[self.varCnt], font=textSetting.textList["font2"])
+                            cpuInfoEt.grid(row=rowNum, column=2 * colNum + 1, sticky=tkinter.W + tkinter.E)
+                            rowNum += 1
+                            if self.mode == "modify":
+                                varCpuInfo.set(round(float(self.cpuInfo[i][j]), 3))
+                            self.varCnt += 1
+                        colNum += 1
+                        rowNum = 1
+                    else:
+                        cpuInfoLb = ttkCustomWidget.CustomTtkLabel(master, text=headerName, font=textSetting.textList["font2"])
+                        cpuInfoLb.grid(row=rowNum, column=2 * colNum, sticky=tkinter.W + tkinter.E)
+                        varCpuInfo = tkinter.DoubleVar()
+                        self.varList.append(varCpuInfo)
+                        cpuInfoEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[self.varCnt], font=textSetting.textList["font2"])
+                        cpuInfoEt.grid(row=rowNum, column=2 * colNum + 1, sticky=tkinter.W + tkinter.E)
+                        rowNum += 1
+                        if self.mode == "modify":
+                            varCpuInfo.set(round(float(self.cpuInfo[i]), 3))
+                        self.varCnt += 1
+
+        if self.mode == "insert":
+            if self.decryptFile.game == "LSTrial" and not self.decryptFile.readFlag:
+                self.setInsertWidget(master, 7)
+            else:
+                self.setInsertWidget(master, len(self.headerNameList) + 1)
+        super().body(master)
+
+    def setInsertWidget(self, master, index):
+        xLine = ttkCustomWidget.CustomTtkSeparator(master, orient=tkinter.HORIZONTAL)
+        xLine.grid(row=index, column=0, columnspan=2, sticky=tkinter.W + tkinter.E, pady=10)
+
+        insertLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["railEditor"]["posLabel"], font=textSetting.textList["font2"])
+        insertLb.grid(row=index + 1, column=0, sticky=tkinter.W + tkinter.E)
+        self.v_insert = tkinter.StringVar()
+        self.insertCb = ttkCustomWidget.CustomTtkCombobox(master, state="readonly", font=textSetting.textList["font2"], textvariable=self.v_insert, values=textSetting.textList["railEditor"]["posValue"])
+        self.insertCb.grid(row=index + 1, column=1, sticky=tkinter.W + tkinter.E)
+        self.insertCb.current(0)
+
+    def validate(self):
+        self.resultValueList = []
+        result = mb.askokcancel(title=textSetting.textList["confirm"], message=textSetting.textList["infoList"]["I21"], parent=self)
+        if result:
+            try:
+                tempList = []
+                tempList2 = []
+                for i in range(len(self.varList)):
+                    if self.decryptFile.game in ["BS", "CS", "RS"]:
+                        try:
+                            if i > 2:
+                                res = float(self.varList[i].get())
+                            else:
+                                res = int(self.varList[i].get())
+                            self.resultValueList.append(res)
+                        except Exception:
+                            errorMsg = textSetting.textList["errorList"]["E60"]
+                            mb.showerror(title=textSetting.textList["numberError"], message=errorMsg)
+                            return False
+                    elif self.decryptFile.game == "LS":
+                        try:
+                            if i in [0, 7, 8]:
+                                res = int(self.varList[i].get())
+                                self.resultValueList.append(res)
+                            elif i in [1, 2, 3, 4, 5, 6]:
+                                tempList.append(float(self.varList[i].get()))
+                                if i == 6:
+                                    self.resultValueList.append(tempList)
+                                    tempList = []
+                            elif i in [9, 10, 11, 12, 13]:
+                                res = float(self.varList[i].get())
+                                self.resultValueList.append(res)
+                            elif i in [14, 15, 16]:
+                                tempList2.append(float(self.varList[i].get()))
+                                if i == 16:
+                                    self.resultValueList.append(tempList2)
+                                    tempList2 = []
+                        except Exception:
+                            errorMsg = textSetting.textList["errorList"]["E60"]
+                            mb.showerror(title=textSetting.textList["numberError"], message=errorMsg)
+                            return False
+                    elif self.decryptFile.game == "LSTrial":
+                        if self.decryptFile.readFlag:
+                            try:
+                                if i in [0, 7]:
+                                    res = int(self.varList[i].get())
+                                    self.resultValueList.append(res)
+                                elif i in [1, 2, 3, 4, 5, 6]:
+                                    tempList.append(float(self.varList[i].get()))
+                                    if i == 6:
+                                        self.resultValueList.append(tempList)
+                                        tempList = []
+                                elif i in [8, 9, 10, 11, 12]:
+                                    res = float(self.varList[i].get())
+                                    self.resultValueList.append(res)
+                                elif i in [13, 14, 15]:
+                                    tempList2.append(float(self.varList[i].get()))
+                                    if i == 15:
+                                        self.resultValueList.append(tempList2)
+                                        tempList2 = []
+                            except Exception:
+                                errorMsg = textSetting.textList["errorList"]["E60"]
+                                mb.showerror(title=textSetting.textList["numberError"], message=errorMsg)
+                                return False
+                        else:
+                            try:
+                                if i in [0, 1, 2, 3, 4, 5]:
+                                    tempList.append(float(self.varList[i].get()))
+                                    if i == 5:
+                                        self.resultValueList.append(tempList)
+                                        tempList = []
+                                elif i == 6:
+                                    res = int(self.varList[i].get())
+                                    self.resultValueList.append(res)
+                                else:
+                                    res = float(self.varList[i].get())
+                                    self.resultValueList.append(res)
+                            except Exception:
+                                errorMsg = textSetting.textList["errorList"]["E60"]
+                                mb.showerror(title=textSetting.textList["numberError"], message=errorMsg)
+                                return False
+                if self.mode == "insert":
+                    self.insertPos = 0
+                    if self.insertCb.current() == 1:
+                        self.insertPos = -1
+                return True
+            except Exception:
+                errorMsg = textSetting.textList["errorList"]["E14"]
+                mb.showerror(title=textSetting.textList["error"], message=errorMsg)
+                return False
+
+    def apply(self):
+        self.reloadFlag = True
+
+
+class PasteCpuDialog(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, num, copyCpuInfo, rootFrameAppearance):
+        self.decryptFile = decryptFile
+        self.num = num
+        self.copyCpuInfo = copyCpuInfo
+        self.reloadFlag = False
+        super().__init__(master, title, rootFrameAppearance.bgColor)
+
+    def body(self, master):
+        self.resizable(False, False)
+        posLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["infoList"]["I4"], font=textSetting.textList["font2"])
+        posLb.pack(padx=10, pady=10)
+        super().body(master)
+
+    def buttonbox(self):
+        super().buttonbox()
+        for idx, child in enumerate(self.buttonList):
+            child.destroy()
+        self.box.config(padx=5, pady=5)
+        self.frontBtn = ttkCustomWidget.CustomTtkButton(self.box, text=textSetting.textList["railEditor"]["pasteFront"], style="custom.paste.TButton", width=10, command=self.frontInsert)
+        self.frontBtn.grid(row=0, column=0, padx=5)
+        self.backBtn = ttkCustomWidget.CustomTtkButton(self.box, text=textSetting.textList["railEditor"]["pasteBack"], style="custom.paste.TButton", width=10, command=self.backInsert)
+        self.backBtn.grid(row=0, column=1, padx=5)
+        self.cancelBtn = ttkCustomWidget.CustomTtkButton(self.box, text=textSetting.textList["railEditor"]["pasteCancel"], style="custom.paste.TButton", width=10, command=self.cancel)
+        self.cancelBtn.grid(row=0, column=2, padx=5)
+
+    def frontInsert(self):
+        self.ok()
+        if not self.decryptFile.saveCpuInfo(self.num, "insert", self.copyCpuInfo):
+            self.decryptFile.printError()
+            mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
+            return
+        mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I84"])
+        self.reloadFlag = True
+
+    def backInsert(self):
+        self.ok()
+        if not self.decryptFile.saveCpuInfo(self.num + 1, "insert", self.copyCpuInfo):
+            self.decryptFile.printError()
+            mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
+            return
+        mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I84"])
+        self.reloadFlag = True

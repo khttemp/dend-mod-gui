@@ -1,0 +1,246 @@
+import struct
+import traceback
+import program.sub.textSetting as textSetting
+from program.sub.encodingClass import SJISEncodingObject
+from program.sub.errorLogClass import ErrorLogObj
+
+
+class ComicDecrypt:
+    def __init__(self, filePath, cmdList):
+        self.encObj = SJISEncodingObject()
+        self.errObj = ErrorLogObj()
+        self.filePath = filePath
+        self.cmdList = cmdList
+        self.comicCntIndex = 0
+        self.byteArr = []
+        self.error = ""
+        self.max_param = 1
+        self.imgList = []
+        self.imgSizeList = []
+        self.seList = []
+        self.bgmList = []
+
+        self.comicCntIndex = 0
+        self.indexList = []
+        self.comicDataList = []
+
+    def open(self):
+        try:
+            f = open(self.filePath, "rb")
+            self.byteArr = bytearray(f.read())
+            f.close()
+            if not self.decrypt():
+                return False
+            return True
+        except Exception:
+            self.error = traceback.format_exc()
+            return False
+
+    def printError(self):
+        self.errObj.write(self.error)
+
+    def decrypt(self):
+        index = 16
+        header = self.encObj.convertString(self.byteArr[0:index])
+        if header != "DEND_COMICSCRIPT":
+            return False
+        index += 1
+
+        self.imgList = []
+        imgCnt = self.byteArr[index]
+        index += 1
+        for i in range(imgCnt):
+            b = self.byteArr[index]
+            index += 1
+            imgName = self.encObj.convertString(self.byteArr[index:index+b])
+            index += b
+            self.imgList.append(imgName)
+
+        self.imgSizeList = []
+        imgSizeCnt = self.byteArr[index]
+        index += 1
+        for i in range(imgSizeCnt):
+            imgIndex = self.byteArr[index]
+            index += 1
+            imgSizeInfo = []
+            for j in range(4):
+                tempF = struct.unpack("<f", self.byteArr[index:index+4])[0]
+                tempF = round(tempF, 5)
+                imgSizeInfo.append(tempF)
+                index += 4
+            self.imgSizeList.append([imgIndex, imgSizeInfo])
+
+        self.seList = []
+        seCnt = self.byteArr[index]
+        index += 1
+        for i in range(seCnt):
+            b = self.byteArr[index]
+            index += 1
+            seName = self.encObj.convertString(self.byteArr[index:index+b])
+            index += b
+            seFileCnt = self.byteArr[index]
+            index += 1
+            self.seList.append([seName, seFileCnt])
+
+        self.bgmList = []
+        bgmCnt = self.byteArr[index]
+        index += 1
+        for i in range(bgmCnt):
+            b = self.byteArr[index]
+            index += 1
+            bgmName = self.encObj.convertString(self.byteArr[index:index+b])
+            index += b
+            bgmFileCnt = self.byteArr[index]
+            index += 1
+            start = struct.unpack("<f", self.byteArr[index:index+4])[0]
+            start = round(start, 5)
+            index += 4
+            loopStart = struct.unpack("<f", self.byteArr[index:index+4])[0]
+            loopStart = round(loopStart, 5)
+            index += 4
+            self.bgmList.append([bgmName, bgmFileCnt, start, loopStart])
+
+        index += 1
+        self.comicCntIndex = index
+        comicDataCnt = struct.unpack("<h", self.byteArr[index:index+2])[0]
+        index += 2
+
+        self.indexList = []
+        self.comicDataList = []
+
+        for i in range(comicDataCnt):
+            self.indexList.append(index)
+            comicData = []
+            num2 = struct.unpack("<h", self.byteArr[index:index+2])[0]
+            index += 2
+            if num2 < 0 or num2 >= len(self.cmdList)-1:
+                errorMsg = textSetting.textList["errorList"]["E2"].format(num2)
+                self.error = errorMsg
+                return False
+            comicData.append(self.cmdList[num2])
+            b = self.byteArr[index]
+            index += 1
+            if b >= 16:
+                b = 16
+            if self.max_param < b:
+                self.max_param = b
+            comicData.append(b)
+            for j in range(b):
+                f = struct.unpack("<f", self.byteArr[index:index+4])[0]
+                index += 4
+                f = round(f, 5)
+                comicData.append(f)
+
+            self.comicDataList.append(comicData)
+        return True
+
+    def saveFile(self, num, mode, comicData=None):
+        try:
+            if num >= len(self.indexList):
+                index = len(self.byteArr)
+            else:
+                index = self.indexList[num]
+            newByteArr = bytearray(self.byteArr[0:index])
+
+            if mode == "insert":
+                cnt = self.byteArr[self.comicCntIndex]
+                newByteArr[self.comicCntIndex] = (cnt + 1)
+            elif mode == "delete":
+                cnt = self.byteArr[self.comicCntIndex]
+                newByteArr[self.comicCntIndex] = (cnt - 1)
+
+            if mode == "modify" or mode == "insert":
+                cmdNum = struct.pack("<h", self.cmdList.index(comicData[0]))
+                newByteArr.extend(cmdNum)
+                paramCnt = comicData[1]
+                newByteArr.append(paramCnt)
+
+                for i in range(paramCnt):
+                    f = struct.pack("<f", comicData[2 + i])
+                    newByteArr.extend(f)
+
+            if mode == "modify" or mode == "delete":
+                if num + 1 < len(self.indexList):
+                    index = self.indexList[num + 1]
+
+            newByteArr.extend(self.byteArr[index:])
+            self.save(newByteArr)
+            return True
+        except Exception:
+            self.error = traceback.format_exc()
+            return False
+
+    def saveHeader(self, imgList, imgSizeList, seList, bgmList):
+        try:
+            index = 17
+            newByteArr = bytearray(self.byteArr[0:index])
+
+            newByteArr.append(len(imgList))
+            for i in range(len(imgList)):
+                newByteArr.append(len(imgList[i]))
+                newByteArr.extend(self.encObj.convertByteArray(imgList[i]))
+
+            newByteArr.append(len(imgSizeList))
+            for i in range(len(imgSizeList)):
+                newByteArr.append(imgSizeList[i][0])
+                for j in range(4):
+                    f = struct.pack("<f", imgSizeList[i][1][j])
+                    newByteArr.extend(f)
+
+            newByteArr.append(len(seList))
+            for i in range(len(seList)):
+                newByteArr.append(len(seList[i][0]))
+                newByteArr.extend(self.encObj.convertByteArray(seList[i][0]))
+                newByteArr.append(seList[i][1])
+
+            newByteArr.append(len(bgmList))
+            for i in range(len(bgmList)):
+                newByteArr.append(len(bgmList[i][0]))
+                newByteArr.extend(self.encObj.convertByteArray(bgmList[i][0]))
+                newByteArr.append(bgmList[i][1])
+
+                for j in range(2):
+                    f = struct.pack("<f", bgmList[i][2+j])
+                    newByteArr.extend(f)
+
+            index = self.comicCntIndex - 1
+            newByteArr.extend(self.byteArr[index:])
+            self.save(newByteArr)
+            return True
+        except Exception:
+            self.error = traceback.format_exc()
+            return False
+
+    def saveComicList(self, comicDataList):
+        try:
+            index = self.comicCntIndex
+            newByteArr = bytearray(self.byteArr[0:index])
+
+            allCntH = struct.pack("<h", len(comicDataList))
+            newByteArr.extend(allCntH)
+
+            for comicData in comicDataList:
+                cmdNum = struct.pack("<h", self.cmdList.index(comicData[0]))
+                newByteArr.extend(cmdNum)
+                paramCnt = comicData[1]
+                newByteArr.append(paramCnt)
+
+                for i in range(paramCnt):
+                    f = struct.pack("<f", comicData[2+i])
+                    newByteArr.extend(f)
+
+            self.save(newByteArr)
+            return True
+        except Exception:
+            self.error = traceback.format_exc()
+            return False
+
+    def reload(self):
+        self.open()
+        return self
+
+    def save(self, newByteArr):
+        self.byteArr = newByteArr
+        w = open(self.filePath, "wb")
+        w.write(newByteArr)
+        w.close()

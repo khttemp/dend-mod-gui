@@ -1,0 +1,195 @@
+from functools import partial
+
+import tkinter
+from tkinter import messagebox as mb
+import program.sub.textSetting as textSetting
+import program.sub.appearance.ttkCustomWidget as ttkCustomWidget
+from program.sub.appearance.customSimpleDialog import CustomSimpleDialog
+
+
+class Else1ListWidget:
+    def __init__(self, frame, decryptFile, rootFrameAppearance, reloadFunc):
+        self.frame = frame
+        self.decryptFile = decryptFile
+        self.else1List = decryptFile.else1List
+        self.rootFrameAppearance = rootFrameAppearance
+        self.reloadFunc = reloadFunc
+
+        if len(self.else1List) == 0:
+            return
+
+        else1Lf = ttkCustomWidget.CustomTtkLabelFrame(self.frame, text=textSetting.textList["railEditor"]["else1Label"])
+        else1Lf.pack(anchor=tkinter.NW, padx=10, pady=5)
+
+        txtFrame = ttkCustomWidget.CustomTtkFrame(else1Lf)
+        txtFrame.pack(anchor=tkinter.NW)
+
+        if self.decryptFile.game in ["BS", "CS", "RS"]:
+            else1SingleValue = round(float(self.else1List[0]), 3)
+            else1TextLb = ttkCustomWidget.CustomTtkLabel(txtFrame, text=else1SingleValue, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
+            else1TextLb.grid(row=0, column=0, sticky=tkinter.W + tkinter.E)
+            else1Btn = ttkCustomWidget.CustomTtkButton(txtFrame, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=partial(self.editVarList, 0, [self.else1List[0]]))
+            else1Btn.grid(row=0, column=1, sticky=tkinter.W + tkinter.E)
+
+            txtFrame2 = ttkCustomWidget.CustomTtkFrame(else1Lf)
+            txtFrame2.pack(anchor=tkinter.NW, pady=5)
+
+            for i in range(1, len(self.else1List)):
+                else1Info = self.else1List[i]
+                for j in range(len(else1Info)):
+                    if j in [0, 1]:
+                        else1Value = round(float(else1Info[j]), 3)
+                    else:
+                        else1Value = else1Info[j]
+                    tempfTextLb = ttkCustomWidget.CustomTtkLabel(txtFrame2, text=else1Value, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
+                    tempfTextLb.grid(row=i, column=j, sticky=tkinter.W + tkinter.E)
+                tempfBtn = ttkCustomWidget.CustomTtkButton(txtFrame2, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=partial(self.editVarList, i, else1Info))
+                tempfBtn.grid(row=i, column=len(else1Info), sticky=tkinter.W + tkinter.E)
+        else:
+            txtFrame2 = ttkCustomWidget.CustomTtkFrame(else1Lf)
+            txtFrame2.pack(anchor=tkinter.NW, pady=5)
+
+            for i in range(len(self.else1List)):
+                else1Value = round(float(self.else1List[i]), 3)
+                tempfTextLb = ttkCustomWidget.CustomTtkLabel(txtFrame2, text=else1Value, font=textSetting.textList["font6"], anchor=tkinter.CENTER, width=7, borderwidth=1, relief="solid")
+                tempfTextLb.grid(row=0, column=i, sticky=tkinter.W + tkinter.E)
+            tempfBtn = ttkCustomWidget.CustomTtkButton(txtFrame2, text=textSetting.textList["railEditor"]["modifyBtnLabel"], style="custom.update.TButton", command=self.editVarLsList)
+            tempfBtn.grid(row=0, column=len(self.else1List), sticky=tkinter.W + tkinter.E)
+
+    def editVarList(self, i, valList):
+        result = EditElse1ListWidget(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["editElse1Label"], self.decryptFile, valList, self.rootFrameAppearance)
+        if result.reloadFlag:
+            if i == 0:
+                self.else1List[i] = result.resultValueList[0]
+            else:
+                self.else1List[i] = result.resultValueList
+            if not self.decryptFile.saveElse1List(self.else1List):
+                self.decryptFile.printError()
+                mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
+                return
+            mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I75"])
+            self.reloadFunc()
+
+    def editVarLsList(self):
+        result = EditLsElse1ListWidget(self.frame.winfo_toplevel(), textSetting.textList["railEditor"]["editElse1Label"], self.decryptFile, self.rootFrameAppearance)
+        if result.reloadFlag:
+            self.else1List = result.resultValueList
+            if not self.decryptFile.saveElse1List(self.else1List):
+                self.decryptFile.printError()
+                mb.showerror(title=textSetting.textList["error"], message=textSetting.textList["errorList"]["E14"])
+                return
+            mb.showinfo(title=textSetting.textList["success"], message=textSetting.textList["infoList"]["I75"])
+            self.reloadFunc()
+
+
+class EditElse1ListWidget(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, valList, rootFrameAppearance):
+        self.decryptFile = decryptFile
+        self.valList = valList
+        self.varList = []
+        self.resultValueList = []
+        self.reloadFlag = False
+        super().__init__(master, title, rootFrameAppearance.bgColor)
+
+    def body(self, master):
+        self.resizable(False, False)
+
+        valLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
+        valLb.grid(columnspan=2, row=0, column=0, sticky=tkinter.W + tkinter.E)
+
+        for i in range(len(self.valList)):
+            if i < 2:
+                txtLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["railEditor"]["editElse1F1Label"].format(i + 1), font=textSetting.textList["font2"])
+                txtLb.grid(row=i + 1, column=0, sticky=tkinter.W + tkinter.E)
+            else:
+                txtLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["railEditor"]["editElse1B1Label"].format(i - 1), font=textSetting.textList["font2"])
+                txtLb.grid(row=i + 1, column=0, sticky=tkinter.W + tkinter.E)
+
+            if i in [0, 1]:
+                varTemp = tkinter.DoubleVar()
+                varTemp.set(round(float(self.valList[i]), 3))
+            else:
+                varTemp = tkinter.IntVar()
+                varTemp.set(int(self.valList[i]))
+            self.varList.append(varTemp)
+            self.txtEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
+            self.txtEt.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
+        super().body(master)
+
+    def validate(self):
+        self.resultValueList = []
+        result = mb.askokcancel(title=textSetting.textList["confirm"], message=textSetting.textList["infoList"]["I21"], parent=self)
+        if result:
+            try:
+                for i in range(len(self.valList)):
+                    try:
+                        if i in [0, 1]:
+                            res = float(self.varList[i].get())
+                        else:
+                            res = int(self.varList[i].get())
+
+                        if res < 0:
+                            errorMsg = textSetting.textList["errorList"]["E61"].format(0)
+                            mb.showerror(title=textSetting.textList["numberError"], message=errorMsg)
+                            return False
+                        self.resultValueList.append(res)
+                    except Exception:
+                        errorMsg = textSetting.textList["errorList"]["E3"]
+                        mb.showerror(title=textSetting.textList["error"], message=errorMsg)
+                        return False
+                return True
+            except Exception:
+                errorMsg = textSetting.textList["errorList"]["E14"]
+                mb.showerror(title=textSetting.textList["error"], message=errorMsg)
+                return False
+
+    def apply(self):
+        self.reloadFlag = True
+
+
+class EditLsElse1ListWidget(CustomSimpleDialog):
+    def __init__(self, master, title, decryptFile, rootFrameAppearance):
+        self.decryptFile = decryptFile
+        self.valList = decryptFile.else1List
+        self.varList = []
+        self.resultValueList = []
+        self.reloadFlag = False
+        super().__init__(master, title, rootFrameAppearance.bgColor)
+
+    def body(self, master):
+        self.resizable(False, False)
+
+        valLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["infoList"]["I44"], font=textSetting.textList["font2"])
+        valLb.grid(columnspan=2, row=0, column=0, sticky=tkinter.W + tkinter.E)
+
+        for i in range(len(self.valList)):
+            txtLb = ttkCustomWidget.CustomTtkLabel(master, text=textSetting.textList["railEditor"]["editElse1F1Label"].format(i + 1), font=textSetting.textList["font2"])
+            txtLb.grid(row=i + 1, column=0, sticky=tkinter.W + tkinter.E)
+            varTemp = tkinter.DoubleVar()
+            varTemp.set(round(float(self.valList[i]), 3))
+            self.varList.append(varTemp)
+            txtEt = ttkCustomWidget.CustomTtkEntry(master, textvariable=self.varList[i], font=textSetting.textList["font2"])
+            txtEt.grid(row=i + 1, column=1, sticky=tkinter.W + tkinter.E)
+        super().body(master)
+
+    def validate(self):
+        self.resultValueList = []
+        result = mb.askokcancel(title=textSetting.textList["confirm"], message=textSetting.textList["infoList"]["I21"], parent=self)
+        if result:
+            try:
+                for i in range(len(self.valList)):
+                    try:
+                        res = float(self.varList[i].get())
+                        self.resultValueList.append(res)
+                    except Exception:
+                        errorMsg = textSetting.textList["errorList"]["E3"]
+                        mb.showerror(title=textSetting.textList["error"], message=errorMsg)
+                        return False
+                return True
+            except Exception:
+                errorMsg = textSetting.textList["errorList"]["E14"]
+                mb.showerror(title=textSetting.textList["error"], message=errorMsg)
+                return False
+
+    def apply(self):
+        self.reloadFlag = True
