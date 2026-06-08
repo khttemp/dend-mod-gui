@@ -159,7 +159,7 @@ class RootFrameAppearance:
                 except Exception:
                     errObj.write(traceback.format_exc())
 
-            mainProcess.writeConfigAppearance(self.configPath, self.configStyle)
+            mainProcess.writeConfigAppearance(self.configPath, self.bgColor, self.configStyle)
 
 
 class EditRootFrameAppearance(CustomSimpleDialog):

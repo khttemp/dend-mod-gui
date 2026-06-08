@@ -340,11 +340,11 @@ def readFvtImagePath(rootPath):
     return fvtImageInfo
 
 
-def writeConfigAppearance(configPath, configStyle):
+def writeConfigAppearance(configPath, bgColor, configStyle):
     configRead = configparser.ConfigParser()
     configRead.read(configPath, encoding="utf-8")
 
-    configRead.set("ROOT_FRAME", "bg_color", configStyle.bgColor)
+    configRead.set("ROOT_FRAME", "bg_color", bgColor)
     configRead.set("ROOT_FRAME", "dark_mode", str(int(configStyle.rootDarkModeFlag)))
     configRead.set("ROOT_FRAME", "theme", configStyle.themeName)
     configRead.set("LABEL", "fg_color", configStyle.labelForegroundColor)
