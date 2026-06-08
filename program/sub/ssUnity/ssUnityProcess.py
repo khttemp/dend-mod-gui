@@ -1,5 +1,4 @@
 import os
-import sys
 import json
 
 import program.sub.textSetting as textSetting
