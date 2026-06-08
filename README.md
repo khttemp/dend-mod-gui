@@ -129,7 +129,7 @@ main /quietSaveRail [ステージデータのエクセルファイル] [ステ�
 または
 
 ```
-main /saveRail [ステージデータのテキストファイル] [ステージデータのdenファイル]
+main /saveRail [ステージデータのエクセルファイル] [ステージデータのdenファイル]
 main /quietSaveRail [ステージデータのテキストファイル] [ステージデータのdenファイル]
 ```
 
